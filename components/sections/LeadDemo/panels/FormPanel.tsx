@@ -58,9 +58,9 @@ export default function FormPanel({ isActive }: FormPanelProps) {
         currentFieldIdx++
         clearInterval(interval)
         const t = setTimeout(() => {
-          interval = setInterval(typeNextChar, 30)
+          interval = setInterval(typeNextChar, 15)
           timers.current.push(interval as unknown as ReturnType<typeof setTimeout>)
-        }, 500)
+        }, 200)
         timers.current.push(t)
       }
     }
@@ -68,7 +68,7 @@ export default function FormPanel({ isActive }: FormPanelProps) {
     /* Start typing after a brief delay */
     let interval: ReturnType<typeof setInterval>
     const startTimer = setTimeout(() => {
-      interval = setInterval(typeNextChar, 30)
+      interval = setInterval(typeNextChar, 15)
       timers.current.push(interval as unknown as ReturnType<typeof setTimeout>)
     }, 300)
     timers.current.push(startTimer)
