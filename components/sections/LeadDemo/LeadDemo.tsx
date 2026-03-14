@@ -12,7 +12,7 @@ import ControlePanel from './panels/ControlePanel'
 import OfferteMailPanel from './panels/OfferteMailPanel'
 
 /* Variable duration per step (in ms) */
-const STEP_DURATIONS = [6000, 4000, 6000, 5000, 5000, 4000]
+const STEP_DURATIONS = [8500, 4000, 6000, 5000, 5000, 4000]
 const RESTART_DELAY = 3000
 
 export default function LeadDemo() {

@@ -28,14 +28,14 @@ const TOTAL_CHARS = total
 
 export default function FormPanel({ isActive }: FormPanelProps) {
   const [charsTyped, setCharsTyped] = useState(0)
-  const [submitState, setSubmitState] = useState<'hidden' | 'visible' | 'pressing' | 'done'>('hidden')
+  const [submitState, setSubmitState] = useState<'idle' | 'pressing' | 'done'>('idle')
   const timers = useRef<ReturnType<typeof setTimeout | typeof setInterval>[]>([])
 
   useEffect(() => {
     if (!isActive) return
 
     setCharsTyped(0)
-    setSubmitState('hidden')
+    setSubmitState('idle')
 
     let currentFieldIdx = 0
     let charCount = 0
@@ -47,10 +47,9 @@ export default function FormPanel({ isActive }: FormPanelProps) {
       if (charCount >= TOTAL_CHARS) {
         /* All fields typed — show submit button */
         clearInterval(interval)
-        const t1 = setTimeout(() => setSubmitState('visible'), 300)
-        const t2 = setTimeout(() => setSubmitState('pressing'), 800)
-        const t3 = setTimeout(() => setSubmitState('done'), 1100)
-        timers.current.push(t1, t2, t3)
+        const t1 = setTimeout(() => setSubmitState('pressing'), 400)
+        const t2 = setTimeout(() => setSubmitState('done'), 700)
+        timers.current.push(t1, t2)
         return
       }
 
@@ -137,14 +136,14 @@ export default function FormPanel({ isActive }: FormPanelProps) {
         </div>
 
         {/* Submit button */}
-        <div className={`${styles.submitWrap} ${submitState !== 'hidden' ? styles.submitVisible : ''}`}>
+        <div className={styles.submitWrap}>
           <button
             className={`${styles.submitBtn} ${
               submitState === 'pressing' ? styles.submitPressing : ''
             } ${submitState === 'done' ? styles.submitDone : ''}`}
             tabIndex={-1}
           >
-            {submitState === 'done' ? '✓ Verstuurd!' : 'Verstuur'}
+            {submitState === 'done' ? '✓ Verstuurd' : 'Verstuur'}
           </button>
         </div>
       </div>
