@@ -63,12 +63,12 @@
 
 .missionSection {
   padding: var(--section-padding);
-  background: var(--color-surface);
+  background: var(--color-bg);
 }
 
 .teamSection {
   padding: var(--section-padding);
-  background: var(--color-surface);
+  background: var(--color-bg);
 }
 
 .inner {
