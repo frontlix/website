@@ -1,0 +1,120 @@
+.section {
+  padding: var(--section-padding);
+  background: var(--color-surface);
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+.heading {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+.card {
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.cardGradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,
+    var(--color-gradient) border-box;
+  box-shadow: 0 0 40px rgba(26, 86, 255, 0.1);
+}
+
+.cardGradient:hover {
+  box-shadow: 0 8px 48px rgba(26, 86, 255, 0.2);
+}
+
+.cardDefault {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+}
+
+.cardDefault:hover {
+  border-color: rgba(26, 86, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(26, 86, 255, 0.08);
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: rgba(26, 86, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.cardTitle {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cardDescription {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.featureDot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: var(--text-4xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

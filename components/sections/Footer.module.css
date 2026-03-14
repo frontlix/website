@@ -1,0 +1,130 @@
+.footer {
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-16) var(--space-6) var(--space-8);
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-12);
+  margin-bottom: var(--space-12);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.logo {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.logoIx {
+  background: var(--color-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  max-width: 240px;
+  line-height: 1.6;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-8);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.columnTitle {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.columnLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.columnLink {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  line-height: 1.4;
+}
+
+.columnLink:hover {
+  color: var(--color-text);
+}
+
+.bottomRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+  align-items: center;
+  text-align: center;
+}
+
+.copyright {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.legalLinks {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.legalLink {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.legalLink:hover {
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .topRow {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .columns {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bottomRow {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}

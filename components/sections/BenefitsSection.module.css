@@ -1,0 +1,236 @@
+.section {
+  padding: 100px var(--space-6);
+  background: var(--color-surface);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 120px var(--space-8);
+  }
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* ── Top row ── */
+.top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  margin-bottom: 80px;
+}
+
+@media (min-width: 768px) {
+  .top {
+    grid-template-columns: 55fr 45fr;
+    align-items: center;
+    gap: var(--space-16);
+  }
+}
+
+.topLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Label with decorative line */
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.labelLine {
+  display: inline-block;
+  width: 32px;
+  height: 2px;
+  background: var(--color-text-muted);
+  border-radius: 2px;
+}
+
+.labelDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.heading {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 3.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .heading {
+    font-size: 4rem;
+  }
+}
+
+.description {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  padding-top: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .description {
+    padding-top: 0;
+  }
+}
+
+/* ── Cards ── */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-14);
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(26, 86, 255, 0.3);
+  background: rgba(26, 86, 255, 0.04);
+}
+
+.cardTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.cardDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  flex: 1;
+}
+
+.cardVisual {
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+/* ── Visuals ── */
+.visualMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.visualLabel {
+  font-size: 11px;
+  color: var(--color-accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.visualValue {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.visualSub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* Bar visual */
+.visualBars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.barLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-gradient);
+  border-radius: 99px;
+}
+
+.barVal {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text);
+  width: 24px;
+  text-align: right;
+}
+
+/* ── CTA ── */
+.cta {
+  display: flex;
+  justify-content: center;
+}
