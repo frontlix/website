@@ -1,0 +1,72 @@
+/* ─── iPhone Frame ────────────────────────────────────────────────────────────── */
+
+.phone {
+  width: 260px;
+  height: 520px;
+  background: #1C1C1E;
+  border-radius: 40px;
+  padding: 12px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  border-radius: 32px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ─── Dynamic Island (Notch) ─────────────────────────────────────────────────── */
+
+.notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #000000;
+  border-radius: 14px;
+  z-index: 10;
+}
+
+/* ─── Status Bar ─────────────────────────────────────────────────────────────── */
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+}
+
+.statusTime {
+  min-width: 32px;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+/* ─── Content area ───────────────────────────────────────────────────────────── */
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,188 @@
+/* ─── Keyframes ───────────────────────────────────────────────────────────────── */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+@keyframes buttonPress {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.96); }
+  60%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Panel wrapper ──────────────────────────────────────────────────────────── */
+
+.panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.panelActive {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ─── Form card ──────────────────────────────────────────────────────────────── */
+
+.formCard {
+  width: 100%;
+  max-width: 440px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* ─── Form header ────────────────────────────────────────────────────────────── */
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.formHeaderIcon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.formHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.formTitle {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.formSubtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── Form body ──────────────────────────────────────────────────────────────── */
+
+.formBody {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ─── Form field ─────────────────────────────────────────────────────────────── */
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fieldInput {
+  background: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #F0F0F0;
+  min-height: 20px;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.fieldInputActive {
+  border-color: rgba(0, 207, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 207, 255, 0.15);
+}
+
+/* Dropdown style for "Service" */
+.fieldSelect {
+  justify-content: space-between;
+}
+
+.fieldSelectIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Textarea style for "Extra info" */
+.fieldTextarea {
+  min-height: 60px;
+  align-items: flex-start;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Blinking cursor */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background: var(--color-accent);
+  margin-left: 1px;
+  animation: blink 0.8s step-end infinite;
+  flex-shrink: 0;
+}
+
+/* ─── Submit button ──────────────────────────────────────────────────────────── */
+
+.submitWrap {
+  padding: 0 var(--space-4) var(--space-4);
+  opacity: 0;
+}
+
+.submitVisible {
+  animation: fadeSlideUp 0.3s ease forwards;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1A56FF, #00CFFF);
+  border: none;
+  border-radius: 8px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-white);
+  cursor: default;
+  transition: background 0.3s ease;
+}
+
+.submitPressing {
+  animation: buttonPress 0.3s ease forwards;
+}
+
+.submitDone {
+  background: #22C55E;
+}

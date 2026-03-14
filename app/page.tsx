@@ -1,7 +1,7 @@
 import Hero from '@/components/sections/Hero'
 import BenefitsSection from '@/components/sections/BenefitsSection'
 import StepsSection from '@/components/sections/StepsSection'
-import WorkflowDemo from '@/components/sections/WorkflowDemo'
+import LeadDemo from '@/components/sections/LeadDemo'
 import ProfilesSection from '@/components/sections/ProfilesSection'
 import FeaturesSection from '@/components/sections/FeaturesSection'
 import TestimonialSection from '@/components/sections/TestimonialSection'
@@ -14,7 +14,7 @@ export default function HomePage() {
       <Hero />
       <BenefitsSection />
       <StepsSection />
-      <WorkflowDemo />
+      <LeadDemo />
       <ProfilesSection />
       <FeaturesSection />
       <TestimonialSection />

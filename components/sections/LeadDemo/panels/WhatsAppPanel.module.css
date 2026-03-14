@@ -1,0 +1,222 @@
+/* ─── Keyframes ───────────────────────────────────────────────────────────────── */
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* ─── Panel wrapper ──────────────────────────────────────────────────────────── */
+
+.panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.panelActive {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ─── WhatsApp header ────────────────────────────────────────────────────────── */
+
+.waHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  background: #008069;
+  flex-shrink: 0;
+}
+
+.waBackArrow {
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.waAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1A56FF, #00CFFF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.waContactInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.waContactName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.waContactStatus {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ─── Chat area ──────────────────────────────────────────────────────────────── */
+
+.chatArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: #0B141A;
+}
+
+.dateSep {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8696A0;
+  background: rgba(11, 20, 26, 0.85);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  align-self: center;
+  margin: var(--space-1) 0;
+}
+
+/* ─── Message bubbles ────────────────────────────────────────────────────────── */
+
+.bubbleWrap {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.bubbleVisible {
+  animation: bubbleIn 0.4s ease forwards;
+}
+
+.bubbleLeft {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.bubbleRight {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.bubbleAI {
+  background: #1A2C34;
+  color: var(--color-text);
+  border-bottom-left-radius: 4px;
+}
+
+.bubbleUser {
+  background: #005C4B;
+  color: var(--color-white);
+  border-bottom-right-radius: 4px;
+}
+
+.bubbleTime {
+  font-size: 10px;
+  color: #8696A0;
+  margin-top: 2px;
+  padding: 0 2px;
+}
+
+.ticks {
+  color: #53BDEB;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+/* ─── Typing indicator ───────────────────────────────────────────────────────── */
+
+.typingBubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 48px;
+  padding: 10px 14px;
+}
+
+.typingDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8696A0;
+}
+
+.typingDot:nth-child(1) { animation: bounce 1.2s ease-in-out infinite 0s; }
+.typingDot:nth-child(2) { animation: bounce 1.2s ease-in-out infinite 0.15s; }
+.typingDot:nth-child(3) { animation: bounce 1.2s ease-in-out infinite 0.3s; }
+
+/* ─── Chat input bar ─────────────────────────────────────────────────────────── */
+
+.chatInputBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  background: #0B141A;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.chatInput {
+  flex: 1;
+  background: #1A2C34;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #8696A0;
+  outline: none;
+  cursor: default;
+}
+
+.sendBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1A56FF, #00CFFF);
+  border: none;
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+}
