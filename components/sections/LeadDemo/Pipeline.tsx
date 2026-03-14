@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import {
   ClipboardList,
   MessageCircle,
@@ -75,7 +76,7 @@ export default function Pipeline({ currentStep, showComplete }: PipelineProps) {
       {/* Header */}
       <div className={styles.header}>
         <span className={styles.headerLeft}>
-          <span className={styles.headerIcon}>⚡</span>
+          <Image src="/logo.png" alt="Frontlix" width={30} height={30} className={styles.headerIcon} />
           <span className={styles.headerTitle}>Automatisering pipeline</span>
         </span>
         <span className={`${styles.completeBadge} ${showComplete ? styles.completeVisible : ''}`}>
