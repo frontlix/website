@@ -5,14 +5,13 @@ import { Play, RotateCcw } from 'lucide-react'
 import styles from './LeadDemo.module.css'
 import Pipeline from './Pipeline'
 import FormPanel from './panels/FormPanel'
-import WhatsAppPanel from './panels/WhatsAppPanel'
 import AIChatPanel from './panels/AIChatPanel'
 import OfferteGenPanel from './panels/OfferteGenPanel'
 import ControlePanel from './panels/ControlePanel'
 import OfferteMailPanel from './panels/OfferteMailPanel'
 
 /* Variable duration per step (in ms) */
-const STEP_DURATIONS = [8500, 4000, 6000, 5000, 5000, 4000]
+const STEP_DURATIONS = [8500, 6000, 5000, 5000, 4000]
 const RESTART_DELAY = 3000
 
 export default function LeadDemo() {
@@ -43,7 +42,7 @@ export default function LeadDemo() {
       cumulative += STEP_DURATIONS[i]
       const nextStep = i + 2 // steps are 1-indexed; after step i+1, go to step i+2
 
-      if (nextStep <= 6) {
+      if (nextStep <= 5) {
         add(() => setCurrentStep(nextStep), cumulative)
       } else {
         /* After last step — show complete, then restart */
@@ -57,6 +56,16 @@ export default function LeadDemo() {
       }
     }
   }, [clearAllTimers])
+
+  const handleStepClick = useCallback(
+    (stepId: number) => {
+      clearAllTimers()
+      setShowComplete(false)
+      setResetKey((k) => k + 1)
+      setCurrentStep(stepId)
+    },
+    [clearAllTimers]
+  )
 
   const resetAndStart = useCallback(() => {
     setResetKey((k) => k + 1)
@@ -113,14 +122,13 @@ export default function LeadDemo() {
 
         {/* 2-column layout */}
         <div className={styles.columns}>
-          <Pipeline currentStep={currentStep} showComplete={showComplete} />
+          <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
           <div className={styles.panelContainer}>
             <FormPanel key={`form-${resetKey}`} isActive={currentStep === 1} />
-            <WhatsAppPanel key={`wa-${resetKey}`} isActive={currentStep === 2} />
-            <AIChatPanel key={`ai-${resetKey}`} isActive={currentStep === 3} />
-            <OfferteGenPanel key={`gen-${resetKey}`} isActive={currentStep === 4} />
-            <ControlePanel key={`ctrl-${resetKey}`} isActive={currentStep === 5} />
-            <OfferteMailPanel key={`mail-${resetKey}`} isActive={currentStep === 6} />
+            <AIChatPanel key={`ai-${resetKey}`} isActive={currentStep === 2} />
+            <OfferteGenPanel key={`gen-${resetKey}`} isActive={currentStep === 3} />
+            <ControlePanel key={`ctrl-${resetKey}`} isActive={currentStep === 4} />
+            <OfferteMailPanel key={`mail-${resetKey}`} isActive={currentStep === 5} />
           </div>
         </div>
       </div>

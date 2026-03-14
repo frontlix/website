@@ -136,6 +136,15 @@
   gap: var(--space-3);
   position: relative;
   z-index: 1;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: 2px;
+  margin: -2px;
+  transition: background 0.15s ease;
+}
+
+.stepRow:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ─── Step circle ────────────────────────────────────────────────────────────── */

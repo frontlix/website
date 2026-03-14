@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import {
   ClipboardList,
-  MessageCircle,
   Bot,
   FileText,
   UserCheck,
@@ -14,19 +13,19 @@ import styles from './Pipeline.module.css'
 
 const PIPELINE_STEPS = [
   { id: 1, icon: ClipboardList, title: 'Formulier ingediend', subtitle: 'Lead binnengehaald' },
-  { id: 2, icon: MessageCircle, title: 'WhatsApp verzonden', subtitle: 'Bericht afgeleverd' },
-  { id: 3, icon: Bot, title: 'AI start gesprek', subtitle: 'Frontlix AI actief' },
-  { id: 4, icon: FileText, title: 'Offerte opstellen', subtitle: 'Document gegenereerd' },
-  { id: 5, icon: UserCheck, title: 'Controle eigenaar', subtitle: 'Wacht op goedkeuring' },
-  { id: 6, icon: Send, title: 'Offerte verstuurd', subtitle: 'Email verzonden' },
+  { id: 2, icon: Bot, title: 'AI start gesprek', subtitle: 'Frontlix AI actief' },
+  { id: 3, icon: FileText, title: 'Offerte opstellen', subtitle: 'Document gegenereerd' },
+  { id: 4, icon: UserCheck, title: 'Controle eigenaar', subtitle: 'Wacht op goedkeuring' },
+  { id: 5, icon: Send, title: 'Offerte verstuurd', subtitle: 'Email verzonden' },
 ]
 
 interface PipelineProps {
   currentStep: number
   showComplete: boolean
+  onStepClick?: (stepId: number) => void
 }
 
-export default function Pipeline({ currentStep, showComplete }: PipelineProps) {
+export default function Pipeline({ currentStep, showComplete, onStepClick }: PipelineProps) {
   const stepsListRef = useRef<HTMLDivElement>(null)
   const circleRefs = useRef<(HTMLDivElement | null)[]>([])
   const [trackStyle, setTrackStyle] = useState<{ top: number; height: number }>({ top: 0, height: 0 })
@@ -104,7 +103,11 @@ export default function Pipeline({ currentStep, showComplete }: PipelineProps) {
           const Icon = step.icon
 
           return (
-            <div key={step.id} className={styles.stepRow}>
+            <div
+              key={step.id}
+              className={styles.stepRow}
+              onClick={() => onStepClick?.(step.id)}
+            >
               {/* Circle indicator */}
               <div
                 ref={(el) => setCircleRef(el, idx)}

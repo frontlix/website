@@ -101,8 +101,7 @@ export default function FormPanel({ isActive }: FormPanelProps) {
             <ClipboardList size={20} />
           </span>
           <div className={styles.formHeaderInfo}>
-            <span className={styles.formTitle}>Nieuw contactverzoek</span>
-            <span className={styles.formSubtitle}>frontlix.nl/contact</span>
+            <span className={styles.formTitle}>Offerte aanvraag</span>
           </div>
         </div>
 
@@ -115,7 +114,11 @@ export default function FormPanel({ isActive }: FormPanelProps) {
             const isSelect = field.type === 'select'
 
             return (
-              <div key={field.label} className={styles.fieldGroup}>
+              <div
+                key={field.label}
+                className={`${styles.fieldGroup} ${isActive ? styles.fieldStagger : ''}`}
+                style={{ animationDelay: `${idx * 80}ms` }}
+              >
                 <span className={styles.fieldLabel}>{field.label}</span>
                 <div
                   className={`${styles.fieldInput} ${isTyping ? styles.fieldInputActive : ''} ${
@@ -136,7 +139,10 @@ export default function FormPanel({ isActive }: FormPanelProps) {
         </div>
 
         {/* Submit button */}
-        <div className={styles.submitWrap}>
+        <div
+          className={`${styles.submitWrap} ${isActive ? styles.fieldStagger : ''}`}
+          style={{ animationDelay: `${FIELDS.length * 80}ms` }}
+        >
           <button
             className={`${styles.submitBtn} ${
               submitState === 'pressing' ? styles.submitPressing : ''
