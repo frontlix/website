@@ -125,15 +125,6 @@ export default function Services() {
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        <div className={styles.header}>
-          <span className={styles.label}>Wat wij doen</span>
-          <h2 className={styles.heading}>Onze Diensten</h2>
-          <p className={styles.subtext}>
-            Van strategie tot lancering — wij bieden alles wat jouw digitale
-            aanwezigheid nodig heeft om te groeien en te presteren.
-          </p>
-        </div>
-
         <div className={styles.grid}>
           {services.map((service) => {
             const Icon = service.icon

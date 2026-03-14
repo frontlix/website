@@ -1,10 +1,12 @@
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import { BGPattern } from '@/components/ui/bg-pattern'
 import styles from './Hero.module.css'
 
 export default function Hero() {
   return (
     <section className={styles.hero}>
+      <BGPattern variant="grid" mask="fade-edges" fill="rgba(37,99,235,0.15)" size={32} />
       <div className={styles.inner}>
         {/* Text content */}
         <div className={styles.content}>

@@ -34,12 +34,12 @@ const cards = [
       <div className={styles.visualBars}>
         <div className={styles.barRow}>
           <span className={styles.barLabel}>Performance</span>
-          <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '94%' }} /></div>
+          <div className={styles.barTrack}><div className={`${styles.barFill} ${styles.barFill94}`} /></div>
           <span className={styles.barVal}>94</span>
         </div>
         <div className={styles.barRow}>
           <span className={styles.barLabel}>SEO</span>
-          <div className={styles.barTrack}><div className={styles.barFill} style={{ width: '98%' }} /></div>
+          <div className={styles.barTrack}><div className={`${styles.barFill} ${styles.barFill98}`} /></div>
           <span className={styles.barVal}>98</span>
         </div>
       </div>
@@ -61,7 +61,7 @@ const cards = [
 
 export default function BenefitsSection() {
   return (
-    <section className={styles.section}>
+    <section id="waarom" className={styles.section}>
       <div className={styles.inner}>
 
         {/* Top: label + heading / description */}

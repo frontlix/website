@@ -1,271 +1,340 @@
-CLAUDE.md — Frontlix Website
-Dit bestand beschrijft de volledige projectopzet voor de Frontlix bedrijfswebsite.
-Lees dit bestand altijd volledig voordat je code schrijft of aanpast.
+# CLAUDE.md — Frontlix Website
 
-📌 Projectoverzicht
+Read this file fully before writing or changing any code.
 
-Bedrijfsnaam: Frontlix
-Type: Bedrijfswebsite / portfolio
-Doel: Nieuwe klanten aantrekken en diensten presenteren
-Toon: Professioneel, modern, tech-forward, premium
-Taal: Nederlands (standaard), Engels optioneel per pagina
+---
 
+## Always Do First
 
-🛠️ Tech Stack
+- Always explain **what you are going to do** before writing code or modifying files
+- Always ask for **confirmation** before deleting or renaming files
+- Never work on more than **one page or component at a time** without an intermediate check
+- If anything is unclear: **ask a question** — never make assumptions
+- After every task, give a **short summary** of what changed
+- Always add **comments** to complex logic or CSS tricks
 
-Framework: Next.js (App Router, TypeScript)
-Styling: CSS Modules + globale CSS custom properties (geen Tailwind, geen externe UI-libs)
-Package manager: npm — gebruik nooit yarn of pnpm
-Node versie: LTS (≥ 20)
-Linting: ESLint + Prettier
-Iconen: lucide-react (alleen indien nodig)
-Fonts: Google Fonts via next/font
+---
 
+## Self-Improvement Loop
 
-🎨 Huisstijl
-Kleuren (CSS custom properties in styles/tokens.css)
-css:root {
-  --color-bg:          #0A0A0A;
-  --color-surface:     #111111;
-  --color-surface-2:   #1A1A1A;
+Every failure is a chance to make the system stronger. When something breaks, always follow these steps:
 
-  --color-primary:     #1A56FF;
-  --color-accent:      #00CFFF;
-  --color-gradient:    linear-gradient(135deg, #1A56FF, #00CFFF);
+1. **Identify** what broke
+2. **Fix** the tool or file
+3. **Verify** the fix works
+4. **Update** the workflow / `CLAUDE.md` with the new approach
+5. **Move on** with a more robust system
 
-  --color-text:        #F0F0F0;
-  --color-text-muted:  #888888;
-  --color-border:      rgba(255, 255, 255, 0.08);
+---
 
-  --color-white:       #FFFFFF;
-  --color-black:       #000000;
+## Screenshot Workflow
+
+- Puppeteer is installed as a dev dependency (`npm install --save-dev puppeteer`). `screenshot.mjs` lives in the project root.
+- **Always screenshot from localhost:** `node screenshot.mjs http://localhost:3000`
+- Screenshots are saved automatically to `./temporary screenshots/screenshot-N.png` (auto-incremented, never overwritten)
+- Optional label suffix: `node screenshot.mjs http://localhost:3000 label` → saves as `screenshot-N-label.png`
+- `screenshot.mjs` lives in the project root — use it as-is
+- After screenshotting, read the PNG from `temporary screenshots/` — Claude can view and analyze it directly
+- When comparing, be specific: "heading is 32px but reference shows ~24px", "card gap is 16px but should be 24px"
+- Always check: spacing/padding, font size/weight/line-height, colors (exact hex), alignment, border-radius, shadows, image sizing
+
+## Manual Screenshot Handling
+
+- Any screenshot file dropped or saved in the project root (e.g. `Screenshot 2026-03-*.png`)
+  must be **immediately moved** to `./temporary screenshots/` before any other action
+- If `./temporary screenshots/` does not exist, create it first
+- Renamed format: `screenshot-manual-YYYY-MM-DD-HH-MM.png` (so it stays consistent with auto screenshots)
+- After moving, **read and analyze** the screenshot for visual issues:
+  - spacing / padding inconsistencies
+  - wrong font sizes or weights
+  - color deviations from brand tokens
+  - alignment or layout issues
+- Log findings as a short bullet list, then propose fixes
+- Never leave screenshot files in the project root
+
+```
+
+---
+
+**Why this works:** Claude Code reads `CLAUDE.md` before every session. With this rule, the moment it sees a `Screenshot *.png` in the root, it knows to move it, read it, and self-improve — no manual prompting needed.
+
+**Bonus tip:** You can also add this one-liner to `.gitignore` so screenshots never accidentally get committed:
+```
+
+temporary screenshots/
+
+---
+
+## Project Overview
+
+- **Company:** Frontlix
+- **Type:** Business website / portfolio
+- **Goal:** Attract new clients and showcase services
+- **Tone:** Professional, modern, tech-forward, premium
+- **Language:** Dutch (default), English optional per page
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js (App Router, TypeScript)
+- **Styling:** CSS Modules + global CSS custom properties — no Tailwind, no external UI libs
+- **Package manager:** `npm` — never use `yarn` or `pnpm`
+- **Node version:** LTS (≥ 20)
+- **Linting:** ESLint + Prettier
+- **Icons:** `lucide-react` (only when necessary)
+- **Fonts:** Google Fonts via `next/font`
+
+---
+
+## Brand & Colors
+
+All tokens live in `styles/tokens.css`. Never hardcode colors outside this file.
+
+```css
+:root {
+  --color-bg: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-2: #1a1a1a;
+
+  --color-primary: #1a56ff;
+  --color-accent: #00cfff;
+  --color-gradient: linear-gradient(135deg, #1a56ff, #00cfff);
+
+  --color-text: #f0f0f0;
+  --color-text-muted: #888888;
+  --color-border: rgba(255, 255, 255, 0.08);
 }
-Typografie
-css:root {
-  --font-heading: 'Inter', sans-serif;   /* Bold, tight letter-spacing */
-  --font-body:    'Inter', sans-serif;
+```
 
-  --text-xs:   0.75rem;
-  --text-sm:   0.875rem;
+- Dark theme always — **never** a white background
+- Apply gradient to: headings, CTA buttons, accents, borders (subtle)
+- Subtle glassmorphism allowed on cards: `backdrop-filter: blur(12px)`
+- Never use bright or warm colors (red, orange, yellow) — strict blue/cyan palette only
+
+---
+
+## Typography
+
+```css
+:root {
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
   --text-base: 1rem;
-  --text-lg:   1.125rem;
-  --text-xl:   1.25rem;
-  --text-2xl:  1.5rem;
-  --text-3xl:  1.875rem;
-  --text-4xl:  2.25rem;
-  --text-5xl:  3rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
 }
-Spacing & layout
-css:root {
-  --space-1:  0.25rem;
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
+```
+
+---
+
+## Spacing & Layout
+
+```css
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
   --space-12: 3rem;
   --space-16: 4rem;
   --space-24: 6rem;
 
-  --radius-sm:  4px;
-  --radius-md:  8px;
-  --radius-lg:  16px;
-  --radius-xl:  24px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
   --max-width: 1200px;
   --section-padding: var(--space-24) var(--space-6);
 }
-Stijlregels
+```
 
-Donker thema altijd — nooit een witte achtergrond
-Gradient toepassen op: headings, CTA-knoppen, accenten, borders (subtiel)
-Swoosh/speed-gevoel verwerken in animaties (slide-in, glow-effecten)
-Glassmorphism subtiel toestaan op cards: backdrop-filter: blur(12px)
-Nooit felle of warme kleuren (rood, oranje, geel) — strikt blauw/cyaan palet
+---
 
+## Folder Structure
 
-📁 Mappenstructuur
+```
 /
 ├── CLAUDE.md
 ├── app/
-│   ├── layout.tsx          ← root layout, metadata, fonts
-│   ├── page.tsx            ← Home
-│   ├── over-ons/
-│   │   └── page.tsx
-│   ├── diensten/
-│   │   └── page.tsx
-│   └── contact/
-│       └── page.tsx
+│   ├── layout.tsx               ← root layout, metadata, fonts
+│   ├── page.tsx                 ← Home
+│   ├── over-ons/page.tsx        ← About
+│   ├── diensten/page.tsx        ← Services
+│   └── contact/page.tsx         ← Contact
 ├── components/
-│   ├── ui/                 ← herbruikbare elementen
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── Badge.tsx
-│   │   └── GradientText.tsx
-│   └── sections/           ← paginasecties
-│       ├── Navbar.tsx
-│       ├── Footer.tsx
-│       ├── Hero.tsx
-│       ├── Services.tsx
-│       ├── About.tsx
-│       └── ContactForm.tsx
+│   ├── ui/                      ← Button, Card, Badge, GradientText
+│   └── sections/                ← Navbar, Footer, Hero, Services, About, ContactForm
 ├── public/
 │   ├── logo_frontlix_trans.png
 │   └── images/
 ├── styles/
 │   ├── globals.css
-│   └── tokens.css          ← alle CSS custom properties
-└── lib/                    ← utility functies
+│   └── tokens.css               ← all CSS custom properties
+└── lib/                         ← utility functions
+```
 
-📄 Pagina's
-RouteBestandSecties/app/page.tsxHero, Services preview, About teaser, CTA/over-onsapp/over-ons/page.tsxVerhaal, missie, team/dienstenapp/diensten/page.tsxAlle diensten, uitleg, tarieven optioneel/contactapp/contact/page.tsxFormulier, contactgegevens
+---
 
-🧩 Componenten — afspraken
+## Pages
 
-Elk component heeft zijn eigen .module.css bestand naast het .tsx bestand
-Props altijd voorzien van een TypeScript interface
-children prop gebruiken waar logisch
-Geen inline styles — altijd CSS custom properties of CSS Modules
-Animaties via CSS (@keyframes) of transition, geen Framer Motion tenzij expliciet gevraagd
+| Route       | File                    | Sections                                    |
+| ----------- | ----------------------- | ------------------------------------------- |
+| `/`         | `app/page.tsx`          | Hero, Services preview, About teaser, CTA   |
+| `/over-ons` | `app/over-ons/page.tsx` | Story, mission, team                        |
+| `/diensten` | `app/diensten/page.tsx` | All services, description, optional pricing |
+| `/contact`  | `app/contact/page.tsx`  | Form, contact details                       |
 
+---
 
-⚙️ Scripts & Tools
-bashnpm run dev       # lokale dev server op http://localhost:3000
-npm run build     # productie build
-npm run start     # productie server starten
-npm run lint      # ESLint uitvoeren
-npm run format    # Prettier uitvoeren
+## Component Rules
 
-Run altijd npm run lint na grotere wijzigingen
-Run npm run build om te verifiëren dat er geen TypeScript-fouten zijn
+- Every component has its own `.module.css` file alongside the `.tsx` file
+- Always type props with a TypeScript interface
+- Use `children` prop where it makes sense
+- No inline styles — always use CSS custom properties or CSS Modules
+- Animations via CSS `@keyframes` or `transition` — no Framer Motion unless explicitly requested
 
+---
 
-✅ Do's
+## Scripts
 
-Altijd mobile-first CSS schrijven
-Gebruik semantische HTML: <header>, <main>, <section>, <article>, <footer>, <nav>
-Voeg alt-teksten toe aan alle afbeeldingen
-Gebruik next/image voor alle afbeeldingen
-Gebruik next/link voor interne navigatie
-Elke sectie krijgt een unieke id voor ankerlinking
-Gradient toepassen als background-clip: text voor speciale headings
+```bash
+npm run dev       # local dev server at http://localhost:3000
+npm run build     # production build
+npm run start     # start production server
+npm run lint      # run ESLint
+npm run format    # run Prettier
+```
 
-❌ Don'ts
+- Always run `npm run lint` after larger changes
+- Always run `npm run build` to verify there are no TypeScript errors
 
-Geen <div> gebruiken waar een semantisch element past
-Geen hardcoded kleuren buiten tokens.css
-Geen !important in CSS
-Geen externe UI-libraries zonder expliciete toestemming
-Geen yarn of pnpm
-Nooit lichte achtergronden — het thema is en blijft donker
+---
 
+## Do's
 
-🤖 Claude Code gedragsregels
-Dit zijn vaste werkafspraken — altijd opvolgen, zonder uitzondering:
+- Always write **mobile-first** CSS
+- Use semantic HTML: `<header>`, `<main>`, `<section>`, `<article>`, `<footer>`, `<nav>`
+- Add `alt` text to all images
+- Use `next/image` for images and `next/link` for internal navigation
+- Give every section a unique `id` for anchor linking
+- Apply gradient as `background-clip: text` for special headings
 
-Leg altijd eerst uit wat je gaat doen voordat je code schrijft of bestanden aanpast
-Vraag altijd bevestiging voordat je bestanden verwijdert of hernoemt
-Maak nooit meer dan één pagina of component tegelijk zonder tussentijdse check
-Als iets onduidelijk is: stel een vraag in plaats van een aanname te doen
-Geef na elke taak een korte samenvatting van wat er is gewijzigd
-Voeg altijd comments toe bij complexe logica of CSS-trucs
+## Don'ts
 
+- No `<div>` where a semantic element fits
+- No hardcoded colors outside `tokens.css`
+- No `!important` in CSS
+- No external UI libraries without explicit approval
+- No `yarn` or `pnpm`
+- Never use light backgrounds
 
-🚀 Deployment
+---
 
-Platform: VPS via Hostinger
-Technologie: Next.js draait als Node.js-proces op de VPS
-Procesbeheer: PM2 (houdt de Next.js server actief na herstart)
-Webserver: Nginx als reverse proxy (stuurt verkeer door naar Next.js op poort 3000)
-HTTPS: Let's Encrypt SSL-certificaat via Certbot
+## Deployment
 
-Deployment commando's (op de VPS)
-bashgit pull origin main       # laatste versie ophalen
-npm install                # dependencies installeren
-npm run build              # productie build maken
-pm2 restart frontlix       # server herstarten
-Belangrijke regels
+- **Platform:** VPS via Hostinger — Next.js running as a Node.js process
+- **Process manager:** PM2
+- **Web server:** Nginx as reverse proxy (port 3000)
+- **HTTPS:** Let's Encrypt via Certbot
 
-Nooit direct op main pushen zonder lokale npm run build te draaien
-.env.local staat nooit in Git — altijd in .gitignore
-Productie .env handmatig instellen op de VPS
+```bash
+git pull origin main       # pull latest version
+npm install                # install dependencies
+npm run build              # create production build
+pm2 restart frontlix       # restart server
+```
 
+- Never push directly to `main` without a passing local `npm run build`
+- `.env.local` is **never** in Git — always in `.gitignore`
+- Set production `.env` manually on the VPS
 
-🔐 Omgevingsvariabelen
-Geheime sleutels staan nooit in de code, altijd in .env.local (lokaal) of als omgevingsvariabele op de VPS.
-In CLAUDE.md staan alleen de namen, nooit de waarden.
-envNEXT_PUBLIC_SITE_URL=      # bijv. https://frontlix.nl — voor canonical URLs en SEO
+---
+
+## Environment Variables
+
+Names only here — never values.
+
+```env
+NEXT_PUBLIC_SITE_URL=      # e.g. https://frontlix.nl
 NEXT_PUBLIC_SITE_NAME=     # Frontlix
 
-# Contactformulier — mailoplossing nog niet gekozen, later invullen:
+# Contact form — mail solution not yet chosen:
 # RESEND_API_KEY=
 # MAIL_USER=
 # MAIL_PASS=
+```
 
-⚠️ Voeg .env.local altijd toe aan .gitignore
+---
 
+## Contact Form
 
-📬 Contactformulier
+- **Status:** mail solution not yet chosen
+- Fields: Name, Email, Subject, Message
+- Send logic goes in `app/api/contact/route.ts`
+- Until the mail solution is decided: build the form **without** send logic — UI only
 
-Status: mailoplossing nog niet gekozen
-De contactpagina krijgt alvast een formulier met velden: Naam, E-mail, Onderwerp, Bericht
-De verzendlogica komt in app/api/contact/route.ts (Next.js API-route)
-Zodra de mailkeuze gemaakt is (Resend, Nodemailer of Formspree), wordt deze sectie aangevuld
-Tot die tijd bouwt Claude het formulier zonder verzendlogica — alleen de UI
+---
 
+## Git Conventions
 
-🌿 Git-conventies
+- **Branches:** `main` (production) — `dev` (development). Always work on `dev`, merge to `main` when ready
+- Only push to `main` after a passing `npm run build`
+- Every commit = one logical change
 
-Branches: main (productie) en dev (ontwikkeling) — werk altijd op dev, merge naar main als iets klaar is
-Commit stijl: gebruik duidelijke prefixen:
+```
+feat: added hero section
+fix: corrected navbar padding on mobile
+style: refined gradient on heading
+refactor: split Button component
+chore: updated dependencies
+```
 
-feat: hero sectie toegevoegd
-fix: navbar padding op mobile gecorrigeerd
-style: gradient op heading verfijnd
-refactor: Button component opgesplitst
-chore: dependencies bijgewerkt
+---
 
-Elke commit beschrijft één logische wijziging — geen bulk-commits
-Push naar main alleen na npm run build zonder fouten
+## Browser Support
 
+Modern browsers only (Chrome, Firefox, Safari, Edge — last 2 versions). No IE fallbacks needed.
 
-🌐 Browserondersteuning
+Use freely: `CSS Grid`, `Flexbox`, `CSS custom properties`, `container queries`, `clamp()`, `:has()`, `aspect-ratio`, `backdrop-filter`
 
-Doelgroep: alleen moderne browsers (Chrome, Firefox, Safari, Edge — laatste 2 versies)
-Geen ondersteuning voor Internet Explorer of oudere browsers
-Claude mag dus moderne CSS gebruiken zonder fallbacks:
+---
 
-CSS Grid en Flexbox
-CSS custom properties (variabelen)
-container queries
-clamp() voor fluid typography
-:has() selector
-aspect-ratio
-backdrop-filter
+## Development Phases
 
+**Phase 1 — Foundation**
 
+- [ ] Initialize Next.js project
+- [ ] Set up `tokens.css` and `globals.css`
+- [ ] Build `Navbar` and `Footer`
+- [ ] Integrate logo
 
+**Phase 2 — Pages**
 
-🚀 Ontwikkelfases
-Fase 1 — Fundament
+- [x] Home (`Hero`, `Services preview`, `CTA`)
+- [x] Services page
+- [x] About page
+- [x] Contact page + form
 
- Next.js project initialiseren
- tokens.css en globals.css opzetten
- Navbar en Footer bouwen
- Logo integreren
+**Phase 3 — Polish**
 
-Fase 2 — Pagina's
+- [ ] Animations and hover effects
+- [ ] SEO metadata per page (`generateMetadata`)
+- [ ] Responsive fine-tuning (mobile, tablet, desktop)
+- [ ] Performance check (`npm run build`)
 
- Home (Hero, Services preview, CTA)
- Diensten pagina
- Over ons pagina
- Contact pagina + formulier
+---
 
-Fase 3 — Polish
-
- Animaties en hover-effecten
- SEO-metadata per pagina (generateMetadata)
- Responsive finetuning (mobile, tablet, desktop)
- Performance check (npm run build)
-
+_Last updated: March 2026_

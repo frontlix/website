@@ -7,9 +7,15 @@
   --color-gradient:    linear-gradient(135deg, #1A56FF, #00CFFF);
   --color-text:        #F0F0F0;
   --color-text-muted:  #888888;
-  --color-border:      rgba(255, 255, 255, 0.08);
-  --color-white:       #FFFFFF;
-  --color-black:       #000000;
+  --color-border:            rgba(255, 255, 255, 0.08);
+  --color-white:             #FFFFFF;
+  --color-black:             #000000;
+
+  /* Semi-transparent card variants */
+  --color-card-bg:           rgba(255, 255, 255, 0.03);
+  --color-card-hover-border: rgba(26, 86, 255, 0.30);
+  --color-card-hover-bg:     rgba(26, 86, 255, 0.04);
+  --color-track-bg:          rgba(255, 255, 255, 0.06);
 
   --font-heading: 'Inter', sans-serif;
   --font-body:    'Inter', sans-serif;
