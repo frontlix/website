@@ -83,16 +83,32 @@
 /* ─── Document card (light PDF mockup) ───────────────────────────────────────── */
 
 .document {
+  position: relative;
   background: #FAFAFA;
   color: #1A1A1A;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  padding: var(--space-6);
+  padding: 28px 32px;
+  padding-top: 31px;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   min-height: 360px;
+  border: 1px solid #E8E8E8;
+}
+
+.document::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1A56FF, #00CFFF);
 }
 
 /* ─── Document sections (fade in at thresholds) ──────────────────────────────── */
@@ -113,7 +129,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding-bottom: var(--space-3);
-  border-bottom: 2px solid #E5E5E5;
+  border-bottom: 2px solid #E0E7FF;
 }
 
 .docTitle {
@@ -186,6 +202,32 @@
   font-size: 12px;
 }
 
+/* ─── Row icon + included badge ─────────────────────────────────────────────── */
+
+.rowWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rowIcon {
+  color: #1A56FF;
+  flex-shrink: 0;
+}
+
+.includedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
 /* ─── Total + footer ─────────────────────────────────────────────────────────── */
 
 .docTotal {
@@ -208,7 +250,18 @@
   color: #1A56FF;
 }
 
-.docFooter {
+/* ─── Geldig-tot badge ──────────────────────────────────────────────────────── */
+
+.validBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F0F4FF;
+  color: #1A56FF;
   font-size: 11px;
-  color: #999999;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
 }

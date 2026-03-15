@@ -72,7 +72,7 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
             </div>
             <div className={styles.summaryRow}>
               <span className={styles.summaryLabel}>Bedrag</span>
-              <span className={styles.summaryPrice}>€497/maand</span>
+              <span className={styles.summaryPrice}>€149/maand</span>
             </div>
             <div className={styles.summaryRow}>
               <span className={styles.summaryLabel}>Geldig tot</span>

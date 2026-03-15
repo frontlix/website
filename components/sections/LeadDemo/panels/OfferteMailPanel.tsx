@@ -48,7 +48,7 @@ export default function OfferteMailPanel({ isActive }: OfferteMailPanelProps) {
               </div>
               <div className={styles.quoteRow}>
                 <span className={styles.quoteLabel}>Maandelijks</span>
-                <span className={styles.quotePrice}>€497/maand</span>
+                <span className={styles.quotePrice}>€149/maand</span>
               </div>
               <div className={styles.quoteRow}>
                 <span className={styles.quoteLabel}>Inclusief</span>

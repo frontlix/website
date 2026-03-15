@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, Globe, Bot, Database, MessageCircle, Clock } from 'lucide-react'
 import styles from './OfferteGenPanel.module.css'
 
 interface OfferteGenPanelProps {
@@ -9,10 +9,10 @@ interface OfferteGenPanelProps {
 }
 
 const QUOTE_ROWS = [
-  { desc: 'Website & Lead Automatisering', price: '€497/maand' },
-  { desc: 'AI Lead opvolging', price: 'Inbegrepen' },
-  { desc: 'CRM integratie', price: 'Inbegrepen' },
-  { desc: 'WhatsApp automatisering', price: 'Inbegrepen' },
+  { desc: 'Lead automatisering', price: '€149/maand', icon: Globe, included: false },
+  { desc: 'AI Lead opvolging', price: 'Inbegrepen', icon: Bot, included: true },
+  { desc: 'Opzet integratie kosten', price: 'Inbegrepen', icon: Database, included: true },
+  { desc: 'WhatsApp automatisering', price: 'Inbegrepen', icon: MessageCircle, included: true },
 ]
 
 export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
@@ -109,8 +109,22 @@ export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
               <tbody>
                 {QUOTE_ROWS.map((row) => (
                   <tr key={row.desc}>
-                    <td>{row.desc}</td>
-                    <td>{row.price}</td>
+                    <td>
+                      <span className={styles.rowWithIcon}>
+                        <row.icon size={14} className={styles.rowIcon} />
+                        {row.desc}
+                      </span>
+                    </td>
+                    <td>
+                      {row.included ? (
+                        <span className={styles.includedBadge}>
+                          <Check size={10} />
+                          Inbegrepen
+                        </span>
+                      ) : (
+                        row.price
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -121,9 +135,12 @@ export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
           <div className={`${styles.docSection} ${sections.has(4) ? styles.docSectionVisible : ''}`}>
             <div className={styles.docTotal}>
               <span className={styles.docTotalLabel}>Totaal maandelijks:</span>
-              <span className={styles.docTotalValue}>€497/maand</span>
+              <span className={styles.docTotalValue}>€149/maand</span>
             </div>
-            <span className={styles.docFooter}>Geldig tot: 14 april 2026</span>
+            <span className={styles.validBadge}>
+              <Clock size={10} />
+              Geldig tot: 14 april 2026
+            </span>
           </div>
         </div>
       </div>
