@@ -1,41 +1,87 @@
 /* ─── Outer wrapper ──────────────────────────────────────────────────────────── */
 
 .wrapper {
-  padding: var(--section-padding);
+  padding: var(--space-4) var(--space-6) var(--space-16);
+  position: relative;
 }
 
 /* ─── Dashboard container ────────────────────────────────────────────────────── */
 
 .dashboard {
-  background: var(--color-surface);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
   border-radius: 16px;
-  overflow: hidden;
   max-width: var(--max-width);
   margin: 0 auto;
-  box-shadow: 0 0 60px rgba(26, 86, 255, 0.05);
 }
 
-/* ─── Header bar ─────────────────────────────────────────────────────────────── */
-
-.topBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--color-border);
-  gap: var(--space-4);
-  flex-wrap: wrap;
+/* Solid border */
+.dashboard::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 17px;
+  background: #00CFFF;
+  z-index: 0;
 }
 
-.topBarLeft {
+/* Light flare — right side */
+.dashboard::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -8px;
+  width: 80px;
+  height: 160px;
+  background: radial-gradient(ellipse at center, rgba(0, 207, 255, 0.6) 0%, transparent 70%);
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Light flare — left side */
+.wrapper::after {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: calc(50% - var(--max-width) / 2 - 8px);
+  width: 80px;
+  height: 160px;
+  background: radial-gradient(ellipse at center, rgba(0, 207, 255, 0.6) 0%, transparent 70%);
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── 2-column layout (30 / 70) ─────────────────────────────────────────────── */
+
+.columns {
+  display: grid;
+  grid-template-columns: 30% 70%;
+  min-height: 600px;
+  background: var(--color-surface);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Left column ───────────────────────────────────────────────────────────── */
+
+.leftCol {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  border-right: 1px solid var(--color-border);
+}
+
+/* ─── Section header (title + subtitle inside left col) ─────────────────────── */
+
+.sectionHeader {
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .heading {
-  font-size: var(--text-lg);
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text);
   margin: 0;
@@ -52,60 +98,7 @@
 .subtitle {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  margin: 0;
-}
-
-.topBarRight {
-  display: flex;
-  gap: var(--space-2);
-  flex-shrink: 0;
-}
-
-.btnGhost {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px 14px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.btnGhost:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-.btnPrimary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px 14px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-white);
-  background: var(--color-gradient);
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.btnPrimary:hover {
-  opacity: 0.85;
-}
-
-/* ─── 2-column layout ────────────────────────────────────────────────────────── */
-
-.columns {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: 560px;
+  margin: var(--space-1) 0 0;
 }
 
 /* ─── Panel container (right side) ───────────────────────────────────────────── */
@@ -121,6 +114,11 @@
   .columns {
     display: flex;
     flex-direction: column;
+  }
+
+  .leftCol {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .panelContainer {

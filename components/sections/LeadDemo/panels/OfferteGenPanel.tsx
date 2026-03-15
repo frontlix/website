@@ -30,7 +30,7 @@ export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
       return
     }
 
-    const duration = 3000 // 3 seconds for the bar
+    const duration = 1800 // 1.8 seconds for the bar
     const startTime = Date.now()
 
     /* Animate progress bar with requestAnimationFrame */
@@ -46,11 +46,11 @@ export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
     rafRef.current = requestAnimationFrame(tick)
 
     /* Reveal sections at thresholds */
-    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 1])), 750))   // 25%
-    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 2])), 1500))  // 50%
-    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 3])), 2400))  // 80%
-    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 4])), 3000))  // 100%
-    timers.current.push(setTimeout(() => setDone(true), 3200))
+    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 1])), 450))
+    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 2])), 900))
+    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 3])), 1400))
+    timers.current.push(setTimeout(() => setSections((s) => new Set([...s, 4])), 1800))
+    timers.current.push(setTimeout(() => setDone(true), 2000))
 
     return () => {
       timers.current.forEach(clearTimeout)
@@ -89,12 +89,16 @@ export default function OfferteGenPanel({ isActive }: OfferteGenPanelProps) {
 
           {/* Section 2: Client info (50%) */}
           <div className={`${styles.docSection} ${sections.has(2) ? styles.docSectionVisible : ''}`}>
-            <span className={styles.docClientLabel}>Opgesteld voor:</span>
-            <span className={styles.docClientName}>Marco Visser</span>
-            <span className={styles.docClientDetail}>
-              marco@visseradvies.nl<br />
-              Amsterdam
-            </span>
+            <div className={styles.docClientRow}>
+              <span className={styles.docClientLabel}>Opgesteld voor:</span>
+              <div className={styles.docClientInfo}>
+                <span className={styles.docClientName}>Marco Visser</span>
+                <span className={styles.docClientDetail}>
+                  marco@visseradvies.nl<br />
+                  Amsterdam
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Section 3: Quote table (80%) */}

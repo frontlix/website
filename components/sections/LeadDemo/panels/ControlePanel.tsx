@@ -19,8 +19,8 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
     }
 
     /* After 2s: press animation, then approved */
-    const t1 = setTimeout(() => setPhase('pressing'), 2000)
-    const t2 = setTimeout(() => setPhase('approved'), 2300)
+    const t1 = setTimeout(() => setPhase('pressing'), 1000)
+    const t2 = setTimeout(() => setPhase('approved'), 1300)
     timers.current.push(t1, t2)
 
     return () => {
@@ -40,7 +40,7 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Aan:</span>
-            <span className={styles.emailHeaderValue}>eigenaar@frontlix.nl</span>
+            <span className={styles.emailHeaderValue}>eigenaar@bedrijf.nl</span>
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Onderwerp:</span>
@@ -90,12 +90,12 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
                 ✓ Goedkeuren
               </button>
               <button className={styles.btnEdit} tabIndex={-1}>
-                ✎ Wijzigen
+                ✕ Afwijzen
               </button>
             </div>
           ) : (
             <div className={`${styles.approvedMessage} ${styles.approvedVisible}`}>
-              <Check size={18} />
+              <Check size={20} />
               Goedgekeurd door eigenaar
             </div>
           )}

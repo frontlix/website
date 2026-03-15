@@ -32,9 +32,8 @@
 .column {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
-  border-right: 1px solid var(--color-border);
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────────────── */
@@ -98,8 +97,8 @@
 .stepsList {
   display: flex;
   flex-direction: column;
-  padding: var(--space-3) var(--space-4);
-  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4);
+  gap: var(--space-5);
   overflow-y: auto;
   flex: 1;
   position: relative;
@@ -249,17 +248,11 @@
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .cardSubtitle {
   font-size: 10px;
   color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ─── KLAAR badge ────────────────────────────────────────────────────────────── */
@@ -286,9 +279,7 @@
 
 @media (max-width: 768px) {
   .column {
-    border-right: none;
     height: auto;
-    border-bottom: 1px solid var(--color-border);
   }
 
   .stepsList {

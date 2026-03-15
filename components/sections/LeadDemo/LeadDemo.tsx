@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Play, RotateCcw } from 'lucide-react'
 import styles from './LeadDemo.module.css'
 import Pipeline from './Pipeline'
 import FormPanel from './panels/FormPanel'
@@ -11,8 +10,8 @@ import ControlePanel from './panels/ControlePanel'
 import OfferteMailPanel from './panels/OfferteMailPanel'
 
 /* Variable duration per step (in ms) */
-const STEP_DURATIONS = [4500, 6000, 5000, 5000, 4000]
-const RESTART_DELAY = 3000
+const STEP_DURATIONS = [1800, 8000, 3000, 2500, 1200]
+const RESTART_DELAY = 1000
 
 export default function LeadDemo() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -97,32 +96,22 @@ export default function LeadDemo() {
   return (
     <section ref={sectionRef} className={styles.wrapper}>
       <div className={styles.dashboard}>
-        {/* Header */}
-        <div className={styles.topBar}>
-          <div className={styles.topBarLeft}>
-            <h2 className={styles.heading}>
-              Lead kwalificatie{' '}
-              <span className={styles.accentWord}>demo</span>
-            </h2>
-            <p className={styles.subtitle}>
-              Van formulier tot offerte · volledig automatisch
-            </p>
-          </div>
-          <div className={styles.topBarRight}>
-            <button className={styles.btnGhost} onClick={resetAndStart}>
-              <RotateCcw size={14} />
-              Opnieuw
-            </button>
-            <button className={styles.btnPrimary} onClick={resetAndStart}>
-              <Play size={14} />
-              Opnieuw
-            </button>
-          </div>
-        </div>
-
-        {/* 2-column layout */}
         <div className={styles.columns}>
-          <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
+          {/* Left column: title + pipeline */}
+          <div className={styles.leftCol}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.heading}>
+                Zo werkt{' '}
+                <span className={styles.accentWord}>het!</span>
+              </h2>
+              <p className={styles.subtitle}>
+                Van formulier tot offerte · volledig automatisch
+              </p>
+            </div>
+            <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
+          </div>
+
+          {/* Right column: animation panels */}
           <div className={styles.panelContainer}>
             <FormPanel key={`form-${resetKey}`} isActive={currentStep === 1} />
             <AIChatPanel key={`ai-${resetKey}`} isActive={currentStep === 2} />

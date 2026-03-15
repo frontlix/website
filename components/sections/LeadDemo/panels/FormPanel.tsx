@@ -27,70 +27,23 @@ for (const f of FIELDS) {
 const TOTAL_CHARS = total
 
 export default function FormPanel({ isActive }: FormPanelProps) {
-  const [charsTyped, setCharsTyped] = useState(0)
   const [submitState, setSubmitState] = useState<'idle' | 'pressing' | 'done'>('idle')
-  const timers = useRef<ReturnType<typeof setTimeout | typeof setInterval>[]>([])
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   useEffect(() => {
     if (!isActive) return
 
-    setCharsTyped(0)
     setSubmitState('idle')
 
-    let currentFieldIdx = 0
-    let charCount = 0
-
-    const typeNextChar = () => {
-      charCount++
-      setCharsTyped(charCount)
-
-      if (charCount >= TOTAL_CHARS) {
-        /* All fields typed — show submit button */
-        clearInterval(interval)
-        const t1 = setTimeout(() => setSubmitState('pressing'), 400)
-        const t2 = setTimeout(() => setSubmitState('done'), 700)
-        timers.current.push(t1, t2)
-        return
-      }
-
-      /* Check if we just completed a field — pause before next */
-      if (charCount >= FIELD_BOUNDARIES[currentFieldIdx]) {
-        currentFieldIdx++
-        clearInterval(interval)
-        const t = setTimeout(() => {
-          interval = setInterval(typeNextChar, 15)
-          timers.current.push(interval as unknown as ReturnType<typeof setTimeout>)
-        }, 200)
-        timers.current.push(t)
-      }
-    }
-
-    /* Start typing after a brief delay */
-    let interval: ReturnType<typeof setInterval>
-    const startTimer = setTimeout(() => {
-      interval = setInterval(typeNextChar, 15)
-      timers.current.push(interval as unknown as ReturnType<typeof setTimeout>)
-    }, 300)
-    timers.current.push(startTimer)
+    const t1 = setTimeout(() => setSubmitState('pressing'), 800)
+    const t2 = setTimeout(() => setSubmitState('done'), 1100)
+    timers.current.push(t1, t2)
 
     return () => {
       timers.current.forEach(clearTimeout)
       timers.current = []
     }
   }, [isActive])
-
-  /* Derive per-field text from total charsTyped */
-  const getFieldText = (fieldIdx: number): string => {
-    const fieldStart = fieldIdx === 0 ? 0 : FIELD_BOUNDARIES[fieldIdx - 1]
-    const fieldEnd = FIELD_BOUNDARIES[fieldIdx]
-
-    if (charsTyped <= fieldStart) return ''
-    if (charsTyped >= fieldEnd) return FIELDS[fieldIdx].value
-    return FIELDS[fieldIdx].value.slice(0, charsTyped - fieldStart)
-  }
-
-  /* Which field is currently being typed */
-  const activeFieldIdx = FIELD_BOUNDARIES.findIndex((boundary) => charsTyped < boundary)
 
   return (
     <div className={`${styles.panel} ${isActive ? styles.panelActive : ''}`}>
@@ -108,8 +61,6 @@ export default function FormPanel({ isActive }: FormPanelProps) {
         {/* Form fields */}
         <div className={styles.formBody}>
           {FIELDS.map((field, idx) => {
-            const text = getFieldText(idx)
-            const isTyping = activeFieldIdx === idx && charsTyped > 0
             const isTextarea = field.type === 'textarea'
             const isSelect = field.type === 'select'
 
@@ -121,12 +72,11 @@ export default function FormPanel({ isActive }: FormPanelProps) {
               >
                 <span className={styles.fieldLabel}>{field.label}</span>
                 <div
-                  className={`${styles.fieldInput} ${isTyping ? styles.fieldInputActive : ''} ${
+                  className={`${styles.fieldInput} ${
                     isSelect ? styles.fieldSelect : ''
                   } ${isTextarea ? styles.fieldTextarea : ''}`}
                 >
-                  {text || '\u00A0'}
-                  {isTyping && <span className={styles.cursor} />}
+                  {field.value}
                   {isSelect && (
                     <span className={styles.fieldSelectIcon}>
                       <ChevronDown size={14} />

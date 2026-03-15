@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, Video, Phone, Camera, Plus, Mic } from 'lucide-react'
+import { ChevronLeft, Video, Phone, Camera, Plus, Mic, ImageIcon, Check } from 'lucide-react'
 import Image from 'next/image'
 import IPhoneMockup from '../IPhoneMockup'
 import styles from './AIChatPanel.module.css'
@@ -16,36 +16,46 @@ interface ChatMessage {
   text: string
   time: string
   ticks?: boolean
+  type?: 'text' | 'photos'
+  greenCheck?: boolean
 }
 
 const MESSAGES: ChatMessage[] = [
   {
     id: 1,
     side: 'ai',
-    text: 'Hoi Marco! 👋 Ik ben de assistent van Frontlix. Je hebt zojuist interesse getoond in onze diensten — fijn dat je er bent. Mag ik je een paar korte vragen stellen?',
+    text: 'Hoi Thomas! 👋 Ik ben de assistent van Installatiebedrijf De Vries. Je hebt zojuist een aanvraag gedaan — top! Ik stel je zo een offerte op. Mag ik je een paar korte vragen stellen?',
     time: '14:01',
   },
-  { id: 2, side: 'user', text: 'Ja hoor, ga je gang.', time: '14:02', ticks: true },
+  { id: 2, side: 'user', text: 'Ja natuurlijk!', time: '14:02', ticks: true },
   {
     id: 3,
     side: 'ai',
-    text: 'Super. Hoe gaat het nu met de opvolging van nieuwe leads bij jullie? Ik vraag het eerlijk — geen perfect antwoord nodig. 😊',
+    text: 'Super. Om hoeveel m² gaat het ongeveer? Denk aan je oprit, terras of pad. 🏡',
     time: '14:02',
   },
-  {
-    id: 4,
-    side: 'user',
-    text: 'Eerlijk? Niet geweldig. We reageren soms pas na een dag of twee. Dan is de interesse al weg.',
-    time: '14:03',
-    ticks: true,
-  },
+  { id: 4, side: 'user', text: 'Ik schat zo\'n 60 m²', time: '14:03', ticks: true },
   {
     id: 5,
     side: 'ai',
-    text: 'Dat herken ik. En dat is precies waarom zoveel MKB-bedrijven potentiële klanten mislopen — niet door gebrek aan kwaliteit, maar door snelheid.',
+    text: 'Duidelijk! Wanneer wil je dit het liefst gedaan hebben?',
     time: '14:03',
   },
-  { id: 6, side: 'user', text: 'Ja klopt, wat kunnen jullie precies doen?', time: '14:04', ticks: true },
+  { id: 6, side: 'user', text: 'Het liefst voor het einde van de maand.', time: '14:04', ticks: true },
+  {
+    id: 7,
+    side: 'ai',
+    text: 'Goed te horen. Heb je al foto\'s van de situatie? Dan kan ik de offerte nog nauwkeuriger maken. Stuur ze gerust via WhatsApp! 📸',
+    time: '14:04',
+  },
+  { id: 8, side: 'user', text: '', time: '14:05', ticks: true, type: 'photos' },
+  {
+    id: 9,
+    side: 'ai',
+    text: '✅ Bedankt voor de foto\'s! Op basis van jouw aanvraag heb ik alvast een offerte opgesteld. Je ontvangt hem zo in je mail.\n\nIemand van het team neemt vandaag nog contact met je op om alles door te nemen. 🙌',
+    time: '14:06',
+    greenCheck: true,
+  },
 ]
 
 export default function AIChatPanel({ isActive }: AIChatPanelProps) {
@@ -78,11 +88,11 @@ export default function AIChatPanel({ isActive }: AIChatPanelProps) {
             setVisibleCount(i + 1)
           }, msgDelay)
         )
-        delay += 600
+        delay += 500
       } else {
         const msgDelay = delay
         timers.current.push(setTimeout(() => setVisibleCount(i + 1), msgDelay))
-        delay += 600
+        delay += 500
       }
     }
 
@@ -100,17 +110,17 @@ export default function AIChatPanel({ isActive }: AIChatPanelProps) {
 
   return (
     <div className={`${styles.panel} ${isActive ? styles.panelActive : ''}`}>
-      <IPhoneMockup statusBarTime="14:04" statusBarVariant="light">
+      <IPhoneMockup statusBarTime="14:01" statusBarVariant="light">
         {/* WhatsApp header */}
         <div className={styles.waHeader}>
           <span className={styles.waBackArrow}>
             <ChevronLeft size={22} />
           </span>
           <div className={styles.waAvatar}>
-            <Image src="/logo.png" alt="Frontlix" width={30} height={30} className={styles.waAvatarImg} />
+            <Image src="/logo.png" alt="De Vries" width={30} height={30} className={styles.waAvatarImg} />
           </div>
           <div className={styles.waContactInfo}>
-            <span className={styles.waContactName}>Frontlix</span>
+            <span className={styles.waContactName}>Installatiebedrijf De Vries</span>
             <span className={styles.waContactStatus}>online</span>
           </div>
           <div className={styles.waHeaderIcons}>
@@ -139,11 +149,33 @@ export default function AIChatPanel({ isActive }: AIChatPanelProps) {
                     msg.side === 'user' ? styles.bubbleUser : styles.bubbleAI
                   }`}
                 >
-                  <span>{msg.text}</span>
-                  <span className={styles.bubbleMeta}>
-                    <span className={styles.bubbleTime}>{msg.time}</span>
-                    {msg.ticks && <span className={styles.ticks}>✓✓</span>}
-                  </span>
+                  {msg.type === 'photos' ? (
+                    <div className={styles.photoGrid}>
+                      <div className={styles.photoPlaceholder}>
+                        <ImageIcon size={18} strokeWidth={1.5} />
+                      </div>
+                      <div className={styles.photoPlaceholder}>
+                        <ImageIcon size={18} strokeWidth={1.5} />
+                      </div>
+                      <span className={styles.bubbleMeta}>
+                        <span className={styles.bubbleTime}>{msg.time}</span>
+                        {msg.ticks && <span className={styles.ticks}>✓✓</span>}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <span>{msg.text}</span>
+                      <span className={styles.bubbleMeta}>
+                        <span className={styles.bubbleTime}>{msg.time}</span>
+                        {msg.ticks && <span className={styles.ticks}>✓✓</span>}
+                        {msg.greenCheck && (
+                          <span className={styles.greenCheck}>
+                            <Check size={10} strokeWidth={3} />
+                          </span>
+                        )}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             )
