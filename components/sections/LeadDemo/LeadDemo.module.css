@@ -6,23 +6,45 @@
   overflow: visible;
 }
 
+/* ─── Glow flares (flow-positioned next to .columns) ─────────────────────────── */
+
+.flareLeft,
+.flareRight {
+  width: 120px;
+  height: 100%;
+  object-fit: fill;
+  opacity: 0.8;
+  pointer-events: none;
+  flex-shrink: 0;
+  align-self: stretch;
+  margin-left: -120px;
+}
+
+.flareLeft {
+  margin-left: 0;
+  margin-right: -120px;
+}
+
+/* Right flare: rotated so it points inward (left) */
+.flareRight {
+  transform: rotate(180deg);
+}
+
+/* Hide flares on mobile */
+@media (max-width: 768px) {
+  .flareLeft,
+  .flareRight {
+    display: none;
+  }
+}
+
 /* ─── Dashboard container ────────────────────────────────────────────────────── */
 
 .dashboard {
-  position: relative;
-  border-radius: 16px;
+  display: flex;
+  align-items: center;
   max-width: var(--max-width);
   margin: 0 auto;
-}
-
-/* Border with built-in flare glow — stays within bounds, not clipped */
-.dashboard::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 17px;
-  background: #00e6a0;
-  z-index: 0;
 }
 
 
@@ -35,8 +57,10 @@
   background: var(--color-surface);
   border-radius: 14px;
   overflow: hidden;
-  position: relative;
-  z-index: 1;
+  border: 1px solid rgba(26, 86, 255, 0.35);
+  box-shadow: 0 0 20px rgba(0, 207, 255, 0.1);
+  flex: 1;
+  min-width: 0;
 }
 
 /* ─── Left column ───────────────────────────────────────────────────────────── */
@@ -98,4 +122,5 @@
   .panelContainer {
     min-height: 500px;
   }
+
 }

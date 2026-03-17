@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import styles from './LeadDemo.module.css'
 import Pipeline from './Pipeline'
 import FormPanel from './panels/FormPanel'
@@ -96,6 +97,16 @@ export default function LeadDemo() {
   return (
     <section ref={sectionRef} className={styles.wrapper}>
       <div className={styles.dashboard}>
+        {/* Glow flare hugging the left edge of the dashboard */}
+        <Image
+          src="/images/flare-blue.png"
+          alt=""
+          aria-hidden="true"
+          width={400}
+          height={800}
+          className={styles.flareRight}
+        />
+
         <div className={styles.columns}>
           {/* Left column: title + pipeline */}
           <div className={styles.leftCol}>
@@ -120,6 +131,16 @@ export default function LeadDemo() {
             <OfferteMailPanel key={`mail-${resetKey}`} isActive={currentStep === 5} />
           </div>
         </div>
+
+        {/* Glow flare hugging the right edge of the dashboard */}
+        <Image
+          src="/images/flare-blue.png"
+          alt=""
+          aria-hidden="true"
+          width={400}
+          height={800}
+          className={styles.flareLeft}
+        />
       </div>
     </section>
   )
