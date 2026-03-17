@@ -10,24 +10,25 @@
 
 .flareLeft,
 .flareRight {
-  width: 120px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
   height: 100%;
   object-fit: fill;
   opacity: 0.8;
   pointer-events: none;
-  flex-shrink: 0;
-  align-self: stretch;
-  margin-left: -120px;
 }
 
-.flareLeft {
-  margin-left: 0;
-  margin-right: -120px;
-}
-
-/* Right flare: rotated so it points inward (left) */
+/* Left flare (sits on the left outer edge) */
 .flareRight {
-  transform: rotate(180deg);
+  right: 100%;
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* Right flare (sits on the right outer edge) */
+.flareLeft {
+  left: 100%;
 }
 
 /* Hide flares on mobile */
@@ -45,6 +46,7 @@
   align-items: center;
   max-width: var(--max-width);
   margin: 0 auto;
+  position: relative;
 }
 
 
