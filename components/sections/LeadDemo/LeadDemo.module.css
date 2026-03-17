@@ -11,7 +11,7 @@
 .flareLeft,
 .flareRight {
   position: absolute;
-  top: 50%;
+  top: 35%;
   transform: translateY(-50%);
   width: 200px;
   height: 100%;
@@ -23,7 +23,7 @@
 /* Left flare (sits on the left outer edge) */
 .flareRight {
   right: 100%;
-  transform: translateY(-50%) rotate(180deg);
+  transform: translateY(-50%) scaleX(-1);
 }
 
 /* Right flare (sits on the right outer edge) */
