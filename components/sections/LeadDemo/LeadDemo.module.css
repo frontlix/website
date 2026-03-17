@@ -14,10 +14,13 @@
   top: 35%;
   transform: translateY(-50%);
   width: 200px;
-  height: 100%;
+  height: 130%;
   object-fit: fill;
   opacity: 0.8;
   pointer-events: none;
+  clip-path: inset(23% 0% 0% 0%);
+  mask-image: linear-gradient(to bottom, transparent 23%, black 40%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 23%, black 40%, black 80%, transparent 100%);
 }
 
 /* Left flare (sits on the left outer edge) */
