@@ -1,8 +1,9 @@
 /* ─── Outer wrapper ──────────────────────────────────────────────────────────── */
 
 .wrapper {
-  padding: var(--space-4) var(--space-6) var(--space-16);
+  padding: var(--space-16) var(--space-6) var(--space-16);
   position: relative;
+  overflow: visible;
 }
 
 /* ─── Dashboard container ────────────────────────────────────────────────────── */
@@ -14,43 +15,16 @@
   margin: 0 auto;
 }
 
-/* Solid border */
+/* Border with built-in flare glow — stays within bounds, not clipped */
 .dashboard::before {
   content: '';
   position: absolute;
-  inset: -1.5px;
+  inset: -1px;
   border-radius: 17px;
-  background: #00CFFF;
+  background: #00e6a0;
   z-index: 0;
 }
 
-/* Light flare — right side */
-.dashboard::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: -8px;
-  width: 80px;
-  height: 160px;
-  background: radial-gradient(ellipse at center, rgba(0, 207, 255, 0.6) 0%, transparent 70%);
-  transform: translateY(-50%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Light flare — left side */
-.wrapper::after {
-  content: '';
-  position: absolute;
-  top: 40%;
-  left: calc(50% - var(--max-width) / 2 - 8px);
-  width: 80px;
-  height: 160px;
-  background: radial-gradient(ellipse at center, rgba(0, 207, 255, 0.6) 0%, transparent 70%);
-  transform: translateY(-50%);
-  z-index: 0;
-  pointer-events: none;
-}
 
 /* ─── 2-column layout (30 / 70) ─────────────────────────────────────────────── */
 
