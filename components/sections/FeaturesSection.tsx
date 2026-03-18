@@ -1,80 +1,49 @@
-import { Globe, Search, AppWindow, Paintbrush, Zap, Shield } from 'lucide-react'
 import styles from './FeaturesSection.module.css'
 
-const features = [
+const voordelen = [
   {
-    icon: Globe,
-    title: 'Webdevelopment',
+    number: '60 sec',
+    title: 'Reactietijd',
     description:
-      'Razendsnelle, moderne websites gebouwd met Next.js en de nieuwste webtechnologieën.',
+      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp bericht. Voordat de concurrent ook maar zijn telefoon pakt.',
   },
   {
-    icon: Search,
-    title: 'SEO & Marketing',
+    number: '24/7',
+    title: 'Altijd beschikbaar',
     description:
-      'Van technische SEO tot content-strategie: wij zorgen dat jij gevonden wordt.',
+      'Ook op zaterdagavond of vroeg in de ochtend. Het systeem slaapt nooit en mist geen enkele aanvraag.',
   },
   {
-    icon: AppWindow,
-    title: 'Web Applicaties',
+    number: '100%',
+    title: 'Op maat gebouwd',
     description:
-      'Op maat gemaakte web-apps die jouw bedrijfsprocessen stroomlijnen en automatiseren.',
+      'Geen generieke chatbot. Wij bouwen het systeem specifiek voor jouw bedrijf, jouw diensten en jouw klanten.',
   },
   {
-    icon: Paintbrush,
-    title: 'UI/UX Design',
+    number: '0 uur',
+    title: 'Handmatig werk',
     description:
-      'Gebruikerservaringen die converteren — doordacht ontwerp, pixel-perfect uitgewerkt.',
+      'Van eerste berichtje tot kant-en-klare offerte — volledig automatisch. Jij hoeft er niets voor te doen.',
   },
-  {
-    icon: Zap,
-    title: 'Prestatie-optimalisatie',
-    description:
-      'Sneller laden, hogere scores, betere rankingen. Elke milliseconde telt.',
-  },
-  {
-    icon: Shield,
-    title: 'Onderhoud & Support',
-    description:
-      'Geen zorgen meer over updates, beveiliging of downtime — wij regelen het.',
-  },
-]
-
-const stats = [
-  { number: '15+', label: 'Projecten opgeleverd' },
-  { number: '100%', label: 'Klanttevredenheid' },
 ]
 
 export default function FeaturesSection() {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="waarom-frontlix">
       <div className={styles.inner}>
         <div className={styles.header}>
-          <h2 className={styles.heading}>
-            Geavanceerde oplossingen, meetbare resultaten
-          </h2>
+          <h2 className={styles.heading}>Waarom Frontlix?</h2>
+          <p className={styles.subtitle}>
+            Alles wat jij nodig hebt om nooit meer een lead te missen
+          </p>
         </div>
 
         <div className={styles.grid}>
-          {features.map((feature) => {
-            const Icon = feature.icon
-            return (
-              <div key={feature.title} className={styles.card}>
-                <div className={styles.cardIcon}>
-                  <Icon size={22} />
-                </div>
-                <h3 className={styles.cardTitle}>{feature.title}</h3>
-                <p className={styles.cardDescription}>{feature.description}</p>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className={styles.statsRow}>
-          {stats.map((stat) => (
-            <div key={stat.number} className={styles.statItem}>
-              <span className={styles.statNumber}>{stat.number}</span>
-              <span className={styles.statLabel}>{stat.label}</span>
+          {voordelen.map((item) => (
+            <div key={item.title} className={styles.card}>
+              <span className={styles.cardNumber}>{item.number}</span>
+              <h3 className={styles.cardTitle}>{item.title}</h3>
+              <p className={styles.cardDescription}>{item.description}</p>
             </div>
           ))}
         </div>

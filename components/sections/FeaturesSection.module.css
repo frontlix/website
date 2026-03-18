@@ -21,21 +21,28 @@
   color: var(--color-text);
 }
 
+.subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  margin-top: var(--space-4);
+  line-height: 1.6;
+}
+
+/* Mobile-first: 2 kolommen */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
-  margin-bottom: var(--space-16);
 }
 
 .card {
   padding: var(--space-6);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
 }
 
@@ -45,15 +52,11 @@
   transform: translateY(-2px);
 }
 
-.cardIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: rgba(26, 86, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-accent);
+.cardNumber {
+  font-size: var(--text-3xl);
+  font-weight: 900;
+  color: #2563eb;
+  line-height: 1;
 }
 
 .cardTitle {
@@ -68,60 +71,27 @@
   line-height: 1.7;
 }
 
-.statsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  padding: var(--space-8);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-}
-
-.statItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  text-align: center;
-}
-
-.statNumber {
-  font-size: var(--text-4xl);
-  font-weight: 900;
-  background: var(--color-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-}
-
-.statLabel {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
 @media (min-width: 768px) {
   .heading {
     font-size: var(--text-4xl);
   }
 
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
+  .subtitle {
+    font-size: var(--text-xl);
   }
 
-  .statsRow {
-    gap: var(--space-16);
-    padding: var(--space-12);
-  }
-
-  .statNumber {
-    font-size: var(--text-5xl);
+  .cardNumber {
+    font-size: var(--text-4xl);
   }
 }
 
+/* Desktop: 4 kolommen */
 @media (min-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .cardNumber {
+    font-size: var(--text-5xl);
   }
 }

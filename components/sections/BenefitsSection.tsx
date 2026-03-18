@@ -3,57 +3,50 @@ import styles from './BenefitsSection.module.css'
 
 const cards = [
   {
-    title: 'Duidelijke communicatie, altijd',
+    title: 'Reactietijd',
     description:
-      'Geen vage beloftes. Jij weet altijd waar je project staat en wat de volgende stap is.',
+      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp bericht. Voordat de concurrent ook maar zijn telefoon pakt.',
     visual: (
       <div className={styles.visualMetric}>
-        <span className={styles.visualLabel}>Reactietijd</span>
-        <span className={styles.visualValue}>&lt; 2u</span>
-        <span className={styles.visualSub}>gemiddeld op werkdagen</span>
+        <span className={styles.visualLabel}>Gemiddelde reactie</span>
+        <span className={styles.visualValue}>60 sec</span>
+        <span className={styles.visualSub}>op elke nieuwe lead</span>
       </div>
     ),
   },
   {
-    title: 'Projecten op tijd en binnen budget',
+    title: 'Altijd beschikbaar',
     description:
-      'Gestructureerde aanpak met vaste mijlpalen. Geen verrassingen achteraf.',
+      'Ook op zaterdagavond of vroeg in de ochtend. Het systeem slaapt nooit en mist geen enkele aanvraag.',
     visual: (
       <div className={styles.visualMetric}>
-        <span className={styles.visualLabel}>On-time delivery</span>
-        <span className={styles.visualValue}>97%</span>
-        <span className={styles.visualSub}>van alle projecten</span>
+        <span className={styles.visualLabel}>Beschikbaarheid</span>
+        <span className={styles.visualValue}>24/7</span>
+        <span className={styles.visualSub}>ook buiten werktijden</span>
       </div>
     ),
   },
   {
-    title: 'Technisch sterk, visueel verbluffend',
+    title: 'Op maat gebouwd',
     description:
-      'Wij combineren solide code met strak design — zodat jouw product presteert én indruk maakt.',
+      'Geen generieke chatbot. Wij bouwen het systeem specifiek voor jouw bedrijf, jouw diensten en jouw klanten.',
     visual: (
-      <div className={styles.visualBars}>
-        <div className={styles.barRow}>
-          <span className={styles.barLabel}>Performance</span>
-          <div className={styles.barTrack}><div className={`${styles.barFill} ${styles.barFill94}`} /></div>
-          <span className={styles.barVal}>94</span>
-        </div>
-        <div className={styles.barRow}>
-          <span className={styles.barLabel}>SEO</span>
-          <div className={styles.barTrack}><div className={`${styles.barFill} ${styles.barFill98}`} /></div>
-          <span className={styles.barVal}>98</span>
-        </div>
+      <div className={styles.visualMetric}>
+        <span className={styles.visualLabel}>Volledig gepersonaliseerd</span>
+        <span className={styles.visualValue}>100%</span>
+        <span className={styles.visualSub}>voor jouw bedrijf</span>
       </div>
     ),
   },
   {
-    title: 'Langdurige samenwerking',
+    title: 'Handmatig werk',
     description:
-      'We bouwen geen eenmalige producten — we groeien mee met jouw bedrijf.',
+      'Van eerste berichtje tot kant-en-klare offerte — volledig automatisch. Jij hoeft er niets voor te doen.',
     visual: (
       <div className={styles.visualMetric}>
-        <span className={styles.visualLabel}>Klanten die terugkomen</span>
-        <span className={styles.visualValue}>85%</span>
-        <span className={styles.visualSub}>kiest voor een vervolgopdracht</span>
+        <span className={styles.visualLabel}>Tijd die jij bespaart</span>
+        <span className={styles.visualValue}>0 uur</span>
+        <span className={styles.visualSub}>van lead tot offerte</span>
       </div>
     ),
   },
@@ -73,13 +66,15 @@ export default function BenefitsSection() {
               <span className={styles.label}>Waarom Frontlix?</span>
             </div>
             <h2 className={styles.heading}>
-              Neem betere beslissingen, zonder uren te verspillen aan zoekopdrachten
+              Jouw concurrenten reageren te laat.
+              <br />
+              Jij niet meer.
             </h2>
           </div>
           <p className={styles.description}>
-            In een wereld vol digitale keuzes is het moeilijk om de juiste partner te vinden.{' '}
-            <strong>Bij Frontlix geloven we dat technologie pas waarde heeft als het jouw doelen dient</strong>{' '}
-            — niet andersom. Geen overbodige complexiteit, geen vage beloftes.
+            Elke dag lopen bedrijven opdrachten mis omdat ze te laat reageren.{' '}
+            <strong>Frontlix reageert binnen 60 seconden op elke nieuwe lead — persoonlijk, automatisch en met een kant-en-klare offerte.</strong>{' '}
+            Zonder dat jij er iets voor hoeft te doen.
           </p>
         </div>
 
@@ -97,7 +92,7 @@ export default function BenefitsSection() {
         {/* CTA */}
         <div className={styles.cta}>
           <Button href="/contact" variant="primary" size="lg">
-            Start jouw project
+            Plan een gratis kennismakingsgesprek →
           </Button>
         </div>
       </div>
