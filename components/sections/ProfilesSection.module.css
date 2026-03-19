@@ -107,6 +107,19 @@
   flex-shrink: 0;
 }
 
+.cardCta {
+  margin-top: auto;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.cardCta:hover {
+  opacity: 0.8;
+}
+
 @media (min-width: 768px) {
   .heading {
     font-size: var(--text-4xl);

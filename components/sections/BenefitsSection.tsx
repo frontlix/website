@@ -5,7 +5,7 @@ const cards = [
   {
     title: 'Reactietijd',
     description:
-      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp-bericht.',
+      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp bericht.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Gemiddelde reactie</span>
@@ -29,7 +29,7 @@ const cards = [
   {
     title: 'Op maat gebouwd',
     description:
-      'Geen standaard chatbot — specifiek gebouwd voor jouw bedrijf en diensten.',
+      'Geen standaard chatbot, specifiek gebouwd voor jouw bedrijf en diensten.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Maatwerk</span>
@@ -72,7 +72,7 @@ export default function BenefitsSection() {
             </h2>
           </div>
           <p className={styles.description}>
-            <strong>Binnen 60 seconden</strong> krijgt elke nieuwe lead een persoonlijk WhatsApp-bericht met een kant-en-klare offerte. Volledig automatisch — jij hoeft niets te doen.
+            <strong>Elke nieuwe lead</strong> krijgt automatisch een persoonlijk WhatsApp-bericht met offerte. Binnen 60 seconden, 24/7, zonder dat jij iets hoeft te doen.
           </p>
         </div>
 

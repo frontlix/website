@@ -5,19 +5,19 @@ const steps = [
     number: '01',
     title: 'Intake & Strategie',
     description:
-      'We beginnen met een grondige analyse van jouw doelen, doelgroep en marktpositie.',
+      'In een gratis strategiegesprek brengen we jouw doelen en kansen in kaart — binnen een week heb je een concreet plan.',
   },
   {
     number: '02',
     title: 'Design & Development',
     description:
-      'Van wireframe tot pixel-perfect product — wij bouwen snel, schoon en schaalbaar.',
+      'We ontwerpen en bouwen jouw website of platform in 2-4 weken — met tussentijdse feedback zodat het resultaat 100% klopt.',
   },
   {
     number: '03',
     title: 'Launch & Optimalisatie',
     description:
-      'Na de lancering blijven we meten, verbeteren en optimaliseren voor maximale groei.',
+      'Na livegang monitoren we prestaties en sturen we bij op basis van data — zodat je resultaten blijven groeien.',
   },
 ]
 
@@ -27,7 +27,7 @@ export default function StepsSection() {
       <div className={styles.inner}>
         <div className={styles.header}>
           <h2 className={styles.heading}>
-            Een drietraps aanpak voor heldere digitale groei
+            Van idee tot resultaat in drie stappen
           </h2>
         </div>
 

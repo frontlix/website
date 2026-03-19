@@ -4,19 +4,19 @@ import styles from './ProfilesSection.module.css'
 const profiles = [
   {
     icon: Rocket,
-    title: 'Startups & Ondernemers',
+    title: 'Groeiende Bedrijven',
     description:
-      'Je hebt een idee of jonge onderneming en hebt een sterke digitale basis nodig die kan meegroeien.',
-    features: ['MVP-websites', 'Branding', 'Snelle lancering', 'Schaalbare architectuur'],
+      'Je groeit snel en merkt dat handmatig werk niet meer schaalt. Leads opvolgen, offertes maken, klanten onboarden — het kost te veel tijd.',
+    features: ['Automatische leadopvolging', 'AI-chatbot voor klantvragen', 'Workflow-automatisering', 'Slimme e-mailflows'],
     variant: 'cardGradient',
   },
   {
     icon: Building2,
     title: 'Gevestigde Bedrijven',
     description:
-      'Je hebt een bestaand bedrijf en wilt jouw digitale aanwezigheid naar een hoger niveau tillen.',
-    features: ['Redesign & migratie', 'Prestatie-optimalisatie', 'SEO-strategie', 'Maatwerk functionaliteit'],
-    variant: 'cardDefault',
+      'Je hebt een draaiend bedrijf maar weet dat er efficiënter kan. Repetitieve taken kosten je team uren per week die beter besteed kunnen worden.',
+    features: ['Procesoptimalisatie met AI', 'Rapportage-automatisering', 'Integratie met bestaande tools', 'Op maat gebouwde AI-oplossingen'],
+    variant: 'cardGradient',
   },
 ]
 
@@ -26,7 +26,7 @@ export default function ProfilesSection() {
       <div className={styles.inner}>
         <div className={styles.header}>
           <h2 className={styles.heading}>
-            Twee type klanten, één ambitie: digitaal groeien
+            Voor wie is Frontlix?
           </h2>
         </div>
 
@@ -51,6 +51,9 @@ export default function ProfilesSection() {
                     </span>
                   ))}
                 </div>
+                <a href="#contact" className={styles.cardCta}>
+                  Bekijk hoe we helpen →
+                </a>
               </div>
             )
           })}
