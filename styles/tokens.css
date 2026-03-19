@@ -1,21 +1,21 @@
 :root {
-  --color-bg:          #000000;
-  --color-surface:     #111111;
-  --color-surface-2:   #1A1A1A;
+  --color-bg:          #FFFFFF;
+  --color-surface:     #F9F9F9;
+  --color-surface-2:   #F0F0F0;
   --color-primary:     #1A56FF;
   --color-accent:      #00CFFF;
   --color-gradient:    linear-gradient(135deg, #1A56FF, #00CFFF);
-  --color-text:        #F0F0F0;
-  --color-text-muted:  #888888;
-  --color-border:            rgba(255, 255, 255, 0.08);
+  --color-text:        #1A1A1A;
+  --color-text-muted:  #555555;
+  --color-border:            rgba(0, 0, 0, 0.10);
   --color-white:             #FFFFFF;
   --color-black:             #000000;
 
   /* Semi-transparent card variants */
-  --color-card-bg:           rgba(255, 255, 255, 0.03);
+  --color-card-bg:           #F5F7FA;
   --color-card-hover-border: rgba(26, 86, 255, 0.30);
-  --color-card-hover-bg:     rgba(26, 86, 255, 0.04);
-  --color-track-bg:          rgba(255, 255, 255, 0.06);
+  --color-card-hover-bg:     rgba(26, 86, 255, 0.06);
+  --color-track-bg:          rgba(0, 0, 0, 0.05);
 
   --font-heading: 'Inter', sans-serif;
   --font-body:    'Inter', sans-serif;

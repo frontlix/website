@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  background: #080808;
+  background: #FFFFFF;
   overflow: clip;
   overflow-clip-margin: 120px;
   padding: calc(68px + var(--space-4)) var(--space-6) 0;
@@ -17,7 +17,7 @@
   left: 0;
   right: 0;
   height: 200px;
-  background: linear-gradient(to bottom, transparent, #080808);
+  background: linear-gradient(to bottom, transparent, #FFFFFF);
   pointer-events: none;
   z-index: 1;
 }
@@ -54,17 +54,17 @@
   letter-spacing: -0.03em;
   line-height: 1.08;
   margin-bottom: var(--space-6);
-  color: #ffffff;
+  color: #1A1A1A;
 }
 
 .headingBlue {
-  color: #2563eb;
+  color: #1A56FF;
   display: inline;
 }
 
 .subtext {
   font-size: var(--text-base);
-  color: rgba(255, 255, 255, 0.55);
+  color: #444444;
   line-height: 1.7;
   margin-bottom: var(--space-4);
   max-width: 560px;
@@ -87,7 +87,7 @@
 
 .whatsappLabel {
   font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.5);
+  color: #333333;
   font-weight: 600;
 }
 
@@ -108,13 +108,13 @@
   padding: 10px 14px;
   background: transparent;
   border: none;
-  color: #fff;
+  color: #1A1A1A;
   font-size: var(--text-xs);
   outline: none;
 }
 
 .phoneInput::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .phoneButton {
@@ -146,7 +146,7 @@
 
 .proofItem {
   font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.4);
+  color: #555555;
   white-space: nowrap;
 }
 

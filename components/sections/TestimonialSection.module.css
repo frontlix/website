@@ -44,7 +44,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: var(--space-12);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.02);
   border: 1px solid transparent;
   background:
     linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,

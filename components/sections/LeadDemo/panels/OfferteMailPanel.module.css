@@ -42,8 +42,8 @@
 .emailCard {
   width: 100%;
   max-width: 480px;
-  background: #141414;
-  border: 1px solid rgba(26, 86, 255, 0.5);
+  background: #FFFFFF;
+  border: 1px solid rgba(26, 86, 255, 0.3);
   border-radius: 12px;
   overflow: hidden;
   opacity: 0;
@@ -113,8 +113,8 @@
 /* ─── Quote card ─────────────────────────────────────────────────────────────── */
 
 .quoteCard {
-  background: #1A1A1A;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F5F5F5;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   overflow: hidden;
 }

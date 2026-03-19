@@ -67,6 +67,7 @@ export default function LeadDemo() {
     [clearAllTimers]
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const resetAndStart = useCallback(() => {
     setResetKey((k) => k + 1)
     startSequence()
@@ -76,6 +77,9 @@ export default function LeadDemo() {
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
+
+    // Reset on mount so hot-reload / re-mount always works
+    hasStarted.current = false
 
     const observer = new IntersectionObserver(
       ([entry]) => {

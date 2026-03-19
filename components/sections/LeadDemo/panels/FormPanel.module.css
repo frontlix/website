@@ -44,7 +44,7 @@
 .formCard {
   width: 100%;
   max-width: 440px;
-  background: #111111;
+  background: #FFFFFF;
   border: 1px solid rgba(26, 86, 255, 0.5);
   box-shadow: 0 0 24px rgba(26, 86, 255, 0.06);
   border-radius: 16px;
@@ -113,18 +113,18 @@
 
 .fieldLabel {
   font-size: 10px;
-  color: #888888;
+  color: #666666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .fieldInput {
-  background: #0A0A0A;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F5F5F5;
+  border: 1px solid rgba(0, 0, 0, 0.10);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
-  color: #F0F0F0;
+  color: #1A1A1A;
   min-height: 16px;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;

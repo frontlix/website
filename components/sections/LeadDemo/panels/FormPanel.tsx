@@ -24,6 +24,7 @@ for (const f of FIELDS) {
   total += f.value.length
   FIELD_BOUNDARIES.push(total)
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TOTAL_CHARS = total
 
 export default function FormPanel({ isActive }: FormPanelProps) {
