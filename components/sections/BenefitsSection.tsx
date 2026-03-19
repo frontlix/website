@@ -5,7 +5,7 @@ const cards = [
   {
     title: 'Reactietijd',
     description:
-      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp bericht. Voordat de concurrent ook maar zijn telefoon pakt.',
+      'Terwijl jouw concurrent nog nadenkt over een reactie, heeft jouw lead al een persoonlijk WhatsApp-bericht ontvangen.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Gemiddelde reactie</span>
@@ -32,14 +32,14 @@ const cards = [
       'Geen generieke chatbot. Wij bouwen het systeem specifiek voor jouw bedrijf, jouw diensten en jouw klanten.',
     visual: (
       <div className={styles.visualMetric}>
-        <span className={styles.visualLabel}>Volledig gepersonaliseerd</span>
+        <span className={styles.visualLabel}>Maatwerk</span>
         <span className={styles.visualValue}>100%</span>
-        <span className={styles.visualSub}>voor jouw bedrijf</span>
+        <span className={styles.visualSub}>op maat voor jouw bedrijf</span>
       </div>
     ),
   },
   {
-    title: 'Handmatig werk',
+    title: 'Volledig automatisch',
     description:
       'Van eerste berichtje tot kant-en-klare offerte — volledig automatisch. Jij hoeft er niets voor te doen.',
     visual: (
@@ -72,9 +72,7 @@ export default function BenefitsSection() {
             </h2>
           </div>
           <p className={styles.description}>
-            Elke dag lopen bedrijven opdrachten mis omdat ze te laat reageren.{' '}
-            <strong>Frontlix reageert binnen 60 seconden op elke nieuwe lead — persoonlijk, automatisch en met een kant-en-klare offerte.</strong>{' '}
-            Zonder dat jij er iets voor hoeft te doen.
+            <strong>Binnen 60 seconden</strong> krijgt elke nieuwe lead een persoonlijk WhatsApp-bericht met een kant-en-klare offerte. Volledig automatisch — jij hoeft niets te doen.
           </p>
         </div>
 
@@ -82,9 +80,9 @@ export default function BenefitsSection() {
         <div className={styles.cards}>
           {cards.map((card, i) => (
             <div key={i} className={styles.card}>
+              <div className={styles.cardVisual}>{card.visual}</div>
               <h3 className={styles.cardTitle}>{card.title}</h3>
               <p className={styles.cardDesc}>{card.description}</p>
-              <div className={styles.cardVisual}>{card.visual}</div>
             </div>
           ))}
         </div>
@@ -92,7 +90,7 @@ export default function BenefitsSection() {
         {/* CTA */}
         <div className={styles.cta}>
           <Button href="/contact" variant="primary" size="lg">
-            Plan een gratis kennismakingsgesprek →
+            Plan een gratis gesprek →
           </Button>
         </div>
       </div>
