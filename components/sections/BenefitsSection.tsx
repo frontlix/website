@@ -5,7 +5,7 @@ const cards = [
   {
     title: 'Reactietijd',
     description:
-      'Terwijl jouw concurrent nog nadenkt over een reactie, heeft jouw lead al een persoonlijk WhatsApp-bericht ontvangen.',
+      'Jouw lead krijgt binnen 60 seconden een persoonlijk WhatsApp-bericht.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Gemiddelde reactie</span>
@@ -17,7 +17,7 @@ const cards = [
   {
     title: 'Altijd beschikbaar',
     description:
-      'Ook op zaterdagavond of vroeg in de ochtend. Het systeem slaapt nooit en mist geen enkele aanvraag.',
+      'Ook \'s avonds en in het weekend. Het systeem mist geen enkele aanvraag.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Beschikbaarheid</span>
@@ -29,7 +29,7 @@ const cards = [
   {
     title: 'Op maat gebouwd',
     description:
-      'Geen generieke chatbot. Wij bouwen het systeem specifiek voor jouw bedrijf, jouw diensten en jouw klanten.',
+      'Geen standaard chatbot — specifiek gebouwd voor jouw bedrijf en diensten.',
     visual: (
       <div className={styles.visualMetric}>
         <span className={styles.visualLabel}>Maatwerk</span>
@@ -41,12 +41,12 @@ const cards = [
   {
     title: 'Volledig automatisch',
     description:
-      'Van eerste berichtje tot kant-en-klare offerte — volledig automatisch. Jij hoeft er niets voor te doen.',
+      'Van eerste bericht tot offerte zonder dat jij iets hoeft te doen.',
     visual: (
       <div className={styles.visualMetric}>
-        <span className={styles.visualLabel}>Tijd die jij bespaart</span>
-        <span className={styles.visualValue}>0 uur</span>
-        <span className={styles.visualSub}>van lead tot offerte</span>
+        <span className={styles.visualLabel}>Jouw tijdsinvestering</span>
+        <span className={styles.visualValue}>{'< 1 min'}</span>
+        <span className={styles.visualSub}>werk voor jou</span>
       </div>
     ),
   },

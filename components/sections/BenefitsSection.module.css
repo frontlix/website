@@ -88,10 +88,14 @@
 }
 
 .description {
-  font-size: var(--text-lg);
-  color: var(--color-text-muted);
+  font-size: var(--text-xl);
+  color: #d1d5db;
   line-height: 1.75;
   padding-top: var(--space-8);
+}
+
+.description strong {
+  color: #ffffff;
 }
 
 @media (min-width: 768px) {
@@ -132,6 +136,7 @@
   position: relative;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.10);
+  overflow: hidden;
   border-top: 3px solid transparent;
   border-image: linear-gradient(180deg, var(--color-primary), transparent) 1;
   border-image-slice: 1;
