@@ -89,13 +89,13 @@
 
 .description {
   font-size: var(--text-xl);
-  color: #4B5563;
+  color: var(--color-text-muted);
   line-height: 1.75;
   padding-top: var(--space-8);
 }
 
 .description strong {
-  color: #1A1A1A;
+  color: var(--color-text);
 }
 
 @media (min-width: 768px) {
@@ -134,8 +134,8 @@
   gap: var(--space-4);
   padding: var(--space-8);
   position: relative;
-  background: #F5F7FB;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
   border-top: 3px solid var(--color-primary);
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -163,7 +163,7 @@
 
 .cardDesc {
   font-size: var(--text-sm);
-  color: #4B5563;
+  color: var(--color-text-muted);
   line-height: 1.7;
   flex: 1;
 }
@@ -201,7 +201,7 @@
 
 .visualSub {
   font-size: 13px;
-  color: #666666;
+  color: var(--color-text-muted);
 }
 
 /* Bar visual */

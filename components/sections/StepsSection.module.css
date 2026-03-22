@@ -79,7 +79,8 @@
   flex-direction: column;
   gap: 0;
   position: relative;
-  min-height: 90vh;
+  /* Enough height so each sticky card has scroll room before the next one stacks */
+  padding-bottom: 10rem;
 }
 
 .step {
@@ -87,15 +88,16 @@
   flex-direction: column;
   gap: var(--space-4);
   padding: 2rem 2.5rem;
-  background: var(--color-bg);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   position: sticky;
   overflow: hidden;
   transition: transform 0.1s ease-out, opacity 0.1s ease-out;
   will-change: transform, opacity;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  margin-bottom: var(--space-6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  /* Large margin gives scroll room for each card in the sticky stack */
+  margin-bottom: 16rem;
   transform-origin: center top;
 }
 
@@ -186,7 +188,7 @@
 @media (max-width: 767px) {
   .layout {
     flex-direction: column;
-    gap: var(--space-10);
+    gap: var(--space-8);
   }
 
   .left {
@@ -201,10 +203,10 @@
   }
 
   .step {
-    position: relative !important;
-    top: 0 !important;
-    transform: none !important;
-    opacity: 1 !important;
+    position: relative;
+    top: 0;
+    transform: none;
+    opacity: 1;
     margin-bottom: var(--space-4);
   }
 }
