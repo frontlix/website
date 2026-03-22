@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Button from '@/components/ui/Button'
+import WhatsAppIllustration from './WhatsAppIllustration'
 import styles from './BenefitsSection.module.css'
 
 interface CountUpProps {
@@ -134,6 +135,7 @@ export default function BenefitsSection() {
               </div>
               <h3 className={styles.cardTitle}>{card.title}</h3>
               <p className={styles.cardDesc}>{card.description}</p>
+              {i === 0 && <WhatsAppIllustration />}
             </div>
           ))}
         </div>
