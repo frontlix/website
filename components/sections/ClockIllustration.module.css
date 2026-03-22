@@ -1,0 +1,123 @@
+/* ── Wrapper — constrains the clock to a fixed height inside the card ── */
+.wrapper {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Scene ── */
+.scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  transform: scale(0.5);
+  flex-shrink: 0;
+}
+
+/* Outer glow ring */
+.clockGlow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+/* Clock face */
+.clock {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: white;
+  box-shadow:
+    0 0 0 6px #dbe6fb,
+    0 0 0 8px #c3d4f5,
+    0 16px 50px rgba(37, 99, 235, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Tick markers */
+.marker {
+  position: absolute;
+  border-radius: 2px;
+}
+
+/* Hands (shared) */
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  border-radius: 4px 4px 2px 2px;
+  transform-origin: bottom center;
+}
+
+.hourHand {
+  width: 5px;
+  height: 56px;
+  margin-left: -2.5px;
+  background: #1e3a6e;
+  border-radius: 4px;
+  animation: rotateHour 10s linear infinite;
+}
+
+@keyframes rotateHour {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.minuteHand {
+  width: 3px;
+  height: 76px;
+  margin-left: -1.5px;
+  background: #2563eb;
+  border-radius: 4px;
+  animation: rotateMinute 2s linear infinite;
+}
+
+@keyframes rotateMinute {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.secondHand {
+  display: none;
+}
+
+/* Centre dot */
+.centre {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #1e3a6e;
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 0 0 2px white;
+}
+
+.centreInner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: #1e3a6e;
+  border-radius: 50%;
+  z-index: 11;
+}

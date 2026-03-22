@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Button from '@/components/ui/Button'
 import WhatsAppIllustration from './WhatsAppIllustration'
+import ClockIllustration from './ClockIllustration'
+import SettingsIllustration from './SettingsIllustration'
+import AutomationIllustration from './AutomationIllustration'
 import styles from './BenefitsSection.module.css'
 
 interface CountUpProps {
@@ -126,6 +129,8 @@ export default function BenefitsSection() {
         <div className={styles.cards}>
           {cards.map((card, i) => (
             <div key={i} className={styles.card}>
+              <h3 className={styles.cardTitle}>{card.title}</h3>
+              <p className={styles.cardDesc}>{card.description}</p>
               <div className={styles.cardVisual}>
                 <div className={styles.visualMetric}>
                   <span className={styles.visualLabel}>{card.label}</span>
@@ -133,9 +138,10 @@ export default function BenefitsSection() {
                   <span className={styles.visualSub}>{card.sub}</span>
                 </div>
               </div>
-              <h3 className={styles.cardTitle}>{card.title}</h3>
-              <p className={styles.cardDesc}>{card.description}</p>
               {i === 0 && <WhatsAppIllustration />}
+              {i === 1 && <ClockIllustration />}
+              {i === 2 && <SettingsIllustration />}
+              {i === 3 && <AutomationIllustration />}
             </div>
           ))}
         </div>

@@ -6,32 +6,30 @@
   gap: 8px;
   padding: 8px 0 0;
   /* Scale down to fit inside card */
-  transform: scale(0.48);
+  transform: scale(0.42);
   transform-origin: top center;
   /* Compensate for scaled whitespace */
-  margin-bottom: -230px;
+  margin-bottom: -260px;
 }
 
 /* ── iPhone shell ── */
 .iphone {
   width: 200px;
   height: 412px;
-  background: #1a1a1a;
+  background: #e8edf5;
   border-radius: 34px;
   padding: 8px;
   box-shadow:
-    0 0 0 1px #3a3a3a,
-    0 16px 48px rgba(0, 0, 0, 0.3),
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 0 0 1px #c3d4f5,
+    0 16px 48px rgba(37, 99, 235, 0.12),
+    0 4px 16px rgba(37, 99, 235, 0.08);
   position: relative;
-  transform: perspective(900px) rotateY(-4deg) rotateX(1deg);
-  animation: floatPhone 4s ease-in-out infinite;
+  animation: floatPhone 5s ease-in-out infinite;
 }
 
 @keyframes floatPhone {
-  0%, 100% { transform: perspective(900px) rotateY(-4deg) rotateX(1deg) translateY(0px); }
-  50% { transform: perspective(900px) rotateY(-4deg) rotateX(1deg) translateY(-5px); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
 }
 
 /* Side buttons */
@@ -42,9 +40,9 @@
   top: 90px;
   width: 2px;
   height: 26px;
-  background: #333;
+  background: #b8c9e6;
   border-radius: 2px 0 0 2px;
-  box-shadow: 0 34px 0 #333, 0 64px 0 #333;
+  box-shadow: 0 34px 0 #b8c9e6, 0 64px 0 #b8c9e6;
 }
 
 .iphone::after {
@@ -54,14 +52,14 @@
   top: 110px;
   width: 2px;
   height: 44px;
-  background: #333;
+  background: #b8c9e6;
   border-radius: 0 2px 2px 0;
 }
 
 .iphoneScreen {
   width: 100%;
   height: 100%;
-  background: #ece5dd;
+  background: #f8faff;
   border-radius: 28px;
   overflow: hidden;
   display: flex;
@@ -70,7 +68,7 @@
 
 /* ── Status bar ── */
 .statusBar {
-  background: #128c7e;
+  background: #2563eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -114,7 +112,7 @@
 
 /* ── WhatsApp header ── */
 .waHeader {
-  background: #128c7e;
+  background: #2563eb;
   padding: 6px 8px 8px;
   display: flex;
   align-items: center;
@@ -131,7 +129,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #25d366, #128c7e);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,7 +192,7 @@
 }
 
 .out {
-  background: #dcf8c6;
+  background: #dbeafe;
   align-self: flex-end;
   border-top-right-radius: 2px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -212,7 +210,7 @@
 }
 
 .ticks {
-  color: #53bdeb;
+  color: #2563eb;
   font-size: 8px;
 }
 
@@ -253,7 +251,7 @@
 
 /* ── Input bar ── */
 .inputBar {
-  background: #f0f0f0;
+  background: #eef2fb;
   padding: 4px 6px;
   display: flex;
   align-items: center;
@@ -274,84 +272,3 @@
   color: #aaa;
 }
 
-/* ── Timer ── */
-.timerWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  animation: floatTimer 4s ease-in-out infinite;
-  animation-delay: 0.5s;
-  padding-top: 40px;
-}
-
-@keyframes floatTimer {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-}
-
-.timerRingWrap {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.timerRingWrap svg {
-  transform: rotate(-90deg);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 80px;
-  height: 80px;
-}
-
-.timerBgCircle {
-  fill: none;
-  stroke: rgba(0, 0, 0, 0.06);
-  stroke-width: 5;
-}
-
-.timerProgress {
-  fill: none;
-  stroke: var(--color-primary);
-  stroke-width: 5;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.08s linear;
-}
-
-.timerInner {
-  position: absolute;
-  inset: 10px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.timerNumber {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-primary);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.timerLabel {
-  font-size: 7px;
-  color: #667781;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.timerCaption {
-  font-size: 9px;
-  color: var(--color-primary);
-  font-weight: 600;
-  text-align: center;
-  max-width: 80px;
-  line-height: 1.3;
-}

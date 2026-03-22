@@ -1,0 +1,153 @@
+/* ── Wrapper — constrains illustration inside the card ── */
+.wrapper {
+  width: 100%;
+  height: 164px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 12px 16px;
+  width: 100%;
+  max-width: 220px;
+  transform: scale(0.72);
+  transform-origin: top center;
+  box-shadow:
+    0 2px 8px rgba(37, 99, 235, 0.06),
+    0 12px 36px rgba(37, 99, 235, 0.10);
+  animation: floatCard 5s ease-in-out infinite;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ── Steps ── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.step.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.stepIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stepIcon.blue   { background: #dbeafe; }
+.stepIcon.green  { background: #c7d9fc; }
+.stepIcon.yellow { background: #e0eaff; }
+
+.stepLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #334155;
+  flex: 1;
+}
+
+.stepCheck {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.stepCheck.done {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Progress bar ── */
+.progressWrap {
+  position: relative;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progressTitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.progressPct {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  text-align: right;
+}
+
+.barTrack {
+  width: 100%;
+  height: 8px;
+  background: #f1f5fb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  position: relative;
+}
+
+/* Shimmer effect on the progress bar fill */
+.barFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  border-radius: 99px;
+  animation: shimmer 1s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
