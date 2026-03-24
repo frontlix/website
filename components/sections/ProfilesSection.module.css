@@ -24,14 +24,15 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .card {
   padding: var(--space-8);
   border-radius: var(--radius-xl);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  /* 4 rows: icon | title | description | solutions */
+  grid-template-rows: auto auto 1fr auto;
   gap: var(--space-4);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -42,7 +43,7 @@
 
 .cardGradient {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -51,9 +52,14 @@
   box-shadow: 0 8px 32px rgba(26, 86, 255, 0.08);
 }
 
+.cardIllustration {
+  width: 100%;
+  display: block;
+}
+
 .cardIcon {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-md);
   background: rgba(26, 86, 255, 0.12);
   display: flex;
@@ -74,8 +80,6 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.7;
-  /* Fixed height so bullets start at the same position across cards */
-  min-height: 3.4em;
 }
 
 .solutions {
@@ -83,6 +87,10 @@
   flex-direction: column;
   gap: var(--space-3);
   margin-top: var(--space-2);
+  background: rgba(26, 86, 255, 0.03);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-4);
 }
 
 .solution {
@@ -103,23 +111,32 @@
   margin-top: 0.45em;
 }
 
-.cardCta {
-  margin-top: auto;
-  padding-top: var(--space-4);
+.solutionLabel {
   font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-accent);
-  text-decoration: none;
-  transition: opacity 0.2s ease;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
 }
 
-.cardCta:hover {
-  opacity: 0.8;
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.ctaWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-16);
 }
 
 @media (min-width: 768px) {
   .heading {
-    font-size: var(--text-4xl);
+    font-size: var(--text-3xl);
   }
 
   .cardPain {
@@ -128,7 +145,18 @@
 }
 
 @media (min-width: 1024px) {
+  .heading {
+    font-size: var(--text-4xl);
+  }
+
   .grid {
     grid-template-columns: repeat(3, 1fr);
+    /* Each card spans 4 implicit rows; subgrid aligns them across columns */
+    grid-template-rows: repeat(4, auto);
+  }
+
+  .card {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
   }
 }
