@@ -80,7 +80,7 @@
   gap: 0;
   position: relative;
   /* Enough height so each sticky card has scroll room before the next one stacks */
-  padding-bottom: 10rem;
+  padding-bottom: 4rem;
 }
 
 .step {
@@ -96,8 +96,8 @@
   transition: transform 0.1s ease-out, opacity 0.1s ease-out;
   will-change: transform, opacity;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-  /* Large margin gives scroll room for each card in the sticky stack */
-  margin-bottom: 16rem;
+  /* Margin gives scroll room for each card in the sticky stack */
+  margin-bottom: 2rem;
   transform-origin: center top;
 }
 
