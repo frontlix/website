@@ -104,9 +104,12 @@ export default function StepsSection() {
             <p className={styles.subtext}>
               Een helder proces zodat jij precies weet wat je kunt verwachten, van eerste gesprek tot livegang en daarna.
             </p>
-            <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
-              Plan een gratis gesprek →
-            </Button>
+            {/* Knop alleen zichtbaar op desktop */}
+            <div className={styles.ctaDesktop}>
+              <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
+                Plan een gratis gesprek →
+              </Button>
+            </div>
             <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
           </div>
 
@@ -138,6 +141,13 @@ export default function StepsSection() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Knop alleen zichtbaar op mobiel, onder de kaarten */}
+            <div className={styles.ctaMobile}>
+              <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
+                Plan een gratis gesprek →
+              </Button>
             </div>
           </div>
         </div>

@@ -176,17 +176,21 @@
     padding-right: var(--space-6);
   }
 
-  /* Sub-line + CTA: pushed inward with extra padding */
+  /* Sub-line + CTA: pushed inward but capped to viewport */
   .subtext {
     font-size: var(--text-sm);
     padding-left: var(--space-8);
     padding-right: var(--space-8);
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   .ctas {
     gap: var(--space-6);
-    padding-left: var(--space-6);
-    padding-right: var(--space-6);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   .proofBar {
