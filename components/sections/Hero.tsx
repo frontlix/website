@@ -72,8 +72,6 @@ export default function Hero() {
 
           <div className={styles.proofBar}>
             <span className={styles.proofItem}><span className={styles.check}>✓</span> Op maat gebouwd</span>
-            <span className={styles.proofItem}><span className={styles.check}>✓</span> Binnen 2-3 weken live</span>
-            <span className={styles.proofItem}><span className={styles.check}>✓</span> Geen technische kennis nodig</span>
             <span className={styles.proofItem}><span className={styles.check}>✓</span> Free trial</span>
           </div>
         </div>
