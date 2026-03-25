@@ -30,11 +30,22 @@
   background: var(--color-gradient);
   color: var(--color-white);
   box-shadow: 0 4px 24px rgba(26, 86, 255, 0.3);
+  animation: glowPulse 2.5s ease-in-out infinite;
 }
 
 .primary:hover {
   box-shadow: 0 8px 32px rgba(26, 86, 255, 0.5);
   opacity: 0.92;
+  animation: none;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 4px 24px rgba(26, 86, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 40px rgba(26, 86, 255, 0.55), 0 0 60px rgba(0, 207, 255, 0.2);
+  }
 }
 
 /* Secondary / Outline */
@@ -73,7 +84,7 @@
 }
 
 .lg {
-  padding: var(--space-4) var(--space-8);
+  padding: var(--space-8) var(--space-8);
   font-size: var(--text-base);
 }
 
