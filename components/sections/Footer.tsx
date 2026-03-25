@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import styles from './Footer.module.css'
 
@@ -26,8 +27,17 @@ export default function Footer() {
         <div className={styles.topRow}>
           {/* Brand */}
           <div className={styles.brand}>
-            <Link href="/" className={styles.logo}>
-              Frontl<span className={styles.logoIx}>ix</span>
+            <Link href="/" className={styles.logoLink}>
+              <Image
+                src="/logo.png"
+                alt="Frontlix logo"
+                width={36}
+                height={36}
+                className={styles.logoImage}
+              />
+              <span className={styles.logoText}>
+                Frontl<span className={styles.logoIx}>ix</span>
+              </span>
             </Link>
             <p className={styles.tagline}>Automatische leadopvolging via WhatsApp</p>
           </div>

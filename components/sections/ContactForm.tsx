@@ -44,12 +44,9 @@ export default function ContactForm() {
 
     const formData = new FormData(e.currentTarget)
     const data = {
-      voornaam: formData.get('voornaam') as string,
-      achternaam: formData.get('achternaam') as string,
-      telefoon: formData.get('telefoon') as string,
+      naam: formData.get('naam') as string,
       email: formData.get('email') as string,
-      bedrijfsnaam: formData.get('bedrijfsnaam') as string,
-      website: formData.get('website') as string,
+      telefoon: formData.get('telefoon') as string,
       bericht: formData.get('bericht') as string,
     }
 
@@ -121,47 +118,16 @@ export default function ContactForm() {
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            {/* Voornaam + Achternaam */}
             <div className={styles.formRow}>
               <div className={styles.fieldGroup}>
-                <label htmlFor="voornaam" className={styles.label}>
-                  Voornaam
+                <label htmlFor="naam" className={styles.label}>
+                  Naam
                 </label>
                 <input
                   type="text"
-                  id="voornaam"
-                  name="voornaam"
-                  placeholder="Voornaam"
-                  required
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.fieldGroup}>
-                <label htmlFor="achternaam" className={styles.label}>
-                  Achternaam
-                </label>
-                <input
-                  type="text"
-                  id="achternaam"
-                  name="achternaam"
-                  placeholder="Achternaam"
-                  required
-                  className={styles.input}
-                />
-              </div>
-            </div>
-
-            {/* Telefoon + E-mail */}
-            <div className={styles.formRow}>
-              <div className={styles.fieldGroup}>
-                <label htmlFor="telefoon" className={styles.label}>
-                  Telefoonnummer
-                </label>
-                <input
-                  type="tel"
-                  id="telefoon"
-                  name="telefoon"
-                  placeholder="+31 6 1234 5678"
+                  id="naam"
+                  name="naam"
+                  placeholder="Jouw volledige naam"
                   required
                   className={styles.input}
                 />
@@ -174,51 +140,36 @@ export default function ContactForm() {
                   type="email"
                   id="email"
                   name="email"
-                  placeholder="naam@bedrijf.nl"
+                  placeholder="jouw@email.nl"
                   required
                   className={styles.input}
                 />
               </div>
             </div>
 
-            {/* Bedrijfsnaam */}
             <div className={styles.fieldGroup}>
-              <label htmlFor="bedrijfsnaam" className={styles.label}>
-                Bedrijfsnaam
+              <label htmlFor="telefoon" className={styles.label}>
+                Telefoonnummer
               </label>
               <input
-                type="text"
-                id="bedrijfsnaam"
-                name="bedrijfsnaam"
-                placeholder="Naam van je bedrijf"
+                type="tel"
+                id="telefoon"
+                name="telefoon"
+                placeholder="+31 6 1234 5678"
                 required
                 className={styles.input}
               />
             </div>
 
-            {/* Website — optioneel */}
-            <div className={styles.fieldGroup}>
-              <label htmlFor="website" className={styles.label}>
-                Website URL <span className={styles.optional}>(optioneel)</span>
-              </label>
-              <input
-                type="url"
-                id="website"
-                name="website"
-                placeholder="https://jouwbedrijf.nl"
-                className={styles.input}
-              />
-            </div>
-
-            {/* Bericht — optioneel */}
             <div className={styles.fieldGroup}>
               <label htmlFor="bericht" className={styles.label}>
-                Bericht <span className={styles.optional}>(optioneel)</span>
+                Bericht
               </label>
               <textarea
                 id="bericht"
                 name="bericht"
-                placeholder="Vertel ons meer over je project, wensen of vragen..."
+                placeholder="Vertel ons over jouw project of vraag..."
+                required
                 className={styles.textarea}
               />
             </div>

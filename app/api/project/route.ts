@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
-import { sendNotification } from '@/lib/mail'
+import { sendNotification, sendConfirmation } from '@/lib/mail'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +53,20 @@ export async function POST(request: NextRequest) {
       )
     } catch (emailError) {
       console.error('Email error:', emailError)
+    }
+
+    // Bevestigingsmail naar klant
+    try {
+      await sendConfirmation(email, `${voornaam} ${achternaam}`)
+    } catch (confirmError) {
+      console.error('Confirmation email error:', confirmError)
+    }
+
+    // WhatsApp bevestiging sturen
+    try {
+      await sendWhatsAppMessage(telefoon, `${voornaam} ${achternaam}`)
+    } catch (waError) {
+      console.error('WhatsApp error:', waError)
     }
 
     return NextResponse.json(

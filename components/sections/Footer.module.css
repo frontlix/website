@@ -29,12 +29,24 @@
   gap: var(--space-3);
 }
 
-.logo {
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+.logoImage {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+}
+
+.logoText {
   font-size: var(--text-xl);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--color-text);
-  text-decoration: none;
 }
 
 .logoIx {

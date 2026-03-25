@@ -33,17 +33,17 @@ const values = [
 const team = [
   {
     name: 'Christiaan Tromp',
-    role: 'Oprichter & Developer',
+    role: 'hoofdontwikkelaar in AI',
     photo: '/images/christiaan Tromp pf.png',
     description:
-      'Bouwt de technische oplossingen en zorgt dat alles naadloos samenwerkt. Van AI-chatbots tot volledige automatiseringen.',
+      'Ontwikkelt slimme AI-oplossingen en automatiseringen die bedrijfsprocessen efficiënter maken. Van geavanceerde AI-systemen tot volledig geïntegreerde automatiseringen.',
   },
   {
     name: 'Georg Tromp',
-    role: 'Designer',
+    role: 'hoofd ontwerper & strategie',
     photo: '/images/Georg tromp pf.png',
     description:
-      'Zorgt dat elke oplossing er strak en professioneel uitziet. Design dat vertrouwen wekt bij jouw klanten.',
+      'Vertaalt klantbehoeften naar een heldere strategie en zorgt dat elke oplossing er strak en professioneel uitziet.',
   },
 ]
 

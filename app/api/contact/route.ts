@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
-import { sendNotification } from '@/lib/mail'
+import { sendNotification, sendConfirmation } from '@/lib/mail'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { voornaam, achternaam, telefoon, email, bedrijfsnaam, website, bericht } = body
+    const { naam, email, telefoon, bericht } = body
 
     // Valideer verplichte velden
-    if (!voornaam || !achternaam || !telefoon || !email || !bedrijfsnaam) {
+    if (!naam || !email || !telefoon) {
       return NextResponse.json(
         { success: false, message: 'Vul alle verplichte velden in.' },
         { status: 400 }
@@ -23,13 +24,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const naam = `${voornaam} ${achternaam}`
-
     // Opslaan in Supabase
     const supabase = getSupabase()
     const { error: dbError } = await supabase
       .from('contact_submissions')
-      .insert({ voornaam, achternaam, telefoon, email, bedrijfsnaam, website, bericht })
+      .insert({ naam, email, telefoon, bericht: bericht || null })
 
     if (dbError) {
       console.error('Supabase insert error:', dbError)
@@ -48,13 +47,25 @@ export async function POST(request: NextRequest) {
           <p><strong>Naam:</strong> ${naam}</p>
           <p><strong>E-mail:</strong> ${email}</p>
           <p><strong>Telefoon:</strong> ${telefoon}</p>
-          <p><strong>Bedrijf:</strong> ${bedrijfsnaam}</p>
-          ${website ? `<p><strong>Website:</strong> ${website}</p>` : ''}
           ${bericht ? `<p><strong>Bericht:</strong></p><p>${bericht.replace(/\n/g, '<br>')}</p>` : ''}
         `
       )
     } catch (emailError) {
       console.error('Email error:', emailError)
+    }
+
+    // Bevestigingsmail naar klant
+    try {
+      await sendConfirmation(email, naam)
+    } catch (confirmError) {
+      console.error('Confirmation email error:', confirmError)
+    }
+
+    // WhatsApp bevestiging sturen
+    try {
+      await sendWhatsAppMessage(telefoon, naam)
+    } catch (waError) {
+      console.error('WhatsApp error:', waError)
     }
 
     return NextResponse.json(

@@ -167,6 +167,19 @@
   .hero {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
+    min-height: auto;
+    align-items: flex-start;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-8);
+  }
+
+  /* Hide WhatsApp label on mobile, keep the form */
+  .whatsappLabel {
+    display: none;
+  }
+
+  .badge {
+    margin-bottom: var(--space-3);
   }
 
   /* Heading: bigger than before */
@@ -191,6 +204,12 @@
     padding-right: var(--space-8);
     max-width: 100vw;
     box-sizing: border-box;
+  }
+
+  /* Smaller CTA button on mobile */
+  .ctas button:first-child {
+    font-size: var(--text-xs);
+    padding: var(--space-2) var(--space-4);
   }
 
   .proofBar {

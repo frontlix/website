@@ -62,7 +62,7 @@ export default function OfferteMailPanel({ isActive }: OfferteMailPanelProps) {
           {/* CTA button with shimmer */}
           <div className={styles.ctaWrap}>
             <button className={styles.ctaButton} tabIndex={-1}>
-              Bekijk volledige offerte →
+              Gratis kennismaking →
             </button>
           </div>
 

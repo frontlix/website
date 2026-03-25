@@ -252,7 +252,7 @@ export default function ProfilesSection() {
         </div>
         <div className={styles.ctaWrapper}>
           <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
-            Laat je gegevens achter, wij bellen jou →
+            Gratis kennismaking →
           </Button>
           <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
         </div>
