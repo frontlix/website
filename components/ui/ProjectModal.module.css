@@ -175,6 +175,17 @@
   min-height: 100px;
 }
 
+/* Error melding */
+.error {
+  font-size: var(--text-sm);
+  color: #ff4444;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 68, 68, 0.08);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  margin: 0;
+}
+
 /* Submit knop */
 .submit {
   display: inline-flex;
@@ -226,4 +237,57 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+/* ── Mobile: modal starts from top, compact spacing ── */
+@media (max-width: 480px) {
+  .overlay {
+    align-items: flex-start;
+    padding: var(--space-4);
+  }
+
+  .modal {
+    max-height: calc(100vh - var(--space-8));
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .heading {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-1);
+  }
+
+  .subtext {
+    font-size: var(--text-xs);
+    margin-bottom: var(--space-4);
+  }
+
+  .form {
+    gap: var(--space-3);
+  }
+
+  .field {
+    gap: var(--space-1);
+  }
+
+  .label {
+    font-size: var(--text-xs);
+  }
+
+  .input,
+  .select,
+  .textarea {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .textarea {
+    min-height: 70px;
+  }
+
+  .submit {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+  }
 }

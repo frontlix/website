@@ -207,6 +207,31 @@
     padding-bottom: 0;
   }
 
+  .section {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+
+  .heading {
+    font-size: var(--text-2xl);
+  }
+
+  .subtext {
+    font-size: var(--text-sm);
+  }
+
+  .stepNumber {
+    font-size: var(--text-2xl);
+  }
+
+  .stepTitle {
+    font-size: var(--text-base);
+  }
+
+  .stepBullet {
+    font-size: var(--text-sm);
+  }
+
   /* Sticky stacking-animatie blijft actief op mobiel */
   .step {
     padding: 1.5rem 1.25rem;

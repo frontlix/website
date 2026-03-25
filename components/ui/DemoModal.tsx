@@ -14,6 +14,8 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   /* Sluit modal met Escape */
   useEffect(() => {
@@ -38,15 +40,38 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
         setEmail('')
         setPhone('')
         setSubmitted(false)
+        setError(null)
       }, 200)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ naam: name, email, telefoon: phone }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        setError(result.message || 'Er is een fout opgetreden.')
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      setError('Kan geen verbinding maken. Probeer het later opnieuw.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -112,8 +137,10 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                 />
               </div>
 
-              <button type="submit" className={styles.submit}>
-                Demo aanvragen →
+              {error && <p className={styles.error}>{error}</p>}
+
+              <button type="submit" className={styles.submit} disabled={loading}>
+                {loading ? 'Versturen...' : 'Demo aanvragen →'}
               </button>
             </form>
           </>

@@ -259,3 +259,30 @@
   display: flex;
   justify-content: center;
 }
+
+/* ── Mobile: smaller text, more horizontal padding ── */
+@media (max-width: 767px) {
+  .section {
+    padding: 60px var(--space-12);
+  }
+
+  .heading {
+    font-size: var(--text-2xl);
+  }
+
+  .description {
+    font-size: var(--text-base);
+  }
+
+  .cardTitle {
+    font-size: var(--text-base);
+  }
+
+  .cardDesc {
+    font-size: var(--text-xs);
+  }
+
+  .card {
+    padding: var(--space-6);
+  }
+}

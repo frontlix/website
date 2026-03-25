@@ -101,6 +101,38 @@
   opacity: 0.8;
 }
 
+/* ── Mobile: smaller text, more padding ── */
+@media (max-width: 767px) {
+  .section {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+
+  .heading {
+    font-size: var(--text-2xl);
+  }
+
+  .subtitle {
+    font-size: var(--text-base);
+  }
+
+  .card {
+    padding: var(--space-6);
+  }
+
+  .cardNumber {
+    font-size: var(--text-2xl);
+  }
+
+  .cardTitle {
+    font-size: var(--text-base);
+  }
+
+  .cardDescription {
+    font-size: var(--text-xs);
+  }
+}
+
 @media (min-width: 768px) {
   .heading {
     font-size: var(--text-4xl);

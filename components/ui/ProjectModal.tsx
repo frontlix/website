@@ -18,6 +18,8 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [website, setWebsite] = useState('')
   const [extra, setExtra] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   /* Sluit modal met Escape */
   useEffect(() => {
@@ -46,15 +48,38 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
         setWebsite('')
         setExtra('')
         setSubmitted(false)
+        setError(null)
       }, 200)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voornaam, achternaam, telefoon, email, bedrijfsnaam, website, extra }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        setError(result.message || 'Er is een fout opgetreden.')
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      setError('Kan geen verbinding maken. Probeer het later opnieuw.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -191,8 +216,10 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                 />
               </div>
 
-              <button type="submit" className={styles.submit}>
-                Verstuur aanvraag →
+              {error && <p className={styles.error}>{error}</p>}
+
+              <button type="submit" className={styles.submit} disabled={loading}>
+                {loading ? 'Versturen...' : 'Verstuur aanvraag →'}
               </button>
             </form>
           </>

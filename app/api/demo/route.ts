@@ -5,17 +5,16 @@ import { sendNotification } from '@/lib/mail'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { voornaam, achternaam, telefoon, email, bedrijfsnaam, website, bericht } = body
+    const { naam, email, telefoon } = body
 
     // Valideer verplichte velden
-    if (!voornaam || !achternaam || !telefoon || !email || !bedrijfsnaam) {
+    if (!naam || !email || !telefoon) {
       return NextResponse.json(
-        { success: false, message: 'Vul alle verplichte velden in.' },
+        { success: false, message: 'Alle velden zijn verplicht.' },
         { status: 400 }
       )
     }
 
-    // Basis e-mail format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { success: false, message: 'Ongeldig e-mailadres.' },
@@ -23,13 +22,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const naam = `${voornaam} ${achternaam}`
-
     // Opslaan in Supabase
     const supabase = getSupabase()
     const { error: dbError } = await supabase
-      .from('contact_submissions')
-      .insert({ voornaam, achternaam, telefoon, email, bedrijfsnaam, website, bericht })
+      .from('demo_submissions')
+      .insert({ naam, email, telefoon })
 
     if (dbError) {
       console.error('Supabase insert error:', dbError)
@@ -39,18 +36,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // E-mail notificatie versturen (als dit faalt, is de submission al opgeslagen)
+    // E-mail notificatie
     try {
       await sendNotification(
-        `[Website Formulier] Nieuw contactformulier van ${naam}`,
+        `[Website Formulier] Nieuwe demo aanvraag van ${naam}`,
         `
-          <h2>Nieuw bericht via het contactformulier</h2>
+          <h2>Nieuwe demo aanvraag</h2>
           <p><strong>Naam:</strong> ${naam}</p>
           <p><strong>E-mail:</strong> ${email}</p>
           <p><strong>Telefoon:</strong> ${telefoon}</p>
-          <p><strong>Bedrijf:</strong> ${bedrijfsnaam}</p>
-          ${website ? `<p><strong>Website:</strong> ${website}</p>` : ''}
-          ${bericht ? `<p><strong>Bericht:</strong></p><p>${bericht.replace(/\n/g, '<br>')}</p>` : ''}
         `
       )
     } catch (emailError) {
@@ -58,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Bericht succesvol verstuurd.' },
+      { success: true, message: 'Demo aanvraag succesvol verstuurd.' },
       { status: 200 }
     )
   } catch {

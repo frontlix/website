@@ -15,7 +15,7 @@ const bedrijf = [
 
 const contact = [
   { label: 'info@frontlix.nl', href: 'mailto:info@frontlix.nl' },
-  { label: '+31 6 24965270', href: 'tel:+31624965270' },
+  { label: '+31 6 24752476', href: 'tel:+31624752476' },
   { label: 'Nederland', href: '#' },
 ]
 

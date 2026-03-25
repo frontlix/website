@@ -120,17 +120,19 @@
 
   .columns {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     min-height: auto;
   }
 
   .leftCol {
     border-right: none;
-    border-bottom: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border);
+    border-bottom: none;
   }
 
   .panelContainer {
     min-height: 540px;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .heading {

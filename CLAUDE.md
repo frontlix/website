@@ -93,23 +93,23 @@ All tokens live in `styles/tokens.css`. Never hardcode colors outside this file.
 
 ```css
 :root {
-  --color-bg: #0a0a0a;
-  --color-surface: #111111;
-  --color-surface-2: #1a1a1a;
+  --color-bg: #FFFFFF;
+  --color-surface: #F9F9F9;
+  --color-surface-2: #F0F0F0;
 
-  --color-primary: #1a56ff;
-  --color-accent: #00cfff;
-  --color-gradient: linear-gradient(135deg, #1a56ff, #00cfff);
+  --color-primary: #1A56FF;
+  --color-accent: #00CFFF;
+  --color-gradient: linear-gradient(135deg, #1A56FF, #00CFFF);
 
-  --color-text: #f0f0f0;
-  --color-text-muted: #888888;
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #1A1A1A;
+  --color-text-muted: #555555;
+  --color-border: rgba(0, 0, 0, 0.10);
 }
 ```
 
-- Dark theme always — **never** a white background
+- Light theme — clean white background with subtle gray surfaces
 - Apply gradient to: headings, CTA buttons, accents, borders (subtle)
-- Subtle glassmorphism allowed on cards: `backdrop-filter: blur(12px)`
+- Cards use `--color-card-bg: #F5F7FA` with subtle borders
 - Never use bright or warm colors (red, orange, yellow) — strict blue/cyan palette only
 
 ---

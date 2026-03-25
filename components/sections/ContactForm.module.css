@@ -142,6 +142,12 @@
   resize: vertical;
 }
 
+.optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
 .submitRow {
   padding-top: var(--space-2);
 }

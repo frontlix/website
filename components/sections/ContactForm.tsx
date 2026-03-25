@@ -16,13 +16,13 @@ const contactInfo = [
     icon: MessageCircle,
     label: 'WhatsApp',
     value: 'Stuur een berichtje',
-    href: 'https://wa.me/31624965270',
+    href: 'https://wa.me/31624752476',
   },
   {
     icon: Phone,
     label: 'Telefoon',
-    value: '+31 6 24965270',
-    href: 'tel:+31624965270',
+    value: '+31 6 24752476',
+    href: 'tel:+31624752476',
   },
   {
     icon: MapPin,
@@ -44,8 +44,12 @@ export default function ContactForm() {
 
     const formData = new FormData(e.currentTarget)
     const data = {
-      naam: formData.get('naam') as string,
+      voornaam: formData.get('voornaam') as string,
+      achternaam: formData.get('achternaam') as string,
+      telefoon: formData.get('telefoon') as string,
       email: formData.get('email') as string,
+      bedrijfsnaam: formData.get('bedrijfsnaam') as string,
+      website: formData.get('website') as string,
       bericht: formData.get('bericht') as string,
     }
 
@@ -117,16 +121,47 @@ export default function ContactForm() {
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
+            {/* Voornaam + Achternaam */}
             <div className={styles.formRow}>
               <div className={styles.fieldGroup}>
-                <label htmlFor="naam" className={styles.label}>
-                  Naam
+                <label htmlFor="voornaam" className={styles.label}>
+                  Voornaam
                 </label>
                 <input
                   type="text"
-                  id="naam"
-                  name="naam"
-                  placeholder="Jouw volledige naam"
+                  id="voornaam"
+                  name="voornaam"
+                  placeholder="Voornaam"
+                  required
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label htmlFor="achternaam" className={styles.label}>
+                  Achternaam
+                </label>
+                <input
+                  type="text"
+                  id="achternaam"
+                  name="achternaam"
+                  placeholder="Achternaam"
+                  required
+                  className={styles.input}
+                />
+              </div>
+            </div>
+
+            {/* Telefoon + E-mail */}
+            <div className={styles.formRow}>
+              <div className={styles.fieldGroup}>
+                <label htmlFor="telefoon" className={styles.label}>
+                  Telefoonnummer
+                </label>
+                <input
+                  type="tel"
+                  id="telefoon"
+                  name="telefoon"
+                  placeholder="+31 6 1234 5678"
                   required
                   className={styles.input}
                 />
@@ -139,22 +174,51 @@ export default function ContactForm() {
                   type="email"
                   id="email"
                   name="email"
-                  placeholder="jouw@email.nl"
+                  placeholder="naam@bedrijf.nl"
                   required
                   className={styles.input}
                 />
               </div>
             </div>
 
+            {/* Bedrijfsnaam */}
+            <div className={styles.fieldGroup}>
+              <label htmlFor="bedrijfsnaam" className={styles.label}>
+                Bedrijfsnaam
+              </label>
+              <input
+                type="text"
+                id="bedrijfsnaam"
+                name="bedrijfsnaam"
+                placeholder="Naam van je bedrijf"
+                required
+                className={styles.input}
+              />
+            </div>
+
+            {/* Website — optioneel */}
+            <div className={styles.fieldGroup}>
+              <label htmlFor="website" className={styles.label}>
+                Website URL <span className={styles.optional}>(optioneel)</span>
+              </label>
+              <input
+                type="url"
+                id="website"
+                name="website"
+                placeholder="https://jouwbedrijf.nl"
+                className={styles.input}
+              />
+            </div>
+
+            {/* Bericht — optioneel */}
             <div className={styles.fieldGroup}>
               <label htmlFor="bericht" className={styles.label}>
-                Bericht
+                Bericht <span className={styles.optional}>(optioneel)</span>
               </label>
               <textarea
                 id="bericht"
                 name="bericht"
-                placeholder="Vertel ons over jouw project of vraag..."
-                required
+                placeholder="Vertel ons meer over je project, wensen of vragen..."
                 className={styles.textarea}
               />
             </div>

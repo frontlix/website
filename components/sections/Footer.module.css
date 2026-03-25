@@ -4,6 +4,13 @@
   padding: var(--space-16) var(--space-6) var(--space-8);
 }
 
+@media (max-width: 767px) {
+  .footer {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+}
+
 .inner {
   max-width: var(--max-width);
   margin: 0 auto;

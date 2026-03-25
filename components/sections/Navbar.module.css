@@ -138,6 +138,17 @@
   color: var(--color-text);
 }
 
+/* On mobile: navbar scrolls with page instead of being fixed */
+@media (max-width: 767px) {
+  .navbar {
+    position: relative;
+  }
+
+  .mobileMenu {
+    position: absolute;
+  }
+}
+
 @media (min-width: 768px) {
   .nav {
     display: flex;

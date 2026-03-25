@@ -6,7 +6,7 @@
   background: #FFFFFF;
   overflow: clip;
   overflow-clip-margin: 120px;
-  padding: calc(68px + var(--space-4)) var(--space-6) 0;
+  padding: var(--space-8) var(--space-6) 0;
 }
 
 
@@ -161,8 +161,36 @@
   animation: fadeUp 0.7s 0.25s ease both;
 }
 
+/* ── Mobile: more padding, smaller text ── */
+@media (max-width: 639px) {
+  .hero {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+
+  .heading {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+  }
+
+  .subtext {
+    font-size: var(--text-sm);
+  }
+
+  .proofItem {
+    font-size: var(--text-xs);
+  }
+
+  .ctas {
+    gap: var(--space-6);
+  }
+}
+
 /* ── Responsive ── */
 @media (min-width: 640px) {
+  .hero {
+    padding-top: calc(68px + var(--space-4));
+  }
+
   .ctas {
     flex-direction: column;
     align-items: center;

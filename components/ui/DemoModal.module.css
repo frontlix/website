@@ -36,6 +36,8 @@
   padding: var(--space-8);
   width: 100%;
   max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   animation: slideUp 0.25s ease;
 }
@@ -114,6 +116,17 @@
   border-color: var(--color-primary);
 }
 
+/* Error melding */
+.error {
+  font-size: var(--text-sm);
+  color: #ff4444;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 68, 68, 0.08);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  margin: 0;
+}
+
 /* Submit knop */
 .submit {
   display: inline-flex;
@@ -165,4 +178,21 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+/* ── Mobile: modal starts from top, compact spacing ── */
+@media (max-width: 480px) {
+  .overlay {
+    align-items: flex-start;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .modal {
+    max-height: calc(100vh - var(--space-12));
+    padding: var(--space-6);
+  }
+
+  .heading {
+    font-size: var(--text-xl);
+  }
 }

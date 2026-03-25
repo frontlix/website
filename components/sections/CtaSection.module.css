@@ -55,6 +55,22 @@
   margin-top: calc(-1 * var(--space-4));
 }
 
+/* ── Mobile: smaller text, more padding ── */
+@media (max-width: 767px) {
+  .section {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+
+  .heading {
+    font-size: var(--text-2xl);
+  }
+
+  .subtext {
+    font-size: var(--text-sm);
+  }
+}
+
 @media (min-width: 768px) {
   .heading {
     font-size: var(--text-4xl);
