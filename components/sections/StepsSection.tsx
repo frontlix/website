@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
+import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './StepsSection.module.css'
 
 const steps = [
@@ -37,20 +38,33 @@ const steps = [
   },
 ]
 
-const TOP_START = 100
-const TOP_INCREMENT = 30
+const TOP_START_DESKTOP = 100
+const TOP_INCREMENT_DESKTOP = 30
+const TOP_START_MOBILE = 70
+const TOP_INCREMENT_MOBILE = 25
 
 export default function StepsSection() {
   const cardsRef = useRef<(HTMLDivElement | null)[]>([])
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const getTopValues = () => {
+      const isMobile = window.innerWidth < 768
+      return {
+        start: isMobile ? TOP_START_MOBILE : TOP_START_DESKTOP,
+        increment: isMobile ? TOP_INCREMENT_MOBILE : TOP_INCREMENT_DESKTOP,
+      }
+    }
+
     const handleScroll = () => {
       const cards = cardsRef.current
+      const { start, increment } = getTopValues()
       cards.forEach((card, i) => {
         if (!card) return
+        const stickyTop = start + i * increment
+        // Update inline top to match current breakpoint
+        card.style.top = `${stickyTop}px`
         const rect = card.getBoundingClientRect()
-        const stickyTop = TOP_START + i * TOP_INCREMENT
         const distanceFromTop = stickyTop - rect.top
         const progress = Math.max(0, Math.min(1, distanceFromTop / 200))
 
@@ -71,6 +85,8 @@ export default function StepsSection() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
     <section className={styles.section} ref={sectionRef}>
       <div className={styles.inner}>
@@ -88,9 +104,10 @@ export default function StepsSection() {
             <p className={styles.subtext}>
               Een helder proces zodat jij precies weet wat je kunt verwachten, van eerste gesprek tot livegang en daarna.
             </p>
-            <Button href="/contact" variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
               Plan een gratis gesprek →
             </Button>
+            <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
           </div>
 
           {/* Right column — stacking cards */}
@@ -102,7 +119,7 @@ export default function StepsSection() {
                   className={styles.step}
                   ref={(el) => { cardsRef.current[i] = el }}
                   style={{
-                    top: `${TOP_START + i * TOP_INCREMENT}px`,
+                    top: `${TOP_START_DESKTOP + i * TOP_INCREMENT_DESKTOP}px`,
                     zIndex: i + 1,
                   }}
                 >

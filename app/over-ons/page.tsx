@@ -34,12 +34,16 @@ const team = [
   {
     name: 'Christiaan Tromp',
     role: 'Oprichter & Developer',
-    image: '/images/profiel foto christiaan.png',
+    photo: '/images/christiaan Tromp pf.png',
+    description:
+      'Bouwt de technische oplossingen en zorgt dat alles naadloos samenwerkt. Van AI-chatbots tot volledige automatiseringen.',
   },
   {
     name: 'Georg Tromp',
     role: 'Designer',
-    image: '/images/profiel foto georg.png',
+    photo: '/images/Georg tromp pf.png',
+    description:
+      'Zorgt dat elke oplossing er strak en professioneel uitziet. Design dat vertrouwen wekt bij jouw klanten.',
   },
 ]
 
@@ -103,41 +107,6 @@ export default function OverOnsPage() {
         </div>
       </section>
 
-      {/* Team, direct na het verhaal */}
-      <section className={styles.teamSection}>
-        <div className={styles.inner}>
-          <div className={styles.valuesHeader}>
-            <span className={styles.sectionLabel}>Ons team</span>
-            <h2 className={styles.sectionHeading}>
-              De broers achter Frontlix
-            </h2>
-            <p className={styles.teamSubtext}>
-              Samen combineren wij techniek en design om jouw bedrijf te laten
-              groeien.
-            </p>
-          </div>
-          <div className={styles.teamGrid}>
-            {team.map((member) => (
-              <div key={member.name} className={styles.teamCard}>
-                <div className={styles.teamAvatarImage}>
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    width={180}
-                    height={180}
-                    className={styles.teamPhoto}
-                  />
-                </div>
-                <div className={styles.teamInfo}>
-                  <span className={styles.teamName}>{member.name}</span>
-                  <span className={styles.teamRole}>{member.role}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Mission */}
       <section className={styles.missionSection}>
         <div className={styles.inner}>
@@ -156,8 +125,42 @@ export default function OverOnsPage() {
         </div>
       </section>
 
+      {/* Team */}
+      <section className={styles.teamSection}>
+        <div className={styles.inner}>
+          <div className={styles.teamHeader}>
+            <span className={styles.sectionLabel}>Ons team</span>
+            <h2 className={styles.sectionHeading}>
+              De broers achter Frontlix
+            </h2>
+          </div>
+          <div className={styles.teamGrid}>
+            {team.map((member) => (
+              <article key={member.name} className={styles.teamMember}>
+                {/* Glow achter de foto */}
+                <div className={styles.teamPhotoWrapper}>
+                  <div className={styles.teamPhotoGlow} />
+                  <Image
+                    src={member.photo}
+                    alt={`Profielfoto van ${member.name}`}
+                    width={200}
+                    height={200}
+                    className={styles.teamPhoto}
+                  />
+                </div>
+                <div className={styles.teamInfo}>
+                  <h3 className={styles.teamName}>{member.name}</h3>
+                  <span className={styles.teamRole}>{member.role}</span>
+                  <p className={styles.teamDescription}>{member.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Values */}
-      <section className={styles.section}>
+      <section className={styles.valuesSection}>
         <div className={styles.inner}>
           <div className={styles.valuesHeader}>
             <span className={styles.sectionLabel}>Onze waarden</span>

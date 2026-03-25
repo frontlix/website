@@ -268,3 +268,11 @@
   align-self: flex-start;
   margin-top: 4px;
 }
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .panel {
+    padding: var(--space-3);
+  }
+}

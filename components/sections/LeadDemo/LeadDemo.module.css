@@ -114,9 +114,14 @@
 /* ─── Mobile ─────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
+  .wrapper {
+    padding: var(--space-8) var(--space-4) var(--space-8);
+  }
+
   .columns {
     display: flex;
     flex-direction: column;
+    min-height: auto;
   }
 
   .leftCol {
@@ -125,7 +130,18 @@
   }
 
   .panelContainer {
-    min-height: 500px;
+    min-height: 540px;
   }
 
+  .heading {
+    font-size: var(--text-xl);
+  }
+
+  .subtitle {
+    font-size: 10px;
+  }
+
+  .sectionHeader {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
 }

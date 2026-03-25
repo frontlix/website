@@ -5,10 +5,12 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { BGPattern } from '@/components/ui/bg-pattern'
 import LeadDemo from '@/components/sections/LeadDemo'
+import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './Hero.module.css'
 
 export default function Hero() {
   const [phone, setPhone] = useState('')
+  const [projectModalOpen, setProjectModalOpen] = useState(false)
 
   return (
     <section className={styles.hero}>
@@ -34,7 +36,7 @@ export default function Hero() {
           </p>
 
           <div className={styles.ctas}>
-            <Button href="/contact" variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => setProjectModalOpen(true)}>
               → Plan een gratis kennismakingsgesprek
             </Button>
 
@@ -81,6 +83,7 @@ export default function Hero() {
           <LeadDemo />
         </div>
       </div>
+      <ProjectModal isOpen={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
     </section>
   )
 }

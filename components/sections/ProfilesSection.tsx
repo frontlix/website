@@ -1,4 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import Button from '@/components/ui/Button'
+import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './ProfilesSection.module.css'
 
 /* Inline SVG illustration for the "missed leads" card */
@@ -218,6 +222,8 @@ const painCards: PainCard[] = [
 ]
 
 export default function ProfilesSection() {
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
@@ -245,9 +251,10 @@ export default function ProfilesSection() {
           ))}
         </div>
         <div className={styles.ctaWrapper}>
-          <Button href="/contact" variant="primary" size="lg">
+          <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
             Laat je gegevens achter, wij bellen jou →
           </Button>
+          <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
         </div>
       </div>
     </section>

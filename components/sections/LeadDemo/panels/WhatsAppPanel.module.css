@@ -220,3 +220,11 @@
   cursor: default;
   flex-shrink: 0;
 }
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .panel {
+    padding: var(--space-3);
+  }
+}

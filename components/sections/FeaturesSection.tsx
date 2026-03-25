@@ -1,3 +1,7 @@
+'use client'
+
+import { useState } from 'react'
+import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './FeaturesSection.module.css'
 
 const voordelen = [
@@ -32,6 +36,8 @@ const voordelen = [
 ]
 
 export default function FeaturesSection() {
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
     <section className={styles.section} id="waarom-frontlix">
       <div className={styles.inner}>
@@ -53,7 +59,8 @@ export default function FeaturesSection() {
           ))}
         </div>
 
-        <a href="#contact" className={styles.sectionCta}>Plan een gratis gesprek →</a>
+        <button className={styles.sectionCta} onClick={() => setModalOpen(true)}>Plan een gratis gesprek →</button>
+        <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     </section>
   )

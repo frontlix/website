@@ -197,3 +197,11 @@
   transform: scale(1);
   background: #22c55e;
 }
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .panel {
+    padding: var(--space-3);
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Button from '@/components/ui/Button'
+import ProjectModal from '@/components/ui/ProjectModal'
 import WhatsAppIllustration from './WhatsAppIllustration'
 import ClockIllustration from './ClockIllustration'
 import SettingsIllustration from './SettingsIllustration'
@@ -102,6 +103,8 @@ const cards = [
 ]
 
 export default function BenefitsSection() {
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
     <section id="waarom" className={styles.section}>
       <div className={styles.inner}>
@@ -148,9 +151,10 @@ export default function BenefitsSection() {
 
         {/* CTA */}
         <div className={styles.cta}>
-          <Button href="/contact" variant="primary" size="lg">
+          <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
             Plan een gratis gesprek →
           </Button>
+          <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
         </div>
       </div>
     </section>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './Navbar.module.css'
 
 const navLinks = [
@@ -15,6 +16,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [projectModalOpen, setProjectModalOpen] = useState(false)
 
   const toggleMenu = () => setMenuOpen((prev) => !prev)
   const closeMenu = () => setMenuOpen(false)
@@ -41,7 +43,7 @@ export default function Navbar() {
           {/* Actions */}
           <div className={styles.actions}>
             <div className={styles.ctaDesktop}>
-              <Button href="/contact" variant="primary" size="sm">
+              <Button variant="primary" size="sm" onClick={() => setProjectModalOpen(true)}>
                 Start jouw project
               </Button>
             </div>
@@ -73,10 +75,12 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
-        <Button href="/contact" variant="primary" size="md" fullWidth onClick={closeMenu}>
+        <Button variant="primary" size="md" fullWidth onClick={() => { closeMenu(); setProjectModalOpen(true) }}>
           Start jouw project
         </Button>
       </nav>
+
+      <ProjectModal isOpen={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
     </>
   )
 }

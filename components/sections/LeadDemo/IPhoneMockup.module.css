@@ -121,3 +121,17 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ─── Mobile: scale down the phone ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .phone {
+    width: 240px;
+    height: 500px;
+    border-radius: 44px;
+  }
+
+  .screen {
+    border-radius: 40px;
+  }
+}

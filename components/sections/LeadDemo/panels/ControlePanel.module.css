@@ -207,3 +207,11 @@
 .approvedVisible {
   animation: approvedPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .panel {
+    padding: var(--space-3);
+  }
+}

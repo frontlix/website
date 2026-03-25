@@ -34,10 +34,41 @@ const contactInfo = [
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      naam: formData.get('naam') as string,
+      email: formData.get('email') as string,
+      bericht: formData.get('bericht') as string,
+    }
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        setError(result.message || 'Er is een fout opgetreden.')
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      setError('Kan geen verbinding maken. Probeer het later opnieuw.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -128,9 +159,13 @@ export default function ContactForm() {
               />
             </div>
 
+            {error && (
+              <p className={styles.errorMessage}>{error}</p>
+            )}
+
             <div className={styles.submitRow}>
-              <Button type="submit" variant="primary" size="lg" fullWidth>
-                Plan een gesprek →
+              <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
+                {loading ? 'Versturen...' : 'Plan een gesprek →'}
               </Button>
             </div>
           </form>
