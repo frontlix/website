@@ -8,7 +8,7 @@ const faqs = [
   {
     question: 'Wat is automatische leadopvolging precies?',
     answer:
-      'Wanneer een potentiële klant een formulier invult of een bericht stuurt, neemt onze AI het gesprek over via WhatsApp. De AI stelt de juiste vragen, verzamelt alle informatie die nodig is en stuurt automatisch een offerte — allemaal zonder dat jij iets hoeft te doen.',
+      'Wanneer een potentiële klant een formulier invult of een bericht stuurt, neemt onze AI het gesprek over via WhatsApp. De AI stelt de juiste vragen, verzamelt alle informatie die nodig is en stuurt automatisch een offerte, allemaal zonder dat jij iets hoeft te doen.',
   },
   {
     question: 'Moet ik technische kennis hebben?',
@@ -18,12 +18,12 @@ const faqs = [
   {
     question: 'Hoe snel is het operationeel?',
     answer:
-      'De meeste opzetten zijn binnen 1 tot 2 weken live. We beginnen met een intake om jouw bedrijf en werkwijze te begrijpen, bouwen dan het systeem op maat en testen alles uitvoerig voordat het live gaat.',
+      'De meeste opzetten zijn binnen 2 tot 4 weken live. We beginnen met een intake om jouw bedrijf en werkwijze te begrijpen, bouwen dan het systeem op maat en testen alles uitvoerig voordat het live gaat.',
   },
   {
     question: 'Wat kost het?',
     answer:
-      'Dat hangt af van de complexiteit van jouw situatie. We beginnen altijd met een gratis kennismakingsgesprek waarin we jouw wensen bespreken en een inschatting geven. Geen verrassingen achteraf.',
+      'Dat hangt af van de complexiteit van jouw situatie. We beginnen altijd met een gratis kennismakingsgesprek waarin we jouw wensen bespreken en een inschatting geven. Daarnaast krijg je een maand gratis proeftijd, zodat je zonder risico kunt ervaren wat het oplevert. Geen verrassingen achteraf.',
   },
   {
     question: 'Wat als de AI een vraag niet kan beantwoorden?',
@@ -43,7 +43,7 @@ const faqs = [
   {
     question: 'Kan ik het eerst uitproberen?',
     answer:
-      'Ja. We bieden een gratis kennismakingsgesprek aan waarin we een demo laten zien op basis van jouw bedrijf. Zo zie je precies hoe het werkt voordat je beslist.',
+      'Ja. We bieden een gratis kennismakingsgesprek aan waarin we een demo laten zien op basis van jouw bedrijf. Daarnaast krijg je een maand gratis testtijd om het systeem in de praktijk uit te proberen, zo zie je precies wat het oplevert voordat je beslist.',
   },
 ]
 
@@ -61,7 +61,7 @@ export default function FaqSection() {
           <span className={styles.label}>Veelgestelde vragen</span>
           <h2 className={styles.heading}>Alles wat je wilt weten</h2>
           <p className={styles.subtext}>
-            Heb je een andere vraag? Neem gerust contact met ons op — we
+            Heb je een andere vraag? Neem gerust contact met ons op, we
             helpen je graag verder.
           </p>
         </header>

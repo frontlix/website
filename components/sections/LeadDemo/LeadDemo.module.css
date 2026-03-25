@@ -58,6 +58,7 @@
 .columns {
   display: grid;
   grid-template-columns: 30% 70%;
+  grid-template-rows: auto 1fr;
   min-height: 600px;
   background: var(--color-surface);
   border-radius: 14px;
@@ -68,20 +69,27 @@
   min-width: 0;
 }
 
-/* ─── Left column ───────────────────────────────────────────────────────────── */
+/* ─── Section header — desktop: top-left cell ─────────────────────────────── */
+
+.sectionHeader {
+  grid-column: 1;
+  grid-row: 1;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+/* ─── Left column (pipeline) — desktop: bottom-left cell ──────────────────── */
 
 .leftCol {
+  grid-column: 1;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--color-border);
 }
 
-/* ─── Section header (title + subtitle inside left col) ─────────────────────── */
-
-.sectionHeader {
-  padding: var(--space-6) var(--space-6) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-}
+/* ─── Panel container — desktop: spans full right column ──────────────────── */
 
 .heading {
   font-size: var(--text-2xl);
@@ -107,6 +115,8 @@
 /* ─── Panel container (right side) ───────────────────────────────────────────── */
 
 .panelContainer {
+  grid-column: 2;
+  grid-row: 1 / -1;
   position: relative;
   overflow: hidden;
 }
@@ -115,24 +125,34 @@
 
 @media (max-width: 768px) {
   .wrapper {
-    padding: var(--space-8) var(--space-4) var(--space-8);
+    padding: var(--space-8) var(--space-2) var(--space-8);
   }
 
   .columns {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     min-height: auto;
   }
 
-  .leftCol {
+  /* Mobile order: 1 = header, 2 = animation, 3 = pipeline */
+  .sectionHeader {
+    order: 1;
     border-right: none;
-    border-top: 1px solid var(--color-border);
-    border-bottom: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-4) var(--space-4) var(--space-3);
   }
 
   .panelContainer {
+    order: 2;
     min-height: 540px;
     border-bottom: 1px solid var(--color-border);
+  }
+
+  .leftCol {
+    order: 3;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
   }
 
   .heading {
@@ -141,9 +161,5 @@
 
   .subtitle {
     font-size: 10px;
-  }
-
-  .sectionHeader {
-    padding: var(--space-4) var(--space-4) var(--space-3);
   }
 }

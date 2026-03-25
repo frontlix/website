@@ -161,27 +161,47 @@
   animation: fadeUp 0.7s 0.25s ease both;
 }
 
-/* ── Mobile: more padding, smaller text ── */
+/* ── Mobile ── */
 @media (max-width: 639px) {
+  /* Minimal outer padding so the mockup can stretch wide */
   .hero {
-    padding-left: var(--space-12);
-    padding-right: var(--space-12);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
   }
 
+  /* Heading: bigger than before */
   .heading {
-    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
   }
 
+  /* Sub-line + CTA: pushed inward with extra padding */
   .subtext {
     font-size: var(--text-sm);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+
+  .ctas {
+    gap: var(--space-6);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+
+  .proofBar {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
   }
 
   .proofItem {
     font-size: var(--text-xs);
   }
 
-  .ctas {
-    gap: var(--space-6);
+  /* Mockup: stretch wider (less padding) */
+  .demoWrapper {
+    margin-left: calc(-1 * var(--space-2));
+    margin-right: calc(-1 * var(--space-2));
   }
 }
 

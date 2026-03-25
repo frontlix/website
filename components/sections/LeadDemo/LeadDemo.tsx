@@ -112,17 +112,19 @@ export default function LeadDemo() {
         />
 
         <div className={styles.columns}>
-          {/* Left column: title + pipeline */}
+          {/* Section header: separate element for mobile reordering */}
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.heading}>
+              Zo werkt{' '}
+              <span className={styles.accentWord}>het!</span>
+            </h2>
+            <p className={styles.subtitle}>
+              Van formulier tot offerte · volledig automatisch
+            </p>
+          </div>
+
+          {/* Left column: pipeline */}
           <div className={styles.leftCol}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.heading}>
-                Zo werkt{' '}
-                <span className={styles.accentWord}>het!</span>
-              </h2>
-              <p className={styles.subtitle}>
-                Van formulier tot offerte · volledig automatisch
-              </p>
-            </div>
             <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
           </div>
 

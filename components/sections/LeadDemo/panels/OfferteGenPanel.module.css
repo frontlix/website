@@ -269,10 +269,88 @@
   margin-top: 4px;
 }
 
-/* ─── Mobile ─────────────────────────────────────────────────────────────────── */
+/* ─── Mobile: scale down offerte document to fit panel ───────────────────────── */
 
 @media (max-width: 768px) {
   .panel {
-    padding: var(--space-3);
+    padding: var(--space-2);
+    padding-top: var(--space-3);
+    align-items: stretch;
+  }
+
+  .container {
+    gap: var(--space-2);
+    flex: 1;
+  }
+
+  .progressLabel {
+    font-size: 11px;
+  }
+
+  .progressBar {
+    height: 4px;
+  }
+
+  .document {
+    padding: 16px 18px;
+    min-height: auto;
+    flex: 1;
+    gap: var(--space-2);
+  }
+
+  .docTitle {
+    font-size: 16px;
+  }
+
+  .docNumber {
+    font-size: 9px;
+  }
+
+  .docClientLabel {
+    font-size: 9px;
+  }
+
+  .docClientName {
+    font-size: 12px;
+  }
+
+  .docClientDetail {
+    font-size: 10px;
+  }
+
+  .docTable th {
+    font-size: 9px;
+    padding: 4px 0;
+  }
+
+  .docTable td {
+    font-size: 11px;
+    padding: 5px 0;
+  }
+
+  .docTable td:last-child {
+    font-size: 10px;
+  }
+
+  .includedBadge {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+
+  .docTotal {
+    padding-top: var(--space-2);
+  }
+
+  .docTotalLabel {
+    font-size: 11px;
+  }
+
+  .docTotalValue {
+    font-size: 14px;
+  }
+
+  .validBadge {
+    font-size: 9px;
+    padding: 3px 8px;
   }
 }

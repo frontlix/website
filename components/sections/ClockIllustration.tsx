@@ -13,8 +13,10 @@ export default function ClockIllustration() {
       const angle = (i / 60) * 360 * (Math.PI / 180)
       const len = isMajor ? 12 : 7
       const width = isMajor ? 3 : 2
-      const x = 100 + r * Math.sin(angle)
-      const y = 100 - r * Math.cos(angle)
+      /* Round to 3 decimals to avoid server/client hydration mismatch */
+      const x = Math.round((100 + r * Math.sin(angle)) * 1000) / 1000
+      const y = Math.round((100 - r * Math.cos(angle)) * 1000) / 1000
+      const deg = Math.round((i / 60) * 360 * 1000) / 1000
       items.push(
         <div
           key={i}
@@ -25,7 +27,7 @@ export default function ClockIllustration() {
             background: isMajor ? '#94a8cc' : '#d8e0ee',
             left: `${x}px`,
             top: `${y}px`,
-            transform: `translate(-50%, -50%) rotate(${(i / 60) * 360}deg)`,
+            transform: `translate(-50%, -50%) rotate(${deg}deg)`,
           }}
         />
       )
