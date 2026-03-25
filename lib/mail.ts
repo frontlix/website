@@ -131,3 +131,128 @@ export async function sendConfirmation(to: string, naam: string) {
     `,
   })
 }
+
+/** Stuurt een goedkeurings-e-mail voor de demo-offerte */
+export async function sendApprovalEmail(
+  to: string,
+  data: {
+    naam: string
+    telefoon: string
+    email: string
+    type_pand: string
+    m2: string
+    steentype: string
+    planten: string
+    pricePerM2: number
+    base: number
+    surcharge: number
+    total: number
+    approveUrl: string
+  }
+) {
+  const transporter = getTransporter()
+  await transporter.sendMail({
+    from: `Frontlix Demo <${process.env.MAIL_USER}>`,
+    to,
+    subject: `Offerte ter goedkeuring — ${data.naam}`,
+    html: `
+<!DOCTYPE html>
+<html lang="nl">
+<head><meta charset="UTF-8"></head>
+<body style="margin: 0; padding: 0; background-color: #F0F2F5; font-family: 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0F2F5; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1A56FF, #00CFFF); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
+              <span style="font-size: 22px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;">Nieuwe offerte ter goedkeuring</span>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background-color: #FFFFFF; padding: 40px;">
+              <p style="margin: 0 0 8px; color: #555555; font-size: 15px; line-height: 1.7;">
+                Er is een nieuwe offerte opgesteld en klaar voor interne controle.
+              </p>
+
+              <!-- Klantgegevens -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 24px 0;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Klantgegevens</p>
+                    <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555;">
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Naam:</td><td style="padding: 4px 0;">${data.naam}</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Telefoon:</td><td style="padding: 4px 0;">+${data.telefoon}</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Email:</td><td style="padding: 4px 0;">${data.email}</td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Offerte details -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 24px;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Offerte details</p>
+                    <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555;">
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Type pand:</td><td style="padding: 4px 0;">${data.type_pand}</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Oppervlakte:</td><td style="padding: 4px 0;">${data.m2} m&sup2;</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Steentype:</td><td style="padding: 4px 0;">${data.steentype}</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Planten:</td><td style="padding: 4px 0;">${data.planten}</td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Prijsopbouw -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 32px;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Prijsopbouw</p>
+                    <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555;">
+                      <tr><td style="padding: 4px 16px 4px 0;">Prijs per m&sup2;:</td><td style="padding: 4px 0;">&euro;${data.pricePerM2.toFixed(2)}</td></tr>
+                      <tr><td style="padding: 4px 16px 4px 0;">Basisprijs (${data.m2} m&sup2;):</td><td style="padding: 4px 0;">&euro;${data.base.toFixed(2)}</td></tr>
+                      ${data.surcharge > 0 ? `<tr><td style="padding: 4px 16px 4px 0;">Toeslag planten:</td><td style="padding: 4px 0;">&euro;${data.surcharge.toFixed(2)}</td></tr>` : ''}
+                      <tr><td style="padding: 8px 16px 4px 0; font-weight: 700; font-size: 16px; color: #1A1A1A;">Totaalprijs:</td><td style="padding: 8px 0; font-weight: 700; font-size: 16px; color: #1A1A1A;">&euro;${data.total.toFixed(2)}</td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Goedkeuren button -->
+              <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center" style="border-radius: 10px; background-color: #16a34a;">
+                    <a href="${data.approveUrl}" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px;">
+                      Offerte goedkeuren
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 24px 0 0; color: #888888; font-size: 13px; text-align: center; line-height: 1.6;">
+                Bij goedkeuring wordt de offerte automatisch naar de klant verzonden via WhatsApp.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #F5F7FA; border-radius: 0 0 16px 16px; padding: 20px 40px; text-align: center;">
+              <p style="margin: 0; color: #888888; font-size: 12px;">Dit is een demo van het Frontlix automatiseringssysteem.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `,
+  })
+}

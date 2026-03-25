@@ -10,7 +10,42 @@ import styles from './Hero.module.css'
 
 export default function Hero() {
   const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
   const [projectModalOpen, setProjectModalOpen] = useState(false)
+
+  async function handleDemoSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+
+    if (!phone.trim()) {
+      setError('Vul je telefoonnummer in.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/demo-chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefoon: phone.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Er ging iets mis.')
+        return
+      }
+
+      setSuccess(true)
+    } catch {
+      setError('Verbindingsfout. Probeer het opnieuw.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <section className={styles.hero}>
@@ -37,24 +72,17 @@ export default function Hero() {
 
           <div className={styles.ctas}>
             <Button variant="primary" size="lg" onClick={() => setProjectModalOpen(true)}>
-              → Plan een gratis kennismakingsgesprek
+              → Gratis kennismakingsgesprek
             </Button>
 
             <div className={styles.whatsappBlock}>
             <p className={styles.whatsappLabel}>→ Ontvang de demo op WhatsApp</p>
+            {success ? (
+              <p className={styles.successMessage}>Check je WhatsApp! De demo is onderweg.</p>
+            ) : (
             <form
               className={styles.phoneForm}
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (phone.trim()) {
-                  window.open(
-                    `https://wa.me/31612345678?text=${encodeURIComponent(
-                      `Demo aanvraag: ${phone}`
-                    )}`,
-                    '_blank'
-                  )
-                }
-              }}
+              onSubmit={handleDemoSubmit}
             >
               <input
                 type="tel"
@@ -63,10 +91,12 @@ export default function Hero() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
-              <button type="submit" className={styles.phoneButton}>
-                Ontvang demo
+              <button type="submit" className={styles.phoneButton} disabled={loading}>
+                {loading ? 'Bezig...' : 'Ontvang demo'}
               </button>
+              {error && <p className={styles.errorMessage}>{error}</p>}
             </form>
+            )}
             </div>
           </div>
 

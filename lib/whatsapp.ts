@@ -17,7 +17,7 @@ const GRAPH_API_VERSION = 'v22.0'
  *   "+31 6 12345678" → "31612345678"
  *   "0031612345678"  → "31612345678"
  */
-function normalizePhone(phone: string): string {
+export function normalizePhone(phone: string): string {
   // Strip alles behalve cijfers en +
   let cleaned = phone.replace(/[^0-9+]/g, '')
 
@@ -75,6 +75,44 @@ export async function sendWhatsAppMessage(telefoon: string, naam: string): Promi
             },
           ],
         },
+      }),
+    }
+  )
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    throw new Error(`WhatsApp API error (${res.status}): ${errorBody}`)
+  }
+}
+
+/**
+ * Stuurt een vrije-tekst WhatsApp bericht (geen template).
+ * Werkt alleen binnen het 24-uurs conversatievenster na een template of klantbericht.
+ */
+export async function sendWhatsAppText(phone: string, text: string): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+
+  if (!phoneNumberId || !accessToken) {
+    console.warn('WhatsApp env variabelen niet geconfigureerd — bericht overgeslagen.')
+    return
+  }
+
+  const to = normalizePhone(phone)
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'text',
+        text: { body: text },
       }),
     }
   )

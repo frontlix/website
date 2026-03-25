@@ -135,6 +135,27 @@
   color: #00CFFF;
 }
 
+.phoneButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  font-size: var(--text-sm);
+  color: #16a34a;
+  font-weight: 600;
+  padding: 12px 20px;
+  background: rgba(22, 163, 74, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.errorMessage {
+  font-size: var(--text-xs);
+  color: #dc2626;
+  margin-top: var(--space-1);
+}
+
 /* ── Proof bar ── */
 .proofBar {
   margin-top: var(--space-8);
