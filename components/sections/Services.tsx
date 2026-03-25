@@ -6,8 +6,8 @@ import {
   ShieldCheck,
   Send,
 } from 'lucide-react'
-import Button from '@/components/ui/Button'
-import StepObserver from './StepObserver'
+import DemoButton from '@/components/ui/DemoButton'
+import StepObserver, { TimelineProvider } from './StepObserver'
 import styles from './Services.module.css'
 
 const steps = [
@@ -113,6 +113,7 @@ export default function Services() {
         </div>
 
         {/* Timeline */}
+        <TimelineProvider totalSteps={steps.length}>
         <div className={styles.timeline}>
           {steps.map((step, index) => {
             const Icon = step.icon
@@ -120,6 +121,7 @@ export default function Services() {
             return (
               <div key={step.number}>
                 <StepObserver
+                  index={index}
                   className={`${styles.step} ${isEven ? styles.stepReverse : ''}`}
                   activeClassName={styles.stepInView}
                   style={{ '--delay': `${index * 0.1}s` } as React.CSSProperties}
@@ -163,15 +165,16 @@ export default function Services() {
                     <p className={styles.midCtaText}>
                       Benieuwd hoe dit voor jouw bedrijf werkt?
                     </p>
-                    <Button href="/contact" variant="primary" size="md">
+                    <DemoButton variant="primary" size="md">
                       Plan een gratis demo →
-                    </Button>
+                    </DemoButton>
                   </div>
                 )}
               </div>
             )
           })}
         </div>
+        </TimelineProvider>
 
         {/* CTA */}
         <div className={styles.bottomCta}>
@@ -182,9 +185,9 @@ export default function Services() {
             Wij bouwen dit volledig op maat, afgestemd op jouw diensten,
             prijzen en werkwijze. Binnen een week operationeel.
           </p>
-          <Button href="/contact" variant="primary" size="lg">
+          <DemoButton variant="primary" size="lg">
             Plan een gratis demo →
-          </Button>
+          </DemoButton>
         </div>
       </div>
     </section>
@@ -197,18 +200,18 @@ function StepVisual({ step }: { step: string }) {
     case 'incoming':
       return (
         <div className={styles.mockForm}>
-          <div className={styles.mockFormHeader}>Contactformulier</div>
+          <div className={styles.mockFormHeader}>Nieuwe aanvraag</div>
           <div className={styles.mockField}>
             <span className={styles.mockLabel}>Naam</span>
-            <div className={styles.mockInput}>Jan de Vries</div>
+            <div className={styles.mockInput}>Lisa Bakker</div>
           </div>
           <div className={styles.mockField}>
             <span className={styles.mockLabel}>Telefoon</span>
-            <div className={styles.mockInput}>+31 6 1234 5678</div>
+            <div className={styles.mockInput}>+31 6 •••• ••78</div>
           </div>
           <div className={styles.mockField}>
-            <span className={styles.mockLabel}>Dienst</span>
-            <div className={styles.mockInput}>Terras reinigen</div>
+            <span className={styles.mockLabel}>Interesse</span>
+            <div className={styles.mockInput}>Vrijblijvende offerte</div>
           </div>
           <div className={styles.mockButton}>Verstuur aanvraag</div>
         </div>
@@ -222,13 +225,13 @@ function StepVisual({ step }: { step: string }) {
           </div>
           <div className={styles.mockMessages}>
             <div className={`${styles.mockMsg} ${styles.mockMsgOut}`}>
-              Hey Jan! Ik heb je aanvraag ontvangen. Om welk type oppervlak gaat het?
+              Hoi Lisa! Bedankt voor je aanvraag. Kan je kort omschrijven wat je nodig hebt?
             </div>
             <div className={`${styles.mockMsg} ${styles.mockMsgIn}`}>
-              Het gaat om onze oprit, zo&apos;n 40m²
+              Ja, ik zoek een offerte voor mijn project
             </div>
             <div className={`${styles.mockMsg} ${styles.mockMsgOut}`}>
-              Top! Wat voor soort stenen liggen er?
+              Top! Kun je een paar details delen zodat ik het goed kan inschatten?
             </div>
             <div className={styles.mockTyping}>
               <span /><span /><span />
@@ -252,16 +255,16 @@ function StepVisual({ step }: { step: string }) {
           <div className={styles.mockAnalysis}>
             <div className={styles.mockAnalysisHeader}>AI Analyse</div>
             <div className={styles.mockAnalysisRow}>
-              <span>Ondergrond</span>
-              <span className={styles.mockTag}>Klinkers</span>
+              <span>Type</span>
+              <span className={styles.mockTag}>Herkend</span>
             </div>
             <div className={styles.mockAnalysisRow}>
-              <span>Staat</span>
-              <span className={styles.mockTag}>Matig vervuild</span>
+              <span>Conditie</span>
+              <span className={styles.mockTag}>Beoordeeld</span>
             </div>
             <div className={styles.mockAnalysisRow}>
-              <span>Geschat</span>
-              <span className={styles.mockTag}>~40 m²</span>
+              <span>Omvang</span>
+              <span className={styles.mockTag}>Ingeschat</span>
             </div>
           </div>
         </div>
@@ -269,23 +272,23 @@ function StepVisual({ step }: { step: string }) {
     case 'calculate':
       return (
         <div className={styles.mockInvoice}>
-          <div className={styles.mockInvoiceHeader}>Offerte #2847</div>
+          <div className={styles.mockInvoiceHeader}>Offerte #1042</div>
           <div className={styles.mockInvoiceRows}>
             <div className={styles.mockInvoiceRow}>
-              <span>Oppervlakte</span>
-              <span>40 m²</span>
+              <span>Dienst</span>
+              <span>Op maat</span>
             </div>
             <div className={styles.mockInvoiceRow}>
-              <span>Prijs per m²</span>
-              <span>€ 4,50</span>
+              <span>Specificaties</span>
+              <span>Automatisch ingevuld</span>
             </div>
             <div className={styles.mockInvoiceRow}>
-              <span>Toeslag planten</span>
-              <span>€ 15,00</span>
+              <span>Korting</span>
+              <span>Berekend</span>
             </div>
             <div className={`${styles.mockInvoiceRow} ${styles.mockInvoiceTotal}`}>
               <span>Totaal</span>
-              <span>€ 195,00</span>
+              <span>€ •••,••</span>
             </div>
           </div>
           <div className={styles.mockPdfBadge}>PDF gegenereerd</div>
@@ -299,9 +302,9 @@ function StepVisual({ step }: { step: string }) {
             Offerte ter goedkeuring
           </div>
           <div className={styles.mockEmailBody}>
-            <p>Klant: Jan de Vries</p>
-            <p>Totaal: € 195,00</p>
-            <p>2 foto&apos;s bijgevoegd</p>
+            <p>Klant: Lisa Bakker</p>
+            <p>Offerte: klaar voor review</p>
+            <p>Bijlagen: 2 bestanden</p>
           </div>
           <div className={styles.mockEmailActions}>
             <div className={styles.mockBtnApprove}>Goedkeuren</div>
