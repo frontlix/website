@@ -223,7 +223,7 @@ export default function ProfilesSection() {
       <div className={styles.inner}>
         <div className={styles.header}>
           <h2 className={styles.heading}>Herken jij dit?</h2>
-          <p className={styles.subtitle}>Herken je één van deze situaties? Dan lossen we dit binnen 2-4 weken op.</p>
+          <p className={styles.subtitle}>De meeste MKB-ondernemers lopen tegen dezelfde problemen aan.</p>
         </div>
 
         <div className={styles.grid}>

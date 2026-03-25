@@ -15,10 +15,9 @@ export default function ContactPage() {
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <span className={styles.label}>Contact</span>
-          <h1 className={styles.heroHeading}>Neem contact op</h1>
+          <h1 className={styles.heroHeading}>Laten we jouw project bespreken</h1>
           <p className={styles.heroSubtext}>
-            Heb je een project in gedachten? Of wil je gewoon eens praten over
-            de mogelijkheden? We horen graag van je.
+            Plan een vrijblijvend gesprek. We reageren binnen 24 uur.
           </p>
         </div>
       </section>

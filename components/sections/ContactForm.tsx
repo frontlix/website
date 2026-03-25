@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, MessageCircle, Phone, MapPin, CheckCircle } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import styles from './ContactForm.module.css'
 
@@ -13,10 +13,16 @@ const contactInfo = [
     href: 'mailto:info@frontlix.nl',
   },
   {
+    icon: MessageCircle,
+    label: 'WhatsApp',
+    value: 'Stuur een berichtje',
+    href: 'https://wa.me/31624965270',
+  },
+  {
     icon: Phone,
     label: 'Telefoon',
-    value: '+31 6 12345678',
-    href: 'tel:+31612345678',
+    value: '+31 6 24965270',
+    href: 'tel:+31624965270',
   },
   {
     icon: MapPin,
@@ -38,11 +44,10 @@ export default function ContactForm() {
     <div className={styles.wrapper}>
       {/* Left: contact info */}
       <div className={styles.infoColumn}>
-        <h2 className={styles.infoTitle}>Laten we kennismaken</h2>
+        <h2 className={styles.infoTitle}>Liever direct contact?</h2>
         <p className={styles.infoText}>
-          Heb je een project in gedachten of wil je gewoon eens praten over de
-          mogelijkheden? Stuur ons een bericht — we reageren binnen één
-          werkdag.
+          Geen formulieren-fan? Stuur een e-mail of bel ons. We denken graag
+          vrijblijvend met je mee.
         </p>
 
         <div className={styles.contactItems}>
@@ -71,7 +76,13 @@ export default function ContactForm() {
 
         {submitted ? (
           <div className={styles.successMessage}>
-            Bedankt voor je bericht! We nemen zo snel mogelijk contact op.
+            <div className={styles.successIcon}>
+              <CheckCircle size={48} />
+            </div>
+            <h4 className={styles.successTitle}>Bericht verstuurd!</h4>
+            <p className={styles.successText}>
+              Bedankt voor je bericht. We reageren binnen 24 uur op werkdagen.
+            </p>
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -105,20 +116,6 @@ export default function ContactForm() {
             </div>
 
             <div className={styles.fieldGroup}>
-              <label htmlFor="onderwerp" className={styles.label}>
-                Onderwerp
-              </label>
-              <input
-                type="text"
-                id="onderwerp"
-                name="onderwerp"
-                placeholder="Waar gaat het over?"
-                required
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
               <label htmlFor="bericht" className={styles.label}>
                 Bericht
               </label>
@@ -133,7 +130,7 @@ export default function ContactForm() {
 
             <div className={styles.submitRow}>
               <Button type="submit" variant="primary" size="lg" fullWidth>
-                Verstuur bericht →
+                Plan een gesprek →
               </Button>
             </div>
           </form>
