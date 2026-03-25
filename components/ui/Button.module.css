@@ -84,7 +84,7 @@
 }
 
 .lg {
-  padding: var(--space-8) var(--space-8);
+  padding: var(--space-4) var(--space-8);
   font-size: var(--text-base);
 }
 

@@ -176,6 +176,31 @@
   font-weight: 700;
 }
 
+/* CTA tekst: mobiel vs desktop */
+.ctaTextDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .ctaTextMobile {
+    display: none;
+  }
+  .ctaTextDesktop {
+    display: inline;
+  }
+}
+
+/* Verberg extra proof items op mobiel, toon op desktop */
+.proofItemDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .proofItemDesktop {
+    display: inline;
+  }
+}
+
 /* ── Demo wrapper ── */
 .demoWrapper {
   width: 100%;

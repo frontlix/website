@@ -72,7 +72,8 @@ export default function Hero() {
 
           <div className={styles.ctas}>
             <Button variant="primary" size="lg" onClick={() => setProjectModalOpen(true)}>
-              → Gratis kennismakingsgesprek
+              <span className={styles.ctaTextMobile}>→ Gratis kennismakingsgesprek</span>
+              <span className={styles.ctaTextDesktop}>→ Plan een gratis kennismakingsgesprek</span>
             </Button>
 
             <div className={styles.whatsappBlock}>
@@ -102,6 +103,8 @@ export default function Hero() {
 
           <div className={styles.proofBar}>
             <span className={styles.proofItem}><span className={styles.check}>✓</span> Op maat gebouwd</span>
+            <span className={`${styles.proofItem} ${styles.proofItemDesktop}`}><span className={styles.check}>✓</span> Binnen 2-3 weken live</span>
+            <span className={`${styles.proofItem} ${styles.proofItemDesktop}`}><span className={styles.check}>✓</span> Geen technische kennis nodig</span>
             <span className={styles.proofItem}><span className={styles.check}>✓</span> Free trial</span>
           </div>
         </div>
