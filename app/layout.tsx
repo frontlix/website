@@ -26,13 +26,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Frontlix', url: 'https://frontlix.nl' }],
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.nl'
+    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.com'
   ),
   openGraph: {
     title: 'Frontlix | Digitale groei voor moderne bedrijven',
     description:
       'Wij bouwen websites en digitale oplossingen die niet alleen mooi zijn — maar die converteren, groeien en presteren.',
-    url: 'https://frontlix.nl',
+    url: 'https://frontlix.com',
     siteName: 'Frontlix',
     locale: 'nl_NL',
     type: 'website',
