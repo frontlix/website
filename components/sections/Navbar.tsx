@@ -27,7 +27,7 @@ export default function Navbar() {
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="/" className={styles.logo} onClick={closeMenu}>
-            <Image src="/logo.png" alt="Frontlix logo" width={44} height={44} />
+            <Image src="/logo.png" alt="Frontlix logo" width={44} height={44} className={styles.logoImage} />
             <span>Front<span className={styles.logoIx}>lix</span></span>
           </Link>
 

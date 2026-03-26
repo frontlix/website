@@ -33,17 +33,17 @@ const values = [
 const team = [
   {
     name: 'Christiaan Tromp',
-    role: 'hoofdontwikkelaar in AI',
+    roleParts: ['Hoofd Technologie', 'AI'],
     photo: '/images/christiaan Tromp pf.png',
     description:
-      'Ontwikkelt slimme AI-oplossingen en automatiseringen die bedrijfsprocessen efficiënter maken. Van geavanceerde AI-systemen tot volledig geïntegreerde automatiseringen.',
+      'Achter elke automatisering zit een systeem dat precies doet wat het moet doen. Christiaan bouwt het zo dat het werkt terwijl jij slaapt.',
   },
   {
     name: 'Georg Tromp',
-    role: 'hoofd ontwerper & strategie',
+    roleParts: ['Hoofd Strategie', 'Design'],
     photo: '/images/Georg tromp pf.png',
     description:
-      'Vertaalt klantbehoeften naar een heldere strategie en zorgt dat elke oplossing er strak en professioneel uitziet.',
+      'Georg vertaalt wat een ondernemer nodig heeft naar een aanpak die werkt en een uitstraling die vertrouwen geeft.',
   },
 ]
 
@@ -150,7 +150,11 @@ export default function OverOnsPage() {
                 </div>
                 <div className={styles.teamInfo}>
                   <h3 className={styles.teamName}>{member.name}</h3>
-                  <span className={styles.teamRole}>{member.role}</span>
+                  <span className={styles.teamRole}>
+                    {member.roleParts[0]}
+                    <span className={styles.roleAnd}>&amp;</span>
+                    {member.roleParts[1]}
+                  </span>
                   <p className={styles.teamDescription}>{member.description}</p>
                 </div>
               </article>

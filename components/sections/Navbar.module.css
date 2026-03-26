@@ -31,6 +31,11 @@
   gap: 8px;
 }
 
+.logoImage {
+  width: 44px;
+  height: 44px;
+}
+
 .logoIx {
   background: var(--color-gradient);
   -webkit-background-clip: text;
@@ -138,14 +143,34 @@
   color: var(--color-text);
 }
 
-/* On mobile: navbar scrolls with page instead of being fixed */
+/* On mobile: navbar scrolls with page instead of being fixed, smaller height */
 @media (max-width: 767px) {
   .navbar {
     position: relative;
   }
 
+  .inner {
+    height: 52px;
+  }
+
+  .logo {
+    font-size: var(--text-base);
+    gap: 6px;
+  }
+
+  .logoImage {
+    width: 34px;
+    height: 34px;
+  }
+
   .mobileMenu {
     position: absolute;
+    top: 52px;
+  }
+
+  .menuBtn {
+    width: 36px;
+    height: 36px;
   }
 }
 

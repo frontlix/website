@@ -1,4 +1,4 @@
-/* Overlay achter de modal */
+/* Overlay achter de modal — scrollbare container voor mobiel */
 .overlay {
   position: fixed;
   inset: 0;
@@ -10,6 +10,9 @@
   justify-content: center;
   padding: var(--space-4);
   animation: fadeIn 0.2s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 @keyframes fadeIn {
@@ -38,8 +41,12 @@
   max-width: 540px;
   max-height: 90vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   position: relative;
   animation: slideUp 0.25s ease;
+  /* Voorkom dat de modal krimpt in een flex container */
+  flex-shrink: 0;
 }
 
 /* Custom scrollbar voor de modal */
@@ -239,7 +246,7 @@
   line-height: 1.6;
 }
 
-/* ── Mobile: modal starts from top, compact spacing ── */
+/* ── Mobile: overlay scrollt, modal groeit mee ── */
 @media (max-width: 480px) {
   .overlay {
     align-items: flex-start;
@@ -247,10 +254,13 @@
   }
 
   .modal {
-    max-height: calc(100vh - var(--space-8));
+    /* Geen max-height: de overlay scrollt in plaats van de modal */
+    max-height: none;
     padding: var(--space-4) var(--space-6);
     border-radius: var(--radius-lg);
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    /* Extra ruimte onderaan zodat de submit-knop niet tegen de rand zit */
+    margin-bottom: var(--space-8);
   }
 
   .heading {

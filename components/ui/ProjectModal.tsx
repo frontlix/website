@@ -21,18 +21,42 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  /* Sluit modal met Escape */
+  /* Sluit modal met Escape + voorkom body scroll op mobiel */
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
+
+    /* Voorkom dat de body scrollt achter de modal (ook op iOS) */
+    const preventBodyScroll = (e: TouchEvent) => {
+      /* Sta scroll toe binnen de overlay zelf */
+      const overlay = document.querySelector(`.${styles.overlay}`)
+      if (overlay && overlay.contains(e.target as Node)) return
+      e.preventDefault()
+    }
+
     if (isOpen) {
       document.addEventListener('keydown', handleKey)
       document.body.style.overflow = 'hidden'
+      /* position: fixed voorkomt iOS Safari bounce-scroll bug */
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${window.scrollY}px`
+      document.addEventListener('touchmove', preventBodyScroll, { passive: false })
     }
+
     return () => {
       document.removeEventListener('keydown', handleKey)
+      document.removeEventListener('touchmove', preventBodyScroll)
+      /* Herstel scroll positie na sluiten */
+      const scrollY = document.body.style.top
       document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.top = ''
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1)
+      }
     }
   }, [isOpen, onClose])
 
