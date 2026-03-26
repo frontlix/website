@@ -12,16 +12,16 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Frontlix | Digitale groei voor moderne bedrijven',
+  title: 'Frontlix | Automatische leadopvolging via WhatsApp',
   description:
-    'Frontlix bouwt websites en digitale oplossingen die converteren, groeien en presteren. Jouw strategische tech-partner voor echte resultaten.',
+    'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
   keywords: [
-    'webdevelopment',
-    'Next.js',
-    'SEO',
-    'web applicaties',
-    'UI/UX design',
-    'digitale groei',
+    'leadopvolging',
+    'WhatsApp automatisering',
+    'AI leads',
+    'automatische offerte',
+    'lead management',
+    'sales automatisering',
     'Nederland',
   ],
   authors: [{ name: 'Frontlix', url: 'https://frontlix.nl' }],
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.com'
   ),
   openGraph: {
-    title: 'Frontlix | Digitale groei voor moderne bedrijven',
+    title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Wij bouwen websites en digitale oplossingen die niet alleen mooi zijn — maar die converteren, groeien en presteren.',
+      'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
     url: 'https://frontlix.com',
     siteName: 'Frontlix',
     locale: 'nl_NL',
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Frontlix | Digitale groei voor moderne bedrijven',
+    title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Wij bouwen websites en digitale oplossingen die niet alleen mooi zijn — maar die converteren, groeien en presteren.',
+      'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
   },
   robots: {
     index: true,
