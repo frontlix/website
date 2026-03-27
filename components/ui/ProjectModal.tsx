@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
+import { validatePhone } from '@/lib/utils'
+import { useFormTracking } from '@/hooks/useFormTracking'
 import styles from './ProjectModal.module.css'
 
 interface ProjectModalProps {
@@ -22,6 +24,16 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [error, setError] = useState<string | null>(null)
   /* Per-veld validatiefouten */
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  const getFieldData = useCallback(
+    () => ({ voornaam, achternaam, telefoon, email, bedrijfsnaam, website, extra }),
+    [voornaam, achternaam, telefoon, email, bedrijfsnaam, website, extra]
+  )
+  const { trackBlur, markCompleted } = useFormTracking({
+    formName: 'project',
+    getFieldData,
+    isSubmitted: submitted,
+  })
 
   /* Sluit modal met Escape + voorkom body scroll op mobiel */
   useEffect(() => {
@@ -86,10 +98,9 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const validateFields = (): boolean => {
     const errors: Record<string, string> = {}
 
-    /* Telefoonnummer: alleen cijfers, spaties, +, - tellen; minimaal 10 cijfers */
-    const digits = telefoon.replace(/\D/g, '')
-    if (digits.length < 10) {
-      errors.telefoon = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    /* Telefoonnummer: moet een geldig Nederlands nummer zijn */
+    if (!validatePhone(telefoon)) {
+      errors.telefoon = 'Vul een geldig Nederlands telefoonnummer in (bijv. 06 1234 5678).'
     }
 
     /* E-mailadres: basis format-check */
@@ -141,6 +152,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
       }
 
       setSubmitted(true)
+      markCompleted()
     } catch {
       setError('Kan geen verbinding maken. Probeer het later opnieuw.')
     } finally {
@@ -185,6 +197,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                     placeholder="Voornaam"
                     value={voornaam}
                     onChange={(e) => setVoornaam(e.target.value)}
+                    onBlur={trackBlur}
                     required
                   />
                 </div>
@@ -199,6 +212,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                     placeholder="Achternaam"
                     value={achternaam}
                     onChange={(e) => setAchternaam(e.target.value)}
+                    onBlur={trackBlur}
                     required
                   />
                 </div>
@@ -216,6 +230,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   placeholder="+31 6 1234 5678"
                   value={telefoon}
                   onChange={(e) => setTelefoon(e.target.value)}
+                  onBlur={trackBlur}
                   required
                 />
                 {fieldErrors.telefoon && (
@@ -235,6 +250,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   placeholder="naam@bedrijf.nl"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={trackBlur}
                   required
                 />
                 {fieldErrors.email && (
@@ -242,10 +258,10 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                 )}
               </div>
 
-              {/* Bedrijfsnaam */}
+              {/* Bedrijfsnaam — optioneel */}
               <div className={styles.field}>
                 <label htmlFor="project-bedrijf" className={styles.label}>
-                  Bedrijfsnaam
+                  Bedrijfsnaam <span className={styles.optional}>(optioneel)</span>
                 </label>
                 <input
                   id="project-bedrijf"
@@ -254,7 +270,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   placeholder="Naam van je bedrijf"
                   value={bedrijfsnaam}
                   onChange={(e) => setBedrijfsnaam(e.target.value)}
-                  required
+                  onBlur={trackBlur}
                 />
               </div>
 
@@ -270,6 +286,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   placeholder="https://jouwbedrijf.nl"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
+                  onBlur={trackBlur}
                 />
                 {fieldErrors.website && (
                   <span className={styles.fieldError}>{fieldErrors.website}</span>
@@ -287,6 +304,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   placeholder="Vertel ons meer over je project, wensen of vragen..."
                   value={extra}
                   onChange={(e) => setExtra(e.target.value)}
+                  onBlur={trackBlur}
                   rows={4}
                 />
               </div>

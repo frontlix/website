@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { validatePhone } from '@/lib/utils'
+import { useFormTracking } from '@/hooks/useFormTracking'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { BGPattern } from '@/components/ui/bg-pattern'
@@ -15,17 +17,12 @@ export default function Hero() {
   const [error, setError] = useState('')
   const [projectModalOpen, setProjectModalOpen] = useState(false)
 
-  /** Strip alles behalve cijfers en + teken, en valideer Nederlands mobiel nummer */
-  function validatePhone(input: string): string | null {
-    const stripped = input.replace(/[\s\-()]/g, '')
-
-    // Accepteer formaten: 06..., +316..., 00316...
-    if (/^06\d{8}$/.test(stripped)) return '+31' + stripped.slice(1)
-    if (/^\+316\d{8}$/.test(stripped)) return stripped
-    if (/^00316\d{8}$/.test(stripped)) return '+' + stripped.slice(2)
-
-    return null
-  }
+  const getFieldData = useCallback(() => ({ phone }), [phone])
+  const { trackBlur, markCompleted } = useFormTracking({
+    formName: 'hero_demo',
+    getFieldData,
+    isSubmitted: success,
+  })
 
   async function handleDemoSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,7 +35,7 @@ export default function Hero() {
 
     const normalized = validatePhone(phone.trim())
     if (!normalized) {
-      setError('Vul een geldig Nederlands mobiel nummer in.')
+      setError('Vul een geldig mobiel nummer in.')
       return
     }
 
@@ -58,6 +55,7 @@ export default function Hero() {
       }
 
       setSuccess(true)
+      markCompleted()
     } catch {
       setError('Verbindingsfout. Probeer het opnieuw.')
     } finally {
@@ -109,6 +107,7 @@ export default function Hero() {
                 placeholder="Vul je nummer in"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onBlur={trackBlur}
               />
               <button type="submit" className={styles.phoneButton} disabled={loading}>
                 {loading ? 'Bezig...' : 'Ontvang demo'}

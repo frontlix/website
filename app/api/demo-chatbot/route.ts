@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     if (!isValidDutchMobile) {
       return NextResponse.json(
-        { error: 'Vul een geldig Nederlands mobiel nummer in (bijv. 06 12345678).' },
+        { error: 'Vul een geldig mobiel nummer in (bijv. 06 12345678).' },
         { status: 400 }
       )
     }

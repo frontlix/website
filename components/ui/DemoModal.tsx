@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
+import { validatePhone } from '@/lib/utils'
+import { useFormTracking } from '@/hooks/useFormTracking'
 import styles from './DemoModal.module.css'
 
 interface DemoModalProps {
@@ -18,6 +20,13 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
   const [error, setError] = useState<string | null>(null)
   /* Per-veld validatiefouten */
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  const getFieldData = useCallback(() => ({ name, email, phone }), [name, email, phone])
+  const { trackBlur, markCompleted } = useFormTracking({
+    formName: 'demo',
+    getFieldData,
+    isSubmitted: submitted,
+  })
 
   /* Sluit modal met Escape */
   useEffect(() => {
@@ -60,10 +69,9 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
       errors.email = 'Vul een geldig e-mailadres in (bijv. naam@bedrijf.nl).'
     }
 
-    /* Telefoonnummer: minimaal 10 cijfers */
-    const digits = phone.replace(/\D/g, '')
-    if (digits.length < 10) {
-      errors.phone = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    /* Telefoonnummer: moet een geldig Nederlands nummer zijn */
+    if (!validatePhone(phone)) {
+      errors.phone = 'Vul een geldig Nederlands telefoonnummer in (bijv. 06 1234 5678).'
     }
 
     setFieldErrors(errors)
@@ -94,6 +102,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
       }
 
       setSubmitted(true)
+      markCompleted()
     } catch {
       setError('Kan geen verbinding maken. Probeer het later opnieuw.')
     } finally {
@@ -134,6 +143,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   placeholder="Je volledige naam"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onBlur={trackBlur}
                   required
                 />
               </div>
@@ -147,6 +157,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   placeholder="naam@bedrijf.nl"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={trackBlur}
                   required
                 />
                 {fieldErrors.email && (
@@ -163,6 +174,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   placeholder="+31 6 1234 5678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  onBlur={trackBlur}
                   required
                 />
                 {fieldErrors.phone && (

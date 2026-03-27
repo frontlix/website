@@ -112,6 +112,23 @@ export default function LeadDemo() {
         />
 
         <div className={styles.columns}>
+          {/* Glow ring arcs — attached to the blue border of .columns */}
+          <Image
+            src="/images/ping1.png"
+            alt=""
+            aria-hidden="true"
+            width={300}
+            height={300}
+            className={styles.pingLeft}
+          />
+          <Image
+            src="/images/ping1.png"
+            alt=""
+            aria-hidden="true"
+            width={300}
+            height={300}
+            className={styles.pingRight}
+          />
           {/* Section header: separate element for mobile reordering */}
           <div className={styles.sectionHeader}>
             <h2 className={styles.heading}>

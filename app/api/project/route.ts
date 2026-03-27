@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { voornaam, achternaam, telefoon, email, bedrijfsnaam, website, extra } = body
 
     // Valideer verplichte velden
-    if (!voornaam || !achternaam || !telefoon || !email || !bedrijfsnaam) {
+    if (!voornaam || !achternaam || !telefoon || !email) {
       return NextResponse.json(
         { success: false, message: 'Alle verplichte velden moeten ingevuld zijn.' },
         { status: 400 }
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase()
     const { error: dbError } = await supabase
       .from('project_submissions')
-      .insert({ voornaam, achternaam, telefoon, email, bedrijfsnaam, website: website || null, extra: extra || null })
+      .insert({ voornaam, achternaam, telefoon, email, bedrijfsnaam: bedrijfsnaam || null, website: website || null, extra: extra || null })
 
     if (dbError) {
       console.error('Supabase insert error:', dbError)
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Naam:</strong> ${voornaam} ${achternaam}</p>
           <p><strong>Telefoon:</strong> ${telefoon}</p>
           <p><strong>E-mail:</strong> ${email}</p>
-          <p><strong>Bedrijf:</strong> ${bedrijfsnaam}</p>
+          ${bedrijfsnaam ? `<p><strong>Bedrijf:</strong> ${bedrijfsnaam}</p>` : ''}
           ${website ? `<p><strong>Website:</strong> ${website}</p>` : ''}
           ${extra ? `<p><strong>Extra info:</strong></p><p>${extra.replace(/\n/g, '<br>')}</p>` : ''}
         `

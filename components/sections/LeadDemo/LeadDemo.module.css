@@ -42,6 +42,40 @@
   }
 }
 
+/* ─── Ping glow arcs — mobile only (bottom corners of the card) ──────────────── */
+
+.pingLeft,
+.pingRight {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pingLeft,
+  .pingRight {
+    display: block;
+    position: absolute;
+    /* Positioned at the sectionHeader height — next to "Zo werkt het!" */
+    top: 20px;
+    width: 55px;
+    height: auto;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.85;
+  }
+
+  /* pingLeft image goes to the RIGHT border, arc outward */
+  .pingLeft {
+    right: 0;
+    transform: translateX(100%) scaleX(-1);
+  }
+
+  /* pingRight image goes to the LEFT border, arc outward */
+  .pingRight {
+    left: 0;
+    transform: translateX(-100%);
+  }
+}
+
 /* ─── Dashboard container ────────────────────────────────────────────────────── */
 
 .dashboard {
@@ -125,19 +159,30 @@
 
 @media (max-width: 768px) {
   .wrapper {
-    padding: var(--space-8) var(--space-2) var(--space-8);
+    /* Extra ruimte zodat de glow niet wordt afgesneden */
+    padding: var(--space-12) var(--space-2) var(--space-12);
+    overflow: visible;
+  }
+
+  /* Glow-ring achter de card via de dashboard container */
+  .dashboard {
+    position: relative;
+  }
+
+  .dashboard::before {
+    display: none;
   }
 
   .columns {
     display: flex;
     flex-direction: column;
     min-height: auto;
-    /* Sterkere border + schaduw op mobiel zodat het element duidelijk opvalt */
-    border: 1.5px solid rgba(26, 86, 255, 0.5);
-    box-shadow:
-      0 0 30px rgba(26, 86, 255, 0.15),
-      0 0 60px rgba(0, 207, 255, 0.08),
-      0 12px 40px rgba(0, 0, 0, 0.12);
+    border-radius: 18px;
+    border: 2px solid rgba(26, 86, 255, 0.35);
+    background: var(--color-surface);
+    box-shadow: none;
+    position: relative;
+    overflow: visible;
   }
 
   /* Mobile order: 1 = header, 2 = animation, 3 = pipeline */
@@ -146,6 +191,8 @@
     border-right: none;
     border-bottom: 1px solid var(--color-border);
     padding: var(--space-4) var(--space-4) var(--space-3);
+    /* Subtiele gradient achtergrond op de header */
+    background: linear-gradient(135deg, rgba(26, 86, 255, 0.05), rgba(0, 207, 255, 0.03));
   }
 
   .panelContainer {
@@ -163,10 +210,18 @@
   }
 
   .heading {
-    font-size: var(--text-xl);
+    font-size: var(--text-2xl);
+    letter-spacing: -0.02em;
   }
 
   .subtitle {
-    font-size: 10px;
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
   }
+}
+
+/* Subtiele puls-animatie voor de glow op mobiel */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }

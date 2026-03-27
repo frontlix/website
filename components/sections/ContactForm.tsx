@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Mail, MessageCircle, Phone, MapPin, CheckCircle } from 'lucide-react'
+import { validatePhone } from '@/lib/utils'
+import { useFormTracking } from '@/hooks/useFormTracking'
 import Button from '@/components/ui/Button'
 import styles from './ContactForm.module.css'
 
@@ -38,6 +40,23 @@ export default function ContactForm() {
   const [error, setError] = useState<string | null>(null)
   /* Per-veld validatiefouten */
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const getFieldData = useCallback((): Record<string, string> => {
+    if (!formRef.current) return { naam: '', email: '', telefoon: '', bericht: '' }
+    const fd = new FormData(formRef.current)
+    return {
+      naam: (fd.get('naam') as string) || '',
+      email: (fd.get('email') as string) || '',
+      telefoon: (fd.get('telefoon') as string) || '',
+      bericht: (fd.get('bericht') as string) || '',
+    }
+  }, [])
+  const { trackBlur, markCompleted } = useFormTracking({
+    formName: 'contact',
+    getFieldData,
+    isSubmitted: submitted,
+  })
 
   /** Validatie-helper voor het contactformulier */
   const validateFields = (emailVal: string, telefoonVal: string): boolean => {
@@ -49,10 +68,9 @@ export default function ContactForm() {
       errors.email = 'Vul een geldig e-mailadres in (bijv. naam@bedrijf.nl).'
     }
 
-    /* Telefoonnummer: minimaal 10 cijfers */
-    const digits = telefoonVal.replace(/\D/g, '')
-    if (digits.length < 10) {
-      errors.telefoon = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    /* Telefoonnummer: moet een geldig Nederlands nummer zijn */
+    if (!validatePhone(telefoonVal)) {
+      errors.telefoon = 'Vul een geldig Nederlands telefoonnummer in (bijv. 06 1234 5678).'
     }
 
     setFieldErrors(errors)
@@ -91,6 +109,7 @@ export default function ContactForm() {
       }
 
       setSubmitted(true)
+      markCompleted()
     } catch {
       setError('Kan geen verbinding maken. Probeer het later opnieuw.')
     } finally {
@@ -149,7 +168,7 @@ export default function ContactForm() {
             </p>
           </div>
         ) : (
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <form ref={formRef} className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.formRow}>
               <div className={styles.fieldGroup}>
                 <label htmlFor="naam" className={styles.label}>
@@ -162,6 +181,7 @@ export default function ContactForm() {
                   placeholder="Jouw volledige naam"
                   required
                   className={styles.input}
+                  onBlur={trackBlur}
                 />
               </div>
               <div className={styles.fieldGroup}>
@@ -175,6 +195,7 @@ export default function ContactForm() {
                   placeholder="jouw@email.nl"
                   required
                   className={styles.input}
+                  onBlur={trackBlur}
                 />
                 {fieldErrors.email && (
                   <span className={styles.fieldError}>{fieldErrors.email}</span>
@@ -193,6 +214,7 @@ export default function ContactForm() {
                 placeholder="+31 6 1234 5678"
                 required
                 className={styles.input}
+                onBlur={trackBlur}
               />
               {fieldErrors.telefoon && (
                 <span className={styles.fieldError}>{fieldErrors.telefoon}</span>
@@ -209,6 +231,7 @@ export default function ContactForm() {
                 placeholder="Vertel ons over jouw project of vraag..."
                 required
                 className={styles.textarea}
+                onBlur={trackBlur}
               />
             </div>
 

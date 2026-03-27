@@ -157,7 +157,7 @@
   font-size: var(--text-xs);
   color: #dc2626;
   margin-top: var(--space-1);
-  text-align: left;
+  text-align: center;
 }
 
 /* ── Proof bar ── */
