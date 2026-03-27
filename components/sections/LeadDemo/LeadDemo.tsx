@@ -138,6 +138,21 @@ export default function LeadDemo() {
             <p className={styles.subtitle}>
               Van formulier tot offerte · volledig automatisch
             </p>
+
+            {/* Mobile step indicator: 1 → 2 → 3 → 4 → 5 */}
+            <div className={styles.stepIndicator}>
+              {[1, 2, 3, 4, 5].map((step) => (
+                <div key={step} className={styles.stepRow}>
+                  <button
+                    className={`${styles.stepDot} ${currentStep === step ? styles.stepDotActive : ''} ${currentStep > step || showComplete ? styles.stepDotDone : ''}`}
+                    onClick={() => handleStepClick(step)}
+                  >
+                    {step}
+                  </button>
+                  {step < 5 && <span className={styles.stepArrow}>›</span>}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Left column: pipeline */}

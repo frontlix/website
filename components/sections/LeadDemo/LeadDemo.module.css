@@ -55,8 +55,8 @@
     display: block;
     position: absolute;
     /* Positioned at the sectionHeader height — next to "Zo werkt het!" */
-    top: 20px;
-    width: 55px;
+    top: -10px;
+    width: 90px;
     height: auto;
     pointer-events: none;
     z-index: 3;
@@ -183,7 +183,7 @@
     flex-direction: column;
     min-height: auto;
     border-radius: 18px;
-    border: 2px solid rgba(26, 86, 255, 0.35);
+    border: 2px solid #4877ff;
     background: var(--color-surface);
     box-shadow: none;
     position: relative;
@@ -222,6 +222,71 @@
   .subtitle {
     font-size: var(--text-xs);
     letter-spacing: 0.02em;
+  }
+}
+
+/* ─── Step indicator — mobile only ────────────────────────────────────────── */
+
+.stepIndicator {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .stepIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-top: var(--space-3);
+  }
+
+  .stepRow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Individual step number circle */
+  .stepDot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    line-height: 1;
+  }
+
+  /* Active step — gradient border + gradient text */
+  .stepDot.stepDotActive {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, #1A56FF, #00CFFF);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(26, 86, 255, 0.4);
+  }
+
+  /* Completed steps — subtle filled state */
+  .stepDot.stepDotDone {
+    border-color: rgba(26, 86, 255, 0.4);
+    background: rgba(26, 86, 255, 0.1);
+    color: var(--color-primary);
+  }
+
+  /* Arrow between steps */
+  .stepArrow {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin: 0 6px;
+    opacity: 0.5;
+    user-select: none;
   }
 }
 
