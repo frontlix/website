@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ArrowRight } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import ProjectModal from '@/components/ui/ProjectModal'
 import styles from './Navbar.module.css'
@@ -20,6 +20,16 @@ export default function Navbar() {
 
   const toggleMenu = () => setMenuOpen((prev) => !prev)
   const closeMenu = () => setMenuOpen(false)
+
+  /* Body scroll lock wanneer menu open is */
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   return (
     <>
@@ -49,7 +59,7 @@ export default function Navbar() {
             </div>
 
             <button
-              className={styles.menuBtn}
+              className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnOpen : ''}`}
               onClick={toggleMenu}
               aria-label={menuOpen ? 'Menu sluiten' : 'Menu openen'}
               aria-expanded={menuOpen}
@@ -60,24 +70,34 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Full-screen mobile menu overlay */}
       <nav
-        className={`${styles.mobileMenu} ${menuOpen ? styles.open : ''}`}
+        className={`${styles.mobileOverlay} ${menuOpen ? styles.open : ''}`}
         aria-label="Mobiel menu"
       >
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={styles.mobileNavLink}
-            onClick={closeMenu}
-          >
-            {link.label}
-          </Link>
-        ))}
-        <Button variant="primary" size="md" fullWidth onClick={() => { closeMenu(); setProjectModalOpen(true) }}>
-          Start jouw project
-        </Button>
+        <div className={styles.mobileCard}>
+          {navLinks.map((link, index) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={styles.mobileNavItem}
+              style={{ '--delay': `${index * 0.07}s` } as React.CSSProperties}
+              onClick={closeMenu}
+            >
+              <span className={styles.mobileNavText}>{link.label}</span>
+            </Link>
+          ))}
+
+          <div className={styles.mobileCta}>
+            <button
+              className={styles.mobileCtaLink}
+              onClick={() => { closeMenu(); setProjectModalOpen(true) }}
+            >
+              <span className={styles.mobileCtaText}>Start jouw project</span>
+              <span className={styles.mobileCtaIcon}><ArrowRight size={18} /></span>
+            </button>
+          </div>
+        </div>
       </nav>
 
       <ProjectModal isOpen={projectModalOpen} onClose={() => setProjectModalOpen(false)} />

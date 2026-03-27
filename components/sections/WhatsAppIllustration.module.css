@@ -272,3 +272,17 @@
   color: #aaa;
 }
 
+/* ── Mobile: shorter & wider phone mockup ── */
+@media (max-width: 768px) {
+  .scene {
+    transform: scale(0.48);
+    margin-bottom: -190px;
+    padding-top: 0;
+  }
+
+  .iphone {
+    width: 320px;
+    height: 340px;
+  }
+}
+

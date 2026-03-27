@@ -21,6 +21,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Check of het een geldig Nederlands mobiel nummer is
+    const stripped = telefoon.replace(/[\s\-()]/g, '')
+    const isValidDutchMobile =
+      /^06\d{8}$/.test(stripped) ||
+      /^\+316\d{8}$/.test(stripped) ||
+      /^00316\d{8}$/.test(stripped)
+
+    if (!isValidDutchMobile) {
+      return NextResponse.json(
+        { error: 'Vul een geldig Nederlands mobiel nummer in (bijv. 06 12345678).' },
+        { status: 400 }
+      )
+    }
+
     const phone = normalizePhone(telefoon)
 
     // Check op duplicaat (zelfde nummer al actief bezig)

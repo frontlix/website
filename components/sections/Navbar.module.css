@@ -94,7 +94,7 @@
   color: var(--color-text);
   background: transparent;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.3s ease;
 }
 
 .menuBtn:hover {
@@ -105,42 +105,151 @@
   display: none;
 }
 
-/* Mobile menu */
-.mobileMenu {
-  display: none;
+/* ── Full-screen mobile overlay ── */
+.mobileOverlay {
   position: fixed;
-  top: 68px;
-  left: 0;
-  right: 0;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-6);
-  flex-direction: column;
-  gap: var(--space-4);
-  z-index: 99;
-  animation: slideIn 0.2s ease;
+  inset: 0;
+  z-index: 98;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 70px var(--space-4) 0 var(--space-4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
 }
 
-.mobileMenu.open {
+/* Dim backdrop behind the card */
+.mobileOverlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.mobileOverlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Floating card container */
+.mobileCard {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: scale(0.92) translateY(20px);
+  transition: opacity 0.35s ease 0.05s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s;
+}
+
+.mobileOverlay.open .mobileCard {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Pill-shaped nav item */
+.mobileNavItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: var(--space-4) var(--space-6);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(26, 86, 255, 0.35), 0 0 0 1px rgba(26, 86, 255, 0.15);
+  border: none;
+  border-radius: var(--radius-lg);
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    background 0.2s ease;
+  transition-delay: var(--delay, 0s);
+}
+
+.mobileOverlay.open .mobileNavItem {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobileNavItem:hover,
+.mobileNavItem:active {
+  background: #fff;
+}
+
+/* Voorkom blauwe highlight bij tap op mobiel */
+.mobileNavItem {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Nav link text inside pill */
+.mobileNavText {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+/* CTA pill with gradient */
+.mobileCta {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease 0.28s, transform 0.3s ease 0.28s;
+}
+
+.mobileOverlay.open .mobileCta {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobileCtaLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-gradient);
+  border-radius: var(--radius-lg);
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+}
+
+.mobileCtaLink:hover {
+  opacity: 0.9;
+}
+
+.mobileCtaText {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.mobileCtaIcon {
+  color: #fff;
   display: flex;
 }
 
-.mobileNavLink {
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--color-text-muted);
-  text-decoration: none;
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border);
-  transition: color 0.2s ease;
-}
-
-.mobileNavLink:last-of-type {
-  border-bottom: none;
-}
-
-.mobileNavLink:hover {
-  color: var(--color-text);
+/* Hamburger rotation when open */
+.menuBtnOpen {
+  transform: rotate(90deg);
 }
 
 /* On mobile: navbar scrolls with page instead of being fixed, smaller height */
@@ -163,9 +272,8 @@
     height: 34px;
   }
 
-  .mobileMenu {
-    position: absolute;
-    top: 52px;
+  .mobileOverlay {
+    z-index: 98;
   }
 
   .menuBtn {

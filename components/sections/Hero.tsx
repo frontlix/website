@@ -15,6 +15,18 @@ export default function Hero() {
   const [error, setError] = useState('')
   const [projectModalOpen, setProjectModalOpen] = useState(false)
 
+  /** Strip alles behalve cijfers en + teken, en valideer Nederlands mobiel nummer */
+  function validatePhone(input: string): string | null {
+    const stripped = input.replace(/[\s\-()]/g, '')
+
+    // Accepteer formaten: 06..., +316..., 00316...
+    if (/^06\d{8}$/.test(stripped)) return '+31' + stripped.slice(1)
+    if (/^\+316\d{8}$/.test(stripped)) return stripped
+    if (/^00316\d{8}$/.test(stripped)) return '+' + stripped.slice(2)
+
+    return null
+  }
+
   async function handleDemoSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -24,12 +36,18 @@ export default function Hero() {
       return
     }
 
+    const normalized = validatePhone(phone.trim())
+    if (!normalized) {
+      setError('Vul een geldig Nederlands mobiel nummer in (bijv. 06 12345678).')
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/demo-chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefoon: phone.trim() }),
+        body: JSON.stringify({ telefoon: normalized }),
       })
 
       const data = await res.json()
