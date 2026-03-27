@@ -60,19 +60,24 @@
     height: auto;
     pointer-events: none;
     z-index: 3;
-    opacity: 0.85;
+    opacity: 0.8;
+    object-fit: fill;
+    /* Same blend technique as desktop flares */
+    clip-path: inset(23% 0% 0% 0%);
+    mask-image: linear-gradient(to bottom, transparent 23%, black 40%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 23%, black 40%, black 80%, transparent 100%);
   }
 
-  /* pingLeft image goes to the RIGHT border, arc outward */
+  /* pingLeft image goes to the RIGHT border — just outside, touching the border */
   .pingLeft {
-    right: 0;
-    transform: translateX(100%) scaleX(-1);
+    right: -2px;
+    transform: translateX(100%);
   }
 
-  /* pingRight image goes to the LEFT border, arc outward */
+  /* pingRight image goes to the LEFT border — just outside, touching the border */
   .pingRight {
-    left: 0;
-    transform: translateX(-100%);
+    left: -2px;
+    transform: translateX(-100%) scaleX(-1);
   }
 }
 

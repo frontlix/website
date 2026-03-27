@@ -114,7 +114,7 @@ export default function LeadDemo() {
         <div className={styles.columns}>
           {/* Glow ring arcs — attached to the blue border of .columns */}
           <Image
-            src="/images/ping1.png"
+            src="/images/flare-blue.png"
             alt=""
             aria-hidden="true"
             width={300}
@@ -122,7 +122,7 @@ export default function LeadDemo() {
             className={styles.pingLeft}
           />
           <Image
-            src="/images/ping1.png"
+            src="/images/flare-blue.png"
             alt=""
             aria-hidden="true"
             width={300}
