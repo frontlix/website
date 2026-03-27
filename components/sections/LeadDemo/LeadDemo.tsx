@@ -27,44 +27,58 @@ export default function LeadDemo() {
     timers.current = []
   }, [])
 
-  const startSequence = useCallback(() => {
-    clearAllTimers()
-    setCurrentStep(1)
-    setShowComplete(false)
+  /* Start auto-play from a given step (1-indexed), looping back to 1 after 5 */
+  const startSequenceFrom = useCallback(
+    (fromStep: number) => {
+      clearAllTimers()
+      setCurrentStep(fromStep)
+      setShowComplete(false)
 
-    const add = (fn: () => void, delay: number) => {
-      timers.current.push(setTimeout(fn, delay))
-    }
-
-    /* Build cumulative timer chain from variable durations */
-    let cumulative = 0
-    for (let i = 0; i < STEP_DURATIONS.length; i++) {
-      cumulative += STEP_DURATIONS[i]
-      const nextStep = i + 2 // steps are 1-indexed; after step i+1, go to step i+2
-
-      if (nextStep <= 5) {
-        add(() => setCurrentStep(nextStep), cumulative)
-      } else {
-        /* After last step — show complete, then restart */
-        add(() => setShowComplete(true), cumulative)
-        add(() => {
-          setResetKey((k) => k + 1)
-          setCurrentStep(0)
-          setShowComplete(false)
-          timers.current.push(setTimeout(() => startSequence(), 100))
-        }, cumulative + RESTART_DELAY)
+      const add = (fn: () => void, delay: number) => {
+        timers.current.push(setTimeout(fn, delay))
       }
-    }
-  }, [clearAllTimers])
+
+      /* Build timer chain: play fromStep → 5, then 1 → fromStep-1, then restart */
+      const totalSteps = STEP_DURATIONS.length
+      let cumulative = 0
+
+      for (let offset = 0; offset < totalSteps; offset++) {
+        const stepIndex = ((fromStep - 1 + offset) % totalSteps) // 0-indexed
+        cumulative += STEP_DURATIONS[stepIndex]
+        const nextOffset = offset + 1
+
+        if (nextOffset < totalSteps) {
+          /* Move to the next step in the cycle */
+          const nextStepId = ((fromStep - 1 + nextOffset) % totalSteps) + 1 // 1-indexed
+          add(() => setCurrentStep(nextStepId), cumulative)
+        } else {
+          /* All steps played — show complete, then restart from the same step */
+          add(() => setShowComplete(true), cumulative)
+          add(() => {
+            setResetKey((k) => k + 1)
+            setCurrentStep(0)
+            setShowComplete(false)
+            timers.current.push(
+              setTimeout(() => startSequenceFrom(fromStep), 100)
+            )
+          }, cumulative + RESTART_DELAY)
+        }
+      }
+    },
+    [clearAllTimers]
+  )
+
+  /* Convenience: start from step 1 (used by IntersectionObserver) */
+  const startSequence = useCallback(() => {
+    startSequenceFrom(1)
+  }, [startSequenceFrom])
 
   const handleStepClick = useCallback(
     (stepId: number) => {
-      clearAllTimers()
-      setShowComplete(false)
       setResetKey((k) => k + 1)
-      setCurrentStep(stepId)
+      startSequenceFrom(stepId)
     },
-    [clearAllTimers]
+    [startSequenceFrom]
   )
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
