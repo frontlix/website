@@ -2,12 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import styles from './Footer.module.css'
 
-const diensten = [
-  { label: 'Automatische lead opvolging', href: '/diensten' },
-  { label: 'AI WhatsApp assistent', href: '/diensten' },
-  { label: 'Offerte automatisering', href: '/diensten' },
-]
-
 const bedrijf = [
   { label: 'Over ons', href: '/over-ons' },
   { label: 'Diensten', href: '/diensten' },
@@ -44,17 +38,6 @@ export default function Footer() {
 
           {/* Columns */}
           <div className={styles.columns}>
-            <div className={styles.column}>
-              <h3 className={styles.columnTitle}>Diensten</h3>
-              <nav className={styles.columnLinks}>
-                {diensten.map((link) => (
-                  <Link key={link.label} href={link.href} className={styles.columnLink}>
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
             <div className={styles.column}>
               <h3 className={styles.columnTitle}>Bedrijf</h3>
               <nav className={styles.columnLinks}>

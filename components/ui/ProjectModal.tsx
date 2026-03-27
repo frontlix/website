@@ -20,6 +20,8 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /* Per-veld validatiefouten */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   /* Sluit modal met Escape + voorkom body scroll op mobiel */
   useEffect(() => {
@@ -73,16 +75,56 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
         setExtra('')
         setSubmitted(false)
         setError(null)
+        setFieldErrors({})
       }, 200)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
+  /** Validatie-helpers */
+  const validateFields = (): boolean => {
+    const errors: Record<string, string> = {}
+
+    /* Telefoonnummer: alleen cijfers, spaties, +, - tellen; minimaal 10 cijfers */
+    const digits = telefoon.replace(/\D/g, '')
+    if (digits.length < 10) {
+      errors.telefoon = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    }
+
+    /* E-mailadres: basis format-check */
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      errors.email = 'Vul een geldig e-mailadres in (bijv. naam@bedrijf.nl).'
+    }
+
+    /* Website URL: alleen valideren als het veld is ingevuld */
+    if (website.trim()) {
+      try {
+        const url = new URL(
+          website.startsWith('http') ? website : `https://${website}`
+        )
+        /* Controleer of er een geldig domein met extensie is */
+        if (!url.hostname.includes('.')) {
+          errors.website = 'Vul een geldige website-URL in (bijv. https://jouwbedrijf.nl).'
+        }
+      } catch {
+        errors.website = 'Vul een geldige website-URL in (bijv. https://jouwbedrijf.nl).'
+      }
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    /* Client-side validatie — stop als er fouten zijn */
+    if (!validateFields()) return
+
+    setLoading(true)
 
     try {
       const res = await fetch('/api/project', {
@@ -176,6 +218,9 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   onChange={(e) => setTelefoon(e.target.value)}
                   required
                 />
+                {fieldErrors.telefoon && (
+                  <span className={styles.fieldError}>{fieldErrors.telefoon}</span>
+                )}
               </div>
 
               {/* E-mailadres */}
@@ -192,6 +237,9 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
+                {fieldErrors.email && (
+                  <span className={styles.fieldError}>{fieldErrors.email}</span>
+                )}
               </div>
 
               {/* Bedrijfsnaam */}
@@ -223,6 +271,9 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                 />
+                {fieldErrors.website && (
+                  <span className={styles.fieldError}>{fieldErrors.website}</span>
+                )}
               </div>
 
               {/* Extra informatie — optioneel */}

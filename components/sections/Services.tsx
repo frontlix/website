@@ -1,7 +1,6 @@
 import {
   FileText,
   MessageSquare,
-  Camera,
   Calculator,
   ShieldCheck,
   Send,
@@ -39,23 +38,10 @@ const steps = [
   },
   {
     number: '03',
-    icon: Camera,
-    title: "Foto's automatisch geanalyseerd",
-    description:
-      "De klant stuurt foto's van de situatie. AI Vision analyseert automatisch het materiaal, de staat en de omvang, zonder dat jij ernaar hoeft te kijken.",
-    details: [
-      'AI-analyse van elke foto',
-      'Automatische opslag in Google Drive',
-      'Materiaal- en oppervlakte herkenning',
-    ],
-    visual: 'photos',
-  },
-  {
-    number: '04',
     icon: Calculator,
     title: 'Offerte in seconden klaar',
     description:
-      'Op basis van de verzamelde gegevens en foto-analyse wordt de prijs automatisch berekend. Een professionele PDF-offerte wordt gegenereerd, klaar om te versturen.',
+      'Op basis van de verzamelde gegevens wordt de prijs automatisch berekend. Een professionele PDF-offerte wordt gegenereerd, klaar om te versturen.',
     details: [
       'Prijsberekening op basis van echte data',
       'Professionele PDF-offerte',
@@ -64,11 +50,11 @@ const steps = [
     visual: 'calculate',
   },
   {
-    number: '05',
+    number: '04',
     icon: ShieldCheck,
     title: 'Jij blijft in controle',
     description:
-      'Jij ontvangt een email met alle klantgegevens, foto\'s en de berekende offerte. Met één klik keur je goed of pas je aan, volledig in controle.',
+      'Jij ontvangt een email met alle klantgegevens en de berekende offerte. Met één klik keur je goed of pas je aan, volledig in controle.',
     details: [
       'Overzichtelijke email met alle info',
       'Goedkeuren met één klik',
@@ -77,7 +63,7 @@ const steps = [
     visual: 'approve',
   },
   {
-    number: '06',
+    number: '05',
     icon: Send,
     title: 'Klant ontvangt alles direct',
     description:
@@ -183,7 +169,7 @@ export default function Services() {
           </h2>
           <p className={styles.ctaText}>
             Wij bouwen dit volledig op maat, afgestemd op jouw diensten,
-            prijzen en werkwijze. Binnen een week operationeel.
+            prijzen en werkwijze. Binnen twee tot vier weken operationeel.
           </p>
           <DemoButton variant="primary" size="lg">
             Plan een gratis demo →
@@ -235,36 +221,6 @@ function StepVisual({ step }: { step: string }) {
             </div>
             <div className={styles.mockTyping}>
               <span /><span /><span />
-            </div>
-          </div>
-        </div>
-      )
-    case 'photos':
-      return (
-        <div className={styles.mockPhotos}>
-          <div className={styles.mockPhotoGrid}>
-            <div className={styles.mockPhoto}>
-              <Camera size={20} />
-              <span>Foto 1</span>
-            </div>
-            <div className={styles.mockPhoto}>
-              <Camera size={20} />
-              <span>Foto 2</span>
-            </div>
-          </div>
-          <div className={styles.mockAnalysis}>
-            <div className={styles.mockAnalysisHeader}>AI Analyse</div>
-            <div className={styles.mockAnalysisRow}>
-              <span>Type</span>
-              <span className={styles.mockTag}>Herkend</span>
-            </div>
-            <div className={styles.mockAnalysisRow}>
-              <span>Conditie</span>
-              <span className={styles.mockTag}>Beoordeeld</span>
-            </div>
-            <div className={styles.mockAnalysisRow}>
-              <span>Omvang</span>
-              <span className={styles.mockTag}>Ingeschat</span>
             </div>
           </div>
         </div>

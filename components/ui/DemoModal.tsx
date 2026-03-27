@@ -16,6 +16,8 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /* Per-veld validatiefouten */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   /* Sluit modal met Escape */
   useEffect(() => {
@@ -41,16 +43,41 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
         setPhone('')
         setSubmitted(false)
         setError(null)
+        setFieldErrors({})
       }, 200)
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
+  /** Validatie-helpers */
+  const validateFields = (): boolean => {
+    const errors: Record<string, string> = {}
+
+    /* E-mailadres: basis format-check */
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      errors.email = 'Vul een geldig e-mailadres in (bijv. naam@bedrijf.nl).'
+    }
+
+    /* Telefoonnummer: minimaal 10 cijfers */
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length < 10) {
+      errors.phone = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    /* Client-side validatie — stop als er fouten zijn */
+    if (!validateFields()) return
+
+    setLoading(true)
 
     try {
       const res = await fetch('/api/demo', {
@@ -122,6 +149,9 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
+                {fieldErrors.email && (
+                  <span className={styles.fieldError}>{fieldErrors.email}</span>
+                )}
               </div>
 
               <div className={styles.field}>
@@ -135,6 +165,9 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   onChange={(e) => setPhone(e.target.value)}
                   required
                 />
+                {fieldErrors.phone && (
+                  <span className={styles.fieldError}>{fieldErrors.phone}</span>
+                )}
               </div>
 
               {error && <p className={styles.error}>{error}</p>}

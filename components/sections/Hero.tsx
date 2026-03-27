@@ -38,7 +38,7 @@ export default function Hero() {
 
     const normalized = validatePhone(phone.trim())
     if (!normalized) {
-      setError('Vul een geldig Nederlands mobiel nummer in (bijv. 06 12345678).')
+      setError('Vul een geldig Nederlands mobiel nummer in.')
       return
     }
 

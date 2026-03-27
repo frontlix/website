@@ -56,7 +56,7 @@
 
 .contactItemLabel {
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -64,13 +64,20 @@
 
 .contactItemValue {
   font-size: var(--text-sm);
-  color: var(--color-text);
+  color: var(--color-primary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .contactItemValue:hover {
   color: var(--color-accent);
+}
+
+/* Niet-klikbare contactwaarden (bijv. Locatie) */
+.contactItemValueStatic {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  text-decoration: none;
 }
 
 /* Form */
@@ -184,6 +191,13 @@
   color: var(--color-text-muted);
   line-height: 1.6;
   max-width: 320px;
+}
+
+/* Inline veld-foutmelding (onder een specifiek invoerveld) */
+.fieldError {
+  font-size: var(--text-xs);
+  color: #ff4444;
+  margin-top: calc(-1 * var(--space-1));
 }
 
 /* Error melding */

@@ -275,14 +275,18 @@
 /* ── Mobile: shorter & wider phone mockup ── */
 @media (max-width: 768px) {
   .scene {
-    transform: scale(0.48);
-    margin-bottom: -190px;
+    transform: scale(0.58);
+    margin-bottom: -150px;
     padding-top: 0;
   }
 
   .iphone {
-    width: 320px;
+    width: 280px;
     height: 340px;
+    box-shadow:
+      0 0 0 2px #c3d4f5,
+      0 24px 64px rgba(37, 99, 235, 0.18),
+      0 8px 24px rgba(37, 99, 235, 0.12);
   }
 }
 

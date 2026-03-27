@@ -36,10 +36,31 @@ export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /* Per-veld validatiefouten */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  /** Validatie-helper voor het contactformulier */
+  const validateFields = (emailVal: string, telefoonVal: string): boolean => {
+    const errors: Record<string, string> = {}
+
+    /* E-mailadres: basis format-check */
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailVal)) {
+      errors.email = 'Vul een geldig e-mailadres in (bijv. naam@bedrijf.nl).'
+    }
+
+    /* Telefoonnummer: minimaal 10 cijfers */
+    const digits = telefoonVal.replace(/\D/g, '')
+    if (digits.length < 10) {
+      errors.telefoon = 'Vul een geldig telefoonnummer in (minimaal 10 cijfers).'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
 
     const formData = new FormData(e.currentTarget)
@@ -49,6 +70,11 @@ export default function ContactForm() {
       telefoon: formData.get('telefoon') as string,
       bericht: formData.get('bericht') as string,
     }
+
+    /* Client-side validatie — stop als er fouten zijn */
+    if (!validateFields(data.email, data.telefoon)) return
+
+    setLoading(true)
 
     try {
       const res = await fetch('/api/contact', {
@@ -78,7 +104,7 @@ export default function ContactForm() {
       <div className={styles.infoColumn}>
         <h2 className={styles.infoTitle}>Liever direct contact?</h2>
         <p className={styles.infoText}>
-          Geen formulieren-fan? Stuur een e-mail of bel ons. We denken graag
+          Geen formulieren fan? Stuur een e-mail of bel ons. We denken graag
           vrijblijvend met je mee.
         </p>
 
@@ -92,9 +118,15 @@ export default function ContactForm() {
                 </div>
                 <div className={styles.contactItemText}>
                   <span className={styles.contactItemLabel}>{item.label}</span>
-                  <a href={item.href} className={styles.contactItemValue}>
-                    {item.value}
-                  </a>
+                  {item.href === '#' ? (
+                    <span className={styles.contactItemValueStatic}>
+                      {item.value}
+                    </span>
+                  ) : (
+                    <a href={item.href} className={styles.contactItemValue}>
+                      {item.value}
+                    </a>
+                  )}
                 </div>
               </div>
             )
@@ -144,6 +176,9 @@ export default function ContactForm() {
                   required
                   className={styles.input}
                 />
+                {fieldErrors.email && (
+                  <span className={styles.fieldError}>{fieldErrors.email}</span>
+                )}
               </div>
             </div>
 
@@ -159,6 +194,9 @@ export default function ContactForm() {
                 required
                 className={styles.input}
               />
+              {fieldErrors.telefoon && (
+                <span className={styles.fieldError}>{fieldErrors.telefoon}</span>
+              )}
             </div>
 
             <div className={styles.fieldGroup}>

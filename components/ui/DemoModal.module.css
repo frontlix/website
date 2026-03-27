@@ -116,6 +116,13 @@
   border-color: var(--color-primary);
 }
 
+/* Inline veld-foutmelding (onder een specifiek invoerveld) */
+.fieldError {
+  font-size: var(--text-xs);
+  color: #ff4444;
+  margin-top: calc(-1 * var(--space-1));
+}
+
 /* Error melding */
 .error {
   font-size: var(--text-sm);

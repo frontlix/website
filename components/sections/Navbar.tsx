@@ -70,12 +70,13 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Full-screen mobile menu overlay */}
+      {/* Full-screen mobile menu overlay — klik buiten het menu sluit het */}
       <nav
         className={`${styles.mobileOverlay} ${menuOpen ? styles.open : ''}`}
         aria-label="Mobiel menu"
+        onClick={closeMenu}
       >
-        <div className={styles.mobileCard}>
+        <div className={styles.mobileCard} onClick={(e) => e.stopPropagation()}>
           {navLinks.map((link, index) => (
             <Link
               key={link.href}

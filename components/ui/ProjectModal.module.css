@@ -41,6 +41,7 @@
   max-width: 540px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   position: relative;
@@ -116,6 +117,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  /* Voorkom dat grid-items breder worden dan hun kolom */
+  min-width: 0;
 }
 
 .label {
@@ -174,6 +177,13 @@
 .textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+/* Inline veld-foutmelding (onder een specifiek invoerveld) */
+.fieldError {
+  font-size: var(--text-xs);
+  color: #ff4444;
+  margin-top: calc(-1 * var(--space-1));
 }
 
 /* Error melding */
@@ -265,6 +275,10 @@
   .subtext {
     font-size: var(--text-xs);
     margin-bottom: var(--space-4);
+  }
+
+  .row {
+    gap: var(--space-2);
   }
 
   .form {
