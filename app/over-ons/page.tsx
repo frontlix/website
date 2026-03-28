@@ -151,7 +151,7 @@ export default function OverOnsPage() {
                     className={styles.teamPhotoImg}
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
-                  <span className={styles.teamNumBadge}>{member.nummer}</span>
+
                   <div className={styles.teamBlueCorner} />
                 </div>
 

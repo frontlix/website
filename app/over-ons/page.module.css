@@ -262,10 +262,11 @@
 
 .teamGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-6);
   max-width: 860px;
   margin: 0 auto;
+  align-items: start;
 }
 
 .teamCard {
@@ -276,7 +277,7 @@
 }
 
 .teamCardOffset {
-  margin-top: 0;
+  margin-top: 40px;
 }
 
 /* Foto wrapper met overlay-elementen */
@@ -358,8 +359,17 @@
   margin: 0;
 }
 
-/* Mobile: minder spacing onder de waarden-sectie */
+/* Mobile */
 @media (max-width: 767px) {
+  .teamGrid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+
+  .teamCardOffset {
+    margin-top: 0;
+  }
+
   .valuesSection {
     padding-top: var(--space-12);
     padding-bottom: var(--space-16);
@@ -387,16 +397,6 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .teamGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
-    max-width: 860px;
-  }
-
-  /* Tweede kaart iets lager voor visueel effect */
-  .teamCardOffset {
-    margin-top: 40px;
-  }
 }
 
 @media (min-width: 1024px) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Mail, MessageCircle, Phone, MapPin, CheckCircle } from 'lucide-react'
+import { Mail, MessageCircle, Phone, CheckCircle } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
 import { useFormTracking } from '@/hooks/useFormTracking'
 import Button from '@/components/ui/Button'
@@ -25,12 +25,6 @@ const contactInfo = [
     label: 'Telefoon',
     value: '+31 6 24752476',
     href: 'tel:+31624752476',
-  },
-  {
-    icon: MapPin,
-    label: 'Locatie',
-    value: 'Nederland',
-    href: '#',
   },
 ]
 

@@ -281,9 +281,9 @@
     width: 100%;
     min-width: 0;
     overflow: visible;
-    transform: scale(0.58);
+    transform: scale(0.45);
     transform-origin: top center;
-    margin-bottom: -150px;
+    margin-bottom: -200px;
     padding-top: 0;
   }
 
