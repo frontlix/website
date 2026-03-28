@@ -4,6 +4,7 @@ import '@/styles/tokens.css'
 import '@/styles/globals.css'
 import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
+import PostHogProvider from '@/components/providers/PostHogProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -57,9 +58,11 @@ export default function RootLayout({
   return (
     <html lang="nl" className={inter.variable}>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <PostHogProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </PostHogProvider>
       </body>
     </html>
   )
