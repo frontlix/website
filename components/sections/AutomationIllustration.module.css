@@ -151,3 +151,48 @@
   0%, 100% { opacity: 0; }
   50%      { opacity: 1; }
 }
+
+/* ── Mobile: fit card fully inside the benefit card ── */
+@media (max-width: 768px) {
+  .wrapper {
+    height: auto;
+    overflow: visible;
+  }
+
+  .card {
+    transform: none;
+    max-width: 100%;
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .stepIcon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+  }
+
+  .stepIcon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .stepCheck {
+    width: 16px;
+    height: 16px;
+  }
+
+  .stepCheck svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .step {
+    gap: 8px;
+  }
+
+  .steps {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+}

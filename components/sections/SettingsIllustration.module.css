@@ -165,9 +165,9 @@
 /* ── Mobile: scale down to fit card ── */
 @media (max-width: 768px) {
   .wrapper {
-    transform: scale(0.72);
+    transform: scale(0.95);
     transform-origin: top center;
-    margin-bottom: -55px;
+    margin-bottom: -10px;
     min-width: 0;
   }
 }
