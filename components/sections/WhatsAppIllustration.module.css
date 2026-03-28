@@ -6,15 +6,15 @@
   gap: 8px;
   padding: 8px 0 0;
   /* Scale down to fit inside card */
-  transform: scale(0.42);
+  transform: scale(0.52);
   transform-origin: top center;
   /* Compensate for scaled whitespace */
-  margin-bottom: -260px;
+  margin-bottom: -210px;
 }
 
 /* ── iPhone shell ── */
 .iphone {
-  width: 200px;
+  width: 280px;
   height: 412px;
   background: #e8edf5;
   border-radius: 34px;
@@ -281,15 +281,15 @@
     width: 100%;
     min-width: 0;
     overflow: visible;
-    transform: scale(0.45);
+    transform: scale(0.40);
     transform-origin: top center;
-    margin-bottom: -200px;
+    margin-bottom: -220px;
     padding-top: 0;
   }
 
   .iphone {
-    width: 200px;
-    height: 340px;
+    width: 195px;
+    height: 380px;
     flex-shrink: 0;
     box-shadow:
       0 0 0 2px #c3d4f5,
