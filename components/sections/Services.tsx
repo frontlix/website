@@ -81,10 +81,11 @@ const steps = [
     icon: CalendarCheck,
     title: 'Afspraak automatisch ingepland',
     description:
-      'Na de offerte ontvangt de klant via WhatsApp een uitnodiging om een afspraak in te plannen. Met één klik kiest de klant een moment dat past, zonder heen-en-weer gemail.',
+      'Na de offerte ontvangt de klant via WhatsApp een uitnodiging om een afspraak in te plannen. Met één klik kiest de klant een moment dat past, zonder heen en weer gemail. De afspraak kan ook volledig automatisch via WhatsApp worden ingepland.',
     details: [
       'Automatisch WhatsApp-bericht met planning-link',
       'Klant plant zelf in via Google Calendar',
+      'Of automatisch ingepland via WhatsApp',
       'Jij ontvangt een bevestiging',
     ],
     visual: 'schedule',
