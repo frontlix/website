@@ -17,6 +17,7 @@ const navLinks = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [projectModalOpen, setProjectModalOpen] = useState(false)
+  const [hidden, setHidden] = useState(false)
 
   const toggleMenu = () => setMenuOpen((prev) => !prev)
   const closeMenu = () => setMenuOpen(false)
@@ -31,9 +32,37 @@ export default function Navbar() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  /* Hide navbar on scroll down, show on scroll up (mobile only) */
+  useEffect(() => {
+    let lastY = window.scrollY
+    const THRESHOLD = 10
+
+    const onScroll = () => {
+      /* Only apply on mobile viewports */
+      if (window.innerWidth >= 768) {
+        setHidden(false)
+        return
+      }
+      /* Never hide while the mobile menu is open */
+      const currentY = window.scrollY
+      const delta = currentY - lastY
+
+      if (delta > THRESHOLD) {
+        setHidden(true)
+      } else if (delta < -THRESHOLD) {
+        setHidden(false)
+      }
+
+      lastY = currentY
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <>
-      <header className={styles.navbar}>
+      <header className={`${styles.navbar} ${hidden && !menuOpen ? styles.navbarHidden : ''}`}>
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="/" className={styles.logo} onClick={closeMenu}>

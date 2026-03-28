@@ -7,7 +7,12 @@
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border);
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+/* Hidden state: slide navbar up out of view */
+.navbarHidden {
+  transform: translateY(-100%);
 }
 
 .inner {
@@ -252,10 +257,10 @@
   transform: rotate(90deg);
 }
 
-/* On mobile: navbar scrolls with page instead of being fixed, smaller height */
+/* On mobile: fixed navbar that hides on scroll down, shows on scroll up */
 @media (max-width: 767px) {
   .navbar {
-    position: relative;
+    position: fixed;
   }
 
   .inner {

@@ -219,7 +219,8 @@
     padding-right: var(--space-4);
     min-height: auto;
     align-items: flex-start;
-    padding-top: var(--space-4);
+    /* Compensate for fixed navbar (52px) + spacing */
+    padding-top: calc(52px + var(--space-4));
     padding-bottom: var(--space-8);
   }
 
@@ -232,11 +233,12 @@
     margin-bottom: var(--space-3);
   }
 
-  /* Heading: bigger than before */
+  /* Heading: bigger than before, tighter bottom margin */
   .heading {
     font-size: clamp(2rem, 7vw, 2.8rem);
     padding-left: var(--space-6);
     padding-right: var(--space-6);
+    margin-bottom: var(--space-4);
   }
 
   /* Sub-line + CTA: pushed inward but capped to viewport */
@@ -249,7 +251,7 @@
   }
 
   .ctas {
-    gap: var(--space-6);
+    gap: var(--space-4);
     padding-left: var(--space-8);
     padding-right: var(--space-8);
     max-width: 100vw;
@@ -263,6 +265,7 @@
   }
 
   .proofBar {
+    margin-top: var(--space-4);
     padding-left: var(--space-4);
     padding-right: var(--space-4);
   }

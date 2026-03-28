@@ -164,8 +164,8 @@
 
 @media (max-width: 768px) {
   .wrapper {
-    /* Extra ruimte zodat de glow niet wordt afgesneden */
-    padding: var(--space-12) var(--space-2) var(--space-12);
+    /* Minder top-padding op mobiel voor compactere spacing */
+    padding: var(--space-8) var(--space-2) var(--space-12);
     overflow: visible;
   }
 
