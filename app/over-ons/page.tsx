@@ -32,18 +32,20 @@ const values = [
 
 const team = [
   {
+    nummer: '01',
     name: 'Christiaan Tromp',
-    roleParts: ['Hoofd Technologie', 'AI'],
+    role: 'Hoofdontwikkelaar AI',
     photo: '/images/christiaan Tromp pf.png',
     description:
-      'Achter elke automatisering zit een systeem dat precies doet wat het moet doen. Christiaan bouwt het zo dat het werkt terwijl jij slaapt.',
+      'Bouwt de AI-systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
   },
   {
+    nummer: '02',
     name: 'Georg Tromp',
-    roleParts: ['Hoofd Strategie', 'Design'],
+    role: 'Design & Strategie',
     photo: '/images/Georg tromp pf.png',
     description:
-      'Georg vertaalt wat een ondernemer nodig heeft naar een aanpak die werkt en een uitstraling die vertrouwen geeft.',
+      'Vertaalt klantbehoeften naar strategie en zorgt dat alles er strak en professioneel uitziet. Kort lijntje, snel schakelen.',
   },
 ]
 
@@ -131,30 +133,33 @@ export default function OverOnsPage() {
           <div className={styles.teamHeader}>
             <span className={styles.sectionLabel}>Ons team</span>
             <h2 className={styles.sectionHeading}>
-              De broers achter Frontlix
+              De broers achter <em className={styles.headingAccent}>Frontlix</em>
             </h2>
           </div>
           <div className={styles.teamGrid}>
-            {team.map((member) => (
-              <article key={member.name} className={styles.teamMember}>
-                {/* Glow achter de foto */}
-                <div className={styles.teamPhotoWrapper}>
-                  <div className={styles.teamPhotoGlow} />
+            {team.map((member, i) => (
+              <article
+                key={member.name}
+                className={`${styles.teamCard} ${i === 1 ? styles.teamCardOffset : ''}`}
+              >
+                {/* Foto met overlay-elementen */}
+                <div className={styles.teamPhotoWrap}>
                   <Image
                     src={member.photo}
                     alt={`Profielfoto van ${member.name}`}
-                    width={200}
-                    height={200}
-                    className={styles.teamPhoto}
+                    fill
+                    className={styles.teamPhotoImg}
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <span className={styles.teamNumBadge}>{member.nummer}</span>
+                  <div className={styles.teamBlueCorner} />
                 </div>
+
+                {/* Info onder de foto */}
                 <div className={styles.teamInfo}>
+                  <p className={styles.teamRole}>{member.role}</p>
                   <h3 className={styles.teamName}>{member.name}</h3>
-                  <span className={styles.teamRole}>
-                    {member.roleParts[0]}
-                    <span className={styles.roleAnd}>&amp;</span>
-                    {member.roleParts[1]}
-                  </span>
+                  <div className={styles.teamDivider} />
                   <p className={styles.teamDescription}>{member.description}</p>
                 </div>
               </article>

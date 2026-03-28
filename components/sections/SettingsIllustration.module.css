@@ -165,9 +165,13 @@
 /* ── Mobile: scale down to fit card ── */
 @media (max-width: 768px) {
   .wrapper {
-    transform: scale(0.95);
-    transform-origin: top center;
-    margin-bottom: -10px;
+    transform: none;
+    margin-bottom: 0;
     min-width: 0;
+  }
+
+  .settingsCard {
+    width: 100%;
+    max-width: 100%;
   }
 }

@@ -47,6 +47,13 @@ export default function Navbar() {
       const currentY = window.scrollY
       const delta = currentY - lastY
 
+      /* Always show navbar when at the top of the page */
+      if (currentY <= THRESHOLD) {
+        setHidden(false)
+        lastY = currentY
+        return
+      }
+
       if (delta > THRESHOLD) {
         setHidden(true)
       } else if (delta < -THRESHOLD) {

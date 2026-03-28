@@ -252,102 +252,110 @@
 /* Team */
 .teamHeader {
   text-align: center;
-  margin-bottom: var(--space-16);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+.headingAccent {
+  color: var(--color-primary);
+  font-style: normal;
 }
 
 .teamGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-16);
-}
-
-.teamMember {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
   gap: var(--space-6);
+  max-width: 860px;
+  margin: 0 auto;
 }
 
-/* Foto wrapper: positie-context voor de glow */
-.teamPhotoWrapper {
+.teamCard {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.teamCardOffset {
+  margin-top: 0;
+}
+
+/* Foto wrapper met overlay-elementen */
+.teamPhotoWrap {
   position: relative;
-  width: 180px;
-  height: 180px;
-  flex-shrink: 0;
-}
-
-/* Zachte glow achter de foto — geen harde border */
-.teamPhotoGlow {
-  position: absolute;
-  inset: -12px;
-  border-radius: var(--radius-full);
-  background: radial-gradient(
-    circle,
-    rgba(26, 86, 255, 0.2) 0%,
-    rgba(0, 207, 255, 0.08) 50%,
-    transparent 70%
-  );
-  filter: blur(16px);
-  transition: opacity 0.4s ease;
-  opacity: 0.7;
-}
-
-.teamMember:hover .teamPhotoGlow {
-  opacity: 1;
-}
-
-.teamPhoto {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.teamPhotoImg {
   object-fit: cover;
+  object-position: top center;
+}
+
+/* Nummer-badge linksboven op de foto */
+.teamNumBadge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
-  display: block;
-  position: relative;
-  z-index: 1;
+  padding: 4px 10px;
+  backdrop-filter: blur(6px);
 }
 
+/* Blauwe hoek rechtsonder op de foto */
+.teamBlueCorner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+/* Info onder de foto */
 .teamInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: 320px;
-}
-
-.teamName {
-  font-size: var(--text-2xl);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: var(--color-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  padding: var(--space-6);
+  border-top: 1px solid var(--color-border);
 }
 
 .teamRole {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
+  font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-muted);
-  letter-spacing: 0.01em;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-2);
 }
 
-/* "&" teken tussen rolonderdelen */
-.roleAnd {
-  font-weight: 700;
+.teamName {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0 0 var(--space-3);
+}
+
+.teamDivider {
+  width: 28px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  margin-bottom: var(--space-3);
 }
 
 .teamDescription {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  line-height: 1.7;
-  margin-top: var(--space-2);
+  line-height: 1.65;
+  margin: 0;
 }
 
 /* Mobile: minder spacing onder de waarden-sectie */
@@ -381,15 +389,13 @@
 
   .teamGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-12);
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+    gap: var(--space-6);
+    max-width: 860px;
   }
 
-  .teamPhotoWrapper {
-    width: 200px;
-    height: 200px;
+  /* Tweede kaart iets lager voor visueel effect */
+  .teamCardOffset {
+    margin-top: 40px;
   }
 }
 
