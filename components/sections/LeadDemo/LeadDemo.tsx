@@ -166,7 +166,7 @@ export default function LeadDemo() {
               <span className={styles.accentWord}>het!</span>
             </h2>
             <p className={styles.subtitle}>
-              Van formulier tot offerte · volledig automatisch
+              Van formulier tot afspraak · volledig automatisch
             </p>
 
             {/* Mobile step indicator: 1 → 2 → 3 → 4 → 5 */}
