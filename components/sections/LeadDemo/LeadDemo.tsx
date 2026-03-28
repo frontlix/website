@@ -21,6 +21,7 @@ export default function LeadDemo() {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const sectionRef = useRef<HTMLElement>(null)
   const hasStarted = useRef(false)
+  const pausedStepRef = useRef(0)
 
   const clearAllTimers = useCallback(() => {
     timers.current.forEach(clearTimeout)
@@ -86,6 +87,20 @@ export default function LeadDemo() {
     setResetKey((k) => k + 1)
     startSequence()
   }, [startSequence])
+
+  /* Touch-hold: pause animation while finger is on the mock-up panel */
+  const handleTouchStart = useCallback(() => {
+    clearAllTimers()
+    pausedStepRef.current = currentStep
+  }, [clearAllTimers, currentStep])
+
+  const handleTouchEnd = useCallback(() => {
+    if (pausedStepRef.current === 0) return
+    const nextStep = pausedStepRef.current >= 5 ? 1 : pausedStepRef.current + 1
+    pausedStepRef.current = 0
+    setResetKey((k) => k + 1)
+    startSequenceFrom(nextStep)
+  }, [startSequenceFrom])
 
   /* IntersectionObserver — auto-start when scrolled into view */
   useEffect(() => {
@@ -174,8 +189,12 @@ export default function LeadDemo() {
             <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
           </div>
 
-          {/* Right column: animation panels */}
-          <div className={styles.panelContainer}>
+          {/* Right column: animation panels — touch-hold pauses the animation */}
+          <div
+            className={styles.panelContainer}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             <FormPanel key={`form-${resetKey}`} isActive={currentStep === 1} />
             <AIChatPanel key={`ai-${resetKey}`} isActive={currentStep === 2} />
             <OfferteGenPanel key={`gen-${resetKey}`} isActive={currentStep === 3} />
