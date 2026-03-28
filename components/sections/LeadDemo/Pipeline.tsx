@@ -8,6 +8,7 @@ import {
   FileText,
   UserCheck,
   Send,
+  MessageCircle,
 } from 'lucide-react'
 import styles from './Pipeline.module.css'
 
@@ -17,6 +18,7 @@ const PIPELINE_STEPS = [
   { id: 3, icon: FileText, title: 'Offerte opstellen', subtitle: 'Document gegenereerd' },
   { id: 4, icon: UserCheck, title: 'Controle eigenaar', subtitle: 'Jij keurt goed met één klik' },
   { id: 5, icon: Send, title: 'Offerte verstuurd', subtitle: 'Lead ontvangt het direct' },
+  { id: 6, icon: MessageCircle, title: 'Afspraak inplannen', subtitle: 'WhatsApp naar klant' },
 ]
 
 interface PipelineProps {

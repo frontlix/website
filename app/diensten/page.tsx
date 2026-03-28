@@ -5,7 +5,7 @@ import styles from './page.module.css'
 export const metadata: Metadata = {
   title: 'Diensten | Frontlix',
   description:
-    'Automatische lead opvolging: van formulier tot offerte, volledig geautomatiseerd met AI. Bekijk hoe het werkt in 5 stappen.',
+    'Automatische lead opvolging: van formulier tot offerte, volledig geautomatiseerd met AI. Bekijk hoe het werkt in 6 stappen.',
 }
 
 export default function DienstenPage() {
@@ -14,7 +14,7 @@ export default function DienstenPage() {
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <span className={styles.label}>In 5 stappen</span>
+          <span className={styles.label}>In 6 stappen</span>
           <h1 className={styles.heroHeading}>
             Van lead naar offerte, volledig automatisch
           </h1>

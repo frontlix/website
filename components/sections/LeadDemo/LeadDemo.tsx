@@ -9,9 +9,10 @@ import AIChatPanel from './panels/AIChatPanel'
 import OfferteGenPanel from './panels/OfferteGenPanel'
 import ControlePanel from './panels/ControlePanel'
 import OfferteMailPanel from './panels/OfferteMailPanel'
+import WhatsAppPanel from './panels/WhatsAppPanel'
 
 /* Variable duration per step (in ms) */
-const STEP_DURATIONS = [1800, 8000, 3000, 2500, 1200]
+const STEP_DURATIONS = [1800, 8000, 3000, 2500, 2500, 4500]
 const RESTART_DELAY = 1000
 
 export default function LeadDemo() {
@@ -96,7 +97,7 @@ export default function LeadDemo() {
 
   const handleTouchEnd = useCallback(() => {
     if (pausedStepRef.current === 0) return
-    const nextStep = pausedStepRef.current >= 5 ? 1 : pausedStepRef.current + 1
+    const nextStep = pausedStepRef.current >= 6 ? 1 : pausedStepRef.current + 1
     pausedStepRef.current = 0
     setResetKey((k) => k + 1)
     startSequenceFrom(nextStep)
@@ -170,7 +171,7 @@ export default function LeadDemo() {
 
             {/* Mobile step indicator: 1 → 2 → 3 → 4 → 5 */}
             <div className={styles.stepIndicator}>
-              {[1, 2, 3, 4, 5].map((step) => (
+              {[1, 2, 3, 4, 5, 6].map((step) => (
                 <div key={step} className={styles.stepRow}>
                   <button
                     className={`${styles.stepDot} ${currentStep === step ? styles.stepDotActive : ''} ${currentStep > step || showComplete ? styles.stepDotDone : ''}`}
@@ -178,7 +179,7 @@ export default function LeadDemo() {
                   >
                     {step}
                   </button>
-                  {step < 5 && <span className={styles.stepArrow}>›</span>}
+                  {step < 6 && <span className={styles.stepArrow}>›</span>}
                 </div>
               ))}
             </div>
@@ -200,6 +201,7 @@ export default function LeadDemo() {
             <OfferteGenPanel key={`gen-${resetKey}`} isActive={currentStep === 3} />
             <ControlePanel key={`ctrl-${resetKey}`} isActive={currentStep === 4} />
             <OfferteMailPanel key={`mail-${resetKey}`} isActive={currentStep === 5} />
+            <WhatsAppPanel key={`wa-${resetKey}`} isActive={currentStep === 6} />
           </div>
         </div>
 
