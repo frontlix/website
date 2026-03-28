@@ -283,10 +283,6 @@
   }
 
   .card {
-    /* Subgrid: align card internals (title, desc, visual, illustration) across columns */
-    display: grid;
-    grid-row: span 4;
-    grid-template-rows: subgrid;
     padding: var(--space-4);
     gap: var(--space-2);
     box-shadow: none;
@@ -296,11 +292,18 @@
   .cardTitle {
     font-size: var(--text-sm);
     font-weight: 700;
+    /* Align across columns: reserve space for 2-line title */
+    min-height: 2.6em;
+    display: flex;
+    align-items: flex-start;
   }
 
   .cardDesc {
     font-size: 11px;
     line-height: 1.5;
+    /* Align across columns: reserve space for longest description */
+    min-height: 66px;
+    flex: 0 0 auto;
   }
 
   .cardVisual {
