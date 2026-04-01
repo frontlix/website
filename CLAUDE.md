@@ -84,6 +84,10 @@ temporary screenshots/
 - **Linting:** ESLint + Prettier
 - **Icons:** `lucide-react` (only when necessary)
 - **Fonts:** Google Fonts via `next/font`
+- **Database/Auth:** `@supabase/supabase-js`
+- **E-mail:** `nodemailer`
+- **AI:** `openai` (demo chatbot)
+- **Analytics:** `posthog-js`
 
 ---
 
@@ -168,33 +172,47 @@ All tokens live in `styles/tokens.css`. Never hardcode colors outside this file.
 /
 ├── CLAUDE.md
 ├── app/
-│   ├── layout.tsx               ← root layout, metadata, fonts
-│   ├── page.tsx                 ← Home
-│   ├── over-ons/page.tsx        ← About
-│   ├── diensten/page.tsx        ← Services
-│   └── contact/page.tsx         ← Contact
-├── components/
-│   ├── ui/                      ← Button, Card, Badge, GradientText
-│   └── sections/                ← Navbar, Footer, Hero, Services, About, ContactForm
+│   ├── layout.tsx                    ← root layout, metadata, fonts
+│   ├── page.tsx                      ← Home
+│   ├── over-ons/page.tsx             ← About
+│   ├── diensten/page.tsx             ← Services
+│   ├── contact/page.tsx              ← Contact
+│   ├── privacy-policy/page.tsx       ← Privacy policy
+│   ├── algemene-voorwaarden/page.tsx ← Terms & conditions
+│   ├── api/                          ← Next.js route handlers
+│   │   ├── contact/route.ts          ← contactform (nodemailer)
+│   │   ├── whatsapp/route.ts
+│   │   ├── demo/route.ts
+│   │   ├── demo-approve/route.ts
+│   │   ├── demo-chatbot/route.ts     ← OpenAI chatbot
+│   │   ├── form-tracking/route.ts    ← analytics events (PostHog)
+│   │   └── project/route.ts
+│   ├── providers/                    ← React context providers
+│   ├── sections/                     ← Navbar, Footer, Hero, Services, About, ContactForm
+│   └── ui/                           ← Button, Card, Badge, GradientText
+├── branned_assets/                   ← brand assets (logos, visuals)
+├── lead-automation/                  ← Python FastAPI lead automation service (see below)
 ├── public/
 │   ├── logo_frontlix_trans.png
 │   └── images/
 ├── styles/
 │   ├── globals.css
-│   └── tokens.css               ← all CSS custom properties
-└── lib/                         ← utility functions
+│   └── tokens.css                    ← all CSS custom properties
+└── lib/                              ← utility functions
 ```
 
 ---
 
 ## Pages
 
-| Route       | File                    | Sections                                    |
-| ----------- | ----------------------- | ------------------------------------------- |
-| `/`         | `app/page.tsx`          | Hero, Services preview, About teaser, CTA   |
-| `/over-ons` | `app/over-ons/page.tsx` | Story, mission, team                        |
-| `/diensten` | `app/diensten/page.tsx` | All services, description, optional pricing |
-| `/contact`  | `app/contact/page.tsx`  | Form, contact details                       |
+| Route                    | File                                  | Sections                                    |
+| ------------------------ | ------------------------------------- | ------------------------------------------- |
+| `/`                      | `app/page.tsx`                        | Hero, Services preview, About teaser, CTA   |
+| `/over-ons`              | `app/over-ons/page.tsx`               | Story, mission, team                        |
+| `/diensten`              | `app/diensten/page.tsx`               | All services, description, optional pricing |
+| `/contact`               | `app/contact/page.tsx`                | Form, contact details                       |
+| `/privacy-policy`        | `app/privacy-policy/page.tsx`         | Privacy policy                              |
+| `/algemene-voorwaarden`  | `app/algemene-voorwaarden/page.tsx`   | Terms & conditions                          |
 
 ---
 
@@ -268,23 +286,33 @@ pm2 restart frontlix       # restart server
 Names only here — never values.
 
 ```env
-NEXT_PUBLIC_SITE_URL=      # e.g. https://frontlix.com
-NEXT_PUBLIC_SITE_NAME=     # Frontlix
+NEXT_PUBLIC_SITE_URL=           # e.g. https://frontlix.com
+NEXT_PUBLIC_SITE_NAME=          # Frontlix
 
-# Contact form — mail solution not yet chosen:
-# RESEND_API_KEY=
-# MAIL_USER=
-# MAIL_PASS=
+# Contact form (nodemailer):
+MAIL_USER=
+MAIL_PASS=
+MAIL_TO=
+
+# Supabase:
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# OpenAI (demo chatbot):
+OPENAI_API_KEY=
+
+# PostHog (analytics):
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
 ```
 
 ---
 
 ## Contact Form
 
-- **Status:** mail solution not yet chosen
+- **Status:** Geïmplementeerd met `nodemailer`
 - Fields: Name, Email, Subject, Message
-- Send logic goes in `app/api/contact/route.ts`
-- Until the mail solution is decided: build the form **without** send logic — UI only
+- Send logic: `app/api/contact/route.ts`
 
 ---
 
@@ -337,4 +365,18 @@ Use freely: `CSS Grid`, `Flexbox`, `CSS custom properties`, `container queries`,
 
 ---
 
-_Last updated: March 2026_
+## Lead Automation Service
+
+Standalone Python FastAPI service in `/lead-automation/` — draait los van de Next.js app.
+
+```bash
+cd lead-automation
+source venv/bin/activate
+uvicorn main:app --reload   # dev server
+```
+
+Bevat eigen routes, models, services en templates. Niet aanraken tenzij expliciet gevraagd.
+
+---
+
+_Last updated: April 2026_
