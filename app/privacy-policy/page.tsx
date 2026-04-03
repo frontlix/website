@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul>
             <li>Bedrijfsnaam: Frontlix</li>
-            <li>KvK-nummer: [KVK-NUMMER]</li>
+            <li>KvK-nummer: 90193695</li>
             <li>E-mail: info@frontlix.nl</li>
             <li>Website: frontlix.nl</li>
           </ul>

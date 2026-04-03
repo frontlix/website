@@ -28,7 +28,7 @@ export default function AlgemeneVoorwaardenPage() {
           <ul>
             <li>
               <strong>Frontlix:</strong> de eenmanszaak Frontlix, gevestigd te Theresiastraat,
-              Den Haag, ingeschreven bij de Kamer van Koophandel onder nummer [KVK-NUMMER].
+              Den Haag, ingeschreven bij de Kamer van Koophandel onder nummer 90193695.
             </li>
             <li>
               <strong>Opdrachtgever:</strong> de natuurlijke of rechtspersoon die een
