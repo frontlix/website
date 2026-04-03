@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     'sales automatisering',
     'Nederland',
   ],
-  authors: [{ name: 'Frontlix', url: 'https://frontlix.nl' }],
+  authors: [{ name: 'Frontlix', url: 'https://frontlix.com' }],
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.com'
   ),

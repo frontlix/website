@@ -36,7 +36,7 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
         <div className={styles.emailHeader}>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Van:</span>
-            <span className={styles.emailHeaderValue}>Frontlix Systeem &lt;systeem@frontlix.nl&gt;</span>
+            <span className={styles.emailHeaderValue}>Frontlix Systeem &lt;systeem@frontlix.com&gt;</span>
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Aan:</span>

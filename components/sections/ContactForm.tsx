@@ -11,8 +11,8 @@ const contactInfo = [
   {
     icon: Mail,
     label: 'E-mail',
-    value: 'info@frontlix.nl',
-    href: 'mailto:info@frontlix.nl',
+    value: 'info@frontlix.com',
+    href: 'mailto:info@frontlix.com',
   },
   {
     icon: MessageCircle,

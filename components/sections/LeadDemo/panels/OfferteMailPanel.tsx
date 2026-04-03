@@ -13,7 +13,7 @@ export default function OfferteMailPanel({ isActive }: OfferteMailPanelProps) {
         <div className={styles.emailHeader}>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Van:</span>
-            <span className={styles.emailHeaderValue}>Frontlix &lt;offerte@frontlix.nl&gt;</span>
+            <span className={styles.emailHeaderValue}>Frontlix &lt;offerte@frontlix.com&gt;</span>
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Aan:</span>

@@ -302,7 +302,7 @@ export default function AlgemeneVoorwaardenPage() {
           <h2>17. Contact</h2>
           <p>
             Voor vragen over deze algemene voorwaarden kun je contact opnemen via{' '}
-            <a href="mailto:info@frontlix.nl">info@frontlix.nl</a>.
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a>.
           </p>
 
           <p className={styles.lastUpdated}>

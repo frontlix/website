@@ -32,8 +32,8 @@ export default function PrivacyPolicyPage() {
           <ul>
             <li>Bedrijfsnaam: Frontlix</li>
             <li>KvK-nummer: 90193695</li>
-            <li>E-mail: info@frontlix.nl</li>
-            <li>Website: frontlix.nl</li>
+            <li>E-mail: info@frontlix.com</li>
+            <li>Website: frontlix.com</li>
           </ul>
 
           <h2>2. Welke gegevens verzamelen wij</h2>
@@ -180,7 +180,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p>
             Om gebruik te maken van deze rechten kun je contact met ons opnemen via{' '}
-            <a href="mailto:info@frontlix.nl">info@frontlix.nl</a>. Wij reageren
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Wij reageren
             binnen 30 dagen op jouw verzoek.
           </p>
 
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
           <p>
             Heb je een klacht over de manier waarop wij omgaan met jouw persoonsgegevens?
             Neem dan eerst contact met ons op via{' '}
-            <a href="mailto:info@frontlix.nl">info@frontlix.nl</a>. Je hebt ook altijd
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Je hebt ook altijd
             het recht om een klacht in te dienen bij de{' '}
             <a
               href="https://autoriteitpersoonsgegevens.nl"

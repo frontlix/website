@@ -268,7 +268,7 @@ pm2 restart frontlix       # restart server
 Names only here — never values.
 
 ```env
-NEXT_PUBLIC_SITE_URL=      # e.g. https://frontlix.nl
+NEXT_PUBLIC_SITE_URL=      # e.g. https://frontlix.com
 NEXT_PUBLIC_SITE_NAME=     # Frontlix
 
 # Contact form — mail solution not yet chosen:
