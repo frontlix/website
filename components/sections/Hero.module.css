@@ -180,21 +180,6 @@
   font-weight: 700;
 }
 
-.secondaryLink {
-  display: block;
-  margin-top: var(--space-4);
-  color: var(--color-primary);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  text-decoration: none;
-  text-align: center;
-  transition: color 0.2s;
-}
-
-.secondaryLink:hover {
-  color: var(--color-accent);
-}
-
 /* CTA tekst: mobiel vs desktop */
 .ctaTextDesktop {
   display: none;
