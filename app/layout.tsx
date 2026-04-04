@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import '@/styles/tokens.css'
 import '@/styles/globals.css'
@@ -11,6 +11,12 @@ const inter = Inter({
   display: 'swap',
   variable: '--font-inter',
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1A56FF',
+}
 
 export const metadata: Metadata = {
   title: 'Frontlix | Automatische leadopvolging via WhatsApp',
@@ -28,6 +34,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.com'
   ),
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
@@ -38,7 +52,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/open graph frontlix.png',
+        url: '/og-frontlix.png',
         width: 1200,
         height: 630,
         alt: 'Frontlix — Automatische leadopvolging via WhatsApp',
@@ -50,7 +64,7 @@ export const metadata: Metadata = {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
       'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
-    images: ['/open graph frontlix.png'],
+    images: ['/og-frontlix.png'],
   },
   robots: {
     index: true,
@@ -58,26 +72,70 @@ export const metadata: Metadata = {
   },
 }
 
-const organizationSchema = {
+/* ── Structured Data ─────────────────────────────────── */
+
+const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Frontlix',
-  url: 'https://frontlix.com',
-  logo: 'https://frontlix.com/logo_frontlix_trans.png',
-  description:
-    'Frontlix automatiseert leadopvolging via WhatsApp. Binnen 60 seconden een persoonlijke reactie en kant-en-klare offerte.',
-  foundingDate: '2024',
-  areaServed: {
-    '@type': 'Country',
-    name: 'Nederland',
-  },
-  inLanguage: 'nl',
-  contactPoint: {
-    '@type': 'ContactPoint',
-    telephone: '+31-6-24752476',
-    contactType: 'sales',
-    availableLanguage: 'Dutch',
-  },
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://frontlix.com/#organization',
+      name: 'Frontlix',
+      url: 'https://frontlix.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://frontlix.com/logo.png',
+      },
+      description:
+        'Frontlix automatiseert leadopvolging via WhatsApp. Binnen 60 seconden een persoonlijke reactie en kant-en-klare offerte.',
+      foundingDate: '2024',
+      founder: [
+        { '@type': 'Person', name: 'Christiaan Tromp' },
+        { '@type': 'Person', name: 'Georg Tromp' },
+      ],
+      areaServed: { '@type': 'Country', name: 'Nederland' },
+      inLanguage: 'nl',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+31624752476',
+        email: 'info@frontlix.com',
+        contactType: 'sales',
+        availableLanguage: 'Dutch',
+      },
+    },
+    {
+      '@type': 'ProfessionalService',
+      '@id': 'https://frontlix.com/#business',
+      name: 'Frontlix',
+      url: 'https://frontlix.com',
+      logo: 'https://frontlix.com/logo.png',
+      image: 'https://frontlix.com/og-frontlix.png',
+      telephone: '+31624752476',
+      email: 'info@frontlix.com',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Theresiastraat',
+        addressLocality: 'Den Haag',
+        addressCountry: 'NL',
+      },
+      areaServed: { '@type': 'Country', name: 'Nederland' },
+      priceRange: '$$',
+      inLanguage: 'nl',
+      description:
+        'Automatische leadopvolging via WhatsApp voor MKB-bedrijven in Nederland.',
+      foundingDate: '2024',
+      taxID: '90193695',
+      parentOrganization: { '@id': 'https://frontlix.com/#organization' },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://frontlix.com/#website',
+      name: 'Frontlix',
+      url: 'https://frontlix.com',
+      inLanguage: 'nl',
+      publisher: { '@id': 'https://frontlix.com/#organization' },
+    },
+  ],
 }
 
 export default function RootLayout({
@@ -91,12 +149,12 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema),
+            __html: JSON.stringify(structuredData),
           }}
         />
         <PostHogProvider>
           <Navbar />
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
           <Footer />
         </PostHogProvider>
       </body>

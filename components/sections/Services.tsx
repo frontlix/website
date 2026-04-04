@@ -27,9 +27,9 @@ const steps = [
   {
     number: '02',
     icon: MessageSquare,
-    title: 'AI stelt de juiste vragen',
+    title: 'De juiste vragen worden automatisch gesteld',
     description:
-      'Een AI-assistent neemt het gesprek over via WhatsApp en stelt stap voor stap de juiste vragen. Type oppervlak, afmetingen, materiaal, alles wordt slim uitgevraagd.',
+      'Het gesprek wordt automatisch overgenomen via WhatsApp. Stap voor stap worden de juiste vragen gesteld: type oppervlak, afmetingen, materiaal — alles wordt slim uitgevraagd.',
     details: [
       'Natuurlijke WhatsApp conversatie',
       'Slimme follow-up vragen',

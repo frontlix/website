@@ -1,26 +1,36 @@
 import type { Metadata } from 'next'
+import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Frontlix',
+  title: 'Privacybeleid | Frontlix',
   description:
-    'Lees hoe Frontlix omgaat met jouw persoonsgegevens. Onze privacy policy beschrijft welke gegevens we verzamelen en hoe we deze beschermen.',
+    'Lees hoe Frontlix omgaat met jouw persoonsgegevens volgens de AVG. Onze privacy policy beschrijft welke gegevens we verzamelen, hoe we deze beschermen en welke rechten je hebt.',
   alternates: {
     canonical: '/privacy-policy',
     languages: { nl: '/privacy-policy' },
   },
   openGraph: {
-    title: 'Privacy Policy | Frontlix',
+    title: 'Privacybeleid | Frontlix',
     description:
-      'Lees hoe Frontlix omgaat met jouw persoonsgegevens. Onze privacy policy beschrijft welke gegevens we verzamelen en hoe we deze beschermen.',
+      'Lees hoe Frontlix omgaat met jouw persoonsgegevens volgens de AVG. Onze privacy policy beschrijft welke gegevens we verzamelen, hoe we deze beschermen en welke rechten je hebt.',
     url: '/privacy-policy',
     locale: 'nl_NL',
   },
 }
 
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: 'Home', url: 'https://frontlix.com' },
+  { name: 'Privacy Policy', url: 'https://frontlix.com/privacy-policy' },
+])
+
 export default function PrivacyPolicyPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>

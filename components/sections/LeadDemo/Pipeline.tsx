@@ -14,7 +14,7 @@ import styles from './Pipeline.module.css'
 
 const PIPELINE_STEPS = [
   { id: 1, icon: ClipboardList, title: 'Formulier ingediend', subtitle: 'Lead binnengehaald' },
-  { id: 2, icon: Bot, title: 'AI start gesprek', subtitle: 'Frontlix AI actief' },
+  { id: 2, icon: Bot, title: 'Gesprek start automatisch', subtitle: 'Frontlix actief' },
   { id: 3, icon: FileText, title: 'Offerte opstellen', subtitle: 'Document gegenereerd' },
   { id: 4, icon: UserCheck, title: 'Controle eigenaar', subtitle: 'Jij keurt goed met één klik' },
   { id: 5, icon: Send, title: 'Offerte verstuurd', subtitle: 'Lead ontvangt het direct' },

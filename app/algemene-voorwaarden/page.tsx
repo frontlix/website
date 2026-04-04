@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -18,9 +19,18 @@ export const metadata: Metadata = {
   },
 }
 
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: 'Home', url: 'https://frontlix.com' },
+  { name: 'Algemene Voorwaarden', url: 'https://frontlix.com/algemene-voorwaarden' },
+])
+
 export default function AlgemeneVoorwaardenPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>

@@ -69,11 +69,14 @@ export default function Navbar() {
 
   return (
     <>
+      <a href="#main-content" className={styles.skipLink}>
+        Ga naar hoofdinhoud
+      </a>
       <header className={`${styles.navbar} ${hidden && !menuOpen ? styles.navbarHidden : ''}`}>
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="/" className={styles.logo} onClick={closeMenu}>
-            <Image src="/logo.png" alt="Frontlix logo" width={44} height={44} className={styles.logoImage} />
+            <Image src="/logo.png" alt="Frontlix logo" width={44} height={44} className={styles.logoImage} priority />
             <span>Front<span className={styles.logoIx}>lix</span></span>
           </Link>
 

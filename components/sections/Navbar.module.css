@@ -1,3 +1,20 @@
+.skipLink {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-md) 0;
+}
+
+.skipLink:focus {
+  top: 0;
+}
+
 .navbar {
   position: fixed;
   top: 0;

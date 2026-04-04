@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       .single()
 
     // Stuur eerste WhatsApp bericht via vrije tekst
-    const firstMessage = `Hey! Welkom bij de Frontlix demo. Ik ga je laten zien hoe ons AI-systeem werkt door samen een offerte op te stellen.\n\nOm te beginnen, wat is je naam?`
+    const firstMessage = `Hey! Welkom bij de Frontlix demo. Ik ga je laten zien hoe ons systeem automatisch werkt door samen een offerte op te stellen.\n\nOm te beginnen, wat is je naam?`
 
     try {
       await sendWhatsAppText(phone, firstMessage)

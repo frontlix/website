@@ -8,7 +8,7 @@ import styles from './ProfilesSection.module.css'
 /* Inline SVG illustration for the "missed leads" card */
 function LeadIllustration() {
   return (
-    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration}>
+    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration} role="img" aria-label="Tijdlijn die laat zien hoe een lead afhaakt zonder snelle opvolging">
 
       <defs>
         <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -67,7 +67,7 @@ function LeadIllustration() {
 /* Inline SVG illustration for the "manual follow-up" card */
 function ManualWorkIllustration() {
   return (
-    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration}>
+    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration} role="img" aria-label="Tijdlijn die laat zien hoe handmatige opvolging leidt tot gemiste kansen">
 
       <defs>
         <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -131,7 +131,7 @@ function ManualWorkIllustration() {
 /* Inline SVG illustration for the "low conversion" card */
 function ConversionIllustration() {
   return (
-    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration}>
+    <svg viewBox="20 56 590 120" xmlns="http://www.w3.org/2000/svg" className={styles.cardIllustration} role="img" aria-label="Funnel die laat zien hoe aanvragen afnemen zonder automatisering">
 
       <defs>
         <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">

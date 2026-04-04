@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Services from '@/components/sections/Services'
+import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'Diensten | Frontlix',
   description:
-    'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd. Bekijk hoe het werkt in 6 stappen.',
+    'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd via WhatsApp. Bekijk hoe het werkt in 6 stappen en ontvang sneller meer klanten.',
   alternates: {
     canonical: '/diensten',
     languages: { nl: '/diensten' },
@@ -13,10 +14,31 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Diensten | Frontlix',
     description:
-      'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd. Bekijk hoe het werkt in 6 stappen.',
+      'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd via WhatsApp. Bekijk hoe het werkt in 6 stappen en ontvang sneller meer klanten.',
     url: '/diensten',
     locale: 'nl_NL',
   },
+}
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: 'Home', url: 'https://frontlix.com' },
+  { name: 'Diensten', url: 'https://frontlix.com/diensten' },
+])
+
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Automatische leadopvolging via WhatsApp',
+  description:
+    'Van formulier tot offerte, volledig geautomatiseerd binnen 60 seconden. Leads worden automatisch opgevangen, uitgevraagd en voorzien van een professionele offerte.',
+  provider: {
+    '@type': 'Organization',
+    name: 'Frontlix',
+    url: 'https://frontlix.com',
+  },
+  areaServed: { '@type': 'Country', name: 'Nederland' },
+  serviceType: 'Leadopvolging automatisering',
+  inLanguage: 'nl',
 }
 
 const howToSchema = {
@@ -71,6 +93,14 @@ export default function DienstenPage() {
     <>
       <script
         type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
       {/* Hero */}
@@ -81,9 +111,9 @@ export default function DienstenPage() {
             Van lead naar offerte, volledig automatisch
           </h1>
           <p className={styles.heroSubtext}>
-            Terwijl jij bezig bent met je klanten, vangt AI je leads op,
-            stelt de juiste vragen en stuurt een offerte, zonder dat jij
-            iets hoeft te doen.
+            Terwijl jij bezig bent met je klanten, worden je leads automatisch
+            opgevangen. De juiste vragen worden gesteld en een offerte wordt
+            verstuurd — zonder dat jij iets hoeft te doen.
           </p>
         </div>
       </section>

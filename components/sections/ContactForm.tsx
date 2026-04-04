@@ -136,7 +136,14 @@ export default function ContactForm() {
                       {item.value}
                     </span>
                   ) : (
-                    <a href={item.href} className={styles.contactItemValue}>
+                    <a
+                      href={item.href}
+                      className={styles.contactItemValue}
+                      {...(item.href.startsWith('http') && {
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      })}
+                    >
                       {item.value}
                     </a>
                   )}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Target, Heart, Lightbulb } from 'lucide-react'
+import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ const values = [
     icon: Lightbulb,
     title: 'Vooruitdenkend',
     description:
-      'AI ontwikkelt zich razendsnel. Wij zorgen dat jouw bedrijf voorop blijft lopen.',
+      'Technologie ontwikkelt zich razendsnel. Wij zorgen dat jouw bedrijf voorop blijft lopen.',
   },
 ]
 
@@ -45,10 +46,10 @@ const team = [
   {
     nummer: '01',
     name: 'Christiaan Tromp',
-    role: 'Hoofdontwikkelaar AI',
+    role: 'Hoofdontwikkelaar',
     photo: '/images/christiaan Tromp pf.png',
     description:
-      'Bouwt de AI-systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
+      'Bouwt de systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
   },
   {
     nummer: '02',
@@ -60,9 +61,18 @@ const team = [
   },
 ]
 
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: 'Home', url: 'https://frontlix.com' },
+  { name: 'Over ons', url: 'https://frontlix.com/over-ons' },
+])
+
 export default function OverOnsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
@@ -70,7 +80,7 @@ export default function OverOnsPage() {
           <h1 className={styles.heroHeading}>Twee broers, één missie</h1>
           <p className={styles.heroSubtext}>
             Wij zijn Christiaan en Georg, de broers achter Frontlix. Samen
-            helpen wij MKB-bedrijven slimmer werken met AI-automatisering.
+            helpen wij MKB-bedrijven slimmer werken met slimme automatisering.
           </p>
         </div>
       </section>
@@ -93,7 +103,7 @@ export default function OverOnsPage() {
               <p className={styles.text}>
                 Als broers vullen wij elkaar perfect aan. Christiaan bouwt de
                 technische oplossingen, Georg zorgt dat alles er strak en
-                professioneel uitziet. Samen maken wij AI-automatisering
+                professioneel uitziet. Samen maken wij slimme automatisering
                 toegankelijk voor ondernemers die willen groeien, zonder
                 technische kennis nodig te hebben.
               </p>
@@ -126,13 +136,13 @@ export default function OverOnsPage() {
           <div className={styles.missionCard}>
             <span className={styles.sectionLabel}>Onze missie</span>
             <h2 className={styles.missionHeading}>
-              AI-automatisering toegankelijk maken voor elk MKB-bedrijf
+              Slimme automatisering toegankelijk maken voor elk MKB-bedrijf
             </h2>
             <p className={styles.missionText}>
               Grote bedrijven hebben hele IT-afdelingen om processen te
               automatiseren. Wij geloven dat MKB-ondernemers diezelfde
               voordelen verdienen, zonder het grote budget. Daarom bouwen wij
-              slimme, betaalbare AI-oplossingen die direct resultaat opleveren.
+              slimme, betaalbare automatiseringsoplossingen die direct resultaat opleveren.
             </p>
           </div>
         </div>
@@ -161,6 +171,7 @@ export default function OverOnsPage() {
                     fill
                     className={styles.teamPhotoImg}
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    priority={i === 0}
                   />
 
                   <div className={styles.teamBlueCorner} />
