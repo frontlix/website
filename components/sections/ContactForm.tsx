@@ -18,13 +18,13 @@ const contactInfo = [
     icon: MessageCircle,
     label: 'WhatsApp',
     value: 'Stuur een berichtje',
-    href: 'https://wa.me/31624752476',
+    href: 'https://wa.me/31624965270',
   },
   {
     icon: Phone,
     label: 'Telefoon',
-    value: '+31 6 24752476',
-    href: 'tel:+31624752476',
+    value: '+31 6 24965270',
+    href: 'tel:+31624965270',
   },
 ]
 

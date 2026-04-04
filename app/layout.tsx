@@ -97,7 +97,7 @@ const structuredData = {
       inLanguage: 'nl',
       contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+31624752476',
+        telephone: '+31624965270',
         email: 'info@frontlix.com',
         contactType: 'sales',
         availableLanguage: 'Dutch',
@@ -110,7 +110,7 @@ const structuredData = {
       url: 'https://frontlix.com',
       logo: 'https://frontlix.com/logo.png',
       image: 'https://frontlix.com/og-frontlix.png',
-      telephone: '+31624752476',
+      telephone: '+31624965270',
       email: 'info@frontlix.com',
       address: {
         '@type': 'PostalAddress',

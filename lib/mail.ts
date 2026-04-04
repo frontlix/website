@@ -95,7 +95,7 @@ export async function sendConfirmation(to: string, naam: string) {
               <table cellpadding="0" cellspacing="0" style="margin: 0 0 8px;">
                 <tr>
                   <td style="padding-right: 12px;">
-                    <a href="https://wa.me/31624752476" style="display: inline-block; background: linear-gradient(135deg, #1A56FF, #00CFFF); color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px;">WhatsApp ons</a>
+                    <a href="https://wa.me/31624965270" style="display: inline-block; background: linear-gradient(135deg, #1A56FF, #00CFFF); color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 8px;">WhatsApp ons</a>
                   </td>
                   <td>
                     <a href="mailto:info@frontlix.com" style="display: inline-block; background-color: #FFFFFF; color: #1A56FF; text-decoration: none; font-size: 14px; font-weight: 600; padding: 11px 24px; border-radius: 8px; border: 1px solid #1A56FF;">Stuur een e-mail</a>
@@ -117,7 +117,7 @@ export async function sendConfirmation(to: string, naam: string) {
                 <a href="mailto:info@frontlix.com" style="color: #1A56FF; text-decoration: none; font-size: 12px;">info@frontlix.com</a>
               </p>
               <p style="margin: 0;">
-                <a href="tel:+31624752476" style="color: #1A56FF; text-decoration: none; font-size: 12px; white-space: nowrap;">+31&nbsp;6&nbsp;24752476</a>
+                <a href="tel:+31624965270" style="color: #1A56FF; text-decoration: none; font-size: 12px; white-space: nowrap;">+31&nbsp;6&nbsp;24965270</a>
               </p>
             </td>
           </tr>
