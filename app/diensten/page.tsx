@@ -4,7 +4,7 @@ import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Diensten | Frontlix',
+  title: 'Automatische Leadopvolging via WhatsApp | Frontlix',
   description:
     'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd via WhatsApp. Bekijk hoe het werkt in 6 stappen en ontvang sneller meer klanten.',
   alternates: {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     languages: { nl: '/diensten' },
   },
   openGraph: {
-    title: 'Diensten | Frontlix',
+    title: 'Automatische Leadopvolging via WhatsApp | Frontlix',
     description:
       'Automatische leadopvolging: van formulier tot offerte, volledig geautomatiseerd via WhatsApp. Bekijk hoe het werkt in 6 stappen en ontvang sneller meer klanten.',
     url: '/diensten',

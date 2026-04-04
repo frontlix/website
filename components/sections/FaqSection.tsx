@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { faqs } from '@/lib/faq-data'
 import styles from './FaqSection.module.css'
@@ -19,8 +20,11 @@ export default function FaqSection() {
           <span className={styles.label}>Veelgestelde vragen</span>
           <h2 className={styles.heading}>Alles wat je wilt weten</h2>
           <p className={styles.subtext}>
-            Heb je een andere vraag? Neem gerust contact met ons op, we
-            helpen je graag verder.
+            Heb je een andere vraag?{' '}
+            <Link href="/contact" className={styles.subtextLink}>
+              Neem gerust contact met ons op
+            </Link>
+            , we helpen je graag verder.
           </p>
         </header>
 

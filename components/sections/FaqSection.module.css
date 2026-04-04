@@ -41,6 +41,16 @@
   margin-right: auto;
 }
 
+.subtextLink {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.subtextLink:hover {
+  color: var(--color-accent);
+}
+
 /* Accordion list */
 .list {
   display: flex;

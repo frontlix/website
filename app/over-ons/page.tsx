@@ -5,7 +5,7 @@ import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Over ons | Frontlix',
+  title: 'Over Frontlix — Automatische Leadopvolging voor MKB',
   description:
     'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     languages: { nl: '/over-ons' },
   },
   openGraph: {
-    title: 'Over ons | Frontlix',
+    title: 'Over Frontlix — Automatische Leadopvolging voor MKB',
     description:
       'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
     url: '/over-ons',
@@ -47,7 +47,7 @@ const team = [
     nummer: '01',
     name: 'Christiaan Tromp',
     role: 'Hoofdontwikkelaar',
-    photo: '/images/christiaan Tromp pf.png',
+    photo: '/images/christiaan-tromp.png',
     description:
       'Bouwt de systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
   },
@@ -55,7 +55,7 @@ const team = [
     nummer: '02',
     name: 'Georg Tromp',
     role: 'Design & Strategie',
-    photo: '/images/Georg tromp pf.png',
+    photo: '/images/georg-tromp.png',
     description:
       'Vertaalt klantbehoeften naar strategie en zorgt dat alles er strak en professioneel uitziet. Kort lijntje, snel schakelen.',
   },

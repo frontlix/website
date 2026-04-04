@@ -11,7 +11,7 @@ const bedrijf = [
 const contact = [
   { label: 'info@frontlix.com', href: 'mailto:info@frontlix.com' },
   { label: '+31 6 24752476', href: 'tel:+31624752476' },
-  { label: 'Nederland', href: '#' },
+  { label: 'Den Haag, Nederland', href: null },
 ]
 
 export default function Footer() {
@@ -40,7 +40,7 @@ export default function Footer() {
           <div className={styles.columns}>
             <div className={styles.column}>
               <h3 className={styles.columnTitle}>Bedrijf</h3>
-              <nav className={styles.columnLinks}>
+              <nav className={styles.columnLinks} aria-label="Bedrijf">
                 {bedrijf.map((link) => (
                   <Link key={link.label} href={link.href} className={styles.columnLink}>
                     {link.label}
@@ -51,12 +51,18 @@ export default function Footer() {
 
             <div className={styles.column}>
               <h3 className={styles.columnTitle}>Contact</h3>
-              <nav className={styles.columnLinks}>
-                {contact.map((link) => (
-                  <Link key={link.label} href={link.href} className={styles.columnLink}>
-                    {link.label}
-                  </Link>
-                ))}
+              <nav className={styles.columnLinks} aria-label="Contact">
+                {contact.map((link) =>
+                  link.href ? (
+                    <Link key={link.label} href={link.href} className={styles.columnLink}>
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <span key={link.label} className={styles.columnLink}>
+                      {link.label}
+                    </span>
+                  )
+                )}
               </nav>
             </div>
           </div>

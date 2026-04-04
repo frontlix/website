@@ -4,7 +4,7 @@ import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Contact | Frontlix',
+  title: 'Contact — Gratis Kennismakingsgesprek | Frontlix',
   description:
     'Neem contact op met Frontlix voor een gratis kennismakingsgesprek. Ontdek hoe wij jouw leadopvolging automatiseren via WhatsApp — binnen 24 uur reactie.',
   alternates: {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     languages: { nl: '/contact' },
   },
   openGraph: {
-    title: 'Contact | Frontlix',
+    title: 'Contact — Gratis Kennismakingsgesprek | Frontlix',
     description:
       'Neem contact op met Frontlix voor een gratis kennismakingsgesprek. Ontdek hoe wij jouw leadopvolging automatiseren via WhatsApp — binnen 24 uur reactie.',
     url: '/contact',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import Link from 'next/link'
 import { validatePhone } from '@/lib/utils'
 import { useFormTracking } from '@/hooks/useFormTracking'
 import Button from '@/components/ui/Button'
@@ -126,6 +127,10 @@ export default function Hero() {
             <span className={`${styles.proofItem} ${styles.proofItemDesktop}`}><span className={styles.check}>✓</span> Geen technische kennis nodig</span>
             <span className={styles.proofItem}><span className={styles.check}>✓</span> Free trial</span>
           </div>
+
+          <Link href="/diensten" className={styles.secondaryLink}>
+            Bekijk hoe het werkt in 6 stappen →
+          </Link>
         </div>
 
         {/* Lead kwalificatie demo */}

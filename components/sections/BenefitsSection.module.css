@@ -257,6 +257,21 @@
 .cta {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.ctaLink {
+  color: var(--color-primary);
+  font-size: var(--text-base);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.ctaLink:hover {
+  color: var(--color-accent);
 }
 
 /* ── Mobile: compact 2x2 card grid ── */
