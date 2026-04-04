@@ -5,6 +5,17 @@ export const metadata: Metadata = {
   title: 'Privacy Policy | Frontlix',
   description:
     'Lees hoe Frontlix omgaat met jouw persoonsgegevens. Onze privacy policy beschrijft welke gegevens we verzamelen en hoe we deze beschermen.',
+  alternates: {
+    canonical: '/privacy-policy',
+    languages: { nl: '/privacy-policy' },
+  },
+  openGraph: {
+    title: 'Privacy Policy | Frontlix',
+    description:
+      'Lees hoe Frontlix omgaat met jouw persoonsgegevens. Onze privacy policy beschrijft welke gegevens we verzamelen en hoe we deze beschermen.',
+    url: '/privacy-policy',
+    locale: 'nl_NL',
+  },
 }
 
 export default function PrivacyPolicyPage() {

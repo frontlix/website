@@ -101,7 +101,9 @@ export default function Hero() {
               className={styles.phoneForm}
               onSubmit={handleDemoSubmit}
             >
+              <label htmlFor="hero-phone" className="sr-only">Telefoonnummer</label>
               <input
+                id="hero-phone"
                 type="tel"
                 className={styles.phoneInput}
                 placeholder="Vul je nummer in"

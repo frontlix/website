@@ -5,6 +5,17 @@ export const metadata: Metadata = {
   title: 'Algemene Voorwaarden | Frontlix',
   description:
     'Lees de algemene voorwaarden van Frontlix. Deze voorwaarden zijn van toepassing op al onze diensten en overeenkomsten.',
+  alternates: {
+    canonical: '/algemene-voorwaarden',
+    languages: { nl: '/algemene-voorwaarden' },
+  },
+  openGraph: {
+    title: 'Algemene Voorwaarden | Frontlix',
+    description:
+      'Lees de algemene voorwaarden van Frontlix. Deze voorwaarden zijn van toepassing op al onze diensten en overeenkomsten.',
+    url: '/algemene-voorwaarden',
+    locale: 'nl_NL',
+  },
 }
 
 export default function AlgemeneVoorwaardenPage() {

@@ -15,11 +15,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Frontlix | Automatische leadopvolging via WhatsApp',
   description:
-    'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
   keywords: [
     'leadopvolging',
     'WhatsApp automatisering',
-    'AI leads',
     'automatische offerte',
     'lead management',
     'sales automatisering',
@@ -32,21 +31,52 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
     url: 'https://frontlix.com',
     siteName: 'Frontlix',
     locale: 'nl_NL',
     type: 'website',
+    images: [
+      {
+        url: '/open graph frontlix.png',
+        width: 1200,
+        height: 630,
+        alt: 'Frontlix — Automatische leadopvolging via WhatsApp',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden reageert ons AI-systeem op elke nieuwe lead via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+    images: ['/open graph frontlix.png'],
   },
   robots: {
     index: true,
     follow: true,
+  },
+}
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Frontlix',
+  url: 'https://frontlix.com',
+  logo: 'https://frontlix.com/logo_frontlix_trans.png',
+  description:
+    'Frontlix automatiseert leadopvolging via WhatsApp. Binnen 60 seconden een persoonlijke reactie en kant-en-klare offerte.',
+  foundingDate: '2024',
+  areaServed: {
+    '@type': 'Country',
+    name: 'Nederland',
+  },
+  inLanguage: 'nl',
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+31-6-24752476',
+    contactType: 'sales',
+    availableLanguage: 'Dutch',
   },
 }
 
@@ -58,6 +88,12 @@ export default function RootLayout({
   return (
     <html lang="nl" className={inter.variable}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
         <PostHogProvider>
           <Navbar />
           <main>{children}</main>

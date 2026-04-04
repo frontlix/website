@@ -5,7 +5,18 @@ import styles from './page.module.css'
 export const metadata: Metadata = {
   title: 'Contact | Frontlix',
   description:
-    'Neem contact op met Frontlix. Plan een gratis gesprek en ontdek hoe wij jouw digitale aanwezigheid kunnen versterken.',
+    'Neem contact op met Frontlix. Plan een gratis gesprek en ontdek hoe wij jouw leadopvolging kunnen automatiseren.',
+  alternates: {
+    canonical: '/contact',
+    languages: { nl: '/contact' },
+  },
+  openGraph: {
+    title: 'Contact | Frontlix',
+    description:
+      'Neem contact op met Frontlix. Plan een gratis gesprek en ontdek hoe wij jouw leadopvolging kunnen automatiseren.',
+    url: '/contact',
+    locale: 'nl_NL',
+  },
 }
 
 export default function ContactPage() {

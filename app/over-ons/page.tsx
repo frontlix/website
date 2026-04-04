@@ -6,7 +6,18 @@ import styles from './page.module.css'
 export const metadata: Metadata = {
   title: 'Over ons | Frontlix',
   description:
-    'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met AI-automatisering.',
+    'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
+  alternates: {
+    canonical: '/over-ons',
+    languages: { nl: '/over-ons' },
+  },
+  openGraph: {
+    title: 'Over ons | Frontlix',
+    description:
+      'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
+    url: '/over-ons',
+    locale: 'nl_NL',
+  },
 }
 
 const values = [
