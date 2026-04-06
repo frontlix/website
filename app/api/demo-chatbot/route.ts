@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
-import { sendWhatsAppText, normalizePhone } from '@/lib/whatsapp'
+import { sendDemoStartTemplate, sendPersonalizedDemoTemplate, normalizePhone } from '@/lib/whatsapp'
 import { sendNotification } from '@/lib/mail'
 
 /**
@@ -11,7 +11,10 @@ import { sendNotification } from '@/lib/mail'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { telefoon } = body as { telefoon?: string }
+    const { telefoon, personalized_demo_id } = body as {
+      telefoon?: string
+      personalized_demo_id?: string
+    }
 
     // Validatie
     if (!telefoon) {
@@ -57,6 +60,7 @@ export async function POST(req: NextRequest) {
     const { error: insertError } = await getSupabase().from('demo_leads').insert({
       telefoon: phone,
       status: 'collecting',
+      ...(personalized_demo_id ? { personalized_demo_id } : {}),
     })
 
     if (insertError) {
@@ -65,6 +69,13 @@ export async function POST(req: NextRequest) {
         { error: 'Er ging iets mis bij het opslaan.' },
         { status: 500 }
       )
+    }
+
+    // Personalized demo counter ophogen
+    if (personalized_demo_id) {
+      getSupabase()
+        .rpc('increment_demo_started', { demo_id: personalized_demo_id })
+        .then(() => {})
     }
 
     // Haal de net aangemaakte lead op (voor lead_id)
@@ -76,13 +87,43 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .single()
 
-    // Stuur eerste WhatsApp bericht via vrije tekst
-    const firstMessage = `Hey! Welkom bij de Frontlix demo. Ik ga je laten zien hoe ons systeem automatisch werkt door samen een offerte op te stellen.\n\nOm te beginnen, wat is je naam?`
+    // Persoonlijke demo: haal gegevens op, pre-fill naam, stuur persoonlijke template
+    // Normale demo: stuur standaard demo_start template
+    let firstMessage: string
 
-    try {
-      await sendWhatsAppText(phone, firstMessage)
-    } catch (waErr) {
-      console.error('WhatsApp message failed:', waErr)
+    if (personalized_demo_id) {
+      const { data: pDemo } = await getSupabase()
+        .from('personalized_demos')
+        .select('naam, bedrijf')
+        .eq('id', personalized_demo_id)
+        .single()
+
+      const pNaam = pDemo?.naam ?? 'daar'
+      const pBedrijf = pDemo?.bedrijf ?? 'jouw bedrijf'
+
+      // Pre-fill naam in de lead (die weten we al)
+      if (lead) {
+        await getSupabase()
+          .from('demo_leads')
+          .update({ naam: pNaam })
+          .eq('id', lead.id)
+      }
+
+      firstMessage = `Hoi ${pNaam}! 👋\n\nLeuk dat je kijkt! We hebben speciaal voor ${pBedrijf} een demo klaargezet.\n\nIk ben Thomas en laat je stap voor stap zien hoe de automatische leadopvolging werkt van aanvraag tot offerte tot afspraak voor jouw bedrijf. Het duurt ongeveer 5 minuten.\n\nLaat me weten wanneer je er klaar voor bent, dan gaan we van start!`
+
+      try {
+        await sendPersonalizedDemoTemplate(phone, pNaam, pBedrijf)
+      } catch (waErr) {
+        console.error('WhatsApp personalized demo template failed:', waErr)
+      }
+    } else {
+      firstMessage = `Hoi daar! 👋\n\nBedankt voor je interesse in Frontlix. Ik laat je zien hoe ons systeem leads automatisch opvolgt van aanvraag tot offerte tot afspraak.\n\nVoor deze demo hebben we drie voorbeeldbranches klaargezet. Kies er één om te ervaren hoe het werkt:`
+
+      try {
+        await sendDemoStartTemplate(phone, 'daar')
+      } catch (waErr) {
+        console.error('WhatsApp demo template failed:', waErr)
+      }
     }
 
     // Sla eerste bericht op in conversations
@@ -97,9 +138,10 @@ export async function POST(req: NextRequest) {
     // Notificatie naar Frontlix
     try {
       await sendNotification(
-        `Demo aangevraagd: ${telefoon}`,
+        `${personalized_demo_id ? 'Persoonlijke demo' : 'Demo'} aangevraagd: ${telefoon}`,
         `<p>Nieuw demo-verzoek ontvangen.</p>
-         <p>Telefoon: ${telefoon}</p>`
+         <p>Telefoon: ${telefoon}</p>
+         ${personalized_demo_id ? '<p>Type: Persoonlijke demo</p>' : ''}`
       )
     } catch (mailErr) {
       console.error('Notification email failed:', mailErr)

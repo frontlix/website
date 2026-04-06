@@ -95,7 +95,8 @@ Als je niets nieuws vindt, geef een leeg object: {}`,
  */
 export async function generateReply(
   history: ConversationMessage[],
-  currentData: LeadData
+  currentData: LeadData,
+  briefing?: string | null
 ): Promise<string> {
   const chatHistory = history
     .map((m) => `${m.role === 'user' ? 'Klant' : 'Assistent'}: ${m.content}`)
@@ -141,7 +142,7 @@ Regels:
 - Geen opsommingen of bullets — gewone WhatsApp-tekst
 - Klinkt als een echte persoon, niet als een bot
 - Geen afsluitende zinnen zoals "laat me weten als je vragen hebt"
-
+${briefing ? `\nExtra context over deze klant (pas je toon en vragen hierop aan, maar volg altijd de regels hierboven):\n${briefing}` : ''}
 Geef ALLEEN de WhatsApp-tekst terug, geen JSON, geen uitleg.`,
       },
       {

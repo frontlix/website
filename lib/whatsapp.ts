@@ -86,6 +86,107 @@ export async function sendWhatsAppMessage(telefoon: string, naam: string): Promi
 }
 
 /**
+ * Stuurt de demo_start template met drie branche-knoppen (Quick Reply).
+ * Dit is het eerste bericht dat wordt gestuurd als iemand de demo start.
+ */
+export async function sendDemoStartTemplate(telefoon: string, naam: string): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  const templateName = process.env.WHATSAPP_DEMO_TEMPLATE_NAME
+
+  if (!phoneNumberId || !accessToken || !templateName) {
+    console.warn('WhatsApp demo template env variabelen niet geconfigureerd — bericht overgeslagen.')
+    return
+  }
+
+  const to = normalizePhone(telefoon)
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'template',
+        template: {
+          name: templateName,
+          language: { code: 'nl' },
+          components: [
+            {
+              type: 'body',
+              parameters: [
+                { type: 'text', text: naam },
+              ],
+            },
+          ],
+        },
+      }),
+    }
+  )
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    throw new Error(`WhatsApp demo template error (${res.status}): ${errorBody}`)
+  }
+}
+
+/**
+ * Stuurt de demo_persoonlijk template voor gepersonaliseerde demo's.
+ * Bevat twee variabelen: naam en bedrijf.
+ */
+export async function sendPersonalizedDemoTemplate(telefoon: string, naam: string, bedrijf: string): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  const templateName = process.env.WHATSAPP_PERSONALIZED_DEMO_TEMPLATE_NAME
+
+  if (!phoneNumberId || !accessToken || !templateName) {
+    console.warn('WhatsApp personalized demo template env variabelen niet geconfigureerd — bericht overgeslagen.')
+    return
+  }
+
+  const to = normalizePhone(telefoon)
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'template',
+        template: {
+          name: templateName,
+          language: { code: 'nl' },
+          components: [
+            {
+              type: 'body',
+              parameters: [
+                { type: 'text', text: naam },
+                { type: 'text', text: bedrijf },
+              ],
+            },
+          ],
+        },
+      }),
+    }
+  )
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    throw new Error(`WhatsApp personalized demo template error (${res.status}): ${errorBody}`)
+  }
+}
+
+/**
  * Stuurt een vrije-tekst WhatsApp bericht (geen template).
  * Werkt alleen binnen het 24-uurs conversatievenster na een template of klantbericht.
  */

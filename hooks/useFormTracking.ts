@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 
-type FormName = 'contact' | 'demo' | 'project' | 'hero_demo'
+type FormName = 'contact' | 'demo' | 'project' | 'hero_demo' | 'personalized_demo'
 
 interface UseFormTrackingOptions {
   formName: FormName

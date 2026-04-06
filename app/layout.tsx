@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import '@/styles/tokens.css'
 import '@/styles/globals.css'
-import Navbar from '@/components/sections/Navbar'
-import Footer from '@/components/sections/Footer'
 import PostHogProvider from '@/components/providers/PostHogProvider'
 
 const inter = Inter({
@@ -153,9 +151,7 @@ export default function RootLayout({
           }}
         />
         <PostHogProvider>
-          <Navbar />
-          <main id="main-content">{children}</main>
-          <Footer />
+          {children}
         </PostHogProvider>
       </body>
     </html>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { sendNotification, sendConfirmation } from '@/lib/mail'
-import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { sendDemoStartTemplate, normalizePhone } from '@/lib/whatsapp'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,11 +59,38 @@ export async function POST(request: NextRequest) {
       console.error('Confirmation email error:', confirmError)
     }
 
-    // WhatsApp bevestiging sturen
+    // Start demo-chatbot flow: maak lead aan + stuur demo_start template
+    const phone = normalizePhone(telefoon)
+    const supabase2 = getSupabase()
+
+    // Check of er al een actieve demo loopt voor dit nummer
+    const { data: existingLead } = await supabase2
+      .from('demo_leads')
+      .select('id, status')
+      .eq('telefoon', phone)
+      .in('status', ['collecting', 'pending_approval'])
+      .limit(1)
+      .single()
+
+    if (!existingLead) {
+      // Maak nieuwe lead aan met naam en email al ingevuld
+      const { error: leadError } = await supabase2.from('demo_leads').insert({
+        telefoon: phone,
+        naam,
+        email,
+        status: 'collecting',
+      })
+
+      if (leadError) {
+        console.error('Demo lead insert error:', leadError)
+      }
+    }
+
+    // Stuur demo_start template met de naam van de klant
     try {
-      await sendWhatsAppMessage(telefoon, naam)
+      await sendDemoStartTemplate(telefoon, naam)
     } catch (waError) {
-      console.error('WhatsApp error:', waError)
+      console.error('WhatsApp demo template error:', waError)
     }
 
     return NextResponse.json(

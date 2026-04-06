@@ -71,6 +71,17 @@ async function processWebhook(body: Record<string, unknown>) {
     return
   }
 
+  // Briefing laden als het een gepersonaliseerde demo is
+  let briefing: string | null = null
+  if (lead.personalized_demo_id) {
+    const { data: pDemo } = await getSupabase()
+      .from('personalized_demos')
+      .select('briefing')
+      .eq('id', lead.personalized_demo_id)
+      .single()
+    briefing = pDemo?.briefing ?? null
+  }
+
   // Skip als offerte al verstuurd
   if (lead.status === 'quote_sent') return
 
@@ -162,7 +173,7 @@ async function processWebhook(body: Record<string, unknown>) {
 
   if (allComplete) {
     // Genereer bevestigingsbericht
-    const reply = await generateReply(messagesHistory, updatedData)
+    const reply = await generateReply(messagesHistory, updatedData, briefing)
     await sendWhatsAppText(phone, reply)
 
     // Sla AI-bericht op
@@ -210,7 +221,7 @@ async function processWebhook(body: Record<string, unknown>) {
     }
   } else {
     // Genereer vervolgvraag
-    const reply = await generateReply(messagesHistory, updatedData)
+    const reply = await generateReply(messagesHistory, updatedData, briefing)
     await sendWhatsAppText(phone, reply)
 
     // Sla AI-bericht op
