@@ -14,6 +14,7 @@
 import { getOpenAI, type ConversationMessage } from './openai-branche/_client'
 import { getFreeSlots, type FreeSlot, TIMEZONE } from './google-calendar'
 import { addDays } from 'date-fns'
+import { nl } from 'date-fns/locale'
 import { format as formatTz } from 'date-fns-tz'
 
 /**
@@ -167,9 +168,12 @@ Wees ruim met herkenning:
  * Geen LLM call — gewone string format zodat de bevestiging consistent is.
  */
 export function formatBevestiging(slot: FreeSlot, klantNaam: string): string {
-  const datum = formatTz(slot.startUtc, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE })
+  // A6: NL locale + capitalize eerste letter — consistent met demo-schedule/route.ts
+  const raw = formatTz(slot.startUtc, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE, locale: nl })
+  const datum = raw.charAt(0).toUpperCase() + raw.slice(1)
+  const voornaam = klantNaam.split(' ')[0]
   return (
-    `Top, ${klantNaam}! De afspraak is ingepland voor ${datum}. ` +
-    `Je krijgt zo een uitnodiging in je mail. Tot dan!`
+    `🎉 Top, ${voornaam}! Je afspraak staat in de agenda voor ${datum}. ` +
+    `Je krijgt zo een Google Calendar uitnodiging in je mail. Tot snel!`
   )
 }

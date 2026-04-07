@@ -89,6 +89,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // C1: bereken de oude totaalprijs vóór de update zodat we 'm kunnen tonen als diff
+  const oldPricingAnswers: Record<string, string> = {}
+  for (const [k, v] of Object.entries((lead.collected_data || {}) as Record<string, unknown>)) {
+    if (typeof v === 'string' || typeof v === 'number') oldPricingAnswers[k] = String(v)
+  }
+  const previousTotal = branche.pricing(oldPricingAnswers).totaalInclBtw
+
   // Save naar DB — single source of truth
   await getSupabase()
     .from('leads')
@@ -113,7 +120,7 @@ export async function POST(req: NextRequest) {
     email: newEmail,
     collected_data: newCollected,
   }
-  return htmlResponse(renderEditForm(updatedLead, branche, 'recalculated'))
+  return htmlResponse(renderEditForm(updatedLead, branche, 'recalculated', previousTotal))
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -161,12 +168,14 @@ function escapeHtml(s: string): string {
 
 /**
  * Rendert het volledige edit form HTML.
- * @param justRecalculated  als 'recalculated' tonen we een groene "prijs bijgewerkt" badge
+ * @param flag            als 'recalculated' tonen we een groene "prijs bijgewerkt" badge
+ * @param previousTotal   als gezet tonen we in de banner de vorige → nieuwe prijs diff
  */
 function renderEditForm(
   lead: BrancheLeadRow,
   branche: BrancheConfig,
-  flag: 'recalculated' | null
+  flag: 'recalculated' | null,
+  previousTotal: number | null = null
 ): string {
   const collected = (lead.collected_data || {}) as Record<string, unknown>
 
@@ -220,10 +229,22 @@ function renderEditForm(
     )
     .join('')
 
-  const recalculatedBanner =
-    flag === 'recalculated'
-      ? `<div class="banner">✓ Prijs bijgewerkt op basis van je wijzigingen</div>`
-      : ''
+  // C1: toon oude → nieuwe prijs als die gewijzigd is
+  let recalculatedBanner = ''
+  if (flag === 'recalculated') {
+    const diffText =
+      previousTotal !== null && Math.abs(previousTotal - pricing.totaalInclBtw) > 0.005
+        ? ` De prijs is bijgewerkt van <strong>${euro(previousTotal)}</strong> naar <strong>${euro(pricing.totaalInclBtw)}</strong>.`
+        : ' De prijs is ongewijzigd gebleven.'
+    recalculatedBanner = `<div class="banner">✓ Wijzigingen opgeslagen.${diffText}</div>`
+  }
+
+  // C1: subtiele hint bovenaan — legt uit hoe je terug komt
+  const backHint = `
+    <p style="margin: 0 0 20px; padding: 12px 16px; background: #F5F8FF; border-left: 3px solid #1A56FF; border-radius: 4px; font-size: 13px; color: #555;">
+      💡 Je hebt deze pagina geopend via de e-mail. Sluit het tabblad om terug te gaan naar je inbox.
+    </p>
+  `
 
   const safeName = escapeHtml(lead.naam || '')
   const safeEmail = escapeHtml(lead.email || '')
@@ -397,6 +418,7 @@ function renderEditForm(
       <p>${escapeHtml(branche.label)} — ${escapeHtml(lead.naam || 'klant')}</p>
     </div>
     <div class="card">
+      ${backHint}
       ${recalculatedBanner}
 
       <form method="POST" action="/api/demo-edit">

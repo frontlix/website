@@ -140,10 +140,12 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
     )
   }
   if (lead.status === 'quote_sent' || lead.status === 'scheduling' || lead.status === 'appointment_booked') {
-    return new NextResponse(
-      errorPage('Al verzonden', 'Deze offerte is al naar de klant verstuurd. Heb je nog een vraag? Stuur ons een berichtje via WhatsApp en we helpen je verder.'),
-      { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-    )
+    // C3: hergebruik de success page met de 'already_sent' variant — geeft de approver
+    // dezelfde 3-blok statusoverzicht in plaats van een cryptische error.
+    return new NextResponse(successPage(lead.naam || 'de klant', 'already_sent'), {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    })
   }
   if (lead.status !== 'pending_approval') {
     return new NextResponse(
@@ -267,13 +269,19 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
   })
 }
 
-function successPage(naam: string): string {
+function successPage(naam: string, variant: 'approved' | 'already_sent' = 'approved'): string {
+  const isAlreadySent = variant === 'already_sent'
+  const pageTitle = isAlreadySent ? 'Offerte al verzonden - Frontlix' : 'Offerte goedgekeurd - Frontlix'
+  const heading = isAlreadySent ? 'Deze offerte is al verzonden' : 'Offerte succesvol goedgekeurd'
+  const intro = isAlreadySent
+    ? `De offerte voor ${naam} is al eerder goedgekeurd en verzonden. Je hoeft niets meer te doen.`
+    : `De offerte is automatisch verzonden naar ${naam} via WhatsApp.`
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offerte goedgekeurd - Frontlix</title>
+  <title>${pageTitle}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -335,6 +343,32 @@ function successPage(naam: string): string {
     }
     .cta:hover { opacity: 0.9; }
     .footer { font-size: 12px; color: #999999; margin-top: 24px; }
+    .status {
+      margin: 24px 0 8px;
+      padding: 20px 24px;
+      background: #F5F7FA;
+      border-radius: 12px;
+      text-align: left;
+    }
+    .status-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .status-row:last-of-type { margin-bottom: 0; }
+    .status-check { flex-shrink: 0; }
+    .status-note {
+      margin: 14px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid #E5E7EB;
+      font-size: 12px;
+      font-style: italic;
+      color: #888;
+    }
   </style>
 </head>
 <body>
@@ -343,9 +377,16 @@ function successPage(naam: string): string {
     <div class="icon">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <h1>Offerte succesvol goedgekeurd</h1>
-    <p>De offerte is automatisch verzonden naar ${naam} via WhatsApp.</p>
-    <p>Check je WhatsApp om het resultaat te zien!</p>
+    <h1>${heading}</h1>
+    <p>${intro}</p>
+
+    <div class="status">
+      <div class="status-row"><span class="status-check">✅</span><span>De PDF is via WhatsApp naar ${naam} gestuurd</span></div>
+      <div class="status-row"><span class="status-check">✅</span><span>De klant heeft een mail met scheduling-knoppen</span></div>
+      <div class="status-row"><span class="status-check">✅</span><span>De klant kan zelf een afspraak inplannen</span></div>
+      <p class="status-note">De afspraak verschijnt automatisch in de Frontlix-agenda zodra de klant kiest.</p>
+    </div>
+
     <div class="divider"></div>
     <p style="font-size: 14px; color: #1A1A1A; font-weight: 600;">Dit is wat Frontlix voor jouw bedrijf kan doen.</p>
     <p style="font-size: 14px;">Van leadformulier tot offerte — volledig automatisch, via WhatsApp.</p>

@@ -105,10 +105,14 @@ export default function Hero() {
               <input
                 id="hero-phone"
                 type="tel"
-                className={styles.phoneInput}
+                className={`${styles.phoneInput} ${validatePhone(phone.trim()) ? styles.phoneInputValid : ''}`}
                 placeholder="Vul je nummer in"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value)
+                  // D1: foutmelding verdwijnt zodra user begint te typen
+                  if (error) setError('')
+                }}
                 onBlur={trackBlur}
               />
               <button type="submit" className={styles.phoneButton} disabled={loading}>

@@ -119,10 +119,13 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
         {submitted ? (
           <div className={styles.success}>
-            <div className={styles.successIcon}>✓</div>
-            <h3 className={styles.successHeading}>Aanvraag verstuurd</h3>
+            <div className={styles.successIcon}>🎉</div>
+            <h3 className={styles.successHeading}>
+              Perfect{name.trim() ? `, ${name.trim().split(' ')[0]}` : ''}!
+            </h3>
             <p className={styles.successText}>
-              We nemen zo snel mogelijk contact met je op om de demo in te plannen.
+              Check je WhatsApp — daar staat zo een berichtje van ons.
+              Vanaf daar gaan we lekker verder.
             </p>
           </div>
         ) : (

@@ -163,6 +163,8 @@ export async function sendBrancheApprovalEmail(
     approveUrl: string
     /** URL naar de edit-pagina (token-based, zelfde token als approve) */
     editUrl: string
+    /** B2: publieke URL's van alle foto's die klant heeft gestuurd (max 6 worden getoond) */
+    photoUrls?: string[]
   }
 ) {
   const transporter = getTransporter()
@@ -180,8 +182,33 @@ export async function sendBrancheApprovalEmail(
     )
     .join('')
 
+  // B2: foto-thumbnails grid — alleen renderen als er foto's zijn.
+  // Email clients strippen position:absolute, dus "+N meer" wordt een aparte cel.
+  const photoUrls = data.photoUrls ?? []
+  const shownPhotos = photoUrls.slice(0, 6)
+  const extraCount = photoUrls.length - shownPhotos.length
+  const thumbCellsHtml = shownPhotos
+    .map(
+      (url, i) =>
+        `<td style="padding: 0 8px 8px 0;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener"><img src="${escapeHtml(url)}" alt="Foto ${i + 1}" width="120" height="80" style="display: block; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #E5E7EB;" /></a></td>`
+    )
+    .join('')
+  const extraCellHtml = extraCount > 0
+    ? `<td style="padding: 0 8px 8px 0; width: 120px; height: 80px; text-align: center; vertical-align: middle; background-color: #1A1A1A; color: #FFFFFF; font-size: 18px; font-weight: 700; border-radius: 8px;">+${extraCount} meer</td>`
+    : ''
+  const photosHtml = shownPhotos.length === 0
+    ? ''
+    : `
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 24px;">
+            <tr><td style="padding: 20px 24px;">
+              <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Foto's van de klant (${photoUrls.length})</p>
+              <table cellpadding="0" cellspacing="0"><tr>${thumbCellsHtml}${extraCellHtml}</tr></table>
+            </td></tr>
+          </table>`
+
   await transporter.sendMail({
     from: `Frontlix Demo <${process.env.MAIL_USER}>`,
+    replyTo: process.env.MAIL_USER,
     to,
     subject: `Offerte ter goedkeuring — ${data.brancheLabel} — ${data.naam}`,
     html: `
@@ -220,6 +247,7 @@ export async function sendBrancheApprovalEmail(
               </table>
             </td></tr>
           </table>` : ''}
+          ${photosHtml}
 
           ${data.priceLines.length > 0 ? `
           <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 32px;">
@@ -295,8 +323,9 @@ export async function sendCustomerQuoteEmail(
 
   await transporter.sendMail({
     from: `${data.bedrijfsNaam} <${process.env.MAIL_USER}>`,
+    replyTo: process.env.MAIL_USER,
     to,
-    subject: `Je offerte van ${data.bedrijfsNaam} staat klaar`,
+    subject: `🎉 Je offerte van ${data.bedrijfsNaam} staat klaar`,
     html: `
 <!DOCTYPE html>
 <html lang="nl">

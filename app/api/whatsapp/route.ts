@@ -600,6 +600,9 @@ async function handleBrancheInteractiveMessage(
     })
     .eq('id', lead.id)
 
+  // A2: eerst een welkomstbericht in de stem van de juiste agent, dan pas de eerste vraag
+  await sendBrancheWelcomeMessage(branche, lead.id, phone)
+
   // Stuur direct de eerste vraag in de stem van de juiste agent
   const updatedLead: BrancheLead = { ...lead, demo_type: branche, status: 'collecting' }
   const history = await fetchBrancheConversationHistory(lead.id)
@@ -631,9 +634,14 @@ async function handleBrancheChoiceMessage(
     .update({ demo_type: detected, status: 'collecting', updated_at: new Date().toISOString() })
     .eq('id', lead.id)
 
+  // A2: eerst een welkomstbericht in de stem van de juiste agent, dan pas de eerste vraag
+  await sendBrancheWelcomeMessage(detected, lead.id, phone)
+
   // Stuur direct een eerste vraag in de stem van de juiste agent
   const updatedLead: BrancheLead = { ...lead, demo_type: detected, status: 'collecting' }
-  await sendBrancheNextQuestion(updatedLead, history, phone)
+  // Refetch history zodat het welkomstbericht in de context voor de reply-LLM zit
+  const updatedHistory = await fetchBrancheConversationHistory(lead.id)
+  await sendBrancheNextQuestion(updatedLead, updatedHistory, phone)
 }
 
 // ─── Collecting handler (status collecting) ──────────────────────────────
@@ -775,6 +783,39 @@ async function sendBrancheNextQuestion(
   })
 }
 
+// ─── Welkomstbericht na branche-keuze (A2) ──────────────────────────────
+
+/**
+ * Stuurt een korte, branche-specifieke welkomst in de stem van de juiste agent
+ * (Sanne / Bram / Lotte) direct ná de branche-keuze, vóór de eerste inhoudelijke
+ * vraag. Wordt ook opgeslagen in `conversations` zodat de reply-LLM het in de
+ * context meeneemt.
+ */
+async function sendBrancheWelcomeMessage(
+  branche: BrancheId,
+  leadId: string,
+  phone: string
+): Promise<void> {
+  const messages: Record<BrancheId, string> = {
+    zonnepanelen:
+      'Top, je gaat voor zonnepanelen — leuk! Ik ben Sanne. Ik stel je zo een paar korte vragen en daarna heb je een voorbeeld-offerte op zak. Let\'s go!',
+    dakdekker:
+      'Helder, dakwerk dus. Ik ben Bram. Ik stel je een paar korte vragen en dan heb ik genoeg om een offerte voor je op te stellen.',
+    schoonmaak:
+      'Fijn, schoonmaak! Ik ben Lotte. Ik stel je zo een paar korte vragen, dan kan ik snel een passende offerte voor je maken.',
+  }
+  const text = messages[branche]
+  if (!text) return
+
+  await sendWhatsAppText(phone, text)
+  await getSupabase().from('conversations').insert({
+    lead_id: leadId,
+    role: 'assistant',
+    content: text,
+    message_type: 'text',
+  })
+}
+
 // ─── Approval trigger ────────────────────────────────────────────────────
 
 async function triggerBrancheApproval(leadId: string): Promise<void> {
@@ -837,6 +878,11 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
   const approveUrl = `${siteUrl}/api/demo-approve?token=${approvalToken}`
   const editUrl = `${siteUrl}/api/demo-edit?token=${approvalToken}`
 
+  // B2: verzamel publieke photo URLs uit collected_data voor de thumbnail grid
+  const photoUrls = Array.isArray(collected.photos)
+    ? (collected.photos as unknown[]).filter((u): u is string => typeof u === 'string')
+    : []
+
   try {
     await sendBrancheApprovalEmail(lead.email!, {
       naam: lead.naam!,
@@ -850,6 +896,7 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
       totaal: pricing.totaalInclBtw,
       approveUrl,
       editUrl,
+      photoUrls,
     })
   } catch (err) {
     console.error('[branche-approval] ❌ email failed:', err)

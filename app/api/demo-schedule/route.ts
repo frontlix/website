@@ -914,7 +914,8 @@ function renderSlotsPage(lead: BrancheLeadRow, slots: FreeSlot[], type: Afspraak
 
       <div class="info">
         <strong>Wat gebeurt er na je keuze?</strong><br>
-        Het moment wordt direct gereserveerd in onze agenda en je krijgt een Google Calendar uitnodiging in je inbox. Je kunt 'm zo aan je eigen agenda toevoegen.
+        Het moment wordt direct gereserveerd in onze agenda en je krijgt een Google Calendar uitnodiging in je inbox. Je kunt 'm zo aan je eigen agenda toevoegen.<br>
+        <span style="display: inline-block; margin-top: 8px; color: #888; font-size: 12px;">🕐 Alle tijden zijn Nederlandse tijd (Europa/Amsterdam).</span>
       </div>
     </div>
     <script>${inlineJs}</script>
@@ -981,6 +982,10 @@ function bookedSuccessPage(naam: string, when: Date, type: AfspraakType, lead: B
         <p>${escapeHtml(introZin)}</p>
         <p style="font-size: 17px; font-weight: 700; color: #1A1A1A; margin: 12px 0 16px;">${escapeHtml(datumLabel)}</p>
         <p>${escapeHtml(langsTekst)} Je krijgt zo een Google Calendar uitnodiging in je mail.</p>
+        <p style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E5E7EB; font-size: 13px; color: #888;">
+          Vragen over je afspraak?
+          <a href="https://wa.me/31624965270" style="color: #1A56FF; text-decoration: none; font-weight: 600;">Stuur ons een berichtje op WhatsApp →</a>
+        </p>
       </div>
     </div>
   `
