@@ -40,6 +40,66 @@ export async function POST(req: NextRequest) {
 
     const phone = normalizePhone(telefoon)
 
+    // ─── BRANCHE FLOW (nieuw): hero formulier zonder personalized_demo_id ───
+    // Maakt een lead aan in `leads` tabel en stuurt de branche-template.
+    // De personalized-demo flow eronder blijft ongewijzigd.
+    if (!personalized_demo_id) {
+      // Check duplicaat in leads tabel
+      const { data: existingBranche } = await getSupabase()
+        .from('leads')
+        .select('id, status')
+        .eq('telefoon', phone)
+        .neq('status', 'appointment_booked')
+        .limit(1)
+        .single()
+
+      if (existingBranche) {
+        return NextResponse.json(
+          { error: 'Er loopt al een demo voor dit nummer. Check je WhatsApp!' },
+          { status: 409 }
+        )
+      }
+
+      const { error: brancheInsertError } = await getSupabase().from('leads').insert({
+        telefoon: phone,
+        status: 'awaiting_choice',
+        collected_data: {},
+        photo_urls: [],
+        photo_analyses: [],
+        message_count: 0,
+      })
+
+      if (brancheInsertError) {
+        console.error('Branche lead insert error:', brancheInsertError)
+        return NextResponse.json(
+          { error: 'Er ging iets mis bij het opslaan.' },
+          { status: 500 }
+        )
+      }
+
+      // TEMP: stuur demo_persoonlijk omdat demo_starten nog wacht op Meta-goedkeuring.
+      // Zodra demo_starten approved is → vervang door sendDemoStartTemplate(phone, 'daar')
+      try {
+        await sendPersonalizedDemoTemplate(phone, 'daar', 'Frontlix Demo')
+      } catch (waErr) {
+        console.error('WhatsApp branche template failed:', waErr)
+      }
+
+      // Notificatie naar Frontlix
+      try {
+        await sendNotification(
+          `Demo aangevraagd: ${telefoon}`,
+          `<p>Nieuw demo-verzoek ontvangen via hero formulier (branche flow).</p>
+           <p>Telefoon: ${telefoon}</p>`
+        )
+      } catch (mailErr) {
+        console.error('Notification email failed:', mailErr)
+      }
+
+      return NextResponse.json({ success: true })
+    }
+
+    // ─── PERSONALIZED DEMO FLOW (legacy, ongewijzigd) ───
     // Check op duplicaat (zelfde nummer al actief bezig)
     const { data: existing } = await getSupabase()
       .from('demo_leads')

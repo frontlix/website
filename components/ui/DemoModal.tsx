@@ -91,7 +91,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
       const res = await fetch('/api/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ naam: name, email, telefoon: phone }),
+        body: JSON.stringify({ naam: name, email, telefoon: phone, flow: 'branche' }),
       })
 
       const result = await res.json()

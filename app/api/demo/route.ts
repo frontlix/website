@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { sendNotification, sendConfirmation } from '@/lib/mail'
-import { sendDemoStartTemplate, normalizePhone } from '@/lib/whatsapp'
+import { sendDemoStartTemplate, sendPersonalizedDemoTemplate, normalizePhone } from '@/lib/whatsapp'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { naam, email, telefoon } = body
+    const { naam, email, telefoon, flow } = body
+    const isBrancheFlow = flow === 'branche'
 
     // Valideer verplichte velden
     if (!naam || !email || !telefoon) {
@@ -63,32 +64,68 @@ export async function POST(request: NextRequest) {
     const phone = normalizePhone(telefoon)
     const supabase2 = getSupabase()
 
-    // Check of er al een actieve demo loopt voor dit nummer
-    const { data: existingLead } = await supabase2
-      .from('demo_leads')
-      .select('id, status')
-      .eq('telefoon', phone)
-      .in('status', ['collecting', 'pending_approval'])
-      .limit(1)
-      .single()
+    if (isBrancheFlow) {
+      // ─── NIEUWE BRANCHE FLOW: leads tabel ───
+      // Check of er al een actieve branche-lead loopt voor dit nummer
+      const { data: existingBrancheLead } = await supabase2
+        .from('leads')
+        .select('id, status')
+        .eq('telefoon', phone)
+        .neq('status', 'appointment_booked')
+        .limit(1)
+        .single()
 
-    if (!existingLead) {
-      // Maak nieuwe lead aan met naam en email al ingevuld
-      const { error: leadError } = await supabase2.from('demo_leads').insert({
-        telefoon: phone,
-        naam,
-        email,
-        status: 'collecting',
-      })
+      if (!existingBrancheLead) {
+        const { error: leadError } = await supabase2.from('leads').insert({
+          telefoon: phone,
+          naam,
+          email,
+          status: 'awaiting_choice',
+          collected_data: {},
+          photo_urls: [],
+          photo_analyses: [],
+          message_count: 0,
+        })
+        if (leadError) {
+          console.error('Branche lead insert error:', leadError)
+        }
+      }
+    } else {
+      // ─── LEGACY FLOW: demo_leads tabel (ongewijzigd) ───
+      const { data: existingLead } = await supabase2
+        .from('demo_leads')
+        .select('id, status')
+        .eq('telefoon', phone)
+        .in('status', ['collecting', 'pending_approval'])
+        .limit(1)
+        .single()
 
-      if (leadError) {
-        console.error('Demo lead insert error:', leadError)
+      if (!existingLead) {
+        // Maak nieuwe lead aan met naam en email al ingevuld
+        const { error: leadError } = await supabase2.from('demo_leads').insert({
+          telefoon: phone,
+          naam,
+          email,
+          status: 'collecting',
+        })
+        if (leadError) {
+          console.error('Demo lead insert error:', leadError)
+        }
       }
     }
 
-    // Stuur demo_start template met de naam van de klant
+    // Stuur de juiste WhatsApp template afhankelijk van de flow.
+    // TEMP: zolang `demo_starten` (met branche-knoppen) nog wacht op Meta-goedkeuring
+    // gebruikt de branche-flow tijdelijk `demo_persoonlijk` zodat we de rest van de
+    // flow kunnen testen. De klant moet dan zijn branche tikken in plaats van klikken.
+    // Zodra demo_starten is goedgekeurd: vervang de onderstaande call weer door
+    // sendDemoStartTemplate(telefoon, naam).
     try {
-      await sendDemoStartTemplate(telefoon, naam)
+      if (isBrancheFlow) {
+        await sendPersonalizedDemoTemplate(telefoon, naam, 'Frontlix Demo')
+      } else {
+        await sendDemoStartTemplate(telefoon, naam)
+      }
     } catch (waError) {
       console.error('WhatsApp demo template error:', waError)
     }

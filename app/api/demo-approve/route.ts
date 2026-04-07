@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
-import { sendWhatsAppText } from '@/lib/whatsapp'
+import { sendWhatsAppText, sendWhatsAppDocument } from '@/lib/whatsapp'
 import { calculateDemoPrice } from '@/lib/openai'
+import { generateQuotePdf } from '@/lib/pdf/generate'
+import { getBranche, type BrancheId } from '@/lib/branches'
 
 /**
  * GET — Verwerkt de goedkeuring wanneer de prospect op de knop in de e-mail klikt.
  * Stuurt de offerte via WhatsApp en toont een bevestigingspagina.
+ *
+ * Routing:
+ *  1. Probeer eerst match in `leads` (nieuwe branche-flow) → genereer PDF + WhatsApp document
+ *  2. Anders fallback op `demo_leads` (legacy schoonmaak demo + personalized)
  */
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
@@ -15,6 +21,18 @@ export async function GET(req: NextRequest) {
       status: 400,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
+  }
+
+  // ─── BRANCHE FLOW: probeer eerst leads tabel ───
+  const { data: brancheLead } = await getSupabase()
+    .from('leads')
+    .select('*')
+    .eq('approval_token', token)
+    .limit(1)
+    .single()
+
+  if (brancheLead) {
+    return handleBrancheApproval(brancheLead)
   }
 
   // Zoek lead op via approval_token
@@ -91,6 +109,111 @@ Wil je dit voor jouw bedrijf?
 
   // Toon bevestigingspagina
   return new NextResponse(successPage(lead.naam), {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  })
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// BRANCHE FLOW APPROVAL — genereert PDF, upload naar storage, stuurt via WhatsApp
+// ─────────────────────────────────────────────────────────────────────────
+
+interface BrancheLeadRow {
+  id: string
+  telefoon: string
+  naam: string | null
+  email: string | null
+  demo_type: BrancheId | null
+  status: string
+  collected_data: Record<string, unknown> | null
+  approval_token: string | null
+  quote_pdf_url: string | null
+}
+
+async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse> {
+  // Check status — alleen pending_approval is OK
+  if (lead.status === 'quote_sent' || lead.status === 'scheduling' || lead.status === 'appointment_booked') {
+    return new NextResponse(
+      errorPage('Al goedgekeurd', 'Deze offerte is al eerder goedgekeurd en verzonden.'),
+      { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+  if (lead.status !== 'pending_approval') {
+    return new NextResponse(
+      errorPage('Onverwachte status', `De offerte heeft status "${lead.status}" en kan niet worden goedgekeurd.`),
+      { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+
+  if (!lead.demo_type) {
+    return new NextResponse(
+      errorPage('Onvolledige lead', 'Deze lead heeft geen branche gekoppeld.'),
+      { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+
+  const branche = getBranche(lead.demo_type)
+  if (!branche) {
+    return new NextResponse(
+      errorPage('Onbekende branche', `Branche "${lead.demo_type}" is niet bekend.`),
+      { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+
+  // Genereer PDF + upload naar Supabase storage
+  let pdfUrl: string
+  try {
+    const result = await generateQuotePdf({
+      leadId: lead.id,
+      branche: lead.demo_type,
+      klantNaam: lead.naam || 'Klant',
+      klantEmail: lead.email || '',
+      collectedData: lead.collected_data || {},
+    })
+    pdfUrl = result.url
+  } catch (err) {
+    console.error('PDF generation failed:', err)
+    return new NextResponse(
+      errorPage('PDF mislukt', 'Er ging iets mis bij het genereren van de PDF.'),
+      { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+
+  // Stuur PDF als WhatsApp document
+  const caption =
+    `Hier is je offerte! Bekijk 'm rustig. Wil je een gratis kennismakingsgesprek inplannen? ` +
+    `Antwoord met "ja" dan stel ik wat tijden voor.`
+  try {
+    await sendWhatsAppDocument(
+      lead.telefoon,
+      pdfUrl,
+      `Offerte-${branche.label}.pdf`,
+      caption
+    )
+  } catch (err) {
+    console.error('WhatsApp document send failed:', err)
+  }
+
+  // Sla quote_pdf_url op + status update
+  await getSupabase()
+    .from('leads')
+    .update({
+      quote_pdf_url: pdfUrl,
+      status: 'quote_sent',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', lead.id)
+
+  // Sla bericht op in conversations
+  await getSupabase().from('conversations').insert({
+    lead_id: lead.id,
+    role: 'assistant',
+    content: `(PDF offerte verzonden — ${pdfUrl})`,
+    message_type: 'document',
+    media_url: pdfUrl,
+  })
+
+  return new NextResponse(successPage(lead.naam || 'klant'), {
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   })

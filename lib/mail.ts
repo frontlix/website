@@ -132,6 +132,116 @@ export async function sendConfirmation(to: string, naam: string) {
   })
 }
 
+/**
+ * Stuurt een goedkeurings-e-mail voor de NIEUWE branche-flow.
+ * Een mail per branche met de juiste klant- + offerte-info.
+ */
+export async function sendBrancheApprovalEmail(
+  to: string,
+  data: {
+    naam: string
+    telefoon: string
+    email: string
+    brancheLabel: string
+    /** Lijst van label/value paren uit collected_data, in volgorde */
+    fields: { label: string; value: string }[]
+    /** Prijslijnen voor in de e-mail tabel */
+    priceLines: { omschrijving: string; totaal: number }[]
+    subtotaal: number
+    btw: number
+    totaal: number
+    approveUrl: string
+  }
+) {
+  const transporter = getTransporter()
+  const fieldsHtml = data.fields
+    .map(
+      (f) =>
+        `<tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">${f.label}:</td><td style="padding: 4px 0;">${f.value}</td></tr>`
+    )
+    .join('')
+
+  const priceLinesHtml = data.priceLines
+    .map(
+      (l) =>
+        `<tr><td style="padding: 4px 16px 4px 0;">${l.omschrijving}</td><td style="padding: 4px 0; text-align: right;">&euro;${l.totaal.toFixed(2).replace('.', ',')}</td></tr>`
+    )
+    .join('')
+
+  await transporter.sendMail({
+    from: `Frontlix Demo <${process.env.MAIL_USER}>`,
+    to,
+    subject: `Offerte ter goedkeuring — ${data.brancheLabel} — ${data.naam}`,
+    html: `
+<!DOCTYPE html>
+<html lang="nl">
+<head><meta charset="UTF-8"></head>
+<body style="margin: 0; padding: 0; background-color: #F0F2F5; font-family: 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0F2F5; padding: 40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+        <tr><td style="background: linear-gradient(135deg, #1A56FF, #00CFFF); border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
+          <span style="font-size: 22px; font-weight: 700; color: #FFFFFF;">Nieuwe ${data.brancheLabel}-offerte ter goedkeuring</span>
+        </td></tr>
+        <tr><td style="background-color: #FFFFFF; padding: 40px;">
+          <p style="margin: 0 0 8px; color: #555555; font-size: 15px; line-height: 1.7;">
+            Er is een nieuwe offerte opgesteld via de WhatsApp-demo. Controleer de gegevens en klik onderaan op "Offerte goedkeuren" om de PDF naar de klant te sturen.
+          </p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 24px 0;">
+            <tr><td style="padding: 20px 24px;">
+              <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Klantgegevens</p>
+              <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555;">
+                <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Naam:</td><td style="padding: 4px 0;">${data.naam}</td></tr>
+                <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Telefoon:</td><td style="padding: 4px 0;">+${data.telefoon}</td></tr>
+                <tr><td style="padding: 4px 16px 4px 0; font-weight: 600; color: #1A1A1A;">Email:</td><td style="padding: 4px 0;">${data.email}</td></tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 24px;">
+            <tr><td style="padding: 20px 24px;">
+              <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Aanvraag details</p>
+              <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555;">
+                ${fieldsHtml}
+              </table>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 32px;">
+            <tr><td style="padding: 20px 24px;">
+              <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Prijsopbouw</p>
+              <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #555555; width: 100%;">
+                ${priceLinesHtml}
+                <tr><td style="padding: 8px 16px 4px 0; border-top: 1px solid #E5E7EB;">Subtotaal excl. BTW</td><td style="padding: 8px 0 4px; text-align: right; border-top: 1px solid #E5E7EB;">&euro;${data.subtotaal.toFixed(2).replace('.', ',')}</td></tr>
+                <tr><td style="padding: 4px 16px 4px 0;">BTW (21%)</td><td style="padding: 4px 0; text-align: right;">&euro;${data.btw.toFixed(2).replace('.', ',')}</td></tr>
+                <tr><td style="padding: 8px 16px 4px 0; font-weight: 700; font-size: 16px; color: #1A1A1A;">Totaal incl. BTW</td><td style="padding: 8px 0; font-weight: 700; font-size: 16px; color: #1A1A1A; text-align: right;">&euro;${data.totaal.toFixed(2).replace('.', ',')}</td></tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <tr><td align="center" style="border-radius: 10px; background-color: #16a34a;">
+              <a href="${data.approveUrl}" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px;">Offerte goedkeuren</a>
+            </td></tr>
+          </table>
+
+          <p style="margin: 24px 0 0; color: #888888; font-size: 13px; text-align: center; line-height: 1.6;">
+            Bij goedkeuring wordt de PDF automatisch naar de klant verzonden via WhatsApp en stelt de bot afspraakmomenten voor.
+          </p>
+        </td></tr>
+        <tr><td style="background-color: #F5F7FA; border-radius: 0 0 16px 16px; padding: 20px 40px; text-align: center;">
+          <p style="margin: 0; color: #888888; font-size: 12px;">Dit is een demo van het Frontlix automatiseringssysteem.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+    `,
+  })
+}
+
 /** Stuurt een goedkeurings-e-mail voor de demo-offerte */
 export async function sendApprovalEmail(
   to: string,

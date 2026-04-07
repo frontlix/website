@@ -187,6 +187,99 @@ export async function sendPersonalizedDemoTemplate(telefoon: string, naam: strin
 }
 
 /**
+ * Haalt de gedownloade URL op voor een WhatsApp media-bericht (foto, document).
+ * Meta levert eerst een tijdelijke URL die alleen met de access token op te halen is.
+ *
+ * Gebruikt door de webhook wanneer een klant een foto stuurt.
+ */
+export async function getWhatsAppMediaUrl(mediaId: string): Promise<string | null> {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  if (!accessToken) {
+    console.warn('WHATSAPP_ACCESS_TOKEN niet geconfigureerd — media ophalen overgeslagen.')
+    return null
+  }
+
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${mediaId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) {
+    console.error(`getWhatsAppMediaUrl failed (${res.status}):`, await res.text())
+    return null
+  }
+  const data = (await res.json()) as { url?: string }
+  return data.url ?? null
+}
+
+/**
+ * Download het binaire bestand achter een Meta media URL.
+ * Vereist een Bearer token, wat normale fetch op de URL zelf niet doet.
+ */
+export async function downloadWhatsAppMedia(url: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  if (!accessToken) return null
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) {
+    console.error(`downloadWhatsAppMedia failed (${res.status}):`, await res.text())
+    return null
+  }
+  const arrayBuffer = await res.arrayBuffer()
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    contentType: res.headers.get('content-type') || 'application/octet-stream',
+  }
+}
+
+/**
+ * Stuurt een document (bv. PDF offerte) via WhatsApp.
+ * De document URL moet publiek toegankelijk zijn (bv. Supabase storage public bucket).
+ */
+export async function sendWhatsAppDocument(
+  phone: string,
+  documentUrl: string,
+  filename: string,
+  caption?: string
+): Promise<void> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+
+  if (!phoneNumberId || !accessToken) {
+    console.warn('WhatsApp env variabelen niet geconfigureerd — document overgeslagen.')
+    return
+  }
+
+  const to = normalizePhone(phone)
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'document',
+        document: {
+          link: documentUrl,
+          filename,
+          ...(caption ? { caption } : {}),
+        },
+      }),
+    }
+  )
+
+  if (!res.ok) {
+    const errorBody = await res.text()
+    throw new Error(`WhatsApp document API error (${res.status}): ${errorBody}`)
+  }
+}
+
+/**
  * Stuurt een vrije-tekst WhatsApp bericht (geen template).
  * Werkt alleen binnen het 24-uurs conversatievenster na een template of klantbericht.
  */
