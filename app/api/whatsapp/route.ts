@@ -788,6 +788,7 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://frontlix.com'
   const approveUrl = `${siteUrl}/api/demo-approve?token=${approvalToken}`
+  const editUrl = `${siteUrl}/api/demo-edit?token=${approvalToken}`
 
   console.log(`[branche-approval] sending email to ${lead.email} for lead ${lead.id}`)
   try {
@@ -802,6 +803,7 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
       btw: pricing.btwBedrag,
       totaal: pricing.totaalInclBtw,
       approveUrl,
+      editUrl,
     })
     console.log(`[branche-approval] ✅ email sent to ${lead.email}`)
   } catch (err) {

@@ -151,6 +151,8 @@ export async function sendBrancheApprovalEmail(
     btw: number
     totaal: number
     approveUrl: string
+    /** URL naar de edit-pagina (token-based, zelfde token als approve) */
+    editUrl: string
   }
 ) {
   const transporter = getTransporter()
@@ -221,12 +223,19 @@ export async function sendBrancheApprovalEmail(
           </table>
 
           <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-            <tr><td align="center" style="border-radius: 10px; background-color: #16a34a;">
-              <a href="${data.approveUrl}" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px;">Offerte goedkeuren</a>
-            </td></tr>
+            <tr>
+              <td align="center" style="border-radius: 10px; background-color: #FFFFFF; border: 2px solid #1A56FF; padding: 0;">
+                <a href="${data.editUrl}" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #1A56FF; text-decoration: none; border-radius: 8px;">Wijzigen</a>
+              </td>
+              <td style="width: 12px;">&nbsp;</td>
+              <td align="center" style="border-radius: 10px; background-color: #16a34a;">
+                <a href="${data.approveUrl}" style="display: inline-block; padding: 16px 32px; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px;">Offerte goedkeuren</a>
+              </td>
+            </tr>
           </table>
 
           <p style="margin: 24px 0 0; color: #888888; font-size: 13px; text-align: center; line-height: 1.6;">
+            Klik op <strong>Wijzigen</strong> om de gegevens of prijzen aan te passen voor je goedkeurt.<br>
             Bij goedkeuring wordt de PDF automatisch naar de klant verzonden via WhatsApp en stelt de bot afspraakmomenten voor.
           </p>
         </td></tr>
@@ -239,6 +248,89 @@ export async function sendBrancheApprovalEmail(
 </body>
 </html>
     `,
+  })
+}
+
+/**
+ * Stuurt de klant-email NA goedkeuring van de offerte.
+ * Bevat:
+ *  - Korte tekst dat de offerte is opgesteld
+ *  - PDF van de offerte als bijlage
+ *  - Grote "Afspraak inplannen" knop die naar /api/demo-schedule?token=... linkt
+ */
+export async function sendCustomerQuoteEmail(
+  to: string,
+  data: {
+    naam: string
+    brancheLabel: string
+    bedrijfsNaam: string
+    pdfUrl: string
+    pdfFilename: string
+    scheduleUrl: string
+  }
+) {
+  const transporter = getTransporter()
+  const voornaam = data.naam.split(' ')[0]
+
+  await transporter.sendMail({
+    from: `${data.bedrijfsNaam} <${process.env.MAIL_USER}>`,
+    to,
+    subject: `Je offerte van ${data.bedrijfsNaam} staat klaar`,
+    html: `
+<!DOCTYPE html>
+<html lang="nl">
+<head><meta charset="UTF-8"></head>
+<body style="margin: 0; padding: 0; background-color: #F0F2F5; font-family: 'Helvetica Neue', Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0F2F5; padding: 40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+
+        <!-- Header -->
+        <tr><td style="background: linear-gradient(135deg, #1A56FF, #00CFFF); border-radius: 16px 16px 0 0; padding: 36px 40px; text-align: center;">
+          <span style="font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;">Je offerte staat klaar</span>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="background-color: #FFFFFF; padding: 40px;">
+          <h2 style="margin: 0 0 8px; color: #1A1A1A; font-size: 20px; font-weight: 700;">Hoi ${voornaam},</h2>
+          <p style="margin: 0 0 20px; color: #555555; font-size: 15px; line-height: 1.7;">
+            Bedankt voor je interesse in ${data.brancheLabel.toLowerCase()}. We hebben je offerte opgesteld op basis van het gesprek dat we via WhatsApp hadden. Je vindt de PDF in de bijlage van deze e-mail.
+          </p>
+          <p style="margin: 0 0 28px; color: #555555; font-size: 15px; line-height: 1.7;">
+            Wil je de offerte persoonlijk doorspreken? Plan dan een gratis kennismakingsgesprek van 30 minuten in op een moment dat jou uitkomt.
+          </p>
+
+          <!-- Afspraak knop -->
+          <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <tr><td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #1A56FF, #00CFFF);">
+              <a href="${data.scheduleUrl}" style="display: inline-block; padding: 18px 44px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 12px;">Afspraak inplannen</a>
+            </td></tr>
+          </table>
+
+          <p style="margin: 28px 0 0; color: #888888; font-size: 13px; text-align: center; line-height: 1.6;">
+            Je kiest direct een tijdslot uit onze agenda — geen heen-en-weer mailen.
+          </p>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background-color: #F5F7FA; border-radius: 0 0 16px 16px; padding: 24px 40px; text-align: center;">
+          <p style="margin: 0 0 6px; color: #1A1A1A; font-size: 14px; font-weight: 600;">${data.bedrijfsNaam}</p>
+          <p style="margin: 0; color: #888888; font-size: 12px;">Heb je een vraag? Reageer gewoon op deze e-mail.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+    `,
+    attachments: [
+      {
+        filename: data.pdfFilename,
+        path: data.pdfUrl,
+        contentType: 'application/pdf',
+      },
+    ],
   })
 }
 

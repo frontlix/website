@@ -4,6 +4,7 @@ import { sendWhatsAppText, sendWhatsAppDocument } from '@/lib/whatsapp'
 import { calculateDemoPrice } from '@/lib/openai'
 import { generateQuotePdf } from '@/lib/pdf/generate'
 import { getBranche, type BrancheId } from '@/lib/branches'
+import { sendCustomerQuoteEmail } from '@/lib/mail'
 
 /**
  * GET — Verwerkt de goedkeuring wanneer de prospect op de knop in de e-mail klikt.
@@ -162,6 +163,7 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
 
   // Genereer PDF + upload naar Supabase storage
   let pdfUrl: string
+  let pdfFilename: string
   try {
     const result = await generateQuotePdf({
       leadId: lead.id,
@@ -171,6 +173,7 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
       collectedData: lead.collected_data || {},
     })
     pdfUrl = result.url
+    pdfFilename = result.filename
   } catch (err) {
     console.error('PDF generation failed:', err)
     return new NextResponse(
@@ -192,6 +195,25 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
     )
   } catch (err) {
     console.error('WhatsApp document send failed:', err)
+  }
+
+  // Stuur klant-email met PDF bijlage + scheduling knop
+  if (lead.email) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://frontlix.com'
+    const scheduleUrl = `${siteUrl}/api/demo-schedule?token=${lead.approval_token}`
+    try {
+      await sendCustomerQuoteEmail(lead.email, {
+        naam: lead.naam || 'klant',
+        brancheLabel: branche.label,
+        bedrijfsNaam: branche.company.name,
+        pdfUrl,
+        pdfFilename: `Offerte ${branche.label}.pdf`,
+        scheduleUrl,
+      })
+      console.log(`[demo-approve] ✅ klant email verzonden naar ${lead.email}`)
+    } catch (err) {
+      console.error('[demo-approve] ❌ klant email failed:', err)
+    }
   }
 
   // Sla quote_pdf_url op + status update
