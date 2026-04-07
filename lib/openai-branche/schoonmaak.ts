@@ -73,22 +73,32 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
   try {
     const parsed = JSON.parse(text) as Record<string, unknown>
     const result: ExtractedSchoonmaakResult = {}
+
     if (typeof parsed.naam === 'string' && parsed.naam) result.naam = parsed.naam
     if (typeof parsed.email === 'string' && parsed.email && parsed.email.includes('@')) result.email = parsed.email
+
+    const dataKeys: (keyof SchoonmaakData)[] = [
+      'adres', 'type_pand', 'oppervlakte', 'frequentie', 'ramen',
+    ]
+    const data: Partial<SchoonmaakData> = {}
+
+    for (const k of dataKeys) {
+      const v = parsed[k]
+      if (v !== null && v !== undefined && v !== '' && v !== 'null') {
+        data[k] = String(v)
+      }
+    }
     if (parsed.data && typeof parsed.data === 'object') {
       const d = parsed.data as Record<string, unknown>
-      const data: Partial<SchoonmaakData> = {}
-      const keys: (keyof SchoonmaakData)[] = [
-        'adres', 'type_pand', 'oppervlakte', 'frequentie', 'ramen',
-      ]
-      for (const k of keys) {
+      for (const k of dataKeys) {
         const v = d[k]
         if (v !== null && v !== undefined && v !== '' && v !== 'null') {
           data[k] = String(v)
         }
       }
-      if (Object.keys(data).length > 0) result.data = data
     }
+
+    if (Object.keys(data).length > 0) result.data = data
     return result
   } catch {
     console.error('extractSchoonmaakData: parse error:', text)
