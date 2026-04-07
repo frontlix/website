@@ -105,7 +105,6 @@ async function processWebhook(body: Record<string, unknown>) {
     .single()
 
   if (leadError || !lead) {
-    console.log('Geen lead gevonden voor telefoon:', phone)
     return
   }
 
@@ -415,10 +414,33 @@ async function handleBrancheImageMessage(
   // Run vision analyse
   const analysis = await analyzePhoto(publicUrl, lead.demo_type)
 
+  // ─── Photo race protection ───
+  // Re-fetch de lead JUST IN TIME — versmalt het race window waarin
+  // 2 gelijktijdige foto's allebei een verouderde count zien.
+  const { data: freshLead } = await getSupabase()
+    .from('leads')
+    .select('collected_data, status')
+    .eq('id', lead.id)
+    .single()
+
+  // Status kan inmiddels gewisseld zijn (bv. door auto-advance)
+  if (!freshLead || freshLead.status !== 'collecting') {
+    await sendWhatsAppText(phone, 'Bedankt voor de foto, maar ik ben al verder in het proces. Geen zorgen — ik gebruik wat we al hebben.')
+    return
+  }
+
   // Append in collected_data.photos en .photo_analyses
-  const collected = { ...(lead.collected_data || {}) } as Record<string, unknown>
+  const collected = { ...(freshLead.collected_data || {}) } as Record<string, unknown>
   const photos = Array.isArray(collected.photos) ? [...collected.photos as string[]] : []
   const analyses = Array.isArray(collected.photo_analyses) ? [...collected.photo_analyses as string[]] : []
+
+  // Limiet check ná de re-fetch — als 2 foto's tegelijk binnenkomen kan max
+  // theoretisch nog steeds met 1 worden overschreden, maar nooit met meer.
+  if (photos.length >= MAX_PHOTOS) {
+    await sendWhatsAppText(phone, `Je hebt al ${MAX_PHOTOS} foto's gestuurd — dat is het maximum. Ik ga nu de offerte voor je opstellen.`)
+    return
+  }
+
   photos.push(publicUrl)
   analyses.push(analysis)
   collected.photos = photos
@@ -426,6 +448,10 @@ async function handleBrancheImageMessage(
 
   const now = Date.now()
   collected._last_photo_at = now
+  // C1: timestamp-based fallback. Als de setTimeout door een PM2-restart verloren gaat,
+  // dan triggert de check aan het begin van handleBrancheCollectingMessage alsnog
+  // het auto-advance bij de eerstvolgende klant-actie.
+  collected._photo_wait_until = now + PHOTO_WAIT_MS
 
   // Sla foto-bericht op in conversations met media_url
   await getSupabase().from('conversations').insert({
@@ -633,11 +659,32 @@ async function handleBrancheCollectingMessage(
 
   const collected = (lead.collected_data || {}) as Record<string, unknown>
 
-  // Check of we in de foto-stap zitten en de klant zegt "geen foto / klaar"
-  const allFieldsFilled =
+  // ─── C1: Photo wait timestamp-based fallback ───
+  // Als de setTimeout door een PM2-restart verloren is gegaan, dan triggert deze
+  // check op de eerstvolgende klant-actie alsnog het auto-advance. De timestamp
+  // in de DB is de bron van de waarheid; setTimeout is alleen een optimalisatie.
+  const allRegularFieldsFilled =
     !!lead.naam &&
     !!lead.email &&
     getMissingFields(branche, collected).length === 0
+  const photoWaitUntil = collected._photo_wait_until
+  if (
+    allRegularFieldsFilled &&
+    !isPhotoStepDone(collected) &&
+    typeof photoWaitUntil === 'number' &&
+    Date.now() >= photoWaitUntil
+  ) {
+    collected._photo_step_done = true
+    await getSupabase()
+      .from('leads')
+      .update({ collected_data: collected, updated_at: new Date().toISOString() })
+      .eq('id', lead.id)
+    await triggerBrancheApproval(lead.id)
+    return
+  }
+
+  // Check of we in de foto-stap zitten en de klant zegt "geen foto / klaar"
+  const allFieldsFilled = allRegularFieldsFilled
   const inPhotoStep = allFieldsFilled && !isPhotoStepDone(collected)
 
   if (inPhotoStep && userSkipsPhotoStep(textBody)) {
@@ -790,7 +837,6 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
   const approveUrl = `${siteUrl}/api/demo-approve?token=${approvalToken}`
   const editUrl = `${siteUrl}/api/demo-edit?token=${approvalToken}`
 
-  console.log(`[branche-approval] sending email to ${lead.email} for lead ${lead.id}`)
   try {
     await sendBrancheApprovalEmail(lead.email!, {
       naam: lead.naam!,
@@ -805,7 +851,6 @@ async function triggerBrancheApproval(leadId: string): Promise<void> {
       approveUrl,
       editUrl,
     })
-    console.log(`[branche-approval] ✅ email sent to ${lead.email}`)
   } catch (err) {
     console.error('[branche-approval] ❌ email failed:', err)
   }

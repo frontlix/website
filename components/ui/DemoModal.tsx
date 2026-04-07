@@ -187,6 +187,12 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
               <button type="submit" className={styles.submit} disabled={loading}>
                 {loading ? 'Versturen...' : 'Demo aanvragen →'}
               </button>
+
+              {/* Subtiele privacy-disclaimer onder de submit-knop */}
+              <p className={styles.privacyNote}>
+                Je gegevens worden alleen voor deze demo gebruikt.{' '}
+                <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacybeleid</a>
+              </p>
             </form>
           </>
         )}

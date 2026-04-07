@@ -16,8 +16,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { getFreeSlots, createEvent, TIMEZONE, type FreeSlot } from '@/lib/google-calendar'
 import { addDays } from 'date-fns'
+import { nl } from 'date-fns/locale'
 import { format as formatTz } from 'date-fns-tz'
 import { getBranche, type BrancheId } from '@/lib/branches'
+
+/** Eerste letter capitalizen — voor "woensdag 8 april" → "Woensdag 8 april" */
+function capitalize(s: string): string {
+  return s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1)
+}
 
 interface BrancheLeadRow {
   id: string
@@ -47,9 +53,10 @@ function maxSlotsForRange(days: number): number {
   return days * SLOTS_PER_DAY_ESTIMATE
 }
 
-function parseAfspraakType(s: string | null | undefined): AfspraakType {
+function parseAfspraakType(s: string | null | undefined): AfspraakType | null {
   if (s === 'plaatsing') return 'plaatsing'
-  return 'kennismaking'
+  if (s === 'kennismaking') return 'kennismaking'
+  return null
 }
 
 /**
@@ -103,10 +110,11 @@ function afspraakTypeSubtitle(type: AfspraakType, lead: BrancheLeadRow): string 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
   const type = parseAfspraakType(req.nextUrl.searchParams.get('type'))
-  if (!token) return errorResponse('Ongeldige link', 'Er ontbreekt een token in de URL.', 400)
+  if (!token) return errorResponse('Ongeldige link', 'Deze link werkt niet meer. Vraag een nieuwe demo aan via het formulier op onze website.', 400)
+  if (!type) return errorResponse('Ongeldige link', 'Het afspraak-type in de URL is niet geldig. Open de link uit je e-mail opnieuw of vraag een nieuwe offerte aan.', 400)
 
   const lead = await fetchLeadByToken(token)
-  if (!lead) return errorResponse('Niet gevonden', 'Deze link is ongeldig of verlopen.', 404)
+  if (!lead) return errorResponse('Link werkt niet meer', 'Deze planningslink is verlopen of niet meer geldig. Vraag een nieuwe demo aan via het formulier op frontlix.com — dan sturen we je een nieuwe offerte met een werkende link.', 404)
 
   // Al een afspraak ingepland?
   if (lead.status === 'appointment_booked') {
@@ -134,7 +142,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (slots.length === 0) {
-    return htmlResponse(noSlotsPage(lead.naam || 'klant'))
+    return htmlResponse(noSlotsPage(lead.naam || 'klant', rangeDays))
   }
 
   return htmlResponse(renderSlotsPage(lead, slots, type, rangeDays))
@@ -148,12 +156,13 @@ export async function POST(req: NextRequest) {
   const slotIso = (formData.get('slot') as string) || ''
   const type = parseAfspraakType((formData.get('type') as string) || '')
 
-  if (!token || !slotIso) return errorResponse('Ongeldige request', 'Token of slot ontbreekt.', 400)
+  if (!token || !slotIso) return errorResponse('Ongeldige request', 'Deze actie kon niet worden verwerkt. Open de planningslink in je e-mail opnieuw en kies een tijd.', 400)
+  if (!type) return errorResponse('Ongeldige request', 'Het afspraak-type ontbreekt. Open de link uit je e-mail opnieuw.', 400)
 
   const lead = await fetchLeadByToken(token)
-  if (!lead) return errorResponse('Niet gevonden', 'Token onbekend of verlopen.', 404)
+  if (!lead) return errorResponse('Link werkt niet meer', 'Deze planningslink is verlopen. Vraag een nieuwe demo aan via het formulier op frontlix.com.', 404)
   if (lead.status === 'appointment_booked') {
-    return errorResponse('Al ingepland', 'Er staat al een afspraak voor deze offerte.', 200)
+    return errorResponse('Al ingepland', 'Er staat al een afspraak voor deze offerte. Wil je verzetten? Reageer op de bevestigingsmail of stuur ons een bericht via WhatsApp.', 200)
   }
 
   // Reconstrueer slot — moet nog vrij zijn op het moment van klikken.
@@ -174,7 +183,9 @@ export async function POST(req: NextRequest) {
   if (type === 'plaatsing') {
     freshSlots = reduceToDaySlots(freshSlots)
   }
-  const stillFree = freshSlots.some((s) => s.iso === slotIso) && !isFakeBusy(slotIso)
+  const freshForceFree = buildForceFreeSet(freshSlots)
+  const freshIsBusy = isFakeBusy(slotIso) && !freshForceFree.has(slotIso)
+  const stillFree = freshSlots.some((s) => s.iso === slotIso) && !freshIsBusy
   if (!stillFree) {
     return htmlResponse(slotTakenPage(lead, freshSlots, type))
   }
@@ -259,7 +270,7 @@ function groupSlotsPerDag(slots: FreeSlot[]): Map<string, { label: string; slots
   const groups = new Map<string, { label: string; slots: FreeSlot[] }>()
   for (const s of slots) {
     const dayKey = formatTz(s.startUtc, 'yyyy-MM-dd', { timeZone: TIMEZONE })
-    const dayLabel = formatTz(s.startUtc, "EEEE d MMMM", { timeZone: TIMEZONE })
+    const dayLabel = capitalize(formatTz(s.startUtc, 'EEEE d MMMM', { timeZone: TIMEZONE, locale: nl }))
     if (!groups.has(dayKey)) {
       groups.set(dayKey, { label: dayLabel, slots: [] })
     }
@@ -646,9 +657,44 @@ function isFakeBusy(iso: string): boolean {
   return (h % 100) < 30
 }
 
+/**
+ * Per dag mag maximaal 40% van de slots fake-busy zijn — anders kan een
+ * onfortuinlijke hash-distributie een hele dag onklikbaar maken. We bouwen
+ * één keer een Set met de slot-iso's die we ondanks de hash forceren naar "vrij".
+ *
+ * Deterministisch: we sorteren slots binnen een dag op iso en houden de eerste
+ * `cap` busy-slots vast — de rest wordt force-free.
+ */
+function buildForceFreeSet(slots: FreeSlot[]): Set<string> {
+  const perDay = new Map<string, FreeSlot[]>()
+  for (const s of slots) {
+    const dayKey = formatTz(s.startUtc, 'yyyy-MM-dd', { timeZone: TIMEZONE })
+    if (!perDay.has(dayKey)) perDay.set(dayKey, [])
+    perDay.get(dayKey)!.push(s)
+  }
+  const forceFree = new Set<string>()
+  for (const daySlots of perDay.values()) {
+    const sorted = [...daySlots].sort((a, b) => a.iso.localeCompare(b.iso))
+    const maxBusy = Math.max(0, Math.floor(sorted.length * 0.4))
+    let busyCount = 0
+    for (const s of sorted) {
+      if (isFakeBusy(s.iso)) {
+        if (busyCount < maxBusy) {
+          busyCount++
+        } else {
+          forceFree.add(s.iso) // ondanks hash → wel klikbaar
+        }
+      }
+    }
+  }
+  return forceFree
+}
+
 function renderSlotsPage(lead: BrancheLeadRow, slots: FreeSlot[], type: AfspraakType, rangeDays: number): string {
   const safeToken = escapeHtml(lead.approval_token || '')
   const groups = groupSlotsPerDag(slots)
+  const forceFree = buildForceFreeSet(slots)
+  const isBusy = (iso: string) => isFakeBusy(iso) && !forceFree.has(iso)
   const headerTitle = afspraakTypeLabel(type, lead)
   const headerSubtitle = afspraakTypeSubtitle(type, lead)
 
@@ -730,7 +776,7 @@ function renderSlotsPage(lead: BrancheLeadRow, slots: FreeSlot[], type: Afspraak
         // Eind-tijd berekenen op basis van de branche-duur
         const endDt = new Date(slot.startUtc.getTime() + plaatsingDuurMin * 60 * 1000)
         const endTime = formatTz(endDt, 'HH:mm', { timeZone: TIMEZONE })
-        if (isFakeBusy(slot.iso)) {
+        if (isBusy(slot.iso)) {
           slotsHtml = `
             <button type="button" class="day-btn day-busy" disabled aria-label="Bezet">
               <span class="day-btn-label">Niet beschikbaar</span>
@@ -753,7 +799,7 @@ function renderSlotsPage(lead: BrancheLeadRow, slots: FreeSlot[], type: Afspraak
         slotsHtml = daySlots
           .map((s) => {
             const time = formatTz(s.startUtc, 'HH:mm', { timeZone: TIMEZONE })
-            if (isFakeBusy(s.iso)) {
+            if (isBusy(s.iso)) {
               return `<button type="button" class="time-btn time-busy" disabled aria-label="Bezet">${escapeHtml(time)}</button>`
             }
             return `
@@ -881,8 +927,8 @@ function bookedSuccessPage(naam: string, when: Date, type: AfspraakType, lead: B
 
   // Datum-formattering: kennismaking met klok-tijd, plaatsing alleen de dag
   const datumLabel = type === 'plaatsing'
-    ? formatTz(when, 'EEEE d MMMM', { timeZone: TIMEZONE })
-    : formatTz(when, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE })
+    ? capitalize(formatTz(when, 'EEEE d MMMM', { timeZone: TIMEZONE, locale: nl }))
+    : capitalize(formatTz(when, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE, locale: nl }))
 
   const titel = type === 'plaatsing'
     ? (branche?.actieKort || 'Afspraak') + ' bevestigd'
@@ -942,7 +988,7 @@ function bookedSuccessPage(naam: string, when: Date, type: AfspraakType, lead: B
 }
 
 function alreadyBookedPage(naam: string, when: Date | null): string {
-  const dt = when ? formatTz(when, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE }) : null
+  const dt = when ? capitalize(formatTz(when, "EEEE d MMMM 'om' HH:mm", { timeZone: TIMEZONE, locale: nl })) : null
   return pageShell(
     'Al ingepland',
     `
@@ -958,16 +1004,20 @@ function alreadyBookedPage(naam: string, when: Date | null): string {
   )
 }
 
-function noSlotsPage(naam: string): string {
+function noSlotsPage(naam: string, rangeDays: number): string {
+  // Tekst aanpassen aan de range — 14 dagen → "twee weken", 90 dagen → "drie maanden"
+  const periode = rangeDays >= 60
+    ? `komende ${Math.round(rangeDays / 30)} maanden`
+    : `komende ${Math.round(rangeDays / 7)} weken`
   return pageShell(
     'Geen slots beschikbaar',
     `
     <div class="header">
       <h1>Geen vrije momenten</h1>
-      <p>Er staan komende 2 weken helaas geen slots open</p>
+      <p>Er staan ${escapeHtml(periode)} helaas geen slots open</p>
     </div>
     <div class="card">
-      <p style="color: #555;">Hoi ${escapeHtml(naam.split(' ')[0])}, het lijkt erop dat onze agenda komende twee weken volzit. Een collega neemt persoonlijk contact met je op om een moment in te plannen.</p>
+      <p style="color: #555;">Hoi ${escapeHtml(naam.split(' ')[0])}, het lijkt erop dat onze agenda ${escapeHtml(periode)} volzit. Een collega neemt persoonlijk contact met je op om een moment in te plannen — je hoeft zelf niets te doen.</p>
     </div>
   `
   )
@@ -982,7 +1032,7 @@ function slotTakenPage(lead: BrancheLeadRow, slots: FreeSlot[], type: AfspraakTy
       <p>Dat moment is net gepakt — kies een ander</p>
     </div>
     <div class="card">
-      <p style="color: #555; margin-bottom: 16px;">Sorry, het moment dat je koos is net door iemand anders geboekt. Hieronder zie je de actuele vrije momenten:</p>
+      <p style="color: #555; margin-bottom: 16px;">Iemand anders boekte dat moment net voor je. Geen zorgen — kies hieronder gewoon een nieuw moment, het werkt wel weer:</p>
       ${slots.length > 0 ? renderSlotsInline(lead, slots, type) : '<p style="color: #555;">Er zijn op dit moment geen andere slots vrij. Probeer het later opnieuw.</p>'}
     </div>
   `

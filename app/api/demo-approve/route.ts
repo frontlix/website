@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
 
   if (!token) {
-    return new NextResponse(errorPage('Ongeldige link', 'Er ontbreekt een token in de URL.'), {
+    return new NextResponse(errorPage('Ongeldige link', 'Deze link werkt niet meer. Open de knop in je e-mail opnieuw, of vraag een nieuwe demo aan via het formulier op frontlix.com.'), {
       status: 400,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
@@ -133,16 +133,41 @@ interface BrancheLeadRow {
 
 async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse> {
   // Check status — alleen pending_approval is OK
+  if (lead.status === 'quote_processing') {
+    return new NextResponse(
+      errorPage('Even geduld', 'De offerte wordt op dit moment al verwerkt en verstuurd. Check je e-mail en WhatsApp over een minuutje — daar staan de bevestiging en het PDF document.'),
+      { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
   if (lead.status === 'quote_sent' || lead.status === 'scheduling' || lead.status === 'appointment_booked') {
     return new NextResponse(
-      errorPage('Al goedgekeurd', 'Deze offerte is al eerder goedgekeurd en verzonden.'),
+      errorPage('Al verzonden', 'Deze offerte is al naar de klant verstuurd. Heb je nog een vraag? Stuur ons een berichtje via WhatsApp en we helpen je verder.'),
       { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     )
   }
   if (lead.status !== 'pending_approval') {
     return new NextResponse(
-      errorPage('Onverwachte status', `De offerte heeft status "${lead.status}" en kan niet worden goedgekeurd.`),
+      errorPage('Niet beschikbaar', `Deze offerte heeft op dit moment status "${lead.status}" en kan niet worden goedgekeurd. Vraag je collega om hulp of mail naar info@frontlix.com.`),
       { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  }
+
+  // ─── Idempotency claim ───
+  // Atomic conditional update: alleen door wanneer status nu nog 'pending_approval' is.
+  // Als 0 rijen geraakt → een andere request was net eerder en is al bezig.
+  // Hiermee voorkomen we dubbele PDF + dubbele klant-mail bij dubbele klik.
+  const { data: claimed, error: claimErr } = await getSupabase()
+    .from('leads')
+    .update({ status: 'quote_processing', updated_at: new Date().toISOString() })
+    .eq('id', lead.id)
+    .eq('status', 'pending_approval')
+    .select()
+    .single()
+
+  if (claimErr || !claimed) {
+    return new NextResponse(
+      errorPage('Even geduld', 'De offerte wordt op dit moment al verwerkt. Check je e-mail en WhatsApp over een minuutje — daar staan de bevestiging en het PDF document.'),
+      { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     )
   }
 
@@ -212,7 +237,6 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
         actieKort: branche.actieKort,
         actieLang: branche.actieLang,
       })
-      console.log(`[demo-approve] ✅ klant email verzonden naar ${lead.email}`)
     } catch (err) {
       console.error('[demo-approve] ❌ klant email failed:', err)
     }

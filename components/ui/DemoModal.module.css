@@ -163,6 +163,26 @@
   transform: translateY(0);
 }
 
+/* Subtiele privacy-disclaimer onder de submit-knop */
+.privacyNote {
+  margin-top: var(--space-3);
+  font-size: 11.5px;
+  color: #888;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.privacyNote a {
+  color: #888;
+  text-decoration: underline;
+  text-decoration-color: rgba(136, 136, 136, 0.4);
+}
+
+.privacyNote a:hover {
+  color: var(--color-primary);
+  text-decoration-color: var(--color-primary);
+}
+
 /* Succesbericht */
 .success {
   text-align: center;

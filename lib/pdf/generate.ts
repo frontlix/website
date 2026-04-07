@@ -37,10 +37,13 @@ function buildIntakeSamenvatting(branche: NonNullable<ReturnType<typeof getBranc
   const parts: string[] = []
   for (const field of branche.fields) {
     const v = data[field.key]
-    if (v !== undefined && v !== null && v !== '') {
-      const display = field.unit ? `${v} ${field.unit}` : String(v)
-      parts.push(`${field.label}: ${display}`)
-    }
+    if (v === undefined || v === null) continue
+    // M11: ook lege strings of whitespace-only filteren — anders krijg je
+    // rare fragmenten als "daktype: " in de samenvatting.
+    const str = String(v).trim()
+    if (str === '') continue
+    const display = field.unit ? `${str} ${field.unit}` : str
+    parts.push(`${field.label}: ${display}`)
   }
   if (parts.length === 0) return ''
   return `Op basis van de informatie die je via WhatsApp hebt gedeeld (${parts.join(', ')}) hebben wij ` +

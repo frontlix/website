@@ -160,6 +160,27 @@
   text-align: center;
 }
 
+/* Subtiele privacy-disclaimer onder het hero-formulier */
+.privacyNote {
+  width: 100%;
+  font-size: 11.5px;
+  color: #888;
+  margin-top: var(--space-2);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.privacyNote a {
+  color: #888;
+  text-decoration: underline;
+  text-decoration-color: rgba(136, 136, 136, 0.4);
+}
+
+.privacyNote a:hover {
+  color: #1A56FF;
+  text-decoration-color: #1A56FF;
+}
+
 /* ── Proof bar ── */
 .proofBar {
   margin-top: var(--space-8);

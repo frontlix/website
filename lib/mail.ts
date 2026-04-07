@@ -211,6 +211,7 @@ export async function sendBrancheApprovalEmail(
             </td></tr>
           </table>
 
+          ${data.fields.length > 0 ? `
           <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 24px;">
             <tr><td style="padding: 20px 24px;">
               <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Aanvraag details</p>
@@ -218,8 +219,9 @@ export async function sendBrancheApprovalEmail(
                 ${fieldsHtml}
               </table>
             </td></tr>
-          </table>
+          </table>` : ''}
 
+          ${data.priceLines.length > 0 ? `
           <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7FA; border-radius: 12px; margin: 0 0 32px;">
             <tr><td style="padding: 20px 24px;">
               <p style="margin: 0 0 12px; color: #1A1A1A; font-size: 14px; font-weight: 600;">Prijsopbouw</p>
@@ -230,7 +232,7 @@ export async function sendBrancheApprovalEmail(
                 <tr><td style="padding: 8px 16px 4px 0; font-weight: 700; font-size: 16px; color: #1A1A1A;">Totaal incl. BTW</td><td style="padding: 8px 0; font-weight: 700; font-size: 16px; color: #1A1A1A; text-align: right;">&euro;${data.totaal.toFixed(2).replace('.', ',')}</td></tr>
               </table>
             </td></tr>
-          </table>
+          </table>` : ''}
 
           <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
             <tr>
@@ -304,8 +306,14 @@ export async function sendCustomerQuoteEmail(
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
 
+        <!-- DEMO banner -->
+        <tr><td style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 16px 16px 0 0; padding: 14px 20px;">
+          <p style="margin: 0 0 2px; color: #92400E; font-size: 12px; font-weight: 700; letter-spacing: 0.3px;">DEMO — GEEN ECHTE OFFERTE</p>
+          <p style="margin: 0; color: #92400E; font-size: 12px; line-height: 1.5;">Dit is een geautomatiseerde voorbeeld-offerte van Frontlix. Het bedrijf, de prijzen en de gegevens hieronder zijn fictief.</p>
+        </td></tr>
+
         <!-- Header -->
-        <tr><td style="background: linear-gradient(135deg, #1A56FF, #00CFFF); border-radius: 16px 16px 0 0; padding: 36px 40px; text-align: center;">
+        <tr><td style="background: linear-gradient(135deg, #1A56FF, #00CFFF); padding: 36px 40px; text-align: center;">
           <span style="font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;">Je offerte staat klaar</span>
         </td></tr>
 
@@ -347,8 +355,12 @@ export async function sendCustomerQuoteEmail(
 
         <!-- Footer -->
         <tr><td style="background-color: #F5F7FA; border-radius: 0 0 16px 16px; padding: 24px 40px; text-align: center;">
-          <p style="margin: 0 0 6px; color: #1A1A1A; font-size: 14px; font-weight: 600;">${data.bedrijfsNaam}</p>
-          <p style="margin: 0; color: #888888; font-size: 12px;">Heb je een vraag? Reageer gewoon op deze e-mail.</p>
+          <p style="margin: 0 0 6px; color: #1A1A1A; font-size: 14px; font-weight: 600;">${data.bedrijfsNaam} <span style="color: #888; font-weight: 400;">(fictief)</span></p>
+          <p style="margin: 0 0 12px; color: #888888; font-size: 12px;">Heb je een vraag? Reageer gewoon op deze e-mail.</p>
+          <p style="margin: 0; color: #92400E; font-size: 11px; line-height: 1.5;">
+            Dit is een geautomatiseerde voorbeeld-offerte gegenereerd door het Frontlix demo-systeem.
+            Het bedrijf in deze offerte is fictief. Vragen? Mail naar <a href="mailto:info@frontlix.com" style="color: #1A56FF; text-decoration: none;">info@frontlix.com</a>.
+          </p>
         </td></tr>
 
       </table>

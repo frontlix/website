@@ -50,9 +50,36 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: COLORS.accent,
   },
+  // DEMO banner — gele waarschuwing direct onder de topbar zodat het meteen
+  // duidelijk is dat dit geen echte offerte is. Past in de Frontlix branding
+  // qua border-radius en padding maar valt visueel duidelijk op door de kleur.
+  demoBanner: {
+    backgroundColor: '#FEF3C7',
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
+    borderLeftStyle: 'solid',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginHorizontal: 40,
+    marginTop: 16,
+    marginBottom: 4,
+    borderRadius: 4,
+  },
+  demoBannerTitle: {
+    fontSize: 9,
+    fontFamily: FONT.bold,
+    color: '#92400E',
+    marginBottom: 1,
+    letterSpacing: 0.3,
+  },
+  demoBannerText: {
+    fontSize: 8,
+    color: '#92400E',
+    lineHeight: 1.4,
+  },
   // Hoofdcontent met padding
   body: {
-    paddingTop: 32,
+    paddingTop: 18,
     paddingHorizontal: 40,
   },
   // Header met klant-info links en bedrijfs-info rechts
@@ -308,6 +335,16 @@ export function QuoteDocument({
         <View style={styles.topBar} />
         <View style={styles.topBarAccent} />
 
+        {/* DEMO waarschuwing — meteen zichtbaar bovenaan zodat niemand
+            deze offerte kan verwarren met een echt document. */}
+        <View style={styles.demoBanner}>
+          <Text style={styles.demoBannerTitle}>DEMO — GEEN ECHTE OFFERTE</Text>
+          <Text style={styles.demoBannerText}>
+            Dit is een geautomatiseerde voorbeeld-offerte van Frontlix. Het bedrijf, de prijzen en de gegevens
+            in dit document zijn fictief en uitsluitend bedoeld om het demo-systeem te tonen.
+          </Text>
+        </View>
+
         <View style={styles.body}>
           {/* Header met klant + bedrijf */}
           <View style={styles.headerRow}>
@@ -412,7 +449,7 @@ export function QuoteDocument({
         {/* Footer (gefixeerd onderaan) */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            {company.name} • KvK {company.kvk} • BTW {company.btw} • IBAN {company.iban}
+            {company.name} (fictief) • KvK {company.kvk} • BTW {company.btw} • IBAN {company.iban}
           </Text>
           <Text style={styles.footerBrand}>frontlix.com</Text>
         </View>

@@ -160,6 +160,10 @@ export default function PrivacyPolicyPage() {
               de afhandeling van je verzoek, met een maximum van 12 maanden na het laatste contact
             </li>
             <li>
+              <strong>WhatsApp demo gegevens:</strong> worden maximaal 30 dagen bewaard na de laatste
+              activiteit en daarna automatisch verwijderd (zie sectie 13)
+            </li>
+            <li>
               <strong>Google Analytics data:</strong> wordt automatisch na 14 maanden verwijderd
             </li>
           </ul>
@@ -168,13 +172,33 @@ export default function PrivacyPolicyPage() {
           <p>
             Wij delen jouw persoonsgegevens niet met derden, tenzij dit noodzakelijk is
             voor de uitvoering van onze dienstverlening of wanneer wij hiertoe wettelijk
-            verplicht zijn. De enige derde partij waarmee wij werken is:
+            verplicht zijn. De partijen waarmee wij werken zijn:
           </p>
           <ul>
             <li>
               <strong>Google (Analytics):</strong> voor het verzamelen van geanonimiseerde
               websitestatistieken. Google verwerkt deze gegevens in overeenstemming met hun
               eigen privacybeleid.
+            </li>
+            <li>
+              <strong>Meta (WhatsApp Business API):</strong> voor het versturen en ontvangen
+              van WhatsApp-berichten in onze demo (zie sectie 13).
+            </li>
+            <li>
+              <strong>OpenAI:</strong> voor het automatisch begrijpen en beantwoorden van
+              berichten en het analyseren van foto&apos;s in de demo (zie sectie 13).
+            </li>
+            <li>
+              <strong>Supabase (EU-regio):</strong> voor het opslaan van demo-gegevens en foto&apos;s
+              in een beveiligde database en object storage.
+            </li>
+            <li>
+              <strong>Google Calendar API:</strong> voor het inplannen van afspraken in
+              de Frontlix-agenda na een demo.
+            </li>
+            <li>
+              <strong>Hostinger SMTP:</strong> voor het versturen van bevestigings- en
+              offerte-mails vanuit het Frontlix domein.
             </li>
           </ul>
 
@@ -228,8 +252,73 @@ export default function PrivacyPolicyPage() {
             te raadplegen zodat je op de hoogte bent van eventuele wijzigingen.
           </p>
 
+          <h2>13. WhatsApp Demo (branche-demo)</h2>
+          <p>
+            Op onze website kun je een demo aanvragen waarin we via WhatsApp laten zien hoe ons
+            geautomatiseerde offerte-systeem werkt. Tijdens deze demo voeren we een gesprek met
+            je en stellen we automatisch een voorbeeld-offerte op. Hierbij is het belangrijk om
+            te weten hoe wij met je gegevens omgaan.
+          </p>
+
+          <h3>Welke gegevens verzamelen we via de demo</h3>
+          <ul>
+            <li>Je naam, e-mailadres en telefoonnummer (uit het demo-formulier)</li>
+            <li>De branche die je kiest (zonnepanelen, dakdekker of schoonmaak)</li>
+            <li>Antwoorden op de vragen die de demo-bot via WhatsApp stelt (bv. adres, oppervlakte, type werk)</li>
+            <li>Optioneel: foto&apos;s die je zelf via WhatsApp meestuurt</li>
+            <li>De volledige gespreksgeschiedenis tussen jou en de demo-bot</li>
+          </ul>
+
+          <h3>Waarvoor we deze gegevens gebruiken</h3>
+          <p>
+            Uitsluitend om de demo te laten werken en om de werking van het systeem aan jou te tonen.
+            We gebruiken deze gegevens niet voor marketing, niet voor profilering en delen ze niet
+            met derden buiten de hieronder genoemde verwerkers.
+          </p>
+
+          <h3>Verwerkers (sub-processors)</h3>
+          <ul>
+            <li>
+              <strong>Meta (WhatsApp Business API):</strong> voor het versturen en ontvangen van de
+              WhatsApp-berichten zelf
+            </li>
+            <li>
+              <strong>OpenAI (GPT-4o-mini):</strong> voor het begrijpen van je antwoorden, het
+              automatisch genereren van vragen en antwoorden, en het analyseren van eventuele
+              foto&apos;s die je meestuurt
+            </li>
+            <li>
+              <strong>Supabase (EU-regio):</strong> voor de versleutelde opslag van de
+              gespreksdata, foto&apos;s en de gegenereerde PDF-offerte
+            </li>
+            <li>
+              <strong>Google Calendar API:</strong> voor het inplannen van een afspraak in onze
+              agenda als je daarvoor kiest aan het einde van de demo
+            </li>
+            <li>
+              <strong>Hostinger SMTP (smtp.hostinger.com):</strong> voor het versturen van de
+              demo-offerte e-mail vanuit het Frontlix-domein
+            </li>
+          </ul>
+
+          <h3>Bewaartermijn</h3>
+          <p>
+            Demo-gegevens worden maximaal <strong>30 dagen</strong> na de laatste activiteit
+            bewaard en worden daarna automatisch verwijderd. Wil je dat we je gegevens eerder
+            verwijderen? Stuur een mail naar{' '}
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a> en we doen het binnen 7 dagen.
+          </p>
+
+          <h3>Demo-disclaimer</h3>
+          <p>
+            De fictieve bedrijfsnamen in de demo &mdash; &quot;SolarPower Nederland B.V.&quot;,
+            &quot;Dakwerken Holland B.V.&quot; en &quot;Glanz Schoonmaak B.V.&quot; &mdash; zijn
+            <strong> niet echt</strong>. De gegenereerde offertes zijn voorbeelden bedoeld om de
+            werking van ons systeem te tonen en zijn geen geldige offertes voor echte werkzaamheden.
+          </p>
+
           <p className={styles.lastUpdated}>
-            Laatst bijgewerkt: maart 2026
+            Laatst bijgewerkt: april 2026
           </p>
         </div>
       </section>

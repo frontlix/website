@@ -32,16 +32,19 @@ interface BrancheLeadRow {
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
-  if (!token) return errorResponse('Ongeldige link', 'Er ontbreekt een token in de URL.', 400)
+  if (!token) return errorResponse('Ongeldige link', 'Deze link werkt niet meer. Open de "Wijzigen"-knop in je e-mail opnieuw.', 400)
 
   const lead = await fetchLeadByToken(token)
-  if (!lead) return errorResponse('Offerte niet gevonden', 'Deze link is ongeldig of verlopen.', 404)
-  if (!lead.demo_type) return errorResponse('Onvolledige lead', 'Deze lead heeft geen branche.', 400)
+  if (!lead) return errorResponse('Link werkt niet meer', 'Deze edit-link is verlopen. Vraag een nieuwe demo aan via het formulier op frontlix.com — dan sturen we je een nieuwe goedkeuringsmail met een werkende edit-link.', 404)
+  if (!lead.demo_type) return errorResponse('Onvolledige lead', 'Deze offerte mist een branche-keuze. Mail naar info@frontlix.com — we lossen het voor je op.', 400)
   const branche = getBranche(lead.demo_type)
-  if (!branche) return errorResponse('Onbekende branche', `Branche "${lead.demo_type}" is niet bekend.`, 400)
+  if (!branche) return errorResponse('Onbekende branche', `De branche van deze offerte is niet bekend. Mail naar info@frontlix.com — we lossen het voor je op.`, 400)
 
+  if (lead.status === 'quote_processing') {
+    return errorResponse('Even geduld', 'De offerte wordt op dit moment al verwerkt. Wacht een minuutje en check daarna je e-mail — daar staat de bevestiging.', 200)
+  }
   if (lead.status === 'quote_sent' || lead.status === 'scheduling' || lead.status === 'appointment_booked') {
-    return errorResponse('Al goedgekeurd', 'Deze offerte is al goedgekeurd en kan niet meer gewijzigd worden.', 200)
+    return errorResponse('Al verzonden', 'Deze offerte is al goedgekeurd en naar de klant verstuurd. Wijzigingen zijn nu niet meer mogelijk. Heb je nog een vraag? Mail naar info@frontlix.com.', 200)
   }
 
   return htmlResponse(renderEditForm(lead, branche, null))
@@ -54,23 +57,34 @@ export async function POST(req: NextRequest) {
   const token = (formData.get('token') as string) || ''
   const action = (formData.get('action') as string) || ''
 
-  if (!token) return errorResponse('Ongeldige request', 'Token ontbreekt.', 400)
+  if (!token) return errorResponse('Ongeldige request', 'Deze actie kon niet worden verwerkt. Open de "Wijzigen"-knop in je e-mail opnieuw.', 400)
 
   const lead = await fetchLeadByToken(token)
-  if (!lead) return errorResponse('Offerte niet gevonden', 'Token onbekend of verlopen.', 404)
-  if (!lead.demo_type) return errorResponse('Onvolledige lead', 'Geen branche gekoppeld.', 400)
+  if (!lead) return errorResponse('Link werkt niet meer', 'Deze edit-link is verlopen. Vraag een nieuwe demo aan via het formulier op frontlix.com.', 404)
+  if (!lead.demo_type) return errorResponse('Onvolledige lead', 'Deze offerte mist een branche-keuze. Mail naar info@frontlix.com.', 400)
   const branche = getBranche(lead.demo_type)
-  if (!branche) return errorResponse('Onbekende branche', `Branche "${lead.demo_type}" is onbekend.`, 400)
+  if (!branche) return errorResponse('Onbekende branche', `De branche van deze offerte is niet bekend. Mail naar info@frontlix.com.`, 400)
 
   // Pak alle form values en update de lead state
   const newNaam = ((formData.get('naam') as string) || '').trim() || lead.naam
   const newEmail = ((formData.get('email') as string) || '').trim() || lead.email
+
+  // M4: lengtes valideren — voorkom dat een 100KB POST de PDF rendering breekt
+  if (newNaam && newNaam.length > 200) {
+    return errorResponse('Naam te lang', 'De naam mag maximaal 200 tekens zijn. Pas hem aan en probeer het opnieuw.', 400)
+  }
+  if (newEmail && newEmail.length > 254) {
+    return errorResponse('Email te lang', 'Het e-mailadres mag maximaal 254 tekens zijn. Pas het aan en probeer het opnieuw.', 400)
+  }
 
   const newCollected: Record<string, unknown> = { ...(lead.collected_data || {}) }
   for (const field of branche.fields) {
     const v = formData.get(`field_${field.key}`)
     if (typeof v === 'string') {
       const trimmed = v.trim()
+      if (trimmed.length > 500) {
+        return errorResponse('Veld te lang', `Het veld "${field.label}" mag maximaal 500 tekens zijn. Pas het aan en probeer het opnieuw.`, 400)
+      }
       if (trimmed) newCollected[field.key] = trimmed
     }
   }

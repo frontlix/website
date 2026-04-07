@@ -100,6 +100,23 @@ export function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
 
+/**
+ * Normaliseer een vrije LLM-output naar één van de toegestane enum-waarden.
+ * Returnt `null` als geen exact match (case-insensitive trim).
+ *
+ * Gebruikt door de extract-LLMs om te voorkomen dat synoniemen of tikfouten
+ * (bv. "noord-oost" voor orientatie) blijven hangen — bij `null` wordt het
+ * veld weggegooid en stelt de bot de vraag opnieuw.
+ */
+export function normalizeEnum(value: string | undefined | null, allowed: readonly string[]): string | null {
+  if (!value) return null
+  const v = String(value).trim().toLowerCase()
+  for (const a of allowed) {
+    if (a.toLowerCase() === v) return a
+  }
+  return null
+}
+
 /** Parsed een vrij getal-veld (bv. '4000', '4.000', '4000 kWh') naar number */
 export function parseNumber(value: string | undefined | null): number {
   if (!value) return 0

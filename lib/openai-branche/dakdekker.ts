@@ -7,6 +7,7 @@
 import { getOpenAI, formatHistory, type ConversationMessage, type LeadIdentity } from './_client'
 import { dakdekkerConfig } from '@/lib/branches/dakdekker'
 import { getMissingFields, getPhotoCount, isPhotoStepDone } from '@/lib/branches'
+import { normalizeEnum } from '@/lib/branches/types'
 
 export interface DakdekkerData {
   adres?: string
@@ -102,6 +103,20 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
         if (v !== null && v !== undefined && v !== '' && v !== 'null') {
           data[k] = String(v)
         }
+      }
+    }
+
+    // M1: enum-velden normaliseren tegen de toegestane waarden uit de config.
+    for (const field of dakdekkerConfig.fields) {
+      if (field.type !== 'enum' || !field.enumValues) continue
+      const raw = data[field.key as keyof DakdekkerData]
+      if (typeof raw !== 'string') continue
+      const normalized = normalizeEnum(raw, field.enumValues)
+      if (normalized) {
+        data[field.key as keyof DakdekkerData] = normalized
+      } else {
+        delete data[field.key as keyof DakdekkerData]
+        console.warn(`[dakdekker-extract] dropped invalid enum value for ${field.key}: "${raw}"`)
       }
     }
 

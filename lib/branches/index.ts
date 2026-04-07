@@ -33,6 +33,7 @@ export type BrancheStatus =
   | 'awaiting_choice'      // template gestuurd, nog geen branche gekozen
   | 'collecting'           // branche bekend, vragen + foto's verzamelen
   | 'pending_approval'     // alle data binnen, wachten op klik op approval-link in mail
+  | 'quote_processing'     // approval geclaimd — PDF generatie/mail in progress (idempotency lock)
   | 'quote_sent'           // PDF + WhatsApp document verstuurd, wachten op "ja" voor afspraak
   | 'scheduling'           // bot heeft slots voorgesteld, wachten op keuze
   | 'appointment_booked'   // Google Calendar event aangemaakt, flow klaar
