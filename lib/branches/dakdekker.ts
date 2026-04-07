@@ -38,6 +38,9 @@ export const dakdekkerConfig: BrancheConfig = {
   aanbodBeschrijving:
     'Uitvoering van dakwerkzaamheden inclusief materiaal, arbeid, afvoer en afwerking. Wij werken volgens ' +
     'de geldende garantievoorwaarden van het Vakbond Dakdekkers Nederland.',
+  actieKort: 'Dakwerk inplannen',
+  actieLang: 'het dakwerk',
+  plaatsingDuurMin: 480, // 8 uur = hele werkdag
   fields: [
     {
       key: 'adres',

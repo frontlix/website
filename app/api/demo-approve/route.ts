@@ -163,7 +163,6 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
 
   // Genereer PDF + upload naar Supabase storage
   let pdfUrl: string
-  let pdfFilename: string
   try {
     const result = await generateQuotePdf({
       leadId: lead.id,
@@ -173,7 +172,6 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
       collectedData: lead.collected_data || {},
     })
     pdfUrl = result.url
-    pdfFilename = result.filename
   } catch (err) {
     console.error('PDF generation failed:', err)
     return new NextResponse(
@@ -197,10 +195,11 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
     console.error('WhatsApp document send failed:', err)
   }
 
-  // Stuur klant-email met PDF bijlage + scheduling knop
+  // Stuur klant-email met PDF bijlage + 2 scheduling knoppen
   if (lead.email) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://frontlix.com'
-    const scheduleUrl = `${siteUrl}/api/demo-schedule?token=${lead.approval_token}`
+    const schedulePlaatsingUrl = `${siteUrl}/api/demo-schedule?token=${lead.approval_token}&type=plaatsing`
+    const scheduleKennismakingUrl = `${siteUrl}/api/demo-schedule?token=${lead.approval_token}&type=kennismaking`
     try {
       await sendCustomerQuoteEmail(lead.email, {
         naam: lead.naam || 'klant',
@@ -208,7 +207,10 @@ async function handleBrancheApproval(lead: BrancheLeadRow): Promise<NextResponse
         bedrijfsNaam: branche.company.name,
         pdfUrl,
         pdfFilename: `Offerte ${branche.label}.pdf`,
-        scheduleUrl,
+        schedulePlaatsingUrl,
+        scheduleKennismakingUrl,
+        actieKort: branche.actieKort,
+        actieLang: branche.actieLang,
       })
       console.log(`[demo-approve] ✅ klant email verzonden naar ${lead.email}`)
     } catch (err) {

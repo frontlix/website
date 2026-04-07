@@ -72,6 +72,19 @@ export interface BrancheConfig {
   fields: readonly BrancheField[]
   /** Berekent de prijs uit de verzamelde answers */
   pricing: (answers: Record<string, string>) => PricingResult
+  /**
+   * Korte zinnen voor de "afspraak inplannen" knoppen in de klant-mail.
+   * `actieKort`  — voor de knop tekst zelf, bv. "Plaatsing inplannen"
+   * `actieLang`  — voor de paragraaf erboven, bv. "de plaatsing van de panelen"
+   */
+  actieKort: string
+  actieLang: string
+  /**
+   * Duur in minuten van het Google Calendar event voor een PLAATSING afspraak.
+   * Kennismakingsgesprek is altijd 30 min — alleen plaatsing varieert per branche.
+   * Voorbeelden: zonnepanelen 480 (8u), dakdekker 480, schoonmaak 120.
+   */
+  plaatsingDuurMin: number
 }
 
 /** Helper: BTW-berekening (21%) op een subtotaal */

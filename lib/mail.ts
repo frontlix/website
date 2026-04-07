@@ -1,5 +1,15 @@
 import nodemailer from 'nodemailer'
 
+/** Escape HTML special chars zodat user/branche-strings veilig zijn in mail HTML */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 // Lazy initialisatie zodat build niet faalt zonder env vars
 let _transporter: nodemailer.Transporter | null = null
 
@@ -256,7 +266,9 @@ export async function sendBrancheApprovalEmail(
  * Bevat:
  *  - Korte tekst dat de offerte is opgesteld
  *  - PDF van de offerte als bijlage
- *  - Grote "Afspraak inplannen" knop die naar /api/demo-schedule?token=... linkt
+ *  - 2 knoppen:
+ *      1. Groen — direct de uitvoering inplannen (= akkoord met offerte)
+ *      2. Outline — eerst kennismakingsgesprek om de offerte door te bespreken
  */
 export async function sendCustomerQuoteEmail(
   to: string,
@@ -266,7 +278,14 @@ export async function sendCustomerQuoteEmail(
     bedrijfsNaam: string
     pdfUrl: string
     pdfFilename: string
-    scheduleUrl: string
+    /** URL voor "direct de uitvoering inplannen" knop (akkoord) */
+    schedulePlaatsingUrl: string
+    /** URL voor "eerst kennismakingsgesprek" knop */
+    scheduleKennismakingUrl: string
+    /** Korte tekst voor de plaatsing knop, bv. "Plaatsing inplannen" */
+    actieKort: string
+    /** Lange tekst voor in de paragraaf, bv. "de plaatsing van de zonnepanelen" */
+    actieLang: string
   }
 ) {
   const transporter = getTransporter()
@@ -296,19 +315,33 @@ export async function sendCustomerQuoteEmail(
           <p style="margin: 0 0 20px; color: #555555; font-size: 15px; line-height: 1.7;">
             Bedankt voor je interesse in ${data.brancheLabel.toLowerCase()}. We hebben je offerte opgesteld op basis van het gesprek dat we via WhatsApp hadden. Je vindt de PDF in de bijlage van deze e-mail.
           </p>
+          <p style="margin: 0 0 12px; color: #555555; font-size: 15px; line-height: 1.7;">
+            <strong style="color: #1A1A1A;">Akkoord met de offerte?</strong> Plan direct een moment in voor ${data.actieLang}.
+          </p>
           <p style="margin: 0 0 28px; color: #555555; font-size: 15px; line-height: 1.7;">
-            Wil je de offerte persoonlijk doorspreken? Plan dan een gratis kennismakingsgesprek van 30 minuten in op een moment dat jou uitkomt.
+            <strong style="color: #1A1A1A;">Liever eerst doorspreken?</strong> Plan dan een gratis kennismakingsgesprek van 30 minuten in.
           </p>
 
-          <!-- Afspraak knop -->
-          <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-            <tr><td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #1A56FF, #00CFFF);">
-              <a href="${data.scheduleUrl}" style="display: inline-block; padding: 18px 44px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 12px;">Afspraak inplannen</a>
+          <!-- Twee knoppen onder elkaar voor mobiel-vriendelijkheid -->
+          <table cellpadding="0" cellspacing="0" style="margin: 0 auto; width: 100%; max-width: 360px;">
+            <tr><td align="center" style="padding-bottom: 12px;">
+              <table cellpadding="0" cellspacing="0" style="width: 100%;">
+                <tr><td align="center" style="border-radius: 12px; background-color: #16a34a;">
+                  <a href="${data.schedulePlaatsingUrl}" style="display: block; padding: 18px 32px; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 12px;">${escapeHtml(data.actieKort)}</a>
+                </td></tr>
+              </table>
+            </td></tr>
+            <tr><td align="center">
+              <table cellpadding="0" cellspacing="0" style="width: 100%;">
+                <tr><td align="center" style="border-radius: 12px; background-color: #FFFFFF; border: 2px solid #1A56FF;">
+                  <a href="${data.scheduleKennismakingUrl}" style="display: block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #1A56FF; text-decoration: none; border-radius: 10px;">Eerst kennismakingsgesprek</a>
+                </td></tr>
+              </table>
             </td></tr>
           </table>
 
           <p style="margin: 28px 0 0; color: #888888; font-size: 13px; text-align: center; line-height: 1.6;">
-            Je kiest direct een tijdslot uit onze agenda — geen heen-en-weer mailen.
+            Je ziet direct alle vrije momenten in onze agenda — geen heen-en-weer mailen.
           </p>
         </td></tr>
 

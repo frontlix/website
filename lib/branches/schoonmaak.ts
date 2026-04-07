@@ -41,6 +41,9 @@ export const schoonmaakConfig: BrancheConfig = {
   aanbodBeschrijving:
     'Professionele schoonmaakdienst inclusief alle benodigde materialen, milieuvriendelijke producten en ' +
     'aansprakelijkheidsverzekering. Wij werken met vaste medewerkers zodat je altijd hetzelfde gezicht over de vloer hebt.',
+  actieKort: 'Schoonmaak inplannen',
+  actieLang: 'de eerste schoonmaak',
+  plaatsingDuurMin: 120, // 2 uur — eerste schoonmaak duurt korter dan installatie
   fields: [
     {
       key: 'adres',

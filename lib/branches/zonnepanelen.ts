@@ -38,6 +38,9 @@ export const zonnepanelenConfig: BrancheConfig = {
   aanbodBeschrijving:
     'Levering en installatie van een compleet zonnepanelensysteem, inclusief panelen, omvormer, montagesysteem ' +
     'en aansluiting op het elektriciteitsnet.',
+  actieKort: 'Plaatsing inplannen',
+  actieLang: 'de plaatsing van de zonnepanelen',
+  plaatsingDuurMin: 480, // 8 uur = hele werkdag
   fields: [
     {
       key: 'adres',
