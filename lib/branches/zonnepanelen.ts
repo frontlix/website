@@ -43,12 +43,6 @@ export const zonnepanelenConfig: BrancheConfig = {
   plaatsingDuurMin: 480, // 8 uur = hele werkdag
   fields: [
     {
-      key: 'adres',
-      label: 'adres of postcode + huisnummer',
-      exampleQuestion: 'Wat is het adres of de postcode + huisnummer van de woning?',
-      type: 'text',
-    },
-    {
       key: 'jaarverbruik',
       label: 'jaarverbruik in kWh',
       exampleQuestion: 'Hoeveel stroom verbruik je ongeveer per jaar in kWh? (staat op je jaarafrekening)',

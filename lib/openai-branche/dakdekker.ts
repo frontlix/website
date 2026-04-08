@@ -10,7 +10,6 @@ import { getMissingFields, getPhotoCount, isPhotoStepDone } from '@/lib/branches
 import { normalizeEnum } from '@/lib/branches/types'
 
 export interface DakdekkerData {
-  adres?: string
   type_werk?: string
   daktype?: string
   huidig_dakmateriaal?: string
@@ -44,7 +43,6 @@ export async function extractDakdekkerData(
 Velden:
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
-- adres: straat + huisnummer of postcode + huisnummer
 - type_werk: ALLEEN één van "vervangen", "repareren" of "isoleren".
   Mapping van klant-taal → enum:
   · "nieuw dak", "hele dak vervangen", "compleet nieuw", "helemaal opnieuw", "hele dak eraf" → "vervangen"
@@ -59,7 +57,6 @@ Velden:
 Bekende waarden:
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
-- adres: ${current.adres ?? 'onbekend'}
 - type_werk: ${current.type_werk ?? 'onbekend'}
 - daktype: ${current.daktype ?? 'onbekend'}
 - huidig_dakmateriaal: ${current.huidig_dakmateriaal ?? 'onbekend'}
@@ -89,7 +86,7 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
     if (typeof parsed.email === 'string' && parsed.email && parsed.email.includes('@')) result.email = parsed.email
 
     const dataKeys: (keyof DakdekkerData)[] = [
-      'adres', 'type_werk', 'daktype', 'huidig_dakmateriaal',
+      'type_werk', 'daktype', 'huidig_dakmateriaal',
       'dakoppervlakte', 'isolatie', 'spoed',
     ]
     const data: Partial<DakdekkerData> = {}
@@ -149,16 +146,18 @@ export async function generateDakdekkerReply(
   const photoCount = getPhotoCount(collectedData)
   const photoStepDone = isPhotoStepDone(collectedData)
 
-  // NEXT-tag bepalen in vaste volgorde
+  // NEXT-tag bepalen in vaste volgorde: naam → branche-velden → foto → email → klaar
+  // Email wordt bewust pas op het einde gevraagd (na de fotostap) zodat het niet als
+  // drempel voelt in het begin van het gesprek.
   let nextTag: string
   if (!identity.naam) {
     nextTag = 'naam'
-  } else if (!identity.email) {
-    nextTag = 'email'
   } else if (missingDataFields.length > 0) {
     nextTag = missingDataFields[0]
   } else if (!photoStepDone) {
     nextTag = 'PHOTO_STEP'
+  } else if (!identity.email) {
+    nextTag = 'email'
   } else {
     nextTag = 'COMPLETE'
   }
@@ -197,8 +196,7 @@ Bram typt zoals een vakman WhatsAppt vanuit zijn busje — kort, praktisch, niet
 
 ## VELD-GIDS (hoe je naar elk veld vraagt — varieer op de suggesties)
 - naam         → "hoe heet je?" / "met wie spreek ik?" / "vertel, wie heb ik aan de lijn?"
-- email        → "wat is je mailadres? stuur ik de offerte straks heen"
-- adres        → "Wat is het adres van het dak?" / "Om welk adres gaat het?"
+- email        → "wat is je mailadres? stuur ik de offerte daar heen" (komt PAS aan het einde, na de foto-stap)
 - type_werk    → "Gaat het om een nieuw dak, een reparatie, of isolatie?" (of korter als de klant al iets liet doorschemeren)
 - daktype      → "Plat dak of schuin dak?"
 - huidig_dakmateriaal → "Wat ligt er nu op? Dakpannen, bitumen, EPDM, iets anders?"
@@ -234,19 +232,19 @@ Klant: "hoi, mijn dak lekt"
 Bram: "vervelend. kunnen we regelen. hoe heet je?"
 
 Klant: "Peter. kan je vandaag nog komen?"
-Bram: "hangt ervan af, eerst ff wat info. wat is je mailadres? stuur ik de offerte straks heen."
+Bram: "hangt ervan af, eerst ff wat info. moet er een nieuw dak op, een reparatie, of isolatie?"
 
-Klant: "p.devries@outlook.com"
-Bram: "helder. welk adres"
-
-Klant: "Kerkstraat 12 Deventer. plat dak, bitumen. ongeveer 60 m2. beetje urgent want het regent naar binnen"
+Klant: "nieuw dak. plat, bitumen. ongeveer 60 m2. beetje urgent want het regent naar binnen"
 Bram: "Oké, dan zetten we hem op spoed. Ga je het dak ook meteen isoleren, of alleen vervangen?"
 
 Klant: "alleen vervangen denk ik. wat kost dat ongeveer?"
 Bram: "Komt in de offerte, hangt af van materiaal. Kun je nog snel een foto van het dak sturen? Scheelt me tijd. Geen foto? Typ dan 'klaar'."
 
-Klant: "ja"
-Bram: "Top, stuur maar."
+Klant: "klaar"
+Bram: "is goed. wat is je mailadres? stuur ik de offerte daar heen."
+
+Klant: "p.devries@outlook.com"
+Bram: "Top, ik heb alles. Krijg je zo de offerte in je mail."
 
 Klant: "moment ik ga ff kijken"
 Bram: [WAIT]
@@ -268,7 +266,6 @@ Bram: "is goed, dan laat ik 't op 'nee' staan. lekt het nu, of kan het nog ff wa
 ## WAT AL BEKEND IS (gebruik dit — vraag NIETS wat je al weet)
 - Naam: ${identity.naam ?? 'nog niet bekend'}
 - E-mail: ${identity.email ?? 'nog niet bekend'}
-- Adres: ${data.adres ?? 'nog niet bekend'}
 - Type werk: ${data.type_werk ?? 'nog niet bekend'}
 - Daktype: ${data.daktype ?? 'nog niet bekend'}
 - Huidig dakmateriaal: ${data.huidig_dakmateriaal ?? 'nog niet bekend'}

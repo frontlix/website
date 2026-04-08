@@ -10,7 +10,6 @@ import { getMissingFields, getPhotoCount, isPhotoStepDone } from '@/lib/branches
 import { normalizeEnum } from '@/lib/branches/types'
 
 export interface SchoonmaakData {
-  adres?: string
   type_pand?: string
   oppervlakte?: string
   frequentie?: string
@@ -42,7 +41,6 @@ export async function extractSchoonmaakData(
 Velden:
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
-- adres: straat + huisnummer of postcode + huisnummer
 - type_pand: ALLEEN "woning", "kantoor", "horeca" of "winkel".
   · "huis", "appartement", "studio", "flat" → "woning"
   · "bedrijfspand", "bedrijf", "praktijk" → "kantoor"
@@ -59,7 +57,6 @@ Velden:
 Bekende waarden:
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
-- adres: ${current.adres ?? 'onbekend'}
 - type_pand: ${current.type_pand ?? 'onbekend'}
 - oppervlakte: ${current.oppervlakte ?? 'onbekend'}
 - frequentie: ${current.frequentie ?? 'onbekend'}
@@ -87,7 +84,7 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
     if (typeof parsed.email === 'string' && parsed.email && parsed.email.includes('@')) result.email = parsed.email
 
     const dataKeys: (keyof SchoonmaakData)[] = [
-      'adres', 'type_pand', 'oppervlakte', 'frequentie', 'ramen',
+      'type_pand', 'oppervlakte', 'frequentie', 'ramen',
     ]
     const data: Partial<SchoonmaakData> = {}
 
@@ -146,16 +143,18 @@ export async function generateSchoonmaakReply(
   const photoCount = getPhotoCount(collectedData)
   const photoStepDone = isPhotoStepDone(collectedData)
 
-  // NEXT-tag in vaste volgorde
+  // NEXT-tag in vaste volgorde: naam → branche-velden → foto → email → klaar
+  // Email wordt bewust pas op het einde gevraagd (na de fotostap) zodat het niet als
+  // drempel voelt in het begin van het gesprek.
   let nextTag: string
   if (!identity.naam) {
     nextTag = 'naam'
-  } else if (!identity.email) {
-    nextTag = 'email'
   } else if (missingDataFields.length > 0) {
     nextTag = missingDataFields[0]
   } else if (!photoStepDone) {
     nextTag = 'PHOTO_STEP'
+  } else if (!identity.email) {
+    nextTag = 'email'
   } else {
     nextTag = 'COMPLETE'
   }
@@ -194,8 +193,7 @@ Je typt zoals mensen echt WhatsAppen, niet zoals een formele mail:
 
 ## VELD-GIDS (hoe je naar elk veld vraagt — varieer op de suggesties)
 - naam         → "Met wie heb ik trouwens te maken?" / "Hoe mag ik je noemen?"
-- email        → "Wat is je e-mailadres? Dan stuur ik het voorstel straks daar naartoe."
-- adres        → "Wat is het adres waar we zouden komen schoonmaken?"
+- email        → "Wat is je e-mailadres? Dan stuur ik het voorstel daar straks naartoe." (komt PAS aan het einde, na de foto-stap)
 - type_pand    → "Gaat het om een woning, kantoor, horeca of een winkel?"
 - oppervlakte  → "Hoeveel m² is de ruimte ongeveer? Een schatting is prima."
 - frequentie   → "Hoe vaak zou je ons willen laten komen — eenmalig, wekelijks, om de week, of maandelijks?"
@@ -229,19 +227,22 @@ Klant: "hallo, ik zoek iemand voor het kantoor"
 Lotte: "hoi! met wie heb ik trouwens te maken?"
 
 Klant: "Sara"
-Lotte: "hoi Sara, wat is je mailadres? stuur ik het voorstel straks heen."
+Lotte: "hoi Sara. gaat het om een woning, kantoor, horeca of een winkel?"
 
-Klant: "sara@bureau-blauw.nl. wat kost zoiets ongeveer per maand?"
-Lotte: "Goede vraag, dat reken ik netjes uit in het voorstel — hangt af van wat we precies doen. Wat is het adres waar we zouden komen?"
-
-Klant: "Prinsengracht 140 Amsterdam, kantoor, ongeveer 180 m2"
-Lotte: "Mooi, duidelijk. Hoe vaak zou je ons willen zien — wekelijks, om de week, of maandelijks?"
+Klant: "kantoor, ongeveer 180 m2. wat kost zoiets per maand?"
+Lotte: "Goede vraag, dat reken ik netjes uit in het voorstel — hangt af van wat we precies doen. Hoe vaak zou je ons willen zien — wekelijks, om de week, of maandelijks?"
 
 Klant: "om de week denk ik. mogen de ramen ook mee?"
-Lotte: "Ja hoor, dat kan. Prima dan nemen we die mee. Zal ik verder?"
+Lotte: "Ja hoor, dat kan. Prima dan nemen we die mee."
 
-Klant: "ja"
-Lotte: "Top. Als je wilt mag je een paar foto's van de ruimte sturen — hoeft niet, typ anders 'klaar'."
+Klant: "top"
+Lotte: "Als je wilt mag je een paar foto's van de ruimte sturen — hoeft niet, typ anders 'klaar'."
+
+Klant: "klaar"
+Lotte: "is goed. wat is je e-mailadres? stuur ik het voorstel daar straks naartoe."
+
+Klant: "sara@bureau-blauw.nl"
+Lotte: "Top, ik heb alles. Krijg je zo het voorstel in je mail."
 
 Klant: "moment ik ga even meten"
 Lotte: [WAIT]
@@ -260,7 +261,6 @@ Lotte: "Geen zorgen, dan noteer ik 'nee' en kunnen we dat later altijd nog bijst
 ## WAT AL BEKEND IS (gebruik dit — vraag NIETS wat je al weet)
 - Naam: ${identity.naam ?? 'nog niet bekend'}
 - E-mail: ${identity.email ?? 'nog niet bekend'}
-- Adres: ${data.adres ?? 'nog niet bekend'}
 - Type pand: ${data.type_pand ?? 'nog niet bekend'}
 - Oppervlakte: ${data.oppervlakte ? data.oppervlakte + ' m²' : 'nog niet bekend'}
 - Frequentie: ${data.frequentie ?? 'nog niet bekend'}

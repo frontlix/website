@@ -43,12 +43,6 @@ export const dakdekkerConfig: BrancheConfig = {
   plaatsingDuurMin: 480, // 8 uur = hele werkdag
   fields: [
     {
-      key: 'adres',
-      label: 'adres of postcode + huisnummer',
-      exampleQuestion: 'Wat is het adres van het pand?',
-      type: 'text',
-    },
-    {
       key: 'type_werk',
       label: 'type werkzaamheden',
       exampleQuestion: 'Wat moet er gebeuren — dak vervangen, repareren of isoleren?',

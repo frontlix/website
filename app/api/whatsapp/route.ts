@@ -470,8 +470,16 @@ async function handleBrancheImageMessage(
       .update({ collected_data: collected, updated_at: new Date().toISOString() })
       .eq('id', lead.id)
 
-    await sendWhatsAppText(phone, 'Foto ontvangen, dank je. Dat is het maximum — ik ga nu de offerte voor je opstellen.')
-    await triggerBrancheApproval(lead.id)
+    await sendWhatsAppText(phone, 'Foto ontvangen, dank je. Dat is het maximum — ik heb genoeg om verder te gaan.')
+
+    // Email zit ná de fotostap. Als 'ie er al is → approval. Anders bot vraagt om mailadres.
+    if (lead.email) {
+      await triggerBrancheApproval(lead.id)
+    } else {
+      const refreshed: BrancheLead = { ...lead, collected_data: collected }
+      const history = await fetchBrancheConversationHistory(lead.id)
+      await sendBrancheNextQuestion(refreshed, history, phone)
+    }
     return
   }
 
@@ -520,7 +528,18 @@ async function autoAdvanceAfterPhotoWait(leadId: string, photoTimestamp: number)
       .update({ collected_data: collected, updated_at: new Date().toISOString() })
       .eq('id', leadId)
 
-    await triggerBrancheApproval(leadId)
+    // Email zit in de nieuwe flow ná de fotostap. Als email nog niet binnen
+    // is wachten we — bot vraagt 'm bij het volgende klant-bericht via de
+    // normale reply-flow. Anders direct door naar approval.
+    if (fresh.email) {
+      await triggerBrancheApproval(leadId)
+    } else {
+      // Stuur een proactief WhatsApp-bericht zodat de klant niet in stilte
+      // hoeft te wachten — vraag direct om het mailadres in de juiste persona.
+      const refreshed: BrancheLead = { ...fresh, collected_data: collected }
+      const history = await fetchBrancheConversationHistory(leadId)
+      await sendBrancheNextQuestion(refreshed, history, fresh.telefoon)
+    }
   } catch (err) {
     console.error('autoAdvanceAfterPhotoWait error:', err)
   }
@@ -667,13 +686,11 @@ async function handleBrancheCollectingMessage(
 
   const collected = (lead.collected_data || {}) as Record<string, unknown>
 
-  // ─── C1: Photo wait timestamp-based fallback ───
-  // Als de setTimeout door een PM2-restart verloren is gegaan, dan triggert deze
-  // check op de eerstvolgende klant-actie alsnog het auto-advance. De timestamp
-  // in de DB is de bron van de waarheid; setTimeout is alleen een optimalisatie.
+  // ─── Photo wait timestamp-based fallback ───
+  // Email zit BEWUST niet in deze check — die wordt pas ná de fotostap gevraagd.
+  // Photo-stap mag dus al beginnen zodra naam + alle branche-velden klaar zijn.
   const allRegularFieldsFilled =
     !!lead.naam &&
-    !!lead.email &&
     getMissingFields(branche, collected).length === 0
   const photoWaitUntil = collected._photo_wait_until
   if (
@@ -687,7 +704,17 @@ async function handleBrancheCollectingMessage(
       .from('leads')
       .update({ collected_data: collected, updated_at: new Date().toISOString() })
       .eq('id', lead.id)
-    await triggerBrancheApproval(lead.id)
+    // Photo-stap is nu afgerond. Als email ook al binnen is → approval, anders
+    // valt 'ie door naar de normale reply-flow die om email vraagt.
+    if (lead.email) {
+      await triggerBrancheApproval(lead.id)
+      return
+    }
+    // Refetch zodat sendBrancheNextQuestion de bijgewerkte _photo_step_done meeneemt
+    // en de NEXT-tag correct op 'email' uitkomt.
+    const refreshed: BrancheLead = { ...lead, collected_data: collected }
+    const refreshedHistory = await fetchBrancheConversationHistory(lead.id)
+    await sendBrancheNextQuestion(refreshed, refreshedHistory, phone)
     return
   }
 
@@ -701,7 +728,14 @@ async function handleBrancheCollectingMessage(
       .from('leads')
       .update({ collected_data: collected, updated_at: new Date().toISOString() })
       .eq('id', lead.id)
-    await triggerBrancheApproval(lead.id)
+    // Photo-stap geskipt. Als email er al is → approval, anders bot vraagt nu om email.
+    if (lead.email) {
+      await triggerBrancheApproval(lead.id)
+      return
+    }
+    const refreshed: BrancheLead = { ...lead, collected_data: collected }
+    const refreshedHistory = await fetchBrancheConversationHistory(lead.id)
+    await sendBrancheNextQuestion(refreshed, refreshedHistory, phone)
     return
   }
 

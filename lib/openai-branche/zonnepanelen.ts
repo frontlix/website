@@ -13,7 +13,6 @@ import { getMissingFields, getPhotoCount, isPhotoStepDone } from '@/lib/branches
 import { normalizeEnum } from '@/lib/branches/types'
 
 export interface ZonnepanelenData {
-  adres?: string
   jaarverbruik?: string
   daktype?: string
   dakmateriaal?: string
@@ -54,7 +53,6 @@ export async function extractZonnepanelenData(
 Velden:
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
-- adres: straat + huisnummer of postcode + huisnummer
 - jaarverbruik: getal in kWh per jaar (bv "4000", "ongeveer 5000 kWh", "3.500" → 3500). Vage woorden ("weet niet", "geen idee") = niet meegeven.
 - daktype: ALLEEN "schuin" of "plat". "hellend" → "schuin". "flat" → "plat".
 - dakmateriaal: ALLEEN "pannen", "riet", "leisteen" of "dakbedekking".
@@ -73,7 +71,6 @@ Velden:
 Bekende waarden (geef NIETS terug als ze al kloppen):
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
-- adres: ${current.adres ?? 'onbekend'}
 - jaarverbruik: ${current.jaarverbruik ?? 'onbekend'}
 - daktype: ${current.daktype ?? 'onbekend'}
 - dakmateriaal: ${current.dakmateriaal ?? 'onbekend'}
@@ -107,7 +104,7 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
     // Branche velden — accepteer ZOWEL top-level als nested in "data"
     // (de LLM volgt het format niet altijd consistent)
     const dataKeys: (keyof ZonnepanelenData)[] = [
-      'adres', 'jaarverbruik', 'daktype', 'dakmateriaal',
+      'jaarverbruik', 'daktype', 'dakmateriaal',
       'dakoppervlakte', 'orientatie', 'schaduw', 'aansluiting',
     ]
     const data: Partial<ZonnepanelenData> = {}
@@ -173,17 +170,19 @@ export async function generateZonnepanelenReply(
   const photoCount = getPhotoCount(collectedData)
   const photoStepDone = isPhotoStepDone(collectedData)
 
-  // Bepaal volgende NEXT-tag in vaste volgorde: naam → email → branche-velden → foto → klaar
-  // Tags zijn semantisch, geen technische sleutels — de veld-gids mapt ze naar natuurlijke frasering.
+  // Bepaal volgende NEXT-tag in vaste volgorde: naam → branche-velden → foto → email → klaar
+  // Email wordt bewust pas op het einde gevraagd (na de fotostap) zodat het niet als
+  // drempel voelt in het begin van het gesprek. Tags zijn semantisch, geen technische
+  // sleutels — de veld-gids mapt ze naar natuurlijke frasering.
   let nextTag: string
   if (!identity.naam) {
     nextTag = 'naam'
-  } else if (!identity.email) {
-    nextTag = 'email'
   } else if (missingDataFields.length > 0) {
-    nextTag = missingDataFields[0] // één van: adres, jaarverbruik, daktype, ...
+    nextTag = missingDataFields[0] // één van: jaarverbruik, daktype, ...
   } else if (!photoStepDone) {
     nextTag = 'PHOTO_STEP'
+  } else if (!identity.email) {
+    nextTag = 'email'
   } else {
     nextTag = 'COMPLETE'
   }
@@ -221,8 +220,7 @@ Je typt zoals mensen echt WhatsAppen, niet zoals een mail:
 
 ## VELD-GIDS (hoe je naar elk veld vraagt — varieer op de suggesties)
 - naam         → "Met wie heb ik trouwens te maken?" / "Hoe mag ik je noemen?"
-- email        → "Wat is je e-mailadres? Dan stuur ik de offerte daar straks naartoe." (geef altijd context)
-- adres        → "Wat is het adres waar de panelen moeten komen?" / "Op welk adres gaat het om?"
+- email        → "Wat is je e-mailadres? Dan stuur ik de offerte daar straks naartoe." (komt PAS aan het einde, na de foto-stap — geef altijd context dat het voor de offerte is)
 - jaarverbruik → "Weet je ongeveer hoeveel stroom je per jaar verbruikt? (kWh, staat op je jaarnota)"
 - daktype      → "Is het een schuin of een plat dak?"
 - dakmateriaal → "Wat ligt er nu op het dak? Dakpannen, riet, of iets anders?"
@@ -259,10 +257,10 @@ Klant: "hoi"
 Sanne: "hoi! met wie heb ik trouwens te maken?"
 
 Klant: "Mark"
-Sanne: "oké Mark. wat is je e-mailadres? stuur ik de offerte straks daarheen."
+Sanne: "oké Mark. weet je ongeveer hoeveel stroom je per jaar verbruikt? staat op je jaarnota in kWh."
 
-Klant: "m.jansen@gmail.com, wat kost zo'n set eigenlijk ongeveer?"
-Sanne: "Goede vraag — dat reken ik netjes uit in de offerte, hangt af van een paar dingen. Weet je ongeveer hoeveel stroom je per jaar verbruikt? Staat op je jaarnota in kWh."
+Klant: "ongeveer 4000 kWh, wat kost zo'n set eigenlijk ongeveer?"
+Sanne: "Goede vraag — dat reken ik netjes uit in de offerte, hangt af van een paar dingen. Is het een schuin of een plat dak?"
 
 Klant: "geen idee eerlijk gezegd"
 Sanne: "Geen probleem, dan schatten we het straks samen in. Is het een schuin of een plat dak?"
@@ -285,12 +283,17 @@ Sanne: "Sorry, ging even te snel. Ik stop met pushen — laat maar weten wanneer
 Klant: "geen idee eerlijk gezegd"
 Sanne: "Geen probleem, dan schatten we het samen in de offerte. Welke kant staat het dak op — noord, oost, zuid of west?"
 
+Klant: "klaar, geen foto's nodig" (na de foto-stap, alleen email is nog open)
+Sanne: "is goed. wat is je e-mailadres? stuur ik de offerte daar straks naartoe."
+
+Klant: "m.jansen@gmail.com"
+Sanne: "Top, ik heb alles. Je krijgt zo de offerte in je mail."
+
 ---
 
 ## WAT AL BEKEND IS (gebruik dit — vraag NIETS wat je al weet)
 - Naam: ${identity.naam ?? 'nog niet bekend'}
 - E-mail: ${identity.email ?? 'nog niet bekend'}
-- Adres: ${data.adres ?? 'nog niet bekend'}
 - Jaarverbruik: ${data.jaarverbruik ? data.jaarverbruik + ' kWh' : 'nog niet bekend'}
 - Daktype: ${data.daktype ?? 'nog niet bekend'}
 - Dakmateriaal: ${data.dakmateriaal ?? 'nog niet bekend'}

@@ -46,12 +46,6 @@ export const schoonmaakConfig: BrancheConfig = {
   plaatsingDuurMin: 120, // 2 uur — eerste schoonmaak duurt korter dan installatie
   fields: [
     {
-      key: 'adres',
-      label: 'adres of postcode + huisnummer',
-      exampleQuestion: 'Wat is het adres van het pand dat schoongemaakt moet worden?',
-      type: 'text',
-    },
-    {
       key: 'type_pand',
       label: 'type pand',
       exampleQuestion: 'Wat voor pand is het — woning, kantoor, horeca of winkel?',
