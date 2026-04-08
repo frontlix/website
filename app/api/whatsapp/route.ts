@@ -773,6 +773,17 @@ async function sendBrancheNextQuestion(
   }
 
   const reply = await llms.reply(history, identity, currentData, collected)
+
+  // [WAIT] guard: als de reply-LLM detecteert dat de klant nog bezig is (bv.
+  // "moment, laat me kijken"), returnt hij het token `[WAIT]`. In dat geval
+  // sturen we helemaal niks — geen WhatsApp-bericht, geen conversations-row.
+  // De bot wacht gewoon op het volgende bericht van de klant. Dit voorkomt
+  // de "bot herhaalt dezelfde vraag 4 keer terwijl klant 'rustig' typt"-lus.
+  if (reply.trim().toUpperCase().startsWith('[WAIT]')) {
+    console.log(`[branche-reply] [WAIT] token — holding off voor lead ${lead.id}`)
+    return
+  }
+
   await sendWhatsAppText(phone, reply)
 
   await getSupabase().from('conversations').insert({
