@@ -49,9 +49,13 @@ def _user_skips_photo(text: str) -> bool:
     t = text.lower().strip()
     if not t:
         return False
-    if re.match(r"^(nee|nope|geen|klaar|skip|stop|niets|niks)$", t):
+    if re.match(r"^(nee|nope|geen|klaar|skip|stop|niets|niks|later|overslaan)$", t):
         return True
-    if re.search(r"\b(geen foto|geen fotos|geen foto's|heb geen|sla over|dat (is|was) alles|ben klaar)\b", t):
+    if re.search(
+        r"\b(geen foto|geen fotos|geen foto's|heb geen|sla over|dat (is|was) alles|ben klaar"
+        r"|niet bij de hand|heb er geen|foto volgt|nu niet|later misschien|kan nu niet"
+        r"|heb nu geen|zonder foto|liever niet|doe maar zonder)\b", t
+    ):
         return True
     return False
 
@@ -205,6 +209,11 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
     all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and _is_photo_step_done(collected)
 
     if all_done:
+        # Als het gesprek maar 1-2 berichten had, laat de reply-LLM een persoonlijk
+        # COMPLETE-bericht genereren zodat de klant een warme begroeting krijgt
+        if (lead.get("message_count") or 0) <= 2:
+            updated = {**lead, "naam": new_naam, "email": new_email, "collected_data": collected}
+            await _send_next_question(updated, history, phone)
         await _trigger_completion(lead["id"])
         return
 

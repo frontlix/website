@@ -55,7 +55,13 @@ found or corrected fields as JSON.
 ### binnen_reclame
 - type_reclame: ONLY "muurreclame", "raamfolie", "wandprint" or "kantoorsigning"
 - locatie_pand: type pand ("kantoor", "winkel", "horeca", "showroom")
-- afmetingen: ALWAYS convert to total m². Calculate: "3 ramen van 2x1m" → "6" (3×2×1=6). "wand van 4x3m" → "12". Only store the NUMBER in m², no units.
+- afmetingen: ALWAYS convert to total m². Calculate the area and return ONLY the number.
+  · "3 ramen van 2x1m" → "6" (3 × 2 × 1 = 6)
+  · "wand van 4x3m" → "12" (4 × 3 = 12)
+  · "5 meter breed en 3 meter hoog" → "15" (5 × 3 = 15)
+  · "2 ramen van 1.5 bij 1 meter" → "3" (2 × 1.5 × 1 = 3)
+  · "6 vierkante meter" → "6"
+  · "hele gevel" → leave empty, Nick will ask for specifics
 - huisstijl: heeft de klant aanleveerklaar materiaal ("ja logo aanwezig", "nee moet ontworpen", "hebben huisstijl PDF")
 
 
@@ -390,6 +396,7 @@ async def generate_reply(
     """Reply LLM: kies de juiste prompt op basis van type_dienst."""
     type_dienst = data.get("type_dienst")
     next_tag = determine_next_tag(identity, data, collected_data)
+    empty_streak = int(collected_data.get("_empty_extraction_streak") or 0)
 
     # Kies de juiste prompt
     if type_dienst and type_dienst in REPLY_PROMPTS:
@@ -417,8 +424,11 @@ async def generate_reply(
 Known info:{known_info}
 
 NEXT: {next_tag}
+RETRY: {empty_streak}
 
-Write 1 WhatsApp message as Nick in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."""
+Write 1 WhatsApp message as Nick in Dutch. First check if the customer is waiting, unsure or frustrated.
+If RETRY > 0: the customer did not answer the previous question. Rephrase the question in a completely different way. Be shorter and more casual. Do NOT repeat the same sentence. At RETRY 3+: acknowledge the confusion and offer to help differently.
+Only the message text — no JSON, no explanation."""
 
     chat_history = _format_history(history)
     model = os.environ.get("PERSONALIZED_REPLY_MODEL", "gpt-4o")

@@ -152,9 +152,10 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
     """Stuur de offerte email naar de klant met PDF bijlage en afspraak knop."""
     import httpx
 
+    from config import get_settings
+
     branche_label = DIENST_LABELS.get(type_dienst, "Wrapping")
-    # WhatsApp deep link — stuurt klant terug naar WhatsApp waar de scheduling flow werkt
-    whatsapp_url = "https://wa.me/31638272245?text=Hoi%2C%20ik%20wil%20graag%20een%20afspraak%20inplannen"
+    schedule_url = f"{get_settings().service_url}/personalized/schedule?token={token}"
 
     # Korting notitie (als ingevuld in het edit formulier)
     korting_html = ""
@@ -201,8 +202,8 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
         <div style="background:#F9FAFB;border-radius:12px;padding:24px;text-align:center">
           <p style="font-size:15px;color:#374151;font-weight:600;margin:0 0 6px">Wil je de offerte doorspreken?</p>
           <p style="font-size:14px;color:#6B7280;margin:0 0 20px">Plan een vrijblijvend gesprek in of stuur ons een WhatsApp berichtje.</p>
-          <a href="{escape(whatsapp_url)}" style="background:#25D366;color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">
-            Afspraak inplannen via WhatsApp
+          <a href="{escape(schedule_url)}" style="background:#25D366;color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">
+            Afspraak inplannen
           </a>
         </div>
       </div>
