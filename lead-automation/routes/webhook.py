@@ -329,16 +329,32 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
         "updated_at": _now_iso(),
     }).eq("id", lead["id"]).execute()
 
+    # Re-fetch collected_data from DB to get the latest _photo_step_done flag
+    # (may have been set by a previous message in the same conversation)
+    fresh_resp = get_supabase().table("leads").select("collected_data").eq("id", lead["id"]).execute()
+    fresh_collected = dict((fresh_resp.data or [{}])[0].get("collected_data") or {})
+    # Merge our extracted data on top
+    for k, v in collected.items():
+        if k not in fresh_collected or v is not None:
+            fresh_collected[k] = v
+
     # Check if all done
-    still_missing = get_missing_fields(config, collected)
-    all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and is_photo_step_done(collected)
+    still_missing = get_missing_fields(config, fresh_collected)
+    all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and is_photo_step_done(fresh_collected)
 
     if all_done:
+        # Save the merged data before triggering approval
+        get_supabase().table("leads").update({
+            "naam": new_naam,
+            "email": new_email,
+            "collected_data": fresh_collected,
+            "updated_at": _now_iso(),
+        }).eq("id", lead["id"]).execute()
         await _trigger_approval(lead["id"])
         return
 
     # Send next question
-    updated = {**lead, "naam": new_naam, "email": new_email, "collected_data": collected}
+    updated = {**lead, "naam": new_naam, "email": new_email, "collected_data": fresh_collected}
     await _send_next_question(updated, history, phone)
 
 

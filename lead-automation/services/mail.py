@@ -22,6 +22,8 @@ def _send_email(to: str, subject: str, html_body: str):
     msg.attach(MIMEText(html_body, "html"))
 
     context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
     with smtplib.SMTP_SSL(s.mail_host, s.mail_port, context=context) as server:
         server.login(s.mail_user, s.mail_pass)
         server.send_message(msg)
