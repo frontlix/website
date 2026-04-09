@@ -5,21 +5,29 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from html import escape
+
+import httpx
 
 from config import get_settings
 from models.branches import PricingResult
 
 
-def _send_email(to: str, subject: str, html_body: str):
-    """Send an email via SMTP SSL."""
+def _send_email(to: str, subject: str, html_body: str, attachments: list[dict] | None = None):
+    """Send an email via SMTP SSL. Attachments: [{"filename": "...", "data": bytes, "content_type": "..."}]"""
     s = get_settings()
 
-    msg = MIMEMultipart("alternative")
+    msg = MIMEMultipart("mixed")
     msg["From"] = f"Frontlix <{s.mail_user}>"
     msg["To"] = to
     msg["Subject"] = subject
     msg.attach(MIMEText(html_body, "html"))
+
+    for att in (attachments or []):
+        part = MIMEApplication(att["data"], Name=att["filename"])
+        part["Content-Disposition"] = f'attachment; filename="{att["filename"]}"'
+        msg.attach(part)
 
     context = ssl.create_default_context()
     context.check_hostname = False
@@ -40,6 +48,7 @@ async def send_approval_email(
     approve_url: str,
     edit_url: str,
     photo_urls: list[str] | None = None,
+    pdf_url: str | None = None,
 ) -> None:
     """Send approval email with quote details to Frontlix team."""
     fields_html = "".join(
@@ -93,10 +102,10 @@ async def send_approval_email(
       </table>
 
       <div style="margin:32px 0;text-align:center">
-        <a href="{escape(approve_url)}" style="background:linear-gradient(135deg,#1A56FF,#00CFFF);color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
+        <a href="{escape(approve_url)}" style="background:#16a34a;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
           Goedkeuren & versturen
         </a>
-        <a href="{escape(edit_url)}" style="color:#1A56FF;padding:14px 32px;text-decoration:none;display:inline-block;margin:8px">
+        <a href="{escape(edit_url)}" style="background:#dc2626;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
           Bewerken
         </a>
       </div>
@@ -107,10 +116,24 @@ async def send_approval_email(
     </div>
     """
 
+    # Download PDF and attach if available
+    attachments = []
+    if pdf_url:
+        try:
+            pdf_data = httpx.get(pdf_url).content
+            attachments.append({
+                "filename": f"Offerte-{branche_label}.pdf",
+                "data": pdf_data,
+                "content_type": "application/pdf",
+            })
+        except Exception as e:
+            print(f"[mail] Failed to download PDF for attachment: {e}")
+
     _send_email(
-        to=get_settings().mail_user,  # Approval goes to Frontlix team
+        to=to_email,
         subject=f"Offerte ter goedkeuring — {naam} ({branche_label})",
         html_body=html,
+        attachments=attachments,
     )
 
 

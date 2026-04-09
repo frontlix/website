@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.webhook import router as webhook_router
 from routes.demo import router as demo_router
 from routes.approve import router as approve_router
+from routes.edit import router as edit_router
 
 app = FastAPI(
     title="Frontlix Lead Automation",
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(webhook_router)
 app.include_router(demo_router)
 app.include_router(approve_router)
+app.include_router(edit_router)
 
 
 @app.get("/health")

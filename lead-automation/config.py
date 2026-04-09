@@ -31,6 +31,7 @@ class Settings(BaseSettings):
 
     # App
     site_url: str = "https://frontlix.com"
+    service_url: str = "http://localhost:8000"  # Public URL of this Python service (ngrok or VPS)
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

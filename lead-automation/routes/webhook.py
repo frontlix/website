@@ -605,25 +605,40 @@ async def _trigger_approval(lead_id: str):
     # Generate approval token
     approval_token = str(uuid.uuid4())
 
-    # Save pricing + token
+    # Generate PDF upfront so it can be included in the approval email
+    pdf_url = None
+    try:
+        from services.pdf import generate_quote_pdf
+        result = await generate_quote_pdf(
+            lead_id=lead_id,
+            branche_id=lead["demo_type"],
+            klant_naam=lead.get("naam") or "Klant",
+            klant_email=lead.get("email") or "",
+            collected_data=collected,
+        )
+        pdf_url = result["url"]
+    except Exception as e:
+        print(f"[approval] PDF generation failed (continuing without): {e}")
+
+    # Save pricing + token + PDF URL
     sb.table("leads").update({
         "status": "pending_approval",
         "approval_token": approval_token,
         "pricing": pricing.model_dump(),
+        "quote_pdf_url": pdf_url,
         "updated_at": _now_iso(),
     }).eq("id", lead_id).execute()
 
     # Send WhatsApp confirmation
     await send_text(
         lead["telefoon"],
-        "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de offerte ter goedkeuring. Zodra die is goedgekeurd stuur ik je hier de PDF."
+        "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de offerte. Zodra die is goedgekeurd stuur ik je hier de PDF."
     )
 
-    # Send approval email
+    # Send approval email with PDF link
     try:
         from services.mail import send_approval_email
 
-        site_url = get_settings().site_url
         fields = []
         for f in config.fields:
             v = collected.get(f.key)
@@ -641,9 +656,10 @@ async def _trigger_approval(lead_id: str):
             branche_label=config.label,
             fields=fields,
             pricing=pricing,
-            approve_url=f"{site_url}/api/demo-approve?token={approval_token}",
-            edit_url=f"{site_url}/api/demo-edit?token={approval_token}",
+            approve_url=f"{get_settings().service_url}/approve?token={approval_token}",
+            edit_url=f"{get_settings().service_url}/edit?token={approval_token}",
             photo_urls=photo_urls,
+            pdf_url=pdf_url,
         )
     except Exception as e:
         print(f"[approval] email failed: {e}")
