@@ -908,11 +908,11 @@ async function sendBrancheWelcomeMessage(
 ): Promise<void> {
   const messages: Record<BrancheId, string> = {
     zonnepanelen:
-      'oké, zonnepanelen. ik ben Sanne. even wat korte vragen dan maak ik een offerte voor je.',
+      'Oké, zonnepanelen. Ik ben Sanne. Even wat korte vragen dan maak ik een offerte voor je.',
     dakdekker:
-      'oké, dakwerk. ik ben Bram. even wat vragen dan kan ik een offerte maken.',
+      'Oké, dakwerk. Ik ben Bram. Even wat vragen dan kan ik een offerte maken.',
     schoonmaak:
-      'oké, schoonmaak. ik ben Lotte. even een paar korte vragen dan heb ik genoeg voor een offerte.',
+      'Oké, schoonmaak. Ik ben Lotte. Even een paar korte vragen dan heb ik genoeg voor een offerte.',
   }
   const text = messages[branche]
   if (!text) return

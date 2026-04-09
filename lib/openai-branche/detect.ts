@@ -18,17 +18,17 @@ export async function detectBranche(history: ConversationMessage[]): Promise<Bra
     messages: [
       {
         role: 'system',
-        content: `Je classificeert WhatsApp-berichten van klanten in een van drie branches.
+        content: `You classify Dutch WhatsApp messages into one of three industries.
 
-Geef ALLEEN JSON terug in dit formaat: { "branche": "<waarde>" }
+Return ONLY JSON in this format: { "branche": "<value>" }
 
-Toegestane waarden:
-- "zonnepanelen" — klant wil zonnepanelen, solar, PV, panelen op het dak, energie opwekken
-- "dakdekker"   — klant heeft dakproblemen, lekkage, wil dak vervangen, isoleren of repareren, dakwerk
-- "schoonmaak"  — klant wil schoonmaak, poetsen, glazenwasser, kantoor/woning/horeca laten reinigen
-- "null"        — onduidelijk, klant heeft nog geen branche genoemd
+Allowed values:
+- "zonnepanelen" — customer wants solar panels, PV, panels on the roof, energy generation
+- "dakdekker" — customer has roof problems, leaks, wants roof replaced, insulated or repaired
+- "schoonmaak" — customer wants cleaning services for office/home/hospitality/retail
+- "null" — unclear, customer has not mentioned an industry yet
 
-Wees ruim met herkenning — typo's en synoniemen toegestaan. Bij twijfel: "null".`,
+Be generous with recognition — typos and Dutch synonyms are fine. When in doubt: "null".`,
       },
       {
         role: 'user',
