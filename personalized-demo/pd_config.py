@@ -1,12 +1,21 @@
-"""Personalized demo configuration.
+"""Personalized demo configuration — De Designmaker.
 
-Shared services (Supabase, WhatsApp, OpenAI) worden geïmporteerd vanuit
-lead-automation/services/. Deze config bevat alleen personalized-demo
-specifieke instellingen.
+4 dienst-categorieën, elk met eigen velden die verzameld moeten worden.
 """
 
-# Personalized demo field names (in collection order)
-PERSONALIZED_FIELDS = ["interesse", "situatie", "wensen", "tijdlijn"]
+# De 4 diensten
+DIENSTEN = ["carwrapping", "keuken_interieur", "binnen_reclame", "signing"]
+
+# Velden per dienst (in volgorde waarin ze gevraagd worden)
+FIELDS_PER_DIENST: dict[str, list[str]] = {
+    "carwrapping": ["voertuig", "wrap_type", "kleur_afwerking", "huidige_kleur"],
+    "keuken_interieur": ["wat_wrappen", "aantal_vlakken", "gewenste_look", "huidige_staat"],
+    "binnen_reclame": ["type_reclame", "locatie_pand", "afmetingen", "huisstijl"],
+    "signing": ["voertuig_type", "aantal", "ontwerp_scope", "huisstijl"],
+}
+
+# Alle unieke veldnamen (voor extractie LLM)
+ALL_FIELDS = sorted(set(f for fields in FIELDS_PER_DIENST.values() for f in fields))
 
 # Limits
 MAX_PHOTOS = 6

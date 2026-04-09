@@ -17,6 +17,9 @@ from routes.edit import router as edit_router
 
 # Personalized demo routes (separate module in /personalized-demo/)
 from pd_routes import router as personalized_router
+from pd_approve import router as pd_approve_router
+from pd_edit import router as pd_edit_router
+from pd_schedule import router as pd_schedule_router
 
 app = FastAPI(
     title="Frontlix Lead Automation",
@@ -36,6 +39,9 @@ app.include_router(demo_router)
 app.include_router(approve_router)
 app.include_router(edit_router)
 app.include_router(personalized_router)
+app.include_router(pd_approve_router)
+app.include_router(pd_edit_router)
+app.include_router(pd_schedule_router)
 
 
 @app.get("/health")
