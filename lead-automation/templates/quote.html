@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #1A1A1A; font-size: 10pt; line-height: 1.5; }
+  h1 { color: #1A56FF; font-size: 18pt; margin-bottom: 4px; }
+  h2 { color: #1A56FF; font-size: 13pt; margin-top: 28px; margin-bottom: 8px; border-bottom: 2px solid #1A56FF; padding-bottom: 4px; }
+  .header { display: flex; justify-content: space-between; margin-bottom: 32px; }
+  .company { text-align: right; color: #555; font-size: 9pt; line-height: 1.6; }
+  .company strong { color: #1A1A1A; font-size: 10pt; }
+  .meta-table { width: 100%; margin: 16px 0; }
+  .meta-table td { padding: 3px 0; vertical-align: top; }
+  .meta-table .label { color: #555; width: 140px; }
+  .intro { margin: 20px 0; color: #333; }
+  .price-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .price-table th { text-align: left; padding: 8px 12px 8px 0; border-bottom: 2px solid #1A56FF; color: #1A56FF; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }
+  .price-table td { padding: 6px 12px 6px 0; border-bottom: 1px solid #eee; }
+  .price-table .amount { text-align: right; padding-right: 0; }
+  .price-table .subtotal td { border-top: 2px solid #ddd; padding-top: 10px; font-weight: 600; }
+  .price-table .btw td { color: #555; }
+  .price-table .total td { border-top: 2px solid #1A56FF; padding-top: 10px; font-weight: 700; font-size: 13pt; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; color: #777; font-size: 8pt; }
+  .footer-table { width: 100%; }
+  .footer-table td { vertical-align: top; padding-right: 24px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Offerte</h1>
+    <p style="color:#555; margin:0">{{ branche_label }}</p>
+  </div>
+  <div class="company">
+    <strong>{{ company.name }}</strong><br>
+    {% for line in company.address_lines %}{{ line }}<br>{% endfor %}
+    {{ company.phone }}<br>
+    {{ company.email }}
+  </div>
+</div>
+
+<table class="meta-table">
+  <tr><td class="label">Klant</td><td>{{ klant_naam }}</td></tr>
+  <tr><td class="label">E-mail</td><td>{{ klant_email }}</td></tr>
+</table>
+
+<h2>Introductie</h2>
+<p class="intro">{{ intro_offerte }}</p>
+{% if intake_summary %}
+<p class="intro">{{ intake_summary }}</p>
+{% endif %}
+
+<h2>Ons aanbod</h2>
+<p class="intro">{{ aanbod_beschrijving }}</p>
+
+<h2>Prijsoverzicht</h2>
+<table class="price-table">
+  <thead>
+    <tr>
+      <th>Omschrijving</th>
+      <th>Aantal</th>
+      <th>Eenheid</th>
+      <th class="amount">Per eenheid</th>
+      <th class="amount">Totaal</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for line in pricing.lines %}
+    <tr>
+      <td>{{ line.label }}</td>
+      <td>{{ "%.0f"|format(line.quantity) if line.quantity else "-" }}</td>
+      <td>{{ line.unit or "-" }}</td>
+      <td class="amount">{{ "€%.2f"|format(line.unit_price) if line.unit_price else "-" }}</td>
+      <td class="amount">€{{ "%.2f"|format(line.total) }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="subtotal">
+      <td colspan="4">Subtotaal excl. BTW</td>
+      <td class="amount">€{{ "%.2f"|format(pricing.subtotaal_excl_btw) }}</td>
+    </tr>
+    <tr class="btw">
+      <td colspan="4">BTW 21%</td>
+      <td class="amount">€{{ "%.2f"|format(pricing.btw_bedrag) }}</td>
+    </tr>
+    <tr class="total">
+      <td colspan="4">Totaal incl. BTW</td>
+      <td class="amount">€{{ "%.2f"|format(pricing.totaal_incl_btw) }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <table class="footer-table">
+    <tr>
+      <td>
+        <strong>{{ company.name }}</strong><br>
+        KVK: {{ company.kvk }}<br>
+        BTW: {{ company.btw }}
+      </td>
+      <td>
+        IBAN: {{ company.iban }}<br>
+        {{ company.website }}
+      </td>
+      <td>
+        Contactpersoon: {{ company.contact_person }}<br>
+        {{ company.email }}<br>
+        {{ company.phone }}
+      </td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>

@@ -6,3 +6,5 @@ out/
 next-env.d.ts
 .DS_Store
 temporary screenshots/
+lead-automation/venv/
+lead-automation/.env
