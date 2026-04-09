@@ -11,7 +11,10 @@ const LEAD_AUTOMATION_URL = process.env.LEAD_AUTOMATION_URL || 'http://localhost
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { telefoon } = body as { telefoon?: string }
+    const { telefoon, personalized_demo_id } = body as {
+      telefoon?: string
+      personalized_demo_id?: string
+    }
 
     if (!telefoon) {
       return NextResponse.json(
@@ -33,11 +36,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Forward to Python lead-automation service
-    const res = await fetch(`${LEAD_AUTOMATION_URL}/demo/start`, {
+    // Route to personalized demo or regular branche demo
+    const endpoint = personalized_demo_id
+      ? `${LEAD_AUTOMATION_URL}/demo/personalized/start`
+      : `${LEAD_AUTOMATION_URL}/demo/start`
+
+    const payload = personalized_demo_id
+      ? { telefoon, personalized_demo_id }
+      : { telefoon }
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telefoon }),
+      body: JSON.stringify(payload),
     })
 
     if (!res.ok) {

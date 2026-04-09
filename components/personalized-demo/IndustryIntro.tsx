@@ -37,6 +37,14 @@ const INDUSTRY_MAP: Record<string, IndustryInfo> = {
     icon: Store,
     text: 'Bakkerijen met bestel- en cateringservices ontvangen veel aanvragen. Automatische opvolging zorgt dat je nooit een bestelling mist.',
   },
+  carwrapping: {
+    icon: Truck,
+    text: 'In de wrapping- en belletteringsbranche komen aanvragen binnen via formulieren, social media en telefoon. Snelle, persoonlijke opvolging maakt het verschil tussen een offerte en een gemiste klant.',
+  },
+  design: {
+    icon: Truck,
+    text: 'Designbedrijven ontvangen dagelijks aanvragen voor projecten. Automatische opvolging zorgt dat je direct reageert en geen enkel project mist.',
+  },
 }
 
 const DEFAULT_INDUSTRY: IndustryInfo = {

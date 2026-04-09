@@ -125,6 +125,12 @@ async def _process_webhook(body: dict):
     if not lead:
         return
 
+    # Route personalized demo leads to their own handler
+    if lead.get("demo_type") == "personalized":
+        from pd_webhook import handle_personalized_message
+        await handle_personalized_message(lead, message, msg_type, phone)
+        return
+
     await _handle_branche_webhook(lead, message, msg_type, phone)
 
 
