@@ -36,9 +36,10 @@ export async function extractSchoonmaakData(
     messages: [
       {
         role: 'system',
-        content: `Je bent een data-extractor voor een schoonmaakbedrijf. Lees het WhatsApp gesprek en geef ALLEEN nieuw gevonden of gecorrigeerde velden terug als JSON.
+        content: `## ROL
+Je bent een data-extractor voor een schoonmaakbedrijf. Lees het WhatsApp gesprek en geef **ALLEEN** nieuw gevonden of gecorrigeerde velden terug als JSON.
 
-Velden:
+## VELDEN
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
 - type_pand: ALLEEN "woning", "kantoor", "horeca" of "winkel".
@@ -54,7 +55,7 @@ Velden:
   · "1x per maand", "maand" → "maandelijks"
 - ramen: "ja" of "nee" (wil de klant dat de ramen ook meedoen). Bij twijfel → niet meegeven.
 
-Bekende waarden:
+## BEKENDE WAARDEN (geef NIETS terug als ze al kloppen)
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
 - type_pand: ${current.type_pand ?? 'onbekend'}
@@ -62,14 +63,22 @@ Bekende waarden:
 - frequentie: ${current.frequentie ?? 'onbekend'}
 - ramen: ${current.ramen ?? 'onbekend'}
 
-Output formaat (alleen NIEUW of GECORRIGEERD):
-{
-  "naam": "...",
-  "email": "...",
-  "data": { "type_pand": "kantoor", "oppervlakte": "120" }
-}
+## OUTPUT FORMAT
+Alleen velden die **NIEUW** of **GECORRIGEERD** zijn:
+{ "naam": "...", "email": "...", "data": { "type_pand": "kantoor", "oppervlakte": "120" } }
 
-Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
+Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.
+
+## VOORBEELDEN
+
+Gesprek: "Klant: hoi ik ben Sara, ik zoek iemand voor ons restaurant, zo'n 200 m2"
+→ { "naam": "Sara", "data": { "type_pand": "horeca", "oppervlakte": "200" } }
+
+Gesprek: "Klant: om de week zou fijn zijn, en ja ramen ook graag"
+→ { "data": { "frequentie": "2-wekelijks", "ramen": "ja" } }
+
+Gesprek: "Klant: wat kost dat per maand?"
+→ {}`,
       },
       { role: 'user', content: chatHistory },
     ],
@@ -198,7 +207,7 @@ Je typt zoals mensen echt WhatsAppen, niet zoals een formele mail:
 - oppervlakte  → "Hoeveel m² is de ruimte ongeveer? Een schatting is prima."
 - frequentie   → "Hoe vaak zou je ons willen laten komen — eenmalig, wekelijks, om de week, of maandelijks?"
 - ramen        → "Wil je dat we de ramen ook meenemen, of alleen binnen?"
-- PHOTO_STEP   → "Als je het fijn vindt mag je een paar foto's van de ruimte sturen. Hoeft niet — typ anders gewoon 'klaar'."
+- PHOTO_STEP   → "als je wilt mag je een paar foto's van de ruimte sturen. geen foto? geen probleem, dan gaan we verder."
 - COMPLETE     → Warm bevestigen dat je alles hebt en dat er zo een mail komt met het voorstel ter goedkeuring. 1-2 zinnen. Geen opsomming.
 
 ## OFF-TOPIC BELEID
@@ -277,8 +286,7 @@ Schrijf nu 1 WhatsApp-bericht als Lotte. Vraag alleen naar het NEXT-veld (gebrui
 Alleen de tekst van het bericht — geen JSON, geen uitleg, geen aanhalingstekens.`
 
   const response = await getOpenAI().chat.completions.create({
-    // Default: gpt-4o-mini. Override via env BRANCHE_REPLY_MODEL (bv. "gpt-4o") voor A/B tests.
-    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o-mini',
+    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o',
     temperature: 0.6,
     messages: [
       { role: 'system', content: systemPrompt },

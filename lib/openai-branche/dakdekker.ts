@@ -38,23 +38,23 @@ export async function extractDakdekkerData(
     messages: [
       {
         role: 'system',
-        content: `Je bent een data-extractor voor een dakdekkersbedrijf. Lees het WhatsApp gesprek en geef ALLEEN nieuw gevonden of gecorrigeerde velden terug als JSON.
+        content: `## ROL
+Je bent een data-extractor voor een dakdekkersbedrijf. Lees het WhatsApp gesprek en geef **ALLEEN** nieuw gevonden of gecorrigeerde velden terug als JSON.
 
-Velden:
+## VELDEN
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
 - type_werk: ALLEEN één van "vervangen", "repareren" of "isoleren".
-  Mapping van klant-taal → enum:
   · "nieuw dak", "hele dak vervangen", "compleet nieuw", "helemaal opnieuw", "hele dak eraf" → "vervangen"
   · "lek", "lekkage", "gat", "kapot", "plak", "stuk dicht maken", "reparatie", "repareren" → "repareren"
   · "isoleren", "isolatie erbij", "isolatiepakket" → "isoleren"
 - daktype: "plat" of "schuin"
 - huidig_dakmateriaal: vrije tekst — "dakpannen", "bitumen", "EPDM", "leisteen", "zink", "roofing", etc.
 - dakoppervlakte: getal in m² ("60", "ongeveer 80 m2" → 80)
-- isolatie: "ja" of "nee". BELANGRIJK: "weet niet", "geen idee", "misschien", "twijfel" → GEEN waarde (laat leeg zodat het veld bij twijfel als default 'nee' wordt geboekt door de bot).
-- spoed: "ja" of "nee" (lekkage NU / "snel" / "urgent" = ja, "kan wachten" / "paar weken" = nee). Bij twijfel: GEEN waarde.
+- isolatie: "ja" of "nee". **BELANGRIJK:** "weet niet", "geen idee", "misschien", "twijfel" → GEEN waarde (laat leeg zodat het veld bij twijfel als default 'nee' wordt geboekt door de bot).
+- spoed: "ja" of "nee" (lekkage NU / "snel" / "urgent" = ja, "kan wachten" / "paar weken" = nee). Bij twijfel of dubbelzinnig antwoord (bv. "nee het lukt nu niet"): GEEN waarde — laat de bot doorvragen.
 
-Bekende waarden:
+## BEKENDE WAARDEN (geef NIETS terug als ze al kloppen)
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
 - type_werk: ${current.type_werk ?? 'onbekend'}
@@ -64,14 +64,22 @@ Bekende waarden:
 - isolatie: ${current.isolatie ?? 'onbekend'}
 - spoed: ${current.spoed ?? 'onbekend'}
 
-Output formaat (alleen NIEUW of GECORRIGEERD):
-{
-  "naam": "...",
-  "email": "...",
-  "data": { "type_werk": "vervangen", "daktype": "plat" }
-}
+## OUTPUT FORMAT
+Alleen velden die **NIEUW** of **GECORRIGEERD** zijn:
+{ "naam": "...", "email": "...", "data": { "type_werk": "vervangen", "daktype": "plat" } }
 
-Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
+Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.
+
+## VOORBEELDEN
+
+Gesprek: "Klant: hoi ik ben Peter, mijn dak lekt al een paar dagen, plat dak met bitumen"
+→ { "naam": "Peter", "data": { "type_werk": "repareren", "daktype": "plat", "huidig_dakmateriaal": "bitumen", "spoed": "ja" } }
+
+Gesprek: "Klant: weet ik niet zeker of ik isolatie wil"
+→ {} (twijfel = geen waarde voor isolatie)
+
+Gesprek: "Klant: het is ongeveer 80 m2, kan nog wel een paar weken wachten"
+→ { "data": { "dakoppervlakte": "80", "spoed": "nee" } }`,
       },
       { role: 'user', content: chatHistory },
     ],
@@ -194,6 +202,12 @@ Bram typt zoals een vakman WhatsAppt vanuit zijn busje — kort, praktisch, niet
 - GEEN volledig uitgeschreven "Kun je + werkwoord" constructies ("Kun je nog snel een foto sturen") — Bram zegt "stuur even een foto door als je kan"
 - NOOIT dezelfde vraag twee keer achter elkaar stellen. Als je vorige bericht al dezelfde vraag bevatte, herformuleer 'm of stuur het '[WAIT]' token (zie GEDRAGSREGELS).
 
+## LOGISCHE VALIDATIE (cruciaal — je bent een vakman)
+Als de klant een combinatie noemt die technisch niet kan, vraag dan door:
+- **Plat dak + dakpannen** → "dakpannen op een plat dak klopt niet — bedoel je bitumen of EPDM misschien?"
+- **Schuin dak + bitumen/EPDM** → "bitumen op een schuin dak is ongebruikelijk — weet je zeker dat het geen dakpannen zijn?"
+Corrigeer niet zelf, maar vraag de klant om verduidelijking. Ga pas door naar het volgende veld als de combinatie klopt.
+
 ## VELD-GIDS (hoe je naar elk veld vraagt — varieer op de suggesties)
 - naam         → "hoe heet je?" / "met wie spreek ik?" / "vertel, wie heb ik aan de lijn?"
 - email        → "wat is je mailadres? stuur ik de offerte daar heen" (komt PAS aan het einde, na de foto-stap)
@@ -203,7 +217,7 @@ Bram typt zoals een vakman WhatsAppt vanuit zijn busje — kort, praktisch, niet
 - dakoppervlakte → "Hoeveel m² is het ongeveer? Schatting is prima."
 - isolatie     → "Wil je isolatie er meteen bij, of niet?"
 - spoed        → "Lekt het nu, of kan het nog een paar weken wachten?" (belangrijk bij Bram — hij reageert op spoed)
-- PHOTO_STEP   → "Kun je nog snel een foto van het dak sturen? Helpt me inschatten. Geen foto? Typ dan 'klaar'."
+- PHOTO_STEP   → "stuur even een foto van het dak door als je kan. helpt me inschatten. geen foto? geen probleem, dan gaan we verder."
 - COMPLETE     → Kort bevestigen dat je alles hebt en dat er zo een mail komt met de offerte ter goedkeuring. 1-2 zinnen. Geen opsomming.
 
 ## OFF-TOPIC BELEID
@@ -284,8 +298,7 @@ Schrijf nu 1 WhatsApp-bericht als Bram. Vraag alleen naar het NEXT-veld (gebruik
 Alleen de tekst van het bericht — geen JSON, geen uitleg, geen aanhalingstekens.`
 
   const response = await getOpenAI().chat.completions.create({
-    // Default: gpt-4o-mini. Override via env BRANCHE_REPLY_MODEL (bv. "gpt-4o") voor A/B tests.
-    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o-mini',
+    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o',
     temperature: 0.6,
     messages: [
       { role: 'system', content: systemPrompt },

@@ -42,7 +42,7 @@ export async function analyzePhoto(imageUrl: string, branche: BrancheId): Promis
 
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       temperature: 0.2,
       max_tokens: 200,
       messages: [

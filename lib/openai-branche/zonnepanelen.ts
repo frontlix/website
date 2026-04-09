@@ -48,9 +48,10 @@ export async function extractZonnepanelenData(
     messages: [
       {
         role: 'system',
-        content: `Je bent een data-extractor voor een zonnepanelen-installateur. Lees het WhatsApp gesprek en geef ALLEEN nieuw gevonden of gecorrigeerde velden terug als JSON.
+        content: `## ROL
+Je bent een data-extractor voor een zonnepanelen-installateur. Lees het WhatsApp gesprek en geef **ALLEEN** nieuw gevonden of gecorrigeerde velden terug als JSON.
 
-Velden:
+## VELDEN
 - naam: voornaam of volledige naam (top-level)
 - email: geldig e-mailadres met @ (top-level)
 - jaarverbruik: getal in kWh per jaar (bv "4000", "ongeveer 5000 kWh", "3.500" → 3500). Vage woorden ("weet niet", "geen idee") = niet meegeven.
@@ -61,14 +62,14 @@ Velden:
   · "lei", "leien" → "leisteen"
 - dakoppervlakte: getal in m² ("60", "ongeveer 80 m2" → 80)
 - orientatie: ALLEEN "noord", "oost", "zuid" of "west". Afkortingen N/O/Z/W ook goed.
-  · Combinaties als "noord-oost", "zuidwest" → NIET meegeven (forceer door-vragen)
+  · Combinaties als "noord-oost", "zuidwest" → **NIET** meegeven (forceer door-vragen)
 - schaduw: ALLEEN "geen", "licht" of "veel".
   · "beetje" / "een klein stukje" → "licht"
   · "bomen eromheen" / "schoorsteen erop" → "veel"
   · "niks" / "niets" / "nee" → "geen"
 - aansluiting: ALLEEN "1-fase" of "3-fase". "krachtstroom" → "3-fase". Bij twijfel/"weet niet" → niet meegeven.
 
-Bekende waarden (geef NIETS terug als ze al kloppen):
+## BEKENDE WAARDEN (geef NIETS terug als ze al kloppen)
 - naam: ${identity.naam ?? 'onbekend'}
 - email: ${identity.email ?? 'onbekend'}
 - jaarverbruik: ${current.jaarverbruik ?? 'onbekend'}
@@ -79,14 +80,22 @@ Bekende waarden (geef NIETS terug als ze al kloppen):
 - schaduw: ${current.schaduw ?? 'onbekend'}
 - aansluiting: ${current.aansluiting ?? 'onbekend'}
 
-Output formaat (alleen velden die NIEUW of GECORRIGEERD zijn):
-{
-  "naam": "...",
-  "email": "...",
-  "data": { "jaarverbruik": "4000", "daktype": "schuin" }
-}
+## OUTPUT FORMAT
+Alleen velden die **NIEUW** of **GECORRIGEERD** zijn:
+{ "naam": "...", "email": "...", "data": { "jaarverbruik": "4000", "daktype": "schuin" } }
 
-Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
+Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.
+
+## VOORBEELDEN
+
+Gesprek: "Klant: ik ben Mark, schuin dak met dakpannen, ongeveer 4000 kWh per jaar"
+→ { "naam": "Mark", "data": { "jaarverbruik": "4000", "daktype": "schuin", "dakmateriaal": "pannen" } }
+
+Gesprek: "Klant: het staat op het zuidwesten"
+→ {} (combinatie-oriëntatie wordt niet geaccepteerd)
+
+Gesprek: "Klant: beetje schaduw van een boom, en ik heb krachtstroom"
+→ { "data": { "schaduw": "licht", "aansluiting": "3-fase" } }`,
       },
       { role: 'user', content: chatHistory },
     ],
@@ -153,7 +162,7 @@ Bij niets nieuws: {} terug. Geen uitleg, alleen JSON.`,
 /**
  * Genereert het volgende WhatsApp-bericht in Sanne's stem.
  *
- * Prompt-strategie (voor gpt-4o-mini):
+ * Prompt-strategie (voor gpt-4o):
  *  - Rijke persona + 6 few-shots sturen tone sterker dan abstracte regels
  *  - Schone NEXT-tag (geen "sleutel:" jargon) + aparte veld-gids voor fraseringen
  *  - Expliciete off-topic policy zodat de LLM niet rigide wordt
@@ -228,7 +237,7 @@ Je typt zoals mensen echt WhatsAppen, niet zoals een mail:
 - orientatie   → "Welke kant staat het dak op — noord, oost, zuid of west?"
 - schaduw      → "Komt er nog schaduw op het dak, bijvoorbeeld van bomen of een schoorsteen?"
 - aansluiting  → "Heb je een 1-fase of 3-fase aansluiting? Als je het niet weet is dat ook oké."
-- PHOTO_STEP   → "Als je makkelijk een foto van het dak kan maken en hier in de chat sturen scheelt dat veel. Mag, hoeft niet — zeg anders 'klaar'."
+- PHOTO_STEP   → "als je makkelijk een foto van het dak kan sturen scheelt dat veel. geen foto? geen probleem, dan gaan we verder."
 - COMPLETE     → Bevestig warm en kort dat je alles hebt en dat er zo een e-mail komt met de offerte ter goedkeuring. 1-2 zinnen, geen opsomming.
 
 ## OFF-TOPIC BELEID
@@ -313,8 +322,7 @@ Schrijf nu 1 WhatsApp-bericht als Sanne. Vraag alleen naar het NEXT-veld (gebrui
 Alleen de tekst van het bericht — geen JSON, geen uitleg, geen aanhalingstekens.`
 
   const response = await getOpenAI().chat.completions.create({
-    // Default: gpt-4o-mini. Override via env BRANCHE_REPLY_MODEL (bv. "gpt-4o") voor A/B tests.
-    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o-mini',
+    model: process.env.BRANCHE_REPLY_MODEL ?? 'gpt-4o',
     temperature: 0.6,
     messages: [
       { role: 'system', content: systemPrompt },

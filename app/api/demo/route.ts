@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { sendNotification, sendConfirmation } from '@/lib/mail'
-import { sendDemoStartTemplate, sendPersonalizedDemoTemplate, normalizePhone } from '@/lib/whatsapp'
+import { sendDemoStartTemplate, normalizePhone } from '@/lib/whatsapp'
 
 export async function POST(request: NextRequest) {
   try {
@@ -114,15 +114,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Stuur de juiste WhatsApp template afhankelijk van de flow.
-    // TEMP: zolang `demo_starten` (met branche-knoppen) nog wacht op Meta-goedkeuring
-    // gebruikt de branche-flow tijdelijk `demo_persoonlijk` zodat we de rest van de
-    // flow kunnen testen. De klant moet dan zijn branche tikken in plaats van klikken.
-    // Zodra demo_starten is goedgekeurd: vervang de onderstaande call weer door
-    // sendDemoStartTemplate(telefoon, naam).
     try {
       if (isBrancheFlow) {
-        await sendPersonalizedDemoTemplate(telefoon, naam, 'Frontlix Demo')
+        await sendDemoStartTemplate(telefoon, naam)
       } else {
         await sendDemoStartTemplate(telefoon, naam)
       }

@@ -77,10 +77,8 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // TEMP: stuur demo_persoonlijk omdat demo_starten nog wacht op Meta-goedkeuring.
-      // Zodra demo_starten approved is → vervang door sendDemoStartTemplate(phone, 'daar')
       try {
-        await sendPersonalizedDemoTemplate(phone, 'daar', 'Frontlix Demo')
+        await sendDemoStartTemplate(phone, 'daar')
       } catch (waErr) {
         console.error('WhatsApp branche template failed:', waErr)
       }

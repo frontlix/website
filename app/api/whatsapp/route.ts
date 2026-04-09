@@ -76,6 +76,8 @@ async function processWebhook(body: Record<string, unknown>) {
 
   const phone = normalizePhone(from)
 
+  console.log(`[WEBHOOK] messageType="${messageType}" phone="${phone}" full_message=${JSON.stringify(message)}`)
+
   // ─────────────────────────────────────────────────────────────────────
   // NIEUWE BRANCHE-FLOW: zoek eerst in `leads` tabel.
   // Als er een actieve branche-lead is voor dit nummer → handleBrancheWebhook.
@@ -91,6 +93,7 @@ async function processWebhook(body: Record<string, unknown>) {
     .single()
 
   if (brancheLead) {
+    console.log(`[WEBHOOK] Found brancheLead id=${brancheLead.id} status="${brancheLead.status}" demo_type="${brancheLead.demo_type}"`)
     await handleBrancheWebhook(brancheLead, message, messageType, phone)
     return
   }
@@ -318,6 +321,12 @@ async function handleBrancheWebhook(
   // Interactive bericht (button click) → meestal de branche-keuze knop
   if (messageType === 'interactive') {
     await handleBrancheInteractiveMessage(lead, message, phone)
+    return
+  }
+
+  // Quick reply button (template buttons komen als type 'button' binnen)
+  if (messageType === 'button') {
+    await handleBrancheButtonReply(lead, message, phone)
     return
   }
 
@@ -559,6 +568,62 @@ function mapButtonToBranche(titleOrId: string): BrancheId | null {
   if (/dakdek|dak\b|dakwerk|dakreparatie/.test(t)) return 'dakdekker'
   if (/schoonm|schoon|reinig|cleaning/.test(t)) return 'schoonmaak'
   return null
+}
+
+// ─── Quick reply button handler (template buttons, type 'button') ───────────
+async function handleBrancheButtonReply(
+  lead: BrancheLead,
+  message: Record<string, unknown>,
+  phone: string
+): Promise<void> {
+  // Quick reply button payload structuur:
+  // message.button = { text: 'Zonnepanelen', payload: 'ZONNEPANELEN' }
+  const button = message.button as Record<string, unknown> | undefined
+  const buttonText = (button?.text as string) || ''
+  const buttonPayload = (button?.payload as string) || ''
+  const choiceText = buttonText || buttonPayload
+
+  // Sla het bericht op
+  await getSupabase().from('conversations').insert({
+    lead_id: lead.id,
+    role: 'user',
+    content: `Gekozen: ${choiceText}`,
+    message_type: 'button',
+  })
+  await getSupabase()
+    .from('leads')
+    .update({ message_count: (lead.message_count || 0) + 1, updated_at: new Date().toISOString() })
+    .eq('id', lead.id)
+
+  if (lead.status !== 'awaiting_choice') {
+    await sendWhatsAppText(phone, 'Bedankt! Je zit al midden in een gesprek — antwoord gerust op mijn vorige vraag.')
+    return
+  }
+
+  const branche = mapButtonToBranche(buttonText) || mapButtonToBranche(buttonPayload)
+  if (!branche) {
+    await sendWhatsAppText(
+      phone,
+      'Sorry, ik kon je keuze niet plaatsen. Stuur "zonnepanelen", "dakdekker" of "schoonmaak" als tekst dan ga ik door.'
+    )
+    return
+  }
+
+  // Update lead naar collecting + sla branche op
+  await getSupabase()
+    .from('leads')
+    .update({
+      demo_type: branche,
+      status: 'collecting',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', lead.id)
+
+  await sendBrancheWelcomeMessage(branche, lead.id, phone)
+
+  const updatedLead: BrancheLead = { ...lead, demo_type: branche, status: 'collecting' }
+  const history = await fetchBrancheConversationHistory(lead.id)
+  await sendBrancheNextQuestion(updatedLead, history, phone)
 }
 
 async function handleBrancheInteractiveMessage(
@@ -843,11 +908,11 @@ async function sendBrancheWelcomeMessage(
 ): Promise<void> {
   const messages: Record<BrancheId, string> = {
     zonnepanelen:
-      'Top, je gaat voor zonnepanelen — leuk! Ik ben Sanne. Ik stel je zo een paar korte vragen en daarna heb je een voorbeeld-offerte op zak. Let\'s go!',
+      'oké, zonnepanelen. ik ben Sanne. even wat korte vragen dan maak ik een offerte voor je.',
     dakdekker:
-      'Helder, dakwerk dus. Ik ben Bram. Ik stel je een paar korte vragen en dan heb ik genoeg om een offerte voor je op te stellen.',
+      'oké, dakwerk. ik ben Bram. even wat vragen dan kan ik een offerte maken.',
     schoonmaak:
-      'Fijn, schoonmaak! Ik ben Lotte. Ik stel je zo een paar korte vragen, dan kan ik snel een passende offerte voor je maken.',
+      'oké, schoonmaak. ik ben Lotte. even een paar korte vragen dan heb ik genoeg voor een offerte.',
   }
   const text = messages[branche]
   if (!text) return
