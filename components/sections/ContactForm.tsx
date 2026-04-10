@@ -242,7 +242,7 @@ export default function ContactForm() {
 
             <div className={styles.submitRow}>
               <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-                {loading ? 'Versturen...' : 'Plan een gesprek →'}
+                {loading ? 'Versturen...' : 'Verstuur →'}
               </Button>
             </div>
           </form>
