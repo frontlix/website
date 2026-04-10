@@ -219,7 +219,7 @@ Je helpt de klant met het wrappen van hun voertuig.
 - type_dienst → (al bekend: carwrapping, sla over)
 - voertuig → "Welk merk en model is het?"
 - kleur_afwerking → "Welke kleur en afwerking heb je in gedachten? Mat, satijn, glans, carbon?"
-- wrap_type → "Wil je een full wrap, partial wrap of kleurverandering?"
+- wrap_type → "Wil je de hele auto laten wrappen, een gedeeltelijke wrap of alleen een kleurverandering?"
 - huidige_kleur → "Welke kleur heeft de auto nu?"
 - PHOTO_STEP → "Stuur gerust een foto van je auto door, dan kan ik alvast een idee vormen. Geen foto? Geen probleem"
 - email → "Wat is je mailadres? Dan stuur ik je een offerte"
@@ -233,7 +233,7 @@ Klant: "BMW M3"
 → Vet, een M3! Welke kleur en afwerking heb je in gedachten? Mat, satijn, glans, carbon?
 
 Klant: "mat blauw"
-→ Mat blauw op een M3, wordt vet. Wil je een full wrap, partial wrap of kleurverandering?""",
+→ Mat blauw op een M3, wordt vet. Wil je de hele auto laten wrappen, een gedeeltelijke wrap of alleen een kleurverandering?""",
 
     # ── KEUKEN & INTERIEUR ──────────────────────────────────────────────
     "keuken_interieur": f"""{_NICK_BASE}
@@ -436,9 +436,8 @@ Known info:{known_info}
 NEXT: {next_tag}
 RETRY: {empty_streak}
 
-Your question MUST be about the NEXT field shown above. But first react briefly and enthusiastically to what the customer just said. Then ask the NEXT question.
-- Always start with a short, warm reaction to the customer's last message (e.g. "Paars op een A3, dat wordt vet!", "Mooie keuze!", "Top!")
-- Then ask the NEXT field question from the FIELD GUIDE
+Your question MUST be about the NEXT field shown above. Look it up in the FIELD GUIDE and ask that question.
+- Only give a short enthusiastic reaction when the customer shares something exciting (like their car model + color choice together). Not on every message — keep it natural
 - Do NOT use the customer's name after the first greeting
 - Do NOT skip fields or ask about a different field than NEXT
 
