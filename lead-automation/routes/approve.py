@@ -31,14 +31,46 @@ def _error_page(title: str, message: str) -> str:
 
 def _success_page(naam: str, already_sent: bool = False) -> str:
     title = "Offerte al verzonden" if already_sent else "Offerte goedgekeurd"
-    intro = f"De offerte voor {naam} is al eerder goedgekeurd en verzonden." if already_sent else f"De offerte is automatisch verzonden naar {naam} via WhatsApp."
+    intro = f"De offerte voor <strong>{naam}</strong> is al eerder goedgekeurd en verzonden." if already_sent else f"De offerte is automatisch verzonden naar <strong>{naam}</strong> via WhatsApp en e-mail."
+    sub = "Er hoeft verder niets te gebeuren." if already_sent else "De klant kan nu reageren om een afspraak in te plannen."
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{title} - Frontlix</title>
-    <style>body{{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F0F2F5;padding:20px}}
-    .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:500px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)}}
-    h1{{color:#1A56FF;margin-bottom:16px}}p{{color:#555;line-height:1.6}}
-    .check{{font-size:48px;margin-bottom:16px}}</style></head>
-    <body><div class="card"><div class="check">✅</div><h1>{title}</h1><p>{intro}</p></div></body></html>"""
+    <style>
+      * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+      body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #F0F2F5; padding: 20px; }}
+      .wrapper {{ max-width: 480px; width: 100%; }}
+      .logo {{ text-align: center; margin-bottom: 28px; }}
+      .logo span {{ font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }}
+      .card {{ background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }}
+      .bar {{ height: 4px; background: linear-gradient(90deg, #1A56FF, #00CFFF); }}
+      .body {{ padding: 48px 40px; text-align: center; }}
+      .icon {{ width: 56px; height: 56px; border-radius: 50%; background: #DCFCE7; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; }}
+      .icon svg {{ width: 28px; height: 28px; color: #16a34a; }}
+      h1 {{ font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 12px; }}
+      .intro {{ font-size: 15px; color: #555; line-height: 1.6; margin-bottom: 8px; }}
+      .sub {{ font-size: 14px; color: #9CA3AF; }}
+      .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #B0B8C9; }}
+    </style></head>
+    <body>
+      <div class="wrapper">
+        <div class="logo">
+          <img src="https://frontlix.com/logo.png" width="32" height="32" alt="" style="vertical-align:middle;margin-right:8px" />
+          <span><span style="color:#1A56FF">Front</span><span style="color:#00CFFF">lix</span></span>
+        </div>
+        <div class="card">
+          <div class="bar"></div>
+          <div class="body">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <h1>{title}</h1>
+            <p class="intro">{intro}</p>
+            <p class="sub">{sub}</p>
+          </div>
+        </div>
+        <p class="footer">Automatisch gegenereerd door Frontlix</p>
+      </div>
+    </body></html>"""
 
 
 @router.get("/approve")
