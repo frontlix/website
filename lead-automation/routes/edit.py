@@ -47,7 +47,6 @@ function calcPricing(a) {
   var lines = [{label:'Dakwerk: '+type, quantity:m2, unit:'m²', unitPrice:tarief, total:Math.round(m2*tarief*100)/100}];
   if ((a.isolatie||'').toLowerCase()==='ja' && type!=='isoleren') lines.push({label:'Isolatiepakket (PIR-platen + dampscherm)',quantity:1,unit:'pakket',unitPrice:1500,total:1500});
   var sub = lines.reduce(function(s,l){return s+l.total},0);
-  if ((a.spoed||'').toLowerCase()==='ja') { var sp=Math.round(sub*0.25*100)/100; lines.push({label:'Spoedtoeslag (binnen 5 werkdagen)',quantity:1,unit:'stuks',unitPrice:sp,total:sp}); sub+=sp; }
   var btw = Math.round(sub*0.21*100)/100;
   return {lines:lines, subtotaal:Math.round(sub*100)/100, btw:btw, totaal:Math.round((sub+btw)*100)/100};
 }"""
@@ -230,7 +229,9 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
   {_get_pricing_js(config.id)}
 
   function euro(n) {{
-    return '€ ' + n.toFixed(2).replace('.', ',');
+    var parts = n.toFixed(2).split('.');
+    var whole = parts[0].replace(/\\B(?=(\\d{{3}})+(?!\\d))/g, '.');
+    return '\u20AC ' + whole + ',' + parts[1];
   }}
 
   function getVal(key) {{

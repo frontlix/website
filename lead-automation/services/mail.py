@@ -174,18 +174,12 @@ async def send_approval_email(
                 </table>
               </td></tr>
 
-              <!-- Buttons -->
-              <tr><td style="padding:28px 40px 32px 40px" align="center">
-                <table role="presentation" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="padding:0 6px">
-                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#16a34a;color:#ffffff;font-family:{font};font-size:14px;font-weight:600;text-decoration:none;padding:13px 28px;border-radius:10px">Goedkeuren &amp; versturen</a>
-                    </td>
-                    <td style="padding:0 6px">
-                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F97316;color:#ffffff;font-family:{font};font-size:14px;font-weight:600;text-decoration:none;padding:13px 28px;border-radius:10px">Wijzigen</a>
-                    </td>
-                  </tr>
-                </table>
+              <!-- Buttons (stacked for mobile compatibility) -->
+              <tr><td style="padding:28px 40px 8px 40px" align="center">
+                <a href="{escape(approve_url)}" style="display:block;background-color:#16a34a;color:#ffffff;font-family:{font};font-size:15px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:10px;text-align:center">Goedkeuren &amp; versturen</a>
+              </td></tr>
+              <tr><td style="padding:0 40px 32px 40px" align="center">
+                <a href="{escape(edit_url)}" style="display:block;background-color:#F97316;color:#ffffff;font-family:{font};font-size:15px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:10px;text-align:center">Wijzigen</a>
               </td></tr>
 
             </table>
