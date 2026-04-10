@@ -467,64 +467,63 @@ async def _trigger_completion(lead_id: str):
         approve_url = f"{service_url}/personalized/approve?token={approval_token}"
         edit_url = f"{service_url}/personalized/edit?token={approval_token}"
 
-        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#F3F4F6">
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#F3F4F6">
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
 
           <!-- Header -->
-          <div style="background:#111111;padding:28px 36px">
-            <table style="width:100%"><tr>
-              <td><span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.3px">De Designmaker</span></td>
-              <td style="text-align:right"><span style="background:#f97316;color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px">Ter beoordeling</span></td>
+          <div style="background:#111111;padding:20px 24px">
+            <table style="width:100%;border-collapse:collapse"><tr>
+              <td><span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.3px">De Designmaker</span></td>
+              <td style="text-align:right"><span style="background:#f97316;color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px">Ter beoordeling</span></td>
             </tr></table>
           </div>
 
           <!-- Content -->
-          <div style="padding:32px 36px">
+          <div style="padding:24px">
 
             <!-- Dienst badge -->
-            <div style="margin-bottom:24px">
-              <span style="background:#F0F9FF;color:#0369A1;font-size:13px;font-weight:600;padding:6px 16px;border-radius:8px">{esc(branche_label)}</span>
+            <div style="margin-bottom:20px">
+              <span style="background:#F0F9FF;color:#0369A1;font-size:13px;font-weight:600;padding:5px 14px;border-radius:8px">{esc(branche_label)}</span>
             </div>
 
             <!-- Klantgegevens -->
-            <p style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px">Klantgegevens</p>
-            <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
-              <tr><td style="padding:10px 16px 10px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6">Naam</td><td style="padding:10px 0;font-size:15px;font-weight:600;border-bottom:1px solid #F3F4F6">{esc(naam)}</td></tr>
-              <tr><td style="padding:10px 16px 10px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6">Telefoon</td><td style="padding:10px 0;font-size:14px;border-bottom:1px solid #F3F4F6">+{esc(lead['telefoon'])}</td></tr>
-              <tr><td style="padding:10px 16px 10px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6">Email</td><td style="padding:10px 0;font-size:14px;border-bottom:1px solid #F3F4F6">{esc(email)}</td></tr>
+            <p style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px">Klantgegevens</p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+              <tr><td style="padding:8px 12px 8px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6;white-space:nowrap">Naam</td><td style="padding:8px 0;font-size:14px;font-weight:600;border-bottom:1px solid #F3F4F6">{esc(naam)}</td></tr>
+              <tr><td style="padding:8px 12px 8px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6;white-space:nowrap">Telefoon</td><td style="padding:8px 0;font-size:14px;border-bottom:1px solid #F3F4F6">+{esc(lead['telefoon'])}</td></tr>
+              <tr><td style="padding:8px 12px 8px 0;color:#6B7280;font-size:13px;border-bottom:1px solid #F3F4F6;white-space:nowrap">Email</td><td style="padding:8px 0;font-size:14px;border-bottom:1px solid #F3F4F6;word-break:break-all">{esc(email)}</td></tr>
               {fields_rows}
             </table>
 
             {photos_section}
 
             <!-- Prijsoverzicht -->
-            <p style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin:24px 0 10px">Prijsoverzicht</p>
-            <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+            <p style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin:20px 0 8px">Prijsoverzicht</p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
               {price_rows}
             </table>
 
             <!-- Totalen blok -->
-            <div style="background:#F9FAFB;border-radius:12px;padding:20px 24px">
+            <div style="background:#F9FAFB;border-radius:10px;padding:16px">
               <table style="width:100%;border-collapse:collapse">
-                <tr><td style="padding:4px 0;font-size:14px;color:#6B7280">Subtotaal excl. BTW</td><td style="padding:4px 0;text-align:right;font-size:14px;color:#6B7280">\u20AC {pricing.subtotaal_excl_btw:,.2f}</td></tr>
-                <tr><td style="padding:4px 0;font-size:14px;color:#6B7280">BTW 21%</td><td style="padding:4px 0;text-align:right;font-size:14px;color:#6B7280">\u20AC {pricing.btw_bedrag:,.2f}</td></tr>
-                <tr><td colspan="2" style="padding:0"><div style="border-top:2px solid #E5E7EB;margin:10px 0"></div></td></tr>
-                <tr><td style="padding:4px 0;font-size:18px;font-weight:800;color:#111">Totaal incl. BTW</td><td style="padding:4px 0;text-align:right;font-size:18px;font-weight:800;color:#111">\u20AC {pricing.totaal_incl_btw:,.2f}</td></tr>
+                <tr><td style="padding:3px 0;font-size:13px;color:#6B7280">Subtotaal excl. BTW</td><td style="padding:3px 0;text-align:right;font-size:13px;color:#6B7280">\u20AC {pricing.subtotaal_excl_btw:,.2f}</td></tr>
+                <tr><td style="padding:3px 0;font-size:13px;color:#6B7280">BTW 21%</td><td style="padding:3px 0;text-align:right;font-size:13px;color:#6B7280">\u20AC {pricing.btw_bedrag:,.2f}</td></tr>
+                <tr><td colspan="2" style="padding:0"><div style="border-top:2px solid #E5E7EB;margin:8px 0"></div></td></tr>
+                <tr><td style="padding:3px 0;font-size:16px;font-weight:800;color:#111">Totaal incl. BTW</td><td style="padding:3px 0;text-align:right;font-size:16px;font-weight:800;color:#111">\u20AC {pricing.totaal_incl_btw:,.2f}</td></tr>
               </table>
             </div>
 
-            <!-- Knoppen -->
-            <div style="text-align:center;margin:32px 0 16px">
-              <a href="{esc(approve_url)}" style="background:#16a34a;color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;margin:6px">Goedkeuren &amp; versturen</a>
-              <a href="{esc(edit_url)}" style="background:#f97316;color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;margin:6px">Bewerken</a>
+            <!-- Knoppen — gestapeld voor mobiel -->
+            <div style="margin:24px 0 12px">
+              <a href="{esc(approve_url)}" style="background:#16a34a;color:#ffffff;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:block;text-align:center;margin-bottom:10px">Goedkeuren &amp; versturen</a>
+              <a href="{esc(edit_url)}" style="background:#f97316;color:#ffffff;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:block;text-align:center">Bewerken</a>
             </div>
           </div>
 
           <!-- Footer -->
-          <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #F3F4F6">
-            <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.6">
-              De Designmaker — Windmolenboschweg 14, Haelen — lars@dedesignmaker.nl<br>
-              Automatisch gegenereerd door het demo-systeem
+          <div style="background:#F9FAFB;padding:16px 24px;text-align:center;border-top:1px solid #F3F4F6">
+            <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.5">
+              De Designmaker — Windmolenboschweg 14, Haelen<br>lars@dedesignmaker.nl
             </p>
           </div>
         </div>

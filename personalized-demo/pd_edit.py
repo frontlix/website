@@ -196,31 +196,37 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
   <title>Offerte wijzigen — {escape(branche_label)}</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: #F0F2F5; color: #1A1A1A; padding: 40px 20px; line-height: 1.5; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: #F0F2F5; color: #1A1A1A; padding: 16px; line-height: 1.5; }}
+    @media (min-width: 600px) {{ body {{ padding: 40px 20px; }} }}
     .container {{ max-width: 720px; margin: 0 auto; }}
-    .header {{ background: #1A1A1A; color: white; padding: 32px 40px; border-radius: 16px 16px 0 0; text-align: center; }}
-    .header h1 {{ font-size: 22px; font-weight: 700; }}
-    .header p {{ font-size: 14px; opacity: 0.9; margin-top: 6px; }}
-    .card {{ background: white; padding: 32px 40px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }}
-    .banner {{ background: #DCFCE7; color: #166534; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; margin-bottom: 24px; border: 1px solid #BBF7D0; }}
-    h2 {{ font-size: 16px; font-weight: 700; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #F0F2F5; }}
+    .header {{ background: #1A1A1A; color: white; padding: 20px 24px; border-radius: 12px 12px 0 0; text-align: center; }}
+    @media (min-width: 600px) {{ .header {{ padding: 32px 40px; border-radius: 16px 16px 0 0; }} }}
+    .header h1 {{ font-size: 18px; font-weight: 700; }}
+    @media (min-width: 600px) {{ .header h1 {{ font-size: 22px; }} }}
+    .header p {{ font-size: 13px; opacity: 0.9; margin-top: 4px; }}
+    .card {{ background: white; padding: 20px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }}
+    @media (min-width: 600px) {{ .card {{ padding: 32px 40px; border-radius: 0 0 16px 16px; }} }}
+    .banner {{ background: #DCFCE7; color: #166534; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; margin-bottom: 20px; border: 1px solid #BBF7D0; }}
+    h2 {{ font-size: 15px; font-weight: 700; margin: 20px 0 10px; padding-bottom: 8px; border-bottom: 2px solid #F0F2F5; }}
     h2:first-of-type {{ margin-top: 0; }}
-    .field {{ margin-bottom: 14px; }}
-    .field label {{ display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }}
-    .field input, .field select {{ width: 100%; padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 15px; font-family: inherit; color: #1A1A1A; background: #FAFBFC; }}
+    .field {{ margin-bottom: 12px; }}
+    .field label {{ display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }}
+    .field input, .field select {{ width: 100%; padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 16px; font-family: inherit; color: #1A1A1A; background: #FAFBFC; -webkit-appearance: none; }}
     .field input:focus, .field select:focus {{ outline: none; border-color: #1A1A1A; background: white; }}
-    table.pricing {{ width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }}
-    table.pricing thead th {{ text-align: left; padding: 8px 10px; background: #F5F7FA; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #555; font-weight: 700; }}
+    table.pricing {{ width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }}
+    @media (min-width: 600px) {{ table.pricing {{ font-size: 14px; }} }}
+    table.pricing thead th {{ text-align: left; padding: 6px 8px; background: #F5F7FA; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: #555; font-weight: 700; }}
     table.pricing thead th:nth-child(2), table.pricing thead th:nth-child(3), table.pricing thead th:nth-child(4) {{ text-align: right; }}
-    table.pricing tbody td {{ padding: 10px; border-bottom: 1px solid #F0F2F5; }}
-    .totals {{ margin-top: 16px; padding: 16px 20px; background: #F5F7FA; border-radius: 12px; }}
-    .totals .row {{ display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; color: #555; }}
-    .totals .row.grand {{ margin-top: 8px; padding-top: 12px; border-top: 2px solid #E5E7EB; font-size: 18px; font-weight: 700; color: #1A1A1A; }}
-    .actions {{ display: flex; gap: 12px; margin-top: 32px; }}
-    .actions button {{ flex: 1; padding: 16px 24px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; font-family: inherit; }}
+    table.pricing tbody td {{ padding: 8px; border-bottom: 1px solid #F0F2F5; }}
+    .totals {{ margin-top: 12px; padding: 14px 16px; background: #F5F7FA; border-radius: 10px; }}
+    .totals .row {{ display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; color: #555; }}
+    .totals .row.grand {{ margin-top: 8px; padding-top: 10px; border-top: 2px solid #E5E7EB; font-size: 16px; font-weight: 700; color: #1A1A1A; }}
+    @media (min-width: 600px) {{ .totals .row.grand {{ font-size: 18px; }} }}
+    .actions {{ margin-top: 24px; }}
+    .actions button {{ width: 100%; padding: 14px 20px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; font-family: inherit; margin-bottom: 8px; }}
     .btn-approve {{ background: #16a34a; color: white; }}
     .btn-approve:hover {{ background: #15803d; }}
-    .footer {{ text-align: center; margin-top: 24px; font-size: 12px; color: #888; }}
+    .footer {{ text-align: center; margin-top: 16px; font-size: 12px; color: #888; }}
   </style>
 </head>
 <body>

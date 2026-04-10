@@ -171,26 +171,26 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
             korting_html += f'<p style="margin:0;color:#166534">{escape(str(korting_notitie))}</p>'
         korting_html += "</div>"
 
-    html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#F3F4F6">
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+    html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;background:#F3F4F6">
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
 
       <!-- Header -->
-      <div style="background:#111111;padding:28px 36px;text-align:center">
-        <h1 style="color:#ffffff;font-size:20px;font-weight:700;margin:0;letter-spacing:-0.3px">De Designmaker</h1>
-        <p style="color:#666;font-size:12px;margin:6px 0 0">Specialist in wrapping, belettering &amp; design</p>
+      <div style="background:#111111;padding:20px 24px;text-align:center">
+        <h1 style="color:#ffffff;font-size:18px;font-weight:700;margin:0;letter-spacing:-0.3px">De Designmaker</h1>
+        <p style="color:#666;font-size:12px;margin:4px 0 0">Specialist in wrapping, belettering &amp; design</p>
       </div>
 
       <!-- Content -->
-      <div style="padding:32px 36px">
+      <div style="padding:24px">
 
         <!-- Groene check badge -->
-        <div style="text-align:center;margin-bottom:24px">
-          <span style="background:#F0FDF4;color:#16a34a;font-size:13px;font-weight:700;padding:8px 20px;border-radius:20px;display:inline-block">Je offerte staat klaar</span>
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="background:#F0FDF4;color:#16a34a;font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;display:inline-block">Je offerte staat klaar</span>
         </div>
 
         <p style="font-size:16px;color:#1A1A1A;margin:0 0 8px">Hoi {escape(naam)},</p>
 
-        <p style="font-size:15px;color:#4B5563;line-height:1.7;margin:0 0 24px">
+        <p style="font-size:15px;color:#4B5563;line-height:1.7;margin:0 0 20px">
           Goed nieuws! Je offerte voor {escape(branche_label.lower())} is goedgekeurd en staat klaar.
           Je vindt de PDF als bijlage bij deze mail.
         </p>
@@ -198,21 +198,21 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
         {korting_html}
 
         <!-- Divider -->
-        <div style="border-top:1px solid #E5E7EB;margin:28px 0"></div>
+        <div style="border-top:1px solid #E5E7EB;margin:24px 0"></div>
 
         <!-- Afspraak sectie -->
-        <div style="background:#F9FAFB;border-radius:12px;padding:24px;text-align:center">
+        <div style="background:#F9FAFB;border-radius:10px;padding:20px;text-align:center">
           <p style="font-size:15px;color:#374151;font-weight:600;margin:0 0 6px">Wil je de offerte doorspreken?</p>
-          <p style="font-size:14px;color:#6B7280;margin:0 0 20px">Plan een vrijblijvend gesprek in of stuur ons een WhatsApp berichtje.</p>
-          <a href="{escape(schedule_url)}" style="background:#25D366;color:#ffffff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">
+          <p style="font-size:14px;color:#6B7280;margin:0 0 16px">Plan een vrijblijvend gesprek in of stuur ons een WhatsApp berichtje.</p>
+          <a href="{escape(schedule_url)}" style="background:#16a34a;color:#ffffff;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:block;text-align:center">
             Afspraak inplannen
           </a>
         </div>
       </div>
 
       <!-- Footer -->
-      <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #F3F4F6">
-        <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.6">
+      <div style="background:#F9FAFB;padding:16px 24px;text-align:center;border-top:1px solid #F3F4F6">
+        <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.5">
           De Designmaker — Windmolenboschweg 14, Haelen<br>
           <a href="mailto:lars@dedesignmaker.nl" style="color:#9CA3AF">lars@dedesignmaker.nl</a> —
           <a href="tel:+31637296847" style="color:#9CA3AF">+31 6 37296847</a>
