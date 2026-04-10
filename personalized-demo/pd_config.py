@@ -8,7 +8,7 @@ DIENSTEN = ["carwrapping", "keuken_interieur", "binnen_reclame", "signing"]
 
 # Velden per dienst (in volgorde waarin ze gevraagd worden)
 FIELDS_PER_DIENST: dict[str, list[str]] = {
-    "carwrapping": ["voertuig", "wrap_type", "kleur_afwerking", "huidige_kleur"],
+    "carwrapping": ["voertuig", "kleur_afwerking", "wrap_type", "huidige_kleur"],
     "keuken_interieur": ["wat_wrappen", "aantal_vlakken", "gewenste_look", "huidige_staat"],
     "binnen_reclame": ["type_reclame", "locatie_pand", "afmetingen", "huisstijl"],
     "signing": ["voertuig_type", "aantal", "ontwerp_scope", "huisstijl"],
