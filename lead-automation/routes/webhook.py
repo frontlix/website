@@ -347,6 +347,13 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
 
     # Check if all done
     still_missing = get_missing_fields(config, fresh_collected)
+
+    # If all fields + naam + email are filled but photo step was skipped implicitly
+    # (user gave email without explicitly skipping photos), mark photos as done
+    if bool(new_naam) and bool(new_email) and len(still_missing) == 0 and not is_photo_step_done(fresh_collected):
+        print(f"[collecting] auto-marking photo_step_done (all fields + email filled)")
+        fresh_collected["_photo_step_done"] = True
+
     all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and is_photo_step_done(fresh_collected)
     print(f"[collecting] completion: naam={bool(new_naam)} email={bool(new_email)} missing={still_missing} photo_done={is_photo_step_done(fresh_collected)} -> all_done={all_done}")
 
