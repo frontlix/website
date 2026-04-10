@@ -266,6 +266,20 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
           <div class="row grand"><span>Totaal incl. BTW</span><span>{_euro(pricing.totaal_incl_btw)}</span></div>
         </div>
 
+        <h2>Arbeid</h2>
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:20px;margin-bottom:24px">
+          <div style="display:flex;gap:12px">
+            <div class="field" style="flex:1">
+              <label for="arbeid_uren">Aantal uren</label>
+              <input type="number" id="arbeid_uren" name="arbeid_uren" value="{escape(str(collected.get('_arbeid_uren') or ''))}" min="0" step="0.5" placeholder="bijv. 8" />
+            </div>
+            <div class="field" style="flex:1">
+              <label for="arbeid_uurtarief">Uurtarief</label>
+              <input type="number" id="arbeid_uurtarief" name="arbeid_uurtarief" value="{escape(str(collected.get('_arbeid_uurtarief') or ''))}" min="0" step="1" placeholder="bijv. 65" />
+            </div>
+          </div>
+        </div>
+
         <h2>Korting</h2>
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:20px">
           <div class="field">
@@ -302,7 +316,18 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
 
     var result = calcPricing(answers);
 
-    // Korting toepassen
+    // Arbeid toevoegen
+    var uren = parseFloat(document.getElementById('arbeid_uren').value) || 0;
+    var tarief = parseFloat(document.getElementById('arbeid_uurtarief').value) || 0;
+    if (uren > 0 && tarief > 0) {{
+      var arbeidTotaal = Math.round(uren * tarief * 100) / 100;
+      result.lines.push({{label: 'Arbeid', quantity: uren, unit: 'uur', unitPrice: tarief, total: arbeidTotaal}});
+      result.subtotaal = Math.round((result.subtotaal + arbeidTotaal) * 100) / 100;
+      result.btw = Math.round(result.subtotaal * 0.21 * 100) / 100;
+      result.totaal = Math.round((result.subtotaal + result.btw) * 100) / 100;
+    }}
+
+    // Korting toepassen (na arbeid)
     var kortingPct = parseFloat(document.getElementById('korting_percentage').value) || 0;
     if (kortingPct > 0 && kortingPct <= 100) {{
       var kortingBedrag = Math.round(result.subtotaal * (kortingPct / 100) * 100) / 100;
@@ -330,6 +355,8 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
     el.addEventListener('input', recalc);
     el.addEventListener('change', recalc);
   }});
+  document.getElementById('arbeid_uren').addEventListener('input', recalc);
+  document.getElementById('arbeid_uurtarief').addEventListener('input', recalc);
   document.getElementById('korting_percentage').addEventListener('input', recalc);
   </script>
 </body>
@@ -384,6 +411,18 @@ async def edit_submit(request: Request):
         v = form.get(f"field_{f['key']}")
         if isinstance(v, str) and v.strip():
             new_collected[f["key"]] = v.strip()
+
+    # Arbeid velden opslaan
+    arbeid_uren = (str(form.get("arbeid_uren") or "")).strip()
+    arbeid_uurtarief = (str(form.get("arbeid_uurtarief") or "")).strip()
+    if arbeid_uren:
+        new_collected["_arbeid_uren"] = arbeid_uren
+    elif "_arbeid_uren" in new_collected:
+        del new_collected["_arbeid_uren"]
+    if arbeid_uurtarief:
+        new_collected["_arbeid_uurtarief"] = arbeid_uurtarief
+    elif "_arbeid_uurtarief" in new_collected:
+        del new_collected["_arbeid_uurtarief"]
 
     # Korting velden opslaan
     korting_pct = (str(form.get("korting_percentage") or "")).strip()

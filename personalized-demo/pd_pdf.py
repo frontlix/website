@@ -77,7 +77,30 @@ async def generate_designmaker_pdf(
     string_data = {k: str(v) for k, v in collected_data.items() if v is not None and not isinstance(v, (dict, list))}
     pricing = get_designmaker_pricing(type_dienst, string_data)
 
-    # Korting toepassen als die is ingesteld
+    # Arbeid toevoegen als die is ingesteld
+    arbeid_uren = collected_data.get("_arbeid_uren")
+    arbeid_uurtarief = collected_data.get("_arbeid_uurtarief")
+    if arbeid_uren and arbeid_uurtarief:
+        try:
+            from models.branches import PricingLine
+            from branches.base import round2, with_btw
+            uren = float(str(arbeid_uren))
+            tarief = float(str(arbeid_uurtarief))
+            if uren > 0 and tarief > 0:
+                arbeid_totaal = round2(uren * tarief)
+                pricing.lines.append(PricingLine(
+                    label="Arbeid",
+                    quantity=uren, unit="uur", unit_price=tarief, total=arbeid_totaal,
+                ))
+                new_sub = pricing.subtotaal_excl_btw + arbeid_totaal
+                btw_info = with_btw(new_sub)
+                pricing.subtotaal_excl_btw = btw_info["subtotaal_excl_btw"]
+                pricing.btw_bedrag = btw_info["btw_bedrag"]
+                pricing.totaal_incl_btw = btw_info["totaal_incl_btw"]
+        except (ValueError, TypeError):
+            pass
+
+    # Korting toepassen als die is ingesteld (na arbeid)
     korting_pct = collected_data.get("_korting_percentage")
     korting_notitie = collected_data.get("_korting_notitie")
     if korting_pct:
