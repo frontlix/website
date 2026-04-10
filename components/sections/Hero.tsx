@@ -116,14 +116,9 @@ export default function Hero() {
                 onBlur={trackBlur}
               />
               <button type="submit" className={styles.phoneButton} disabled={loading}>
-                {loading ? 'Bezig...' : 'Ontvang demo'}
+                {loading ? 'Bezig...' : (<><span className={styles.lockIcon}>🔒</span> Ontvang demo</>)}
               </button>
               {error && <p className={styles.errorMessage}>{error}</p>}
-              {/* Subtiele privacy-disclaimer onder het hero-formulier */}
-              <p className={styles.privacyNote}>
-                Je gegevens worden alleen voor deze demo gebruikt.{' '}
-                <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacybeleid</a>
-              </p>
             </form>
             )}
             </div>

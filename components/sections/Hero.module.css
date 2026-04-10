@@ -139,6 +139,14 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lockIcon {
+  font-size: 10px;
+  opacity: 0.7;
 }
 
 .phoneButton:hover {
@@ -169,26 +177,6 @@
   text-align: center;
 }
 
-/* Subtiele privacy-disclaimer onder het hero-formulier */
-.privacyNote {
-  width: 100%;
-  font-size: 10px;
-  color: #b0b0b0;
-  margin-top: var(--space-1);
-  text-align: center;
-  line-height: 1.4;
-}
-
-.privacyNote a {
-  color: #b0b0b0;
-  text-decoration: underline;
-  text-decoration-color: rgba(176, 176, 176, 0.3);
-}
-
-.privacyNote a:hover {
-  color: #1A56FF;
-  text-decoration-color: #1A56FF;
-}
 
 /* ── Proof bar ── */
 .proofBar {
