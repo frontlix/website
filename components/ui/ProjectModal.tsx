@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
@@ -36,15 +36,9 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
     isSubmitted: submitted,
   })
 
-  /* Bewaar scrollpositie in een ref zodat deze niet verloren gaat */
-  const scrollYRef = useRef(0)
-
-  /* Sluit modal met Escape + voorkom body scroll op mobiel */
+  /* Sluit modal met Escape + voorkom body scroll */
   useEffect(() => {
     if (!isOpen) return
-
-    /* Sla huidige scrollpositie op */
-    scrollYRef.current = window.scrollY
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -52,20 +46,10 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
 
     document.addEventListener('keydown', handleKey)
     document.body.style.overflow = 'hidden'
-    /* position: fixed voorkomt iOS Safari bounce-scroll bug */
-    document.body.style.position = 'fixed'
-    document.body.style.width = '100%'
-    document.body.style.top = `-${scrollYRef.current}px`
 
     return () => {
       document.removeEventListener('keydown', handleKey)
-      /* Herstel body styles */
       document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
-      document.body.style.top = ''
-      /* Herstel scrollpositie */
-      window.scrollTo(0, scrollYRef.current)
     }
   }, [isOpen, onClose])
 
