@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
 import { useFormTracking } from '@/hooks/useFormTracking'
@@ -160,7 +161,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
     }
   }
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.close} onClick={onClose} aria-label="Sluiten">
@@ -318,6 +319,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
