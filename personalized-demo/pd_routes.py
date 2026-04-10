@@ -46,8 +46,9 @@ async def start_personalized_demo(req: PersonalizedDemoStartRequest):
         if expires < datetime.now(timezone.utc):
             raise HTTPException(status_code=410, detail="Deze demo is verlopen.")
 
-    # Verwijder bestaande personalized leads voor dit nummer (zodat je de demo opnieuw kunt testen)
-    existing = (
+    # Check hoeveel keer dit nummer de demo al heeft gebruikt (max 10)
+    MAX_DEMO_ATTEMPTS = 10
+    all_leads = (
         get_supabase()
         .table("leads")
         .select("id")
@@ -55,7 +56,23 @@ async def start_personalized_demo(req: PersonalizedDemoStartRequest):
         .eq("demo_type", "personalized")
         .execute()
     )
-    for old_lead in (existing.data or []):
+    if len(all_leads.data or []) >= MAX_DEMO_ATTEMPTS:
+        raise HTTPException(
+            status_code=429,
+            detail="Je hebt het maximaal aantal demo's bereikt voor dit nummer.",
+        )
+
+    # Verwijder de laatste actieve lead zodat je opnieuw kunt testen
+    active_leads = (
+        get_supabase()
+        .table("leads")
+        .select("id")
+        .eq("telefoon", phone)
+        .eq("demo_type", "personalized")
+        .neq("status", "appointment_booked")
+        .execute()
+    )
+    for old_lead in (active_leads.data or []):
         get_supabase().table("conversations").delete().eq("lead_id", old_lead["id"]).execute()
         get_supabase().table("leads").delete().eq("id", old_lead["id"]).execute()
 
