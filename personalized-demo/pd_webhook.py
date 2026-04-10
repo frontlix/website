@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from services.supabase import get_supabase  # shared via lead-automation
@@ -416,6 +416,12 @@ async def _trigger_completion(lead_id: str):
         "Top, ik heb alles wat ik nodig heb! Je ontvangt zo een offerte per mail."
     )
 
+    # Demo opmerking
+    await send_text(
+        lead["telefoon"],
+        "Opmerking: check je email, er is nu een email naar je toe gestuurd met daarin een opmaak voor de offerte. Die kan je nu goedkeuren of wijzigen."
+    )
+
     # Approval email sturen (naar het klant-emailadres)
     try:
         service_url = get_settings().service_url
@@ -709,69 +715,93 @@ async def _run_scheduling_agent(lead: dict, phone: str):
     from services.openai_client import get_openai
     import json
 
-    collected = dict(lead.get("collected_data") or {})
-    naam = lead.get("naam") or "daar"
-    type_dienst = collected.get("type_dienst", "wrapping")
-    history = await _fetch_history(lead["id"])
+    try:
+        collected = dict(lead.get("collected_data") or {})
+        naam = lead.get("naam") or "daar"
+        type_dienst = collected.get("type_dienst", "wrapping")
+        history = await _fetch_history(lead["id"])
 
-    # Bouw messages array
-    messages = [
-        {"role": "system", "content": SCHEDULING_SYSTEM_PROMPT + f"\n\nKlant: {naam}\nDienst: {type_dienst}\nVandaag: {datetime.now(timezone.utc).strftime('%A %d %B %Y')}"},
-    ]
+        # Bouw messages array
+        messages: list[dict] = [
+            {"role": "system", "content": SCHEDULING_SYSTEM_PROMPT + f"\n\nKlant: {naam}\nDienst: {type_dienst}\nVandaag: {datetime.now(timezone.utc).strftime('%A %d %B %Y')}"},
+        ]
 
-    # Voeg conversatie history toe
-    for m in history[-15:]:
-        role = "user" if m.role == "user" else "assistant"
-        messages.append({"role": role, "content": m.content})
+        # Voeg conversatie history toe
+        for m in history[-15:]:
+            role = "user" if m.role == "user" else "assistant"
+            messages.append({"role": role, "content": m.content})
 
-    # Agent loop — max 3 tool calls per beurt
-    client = get_openai()
-    for _ in range(3):
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            temperature=0.5,
-            tools=SCHEDULING_TOOLS,
-            messages=messages,
-        )
+        # Agent loop — max 3 tool calls per beurt
+        client = get_openai()
+        for iteration in range(3):
+            print(f"[scheduling-agent] Iteration {iteration + 1}, messages: {len(messages)}")
 
-        choice = response.choices[0]
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                temperature=0.5,
+                tools=SCHEDULING_TOOLS,
+                messages=messages,
+            )
 
-        # Als de agent een tekst antwoord geeft (geen tool call)
-        if choice.finish_reason == "stop" and choice.message.content:
-            reply = choice.message.content.strip()
-            await send_text(phone, reply)
-            await _save_message(lead["id"], "assistant", reply)
-            return
+            choice = response.choices[0]
+            print(f"[scheduling-agent] Finish reason: {choice.finish_reason}")
 
-        # Als de agent een tool wil aanroepen
-        if choice.message.tool_calls:
-            # Voeg de assistant message toe (met tool_calls)
-            messages.append(choice.message)
+            # Als de agent een tekst antwoord geeft (geen tool call)
+            if choice.finish_reason == "stop" and choice.message.content:
+                reply = choice.message.content.strip()
+                await send_text(phone, reply)
+                await _save_message(lead["id"], "assistant", reply)
+                return
 
-            for tool_call in choice.message.tool_calls:
-                tool_name = tool_call.function.name
-                try:
-                    tool_args = json.loads(tool_call.function.arguments)
-                except json.JSONDecodeError:
-                    tool_args = {}
-
-                print(f"[scheduling-agent] Tool call: {tool_name}({tool_args})")
-
-                # Voer de tool uit
-                result = await _execute_tool(tool_name, tool_args, lead)
-
-                # Voeg tool result toe aan messages
+            # Als de agent een tool wil aanroepen
+            if choice.message.tool_calls:
+                # Voeg de assistant message toe als dict (niet als Pydantic object)
+                tool_calls_data = []
+                for tc in choice.message.tool_calls:
+                    tool_calls_data.append({
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        },
+                    })
                 messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": result,
+                    "role": "assistant",
+                    "content": choice.message.content or "",
+                    "tool_calls": tool_calls_data,
                 })
 
-            # Ga door met de loop — de agent krijgt het tool result en kan antwoorden
-            continue
+                for tool_call in choice.message.tool_calls:
+                    tool_name = tool_call.function.name
+                    try:
+                        tool_args = json.loads(tool_call.function.arguments)
+                    except json.JSONDecodeError:
+                        tool_args = {}
 
-        # Fallback
-        break
+                    print(f"[scheduling-agent] Tool call: {tool_name}({tool_args})")
+
+                    # Voer de tool uit
+                    result = await _execute_tool(tool_name, tool_args, lead)
+                    print(f"[scheduling-agent] Tool result: {result[:100]}...")
+
+                    # Voeg tool result toe aan messages
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": result,
+                    })
+
+                continue
+
+            # Fallback als er geen content en geen tool_calls zijn
+            print(f"[scheduling-agent] Unexpected finish reason: {choice.finish_reason}")
+            break
+
+    except Exception as e:
+        import traceback
+        print(f"[scheduling-agent] ERROR:")
+        traceback.print_exc()
 
     # Als de loop eindigt zonder antwoord
     await send_text(phone, "Welke dag zou je het voertuig willen brengen?")

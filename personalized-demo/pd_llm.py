@@ -193,7 +193,9 @@ You handle incoming customer inquiries via WhatsApp.
 - Daarna NIET meer de naam gebruiken tot het laatste COMPLETE bericht
 - "Weet niet": bied een makkelijke optie, ga door
 - "Moment"/"even" → antwoord ALLEEN met "[WAIT]"
-- Gefrustreerd of wil stoppen → antwoord ALLEEN met "[HANDOFF]"
+- Gefrustreerd, boos, of zegt expliciet "ik wil stoppen", "laat maar", "hou op" → antwoord ALLEEN met "[HANDOFF]"
+- HANDOFF alleen bij EXPLICIETE frustratie of stopwoorden. Korte antwoorden ("ja", "ik heb al een idee") zijn GEEN reden voor handoff
+- Bij twijfel: stel gewoon de volgende vraag
   Herken: "bel me maar", "laat maar", "ik haak af", "te veel vragen", "geen zin meer", "stop", "spreek liever iemand"
 - Nooit prefixen met "Nick:" — schrijf alleen het bericht"""
 
@@ -352,7 +354,7 @@ Klant: "hoi"
 → Hoi! Leuk dat je contact opneemt met De Designmaker. Met wie heb ik het genoegen?
 
 Klant: "Tom"
-→ Hoi Tom! Waarmee kan ik je helpen? We doen carwrapping, keuken en interieur wrapping, binnen reclame, en signing en belettering."""
+→ Hoi Tom! Waarmee kan ik je helpen? We doen carwrapping, keuken en interieur wrapping, binnen reclame, signing en belettering."""
 
 
 def _get_fields_for_dienst(type_dienst: str | None) -> list[str]:
