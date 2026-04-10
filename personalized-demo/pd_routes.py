@@ -76,10 +76,13 @@ async def start_personalized_demo(req: PersonalizedDemoStartRequest):
         get_supabase().table("conversations").delete().eq("lead_id", old_lead["id"]).execute()
         get_supabase().table("leads").delete().eq("id", old_lead["id"]).execute()
 
-    # Create lead with demo_type="personalized" and store the demo_id in collected_data
+    # Create lead with demo_type="personalized" — naam alvast invullen uit de demo
+    naam = demo_info.get("naam", "")
+
     result = get_supabase().table("leads").insert({
         "telefoon": phone,
-        "status": "collecting",  # Skip awaiting_choice — no branche selection needed
+        "naam": naam if naam else None,
+        "status": "collecting",
         "demo_type": "personalized",
         "collected_data": {
             "_personalized_demo_id": req.personalized_demo_id,
