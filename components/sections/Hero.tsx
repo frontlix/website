@@ -116,7 +116,7 @@ export default function Hero() {
                 onBlur={trackBlur}
               />
               <button type="submit" className={styles.phoneButton} disabled={loading}>
-                {loading ? 'Bezig...' : (<><span className={styles.lockIcon}>🔒</span> Ontvang demo</>)}
+                {loading ? 'Bezig...' : 'Ontvang demo'}
               </button>
               {error && <p className={styles.errorMessage}>{error}</p>}
             </form>
