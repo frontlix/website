@@ -120,7 +120,8 @@ async def handle_personalized_message(lead: dict, message: dict, msg_type: str, 
     elif status == "quote_sent":
         await _handle_start_scheduling(lead, text_body, phone)
     elif status == "scheduling":
-        await _handle_scheduling(lead, phone)
+        await _save_message(lead["id"], "user", text_body)
+        await _handle_scheduling(lead, text_body, phone)
 
 
 # ── Collecting handler ───────────────────────────────────────────────────
@@ -279,7 +280,7 @@ async def _handle_image(lead: dict, message: dict, phone: str):
     if len(photos) >= MAX_PHOTOS:
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
-        await send_text(phone, "Foto ontvangen, dank je! Ik heb genoeg om verder te gaan.")
+        # Ga direct door met de volgende vraag
         if lead.get("email"):
             await _trigger_completion(lead["id"])
         else:
@@ -288,8 +289,8 @@ async def _handle_image(lead: dict, message: dict, phone: str):
         return
 
     sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
-    await send_text(phone, "Foto ontvangen, dank je!")
 
+    # Geen bevestigingsbericht — wacht 30 sec op meer foto's, ga dan door
     asyncio.get_event_loop().call_later(
         PHOTO_WAIT_MS / 1000,
         lambda: asyncio.ensure_future(_auto_advance_photo(lead["id"], now_ms)),
@@ -552,124 +553,226 @@ async def _trigger_completion(lead_id: str):
 # ── Scheduling handlers (hergebruikt Google Calendar uit lead-automation) ──
 
 async def _handle_start_scheduling(lead: dict, text_body: str, phone: str):
-    """Klant antwoordt na ontvangst offerte — LLM bepaalt of ze een afspraak willen."""
-    # LLM interpreteert of de klant een afspraak wil
-    wants_appointment = await _detect_appointment_intent(text_body)
-
-    if not wants_appointment:
-        await send_text(phone, "Helder! Als je later toch een afspraak wilt inplannen, laat het gerust weten. We staan voor je klaar.")
-        await _save_message(lead["id"], "assistant", "Helder! Als je later toch een afspraak wilt inplannen, laat het gerust weten. We staan voor je klaar.")
-        return
-
-    from services.scheduling import propose_slots
-
-    klant_naam = lead.get("naam") or "daar"
-    message, slots = await propose_slots(klant_naam)
-
-    collected = dict(lead.get("collected_data") or {})
-    collected["_proposed_slots"] = [s.model_dump() for s in slots] if slots else []
+    """Klant antwoordt na ontvangst offerte — start de scheduling agent."""
+    await _save_message(lead["id"], "user", text_body)
 
     get_supabase().table("leads").update({
         "status": "scheduling",
-        "collected_data": collected,
         "updated_at": _now_iso(),
     }).eq("id", lead["id"]).execute()
 
-    await send_text(phone, message)
-    await _save_message(lead["id"], "assistant", message)
+    lead["status"] = "scheduling"
+    await _run_scheduling_agent(lead, phone)
 
 
-async def _detect_appointment_intent(text: str) -> bool:
-    """LLM bepaalt of de klant een afspraak wil inplannen."""
+async def _handle_scheduling(lead: dict, text_body: str, phone: str):
+    """Klant stuurt een bericht tijdens het scheduling gesprek."""
+    await _run_scheduling_agent(lead, phone)
+
+
+# ── Scheduling agent (function calling) ──────────────────────────────────
+
+SCHEDULING_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "check_beschikbaarheid",
+            "description": "Check welke dagen vrij zijn in de agenda van De Designmaker. Gebruik dit als de klant vraagt wanneer het kan of als je moet weten welke dagen beschikbaar zijn.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "boek_afspraak",
+            "description": "Boek een afspraak op een specifieke datum. Het voertuig wordt de hele dag verwacht (inleveren voor 10:00). Gebruik dit ALLEEN als de klant akkoord gaat met een datum.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "datum": {
+                        "type": "string",
+                        "description": "Datum in YYYY-MM-DD formaat",
+                    },
+                },
+                "required": ["datum"],
+            },
+        },
+    },
+]
+
+SCHEDULING_SYSTEM_PROMPT = """Je bent Nick, een vriendelijke wrapping specialist bij De Designmaker in Haelen.
+De klant heeft een offerte ontvangen en wil een afspraak inplannen om het voertuig te brengen.
+
+## REGELS
+- Voer een natuurlijk, warm gesprek over het inplannen
+- Gebruik de tool `check_beschikbaarheid` om te zien welke dagen vrij zijn
+- Gebruik de tool `boek_afspraak` zodra de klant een datum bevestigt
+- Het voertuig wordt een HELE DAG verwacht (inleveren voor 10:00 uur)
+- Max 2-3 zinnen per bericht, informeel Nederlands
+- Geen streepjes (-) of gedachtestrepen (—) gebruiken
+- NOOIT emoji's gebruiken. Geen smileys, geen duimpjes, geen enkele emoji
+- Als de klant vaag is ("volgende week", "ergens in mei") → check de agenda en stel 2-3 passende dagen voor
+- Als de klant een dag noemt die niet beschikbaar is → leg vriendelijk uit en stel een alternatief voor
+- Als de klant twijfelt of geen afspraak wil → respecteer dat, geen druk uitoefenen
+
+## VOORBEELDEN
+Klant: "wanneer kan ik langskomen?" → Gebruik check_beschikbaarheid, stel 2-3 dagen voor
+Klant: "dinsdag past me goed" → Check of de eerstvolgende dinsdag vrij is, zo ja bevestig
+Klant: "liever volgende week" → Check beschikbaarheid, stel opties voor die week voor
+Klant: "doe maar woensdag 16 april" → Gebruik boek_afspraak met 2026-04-16"""
+
+
+async def _execute_tool(tool_name: str, tool_args: dict, lead: dict) -> str:
+    """Voer een scheduling tool uit en return het resultaat als string."""
+    from services.google_calendar import get_free_slots, create_event, TIMEZONE
+    from zoneinfo import ZoneInfo
+
+    tz = ZoneInfo(TIMEZONE)
+
+    if tool_name == "check_beschikbaarheid":
+        now = datetime.now(timezone.utc)
+        range_end = now + timedelta(days=60)
+        try:
+            all_slots = await get_free_slots(now, range_end, 500)
+        except Exception as e:
+            return f"Fout bij ophalen agenda: {e}"
+
+        # Groepeer per dag
+        NL_WEEKDAYS = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+        NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
+
+        free_days: dict[str, str] = {}
+        for slot in all_slots:
+            dt = datetime.fromisoformat(slot["start_utc"]).astimezone(tz)
+            date_key = dt.strftime("%Y-%m-%d")
+            if date_key not in free_days:
+                label = f"{NL_WEEKDAYS[dt.weekday()]} {dt.day} {NL_MONTHS[dt.month]}"
+                free_days[date_key] = label
+
+        if not free_days:
+            return "Er zijn geen vrije dagen gevonden in de komende 2 maanden."
+
+        days_list = "\n".join(f"- {label} ({key})" for key, label in sorted(free_days.items()))
+        return f"Vrije dagen in de agenda:\n{days_list}"
+
+    elif tool_name == "boek_afspraak":
+        datum = tool_args.get("datum", "")
+        if not datum:
+            return "Fout: geen datum opgegeven."
+
+        collected = dict(lead.get("collected_data") or {})
+        naam = lead.get("naam") or "klant"
+        type_dienst = collected.get("type_dienst", "wrapping")
+
+        try:
+            parts = datum.split("-")
+            local_start = datetime(int(parts[0]), int(parts[1]), int(parts[2]), 10, 0, tzinfo=tz)
+            local_end = datetime(int(parts[0]), int(parts[1]), int(parts[2]), 17, 0, tzinfo=tz)
+            start_utc = local_start.astimezone(timezone.utc)
+            end_utc = local_end.astimezone(timezone.utc)
+
+            event_id = await create_event(
+                start_utc=start_utc,
+                end_utc=end_utc,
+                summary=f"De Designmaker — {type_dienst} voor {naam}",
+                description=f"Voertuig inleveren voor 10:00.\n\nKlant: {naam}\nEmail: {lead.get('email')}\nTelefoon: +{lead['telefoon']}\nDienst: {type_dienst}",
+                attendee_email=lead.get("email"),
+            )
+
+            # Update lead status
+            collected["_appointment_at"] = datum
+            collected["_google_event_id"] = event_id
+            get_supabase().table("leads").update({
+                "status": "appointment_booked",
+                "collected_data": collected,
+                "updated_at": _now_iso(),
+            }).eq("id", lead["id"]).execute()
+
+            NL_WEEKDAYS = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+            NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
+            dag = NL_WEEKDAYS[local_start.weekday()]
+            maand = NL_MONTHS[local_start.month]
+            return f"Afspraak geboekt op {dag} {local_start.day} {maand}. Google Calendar uitnodiging is verstuurd naar {lead.get('email')}."
+
+        except Exception as e:
+            return f"Fout bij het boeken: {e}"
+
+    return f"Onbekende tool: {tool_name}"
+
+
+async def _run_scheduling_agent(lead: dict, phone: str):
+    """AI agent met function calling voor het inplannen van een afspraak."""
     from services.openai_client import get_openai
     import json
 
-    response = get_openai().chat.completions.create(
-        model="gpt-4o",
-        temperature=0,
-        response_format={"type": "json_object"},
-        messages=[
-            {
-                "role": "system",
-                "content": """Je bent een intent-detector voor een WhatsApp gesprek met een klant van De Designmaker.
-De klant heeft net een offerte ontvangen. Bepaal of de klant een afspraak wil inplannen.
-
-Return ALLEEN JSON: { "wants_appointment": true } of { "wants_appointment": false }
-
-Positief (true):
-- "ja", "graag", "prima", "doe maar", "klinkt goed", "wanneer kan ik langskomen"
-- "ik wil een afspraak", "plan maar in", "wanneer heb je tijd"
-- Elke vorm van bevestiging of interesse in een afspraak
-
-Negatief (false):
-- "nee", "later", "ik denk erover na", "nog niet"
-- Vragen over de offerte, prijs, of andere onderwerpen
-- "bedankt", "dank je" (zonder afspraak-intentie)
-
-Bij twijfel: false.""",
-            },
-            {"role": "user", "content": text},
-        ],
-    )
-
-    try:
-        parsed = json.loads(response.choices[0].message.content or "{}")
-        return parsed.get("wants_appointment", False) is True
-    except json.JSONDecodeError:
-        return False
-
-
-async def _handle_scheduling(lead: dict, phone: str):
-    """Klant kiest een tijdslot."""
-    from services.scheduling import match_slot, format_confirmation, FreeSlot, propose_slots
-    from services.google_calendar import create_event
-
     collected = dict(lead.get("collected_data") or {})
-    proposed_raw = collected.get("_proposed_slots") or []
-
-    if not proposed_raw:
-        klant_naam = lead.get("naam") or "daar"
-        message, slots = await propose_slots(klant_naam)
-        collected["_proposed_slots"] = [s.model_dump() for s in slots] if slots else []
-        get_supabase().table("leads").update({"collected_data": collected}).eq("id", lead["id"]).execute()
-        await send_text(phone, message)
-        return
-
-    proposed = [FreeSlot(**s) for s in proposed_raw]
-
+    naam = lead.get("naam") or "daar"
+    type_dienst = collected.get("type_dienst", "wrapping")
     history = await _fetch_history(lead["id"])
-    matched = await match_slot(history, proposed)
 
-    if not matched:
-        await send_text(phone, "Sorry, ik kon je keuze niet helemaal plaatsen. Kun je het nummer (1, 2 of 3) sturen?")
-        return
+    # Bouw messages array
+    messages = [
+        {"role": "system", "content": SCHEDULING_SYSTEM_PROMPT + f"\n\nKlant: {naam}\nDienst: {type_dienst}\nVandaag: {datetime.now(timezone.utc).strftime('%A %d %B %Y')}"},
+    ]
 
-    # Google Calendar event aanmaken
-    try:
-        type_dienst = collected.get("type_dienst", "wrapping")
-        summary = f"De Designmaker — afspraak met {lead.get('naam') or 'klant'} ({type_dienst})"
-        description = f"Afspraak via WhatsApp demo.\n\nKlant: {lead.get('naam')}\nEmail: {lead.get('email')}\nTelefoon: +{lead['telefoon']}\nDienst: {type_dienst}"
+    # Voeg conversatie history toe
+    for m in history[-15:]:
+        role = "user" if m.role == "user" else "assistant"
+        messages.append({"role": role, "content": m.content})
 
-        event_id = await create_event(
-            start_utc=matched.start_utc,
-            end_utc=matched.end_utc,
-            summary=summary,
-            description=description,
-            attendee_email=lead.get("email"),
+    # Agent loop — max 3 tool calls per beurt
+    client = get_openai()
+    for _ in range(3):
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.5,
+            tools=SCHEDULING_TOOLS,
+            messages=messages,
         )
-    except Exception as e:
-        print(f"[personalized] Google Calendar failed: {e}")
-        await send_text(phone, "Hmm, er ging iets mis bij het inplannen. Een collega neemt persoonlijk contact met je op.")
-        return
 
-    collected["_appointment_at"] = matched.iso
-    collected["_google_event_id"] = event_id
-    get_supabase().table("leads").update({
-        "status": "appointment_booked",
-        "collected_data": collected,
-        "updated_at": _now_iso(),
-    }).eq("id", lead["id"]).execute()
+        choice = response.choices[0]
 
-    confirmation = format_confirmation(matched, lead.get("naam") or "daar")
-    await send_text(phone, confirmation)
-    await _save_message(lead["id"], "assistant", confirmation)
+        # Als de agent een tekst antwoord geeft (geen tool call)
+        if choice.finish_reason == "stop" and choice.message.content:
+            reply = choice.message.content.strip()
+            await send_text(phone, reply)
+            await _save_message(lead["id"], "assistant", reply)
+            return
+
+        # Als de agent een tool wil aanroepen
+        if choice.message.tool_calls:
+            # Voeg de assistant message toe (met tool_calls)
+            messages.append(choice.message)
+
+            for tool_call in choice.message.tool_calls:
+                tool_name = tool_call.function.name
+                try:
+                    tool_args = json.loads(tool_call.function.arguments)
+                except json.JSONDecodeError:
+                    tool_args = {}
+
+                print(f"[scheduling-agent] Tool call: {tool_name}({tool_args})")
+
+                # Voer de tool uit
+                result = await _execute_tool(tool_name, tool_args, lead)
+
+                # Voeg tool result toe aan messages
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": result,
+                })
+
+            # Ga door met de loop — de agent krijgt het tool result en kan antwoorden
+            continue
+
+        # Fallback
+        break
+
+    # Als de loop eindigt zonder antwoord
+    await send_text(phone, "Welke dag zou je het voertuig willen brengen?")
+    await _save_message(lead["id"], "assistant", "Welke dag zou je het voertuig willen brengen?")

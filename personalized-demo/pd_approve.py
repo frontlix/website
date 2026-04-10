@@ -111,7 +111,9 @@ async def approve(request: Request):
     except Exception as e:
         print(f"[pd_approve] WhatsApp document send failed: {e}")
 
-    # Stuur apart bericht over afspraak inplannen
+    # Stuur apart bericht over afspraak inplannen (delay zodat het NA de PDF komt)
+    import asyncio
+    await asyncio.sleep(2)
     try:
         await send_text(
             lead["telefoon"],

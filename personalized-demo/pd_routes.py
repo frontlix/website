@@ -46,22 +46,18 @@ async def start_personalized_demo(req: PersonalizedDemoStartRequest):
         if expires < datetime.now(timezone.utc):
             raise HTTPException(status_code=410, detail="Deze demo is verlopen.")
 
-    # Check for existing active personalized lead
+    # Verwijder bestaande personalized leads voor dit nummer (zodat je de demo opnieuw kunt testen)
     existing = (
         get_supabase()
         .table("leads")
-        .select("id, status")
+        .select("id")
         .eq("telefoon", phone)
         .eq("demo_type", "personalized")
-        .neq("status", "appointment_booked")
-        .limit(1)
         .execute()
     )
-    if existing.data:
-        raise HTTPException(
-            status_code=409,
-            detail="Er loopt al een persoonlijke demo voor dit nummer. Check je WhatsApp!",
-        )
+    for old_lead in (existing.data or []):
+        get_supabase().table("conversations").delete().eq("lead_id", old_lead["id"]).execute()
+        get_supabase().table("leads").delete().eq("id", old_lead["id"]).execute()
 
     # Create lead with demo_type="personalized" and store the demo_id in collected_data
     result = get_supabase().table("leads").insert({
