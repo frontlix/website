@@ -299,6 +299,7 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
 
     # Photo skip detection
     in_photo_step = all_regular_filled and not is_photo_step_done(collected)
+    print(f"[collecting] all_regular_filled={all_regular_filled} in_photo_step={in_photo_step} skip_detected={user_skips_photo_step(text_body) if in_photo_step else 'n/a'}")
     if in_photo_step and user_skips_photo_step(text_body):
         collected["_photo_step_done"] = True
         get_supabase().table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
@@ -347,6 +348,7 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
     # Check if all done
     still_missing = get_missing_fields(config, fresh_collected)
     all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and is_photo_step_done(fresh_collected)
+    print(f"[collecting] completion: naam={bool(new_naam)} email={bool(new_email)} missing={[f.key for f in still_missing]} photo_done={is_photo_step_done(fresh_collected)} -> all_done={all_done}")
 
     if all_done:
         # Save the merged data before triggering approval

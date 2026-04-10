@@ -74,13 +74,14 @@ def get_last_photo_at(collected_data: dict) -> int:
 
 def user_skips_photo_step(text: str) -> bool:
     """Soft keyword detection for 'no photo / skip / that's all'."""
-    t = text.lower().strip()
+    # Normalize curly quotes from WhatsApp to straight quotes
+    t = text.lower().strip().replace("\u2018", "'").replace("\u2019", "'")
     if not t:
         return False
-    if re.match(r"^(nee|nope|geen|klaar|skip|stop|niets|niks)$", t, re.IGNORECASE):
+    if re.match(r"^(nee|nope|geen|klaar|skip|stop|niets|niks|geen foto)$", t, re.IGNORECASE):
         return True
     if re.search(
-        r"\b(geen foto|geen fotos|geen foto's|heb geen|heb er geen|sla over|dat (is|was) alles|ben klaar|niks meer|niets meer)\b",
+        r"\b(geen foto|geen fotos|geen foto's|heb geen|heb er geen|sla over|overslaan|dat (is|was) alles|ben klaar|niks meer|niets meer|zonder foto|liever niet)\b",
         t, re.IGNORECASE,
     ):
         return True
