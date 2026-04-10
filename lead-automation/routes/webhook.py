@@ -444,9 +444,8 @@ async def _handle_image(lead: dict, message: dict, phone: str):
             await _send_next_question(refreshed, history, phone)
         return
 
-    # Save + ack + schedule auto-advance
+    # Save + schedule auto-advance (no separate ack message — next question handles it)
     sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
-    await send_text(phone, "Foto ontvangen, dank je.")
 
     # Auto-advance after PHOTO_WAIT_MS
     asyncio.get_event_loop().call_later(

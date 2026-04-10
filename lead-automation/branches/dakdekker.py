@@ -27,14 +27,6 @@ def dakdekker_pricing(answers: dict[str, str]) -> PricingResult:
 
     subtotaal = sum(l.total for l in lines)
 
-    if (answers.get("spoed") or "").lower() == "ja":
-        spoed_bedrag = round2(subtotaal * 0.25)
-        lines.append(PricingLine(
-            label="Spoedtoeslag (binnen 5 werkdagen)",
-            quantity=1, unit="stuks", unit_price=spoed_bedrag, total=spoed_bedrag,
-        ))
-        subtotaal += spoed_bedrag
-
     btw = with_btw(subtotaal)
     return PricingResult(lines=lines, **btw)
 
@@ -66,6 +58,5 @@ dakdekker_config = BrancheConfig(
         BrancheField(key="huidig_dakmateriaal", label="huidig dakmateriaal", example_question="Wat ligt er nu op het dak?", type="text"),
         BrancheField(key="dakoppervlakte", label="dakoppervlakte in m²", example_question="Hoe groot is het dakvlak in m²?", type="number", unit="m²"),
         BrancheField(key="isolatie", label="isolatie gewenst", example_question="Wil je het dak ook laten isoleren?", type="enum", enum_values=["ja", "nee"]),
-        BrancheField(key="spoed", label="spoed", example_question="Is het spoed of kan het binnen een paar weken?", type="enum", enum_values=["ja", "nee"]),
     ],
 )

@@ -60,7 +60,6 @@ You are a data extractor for a roofing company. Read the Dutch WhatsApp conversa
 - huidig_dakmateriaal: free text — "dakpannen", "bitumen", "EPDM", etc.
 - dakoppervlakte: number in m²
 - isolatie: "ja" or "nee". If unsure → omit.
-- spoed: "ja" or "nee". Active leak = ja, "kan wachten" = nee. If ambiguous → omit.
 
 ## OUTPUT FORMAT
 Only fields that are **NEW** or **CORRECTED**:
@@ -70,7 +69,7 @@ If nothing new: return {{}}. No explanation, only JSON.
 
 ## EXAMPLES
 Conversation: "Klant: hoi ik ben Peter, mijn dak lekt, plat dak met bitumen"
-→ {{ "naam": "Peter", "data": {{ "type_werk": "repareren", "daktype": "plat", "huidig_dakmateriaal": "bitumen", "spoed": "ja" }} }}
+→ {{ "naam": "Peter", "data": {{ "type_werk": "repareren", "daktype": "plat", "huidig_dakmateriaal": "bitumen" }} }}
 
 Conversation: "Klant: weet ik niet zeker of ik isolatie wil"
 → {{}} (doubt = no value for isolatie)""",
