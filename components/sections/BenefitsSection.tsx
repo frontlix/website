@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import ProjectModal from '@/components/ui/ProjectModal'
 import WhatsAppIllustration from './WhatsAppIllustration'
@@ -155,9 +154,6 @@ export default function BenefitsSection() {
           <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
             Plan een gratis gesprek →
           </Button>
-          <Link href="/diensten" className={styles.ctaLink}>
-            Bekijk hoe het werkt →
-          </Link>
           <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
         </div>
       </div>
