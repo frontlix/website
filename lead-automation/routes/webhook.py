@@ -348,7 +348,7 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
     # Check if all done
     still_missing = get_missing_fields(config, fresh_collected)
     all_done = bool(new_naam) and bool(new_email) and len(still_missing) == 0 and is_photo_step_done(fresh_collected)
-    print(f"[collecting] completion: naam={bool(new_naam)} email={bool(new_email)} missing={[f.key for f in still_missing]} photo_done={is_photo_step_done(fresh_collected)} -> all_done={all_done}")
+    print(f"[collecting] completion: naam={bool(new_naam)} email={bool(new_email)} missing={still_missing} photo_done={is_photo_step_done(fresh_collected)} -> all_done={all_done}")
 
     if all_done:
         # Save the merged data before triggering approval
