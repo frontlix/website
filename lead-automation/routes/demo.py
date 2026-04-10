@@ -24,6 +24,12 @@ async def start_demo(req: DemoStartRequest):
     if existing.data:
         raise HTTPException(status_code=409, detail="Er loopt al een demo voor dit nummer. Check je WhatsApp!")
 
+    # Max 5 demos per nummer
+    MAX_DEMOS = 5
+    all_leads = get_supabase().table("leads").select("id", count="exact").eq("telefoon", phone).execute()
+    if (all_leads.count or 0) >= MAX_DEMOS:
+        raise HTTPException(status_code=429, detail="Je hebt het maximaal aantal demo-pogingen bereikt voor dit nummer.")
+
     # Create lead
     result = get_supabase().table("leads").insert({
         "telefoon": phone,
