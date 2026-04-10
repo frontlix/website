@@ -7,7 +7,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from services.supabase import get_supabase
-from services.whatsapp import send_document
+from services.whatsapp import send_document, send_text
 from services.pdf import generate_quote_pdf
 from services.mail import send_customer_quote_email
 from branches import get_branche
@@ -135,12 +135,13 @@ async def approve_quote(request: Request):
         print(f"PDF generation failed: {e}")
         return HTMLResponse(_error_page("PDF mislukt", "Er ging iets mis bij het genereren van de PDF."), status_code=500)
 
-    # Send PDF via WhatsApp
-    caption = 'Hier is je offerte! Bekijk \'m rustig. Wil je een gratis kennismakingsgesprek inplannen? Antwoord met "ja" dan stel ik wat tijden voor.'
+    # Send PDF via WhatsApp + follow-up scheduling message
+    caption = f"Hier is je offerte voor {config.label}! Bekijk 'm rustig."
     try:
         await send_document(lead["telefoon"], pdf_url, f"Offerte-{config.label}.pdf", caption)
+        await send_text(lead["telefoon"], "Als je een afspraak wilt inplannen om alles door te spreken, laat het gerust weten. Dan zoek ik een mooi moment uit!")
     except Exception as e:
-        print(f"WhatsApp document send failed: {e}")
+        print(f"WhatsApp document/follow-up send failed: {e}")
 
     # Send customer email
     if lead.get("email"):
