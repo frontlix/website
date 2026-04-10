@@ -72,7 +72,6 @@
   .inner {
     height: 52px;
     padding: 0 var(--space-4);
-    justify-content: center;
   }
 
   .logo {

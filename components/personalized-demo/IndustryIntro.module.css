@@ -1,6 +1,8 @@
 .intro {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: var(--space-3);
   padding: var(--space-4);
   background: var(--color-surface);
@@ -12,6 +14,9 @@
 
 @media (min-width: 640px) {
   .intro {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
     gap: var(--space-4);
     padding: var(--space-6);
   }
