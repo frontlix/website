@@ -52,14 +52,14 @@ async def send_approval_email(
 ) -> None:
     """Send approval email with quote details to Frontlix team."""
     fields_html = "".join(
-        f'<tr><td style="padding:4px 12px 4px 0;color:#555">{escape(f["label"])}</td>'
-        f'<td style="padding:4px 0">{escape(f["value"])}</td></tr>'
+        f'<tr><td style="padding:10px 16px;color:#6B7280;font-size:14px;border-bottom:1px solid #F3F4F6">{escape(f["label"])}</td>'
+        f'<td style="padding:10px 16px;color:#111827;font-size:14px;font-weight:500;border-bottom:1px solid #F3F4F6">{escape(f["value"])}</td></tr>'
         for f in fields
     )
 
     price_lines_html = "".join(
-        f'<tr><td style="padding:4px 12px 4px 0">{escape(line.label)}</td>'
-        f'<td style="padding:4px 0;text-align:right">€{line.total:.2f}</td></tr>'
+        f'<tr><td style="padding:8px 0;color:#374151;font-size:14px">{escape(line.label)}</td>'
+        f'<td style="padding:8px 0;text-align:right;color:#374151;font-size:14px;font-weight:500">&euro;{line.total:.2f}</td></tr>'
         for line in pricing.lines
     )
 
@@ -72,47 +72,71 @@ async def send_approval_email(
         photos_html = f'<div style="margin:16px 0">{thumbs}</div>'
 
     html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56FF">Nieuwe offerte-aanvraag — {escape(branche_label)}</h2>
-
-      <table style="width:100%;border-collapse:collapse;margin:16px 0">
-        <tr><td style="padding:4px 12px 4px 0;color:#555">Naam</td><td>{escape(naam)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#555">Telefoon</td><td>+{escape(telefoon)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#555">Email</td><td>{escape(email)}</td></tr>
-        {fields_html}
-      </table>
-
-      {photos_html}
-
-      <h3 style="margin-top:24px">Prijsoverzicht</h3>
-      <table style="width:100%;border-collapse:collapse">
-        {price_lines_html}
-        <tr style="border-top:1px solid #ddd">
-          <td style="padding:8px 12px 4px 0;font-weight:600">Subtotaal</td>
-          <td style="padding:8px 0;text-align:right">€{pricing.subtotaal_excl_btw:.2f}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 12px 4px 0;color:#555">BTW 21%</td>
-          <td style="padding:4px 0;text-align:right">€{pricing.btw_bedrag:.2f}</td>
-        </tr>
-        <tr style="border-top:1px solid #ddd">
-          <td style="padding:8px 12px 4px 0;font-weight:700;font-size:18px">Totaal incl. BTW</td>
-          <td style="padding:8px 0;text-align:right;font-weight:700;font-size:18px">€{pricing.totaal_incl_btw:.2f}</td>
-        </tr>
-      </table>
-
-      <div style="margin:32px 0;text-align:center">
-        <a href="{escape(approve_url)}" style="background:#16a34a;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
-          Goedkeuren & versturen
-        </a>
-        <a href="{escape(edit_url)}" style="background:#dc2626;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
-          Bewerken
-        </a>
+    <div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#1A56FF,#00CFFF);padding:32px 40px;border-radius:12px 12px 0 0;text-align:center">
+        <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;letter-spacing:-0.3px">Nieuwe offerte-aanvraag</h1>
+        <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:6px 0 0 0">{escape(branche_label)}</p>
       </div>
 
-      <p style="color:#999;font-size:12px;text-align:center">
-        Dit is een automatisch gegenereerde e-mail van het Frontlix demo-systeem.
-      </p>
+      <div style="padding:32px 40px;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 12px 12px">
+        <!-- Klantgegevens -->
+        <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:0.8px;color:#9CA3AF;margin:0 0 16px 0;font-weight:600">Klantgegevens</h2>
+        <table style="width:100%;border-collapse:collapse;margin:0 0 28px 0">
+          <tr>
+            <td style="padding:10px 16px;color:#6B7280;font-size:14px;width:40%;border-bottom:1px solid #F3F4F6">Naam</td>
+            <td style="padding:10px 16px;color:#111827;font-size:14px;font-weight:500;border-bottom:1px solid #F3F4F6">{escape(naam)}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;color:#6B7280;font-size:14px;border-bottom:1px solid #F3F4F6">Telefoon</td>
+            <td style="padding:10px 16px;color:#111827;font-size:14px;font-weight:500;border-bottom:1px solid #F3F4F6">+{escape(telefoon)}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;color:#6B7280;font-size:14px;border-bottom:1px solid #F3F4F6">Email</td>
+            <td style="padding:10px 16px;color:#1A56FF;font-size:14px;font-weight:500;border-bottom:1px solid #F3F4F6">{escape(email)}</td>
+          </tr>
+          {fields_html}
+        </table>
+
+        {photos_html}
+
+        <!-- Prijsoverzicht -->
+        <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:0.8px;color:#9CA3AF;margin:0 0 16px 0;font-weight:600">Prijsoverzicht</h2>
+        <table style="width:100%;border-collapse:collapse;margin:0 0 12px 0">
+          {price_lines_html}
+        </table>
+
+        <div style="background:#F9FAFB;border-radius:8px;padding:16px 20px;margin:0 0 28px 0">
+          <table style="width:100%;border-collapse:collapse">
+            <tr>
+              <td style="padding:4px 0;color:#6B7280;font-size:14px">Subtotaal excl. BTW</td>
+              <td style="padding:4px 0;text-align:right;color:#374151;font-size:14px;font-weight:500">&euro;{pricing.subtotaal_excl_btw:.2f}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:#6B7280;font-size:14px">BTW 21%</td>
+              <td style="padding:4px 0;text-align:right;color:#374151;font-size:14px">&euro;{pricing.btw_bedrag:.2f}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 0 0 0;color:#111827;font-size:20px;font-weight:700;border-top:2px solid #E5E7EB">Totaal incl. BTW</td>
+              <td style="padding:12px 0 0 0;text-align:right;color:#111827;font-size:20px;font-weight:700;border-top:2px solid #E5E7EB">&euro;{pricing.totaal_incl_btw:.2f}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Buttons -->
+        <div style="text-align:center;margin:0 0 24px 0">
+          <a href="{escape(approve_url)}" style="background:#16a34a;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;margin:6px">
+            Goedkeuren &amp; versturen
+          </a>
+          <a href="{escape(edit_url)}" style="background:#F97316;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block;margin:6px">
+            Wijzigen
+          </a>
+        </div>
+
+        <p style="color:#9CA3AF;font-size:12px;text-align:center;margin:0;line-height:1.5">
+          Automatisch gegenereerd door het Frontlix demo-systeem
+        </p>
+      </div>
     </div>
     """
 
