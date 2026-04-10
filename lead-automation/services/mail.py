@@ -270,7 +270,7 @@ async def send_customer_quote_email(
                 <h1 style="margin:0 0 20px 0;font-family:{font};font-size:22px;font-weight:700;color:#1A1A1A">Je offerte staat klaar!</h1>
                 <p style="margin:0 0 16px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Hoi {escape(voornaam)},</p>
                 <p style="margin:0 0 16px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Goed nieuws, je offerte voor {escape(branche_label)} is goedgekeurd en staat klaar. Je vindt de offerte als PDF bijlage bij deze email.</p>
-                <p style="margin:0 0 8px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Wil je een gratis kennismakingsgesprek inplannen? Klik hieronder of antwoord met "ja" op WhatsApp.</p>
+                <p style="margin:0 0 8px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Wil je een gratis kennismakingsgesprek inplannen? Klik hieronder om een moment te kiezen.</p>
               </td></tr>
 
               <!-- Schedule button -->
