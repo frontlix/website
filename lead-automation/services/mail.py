@@ -232,37 +232,83 @@ async def send_customer_quote_email(
     pdf_url: str,
     schedule_url: str,
 ) -> None:
-    """Send the approved quote to the customer with a scheduling link."""
+    """Send the approved quote to the customer with a scheduling link and PDF attachment."""
+    font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
+    logo_url = "https://frontlix.com/logo.png"
+    voornaam = naam.split()[0] if naam else "daar"
+
     html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56FF">Je offerte staat klaar!</h2>
+    <!DOCTYPE html>
+    <html lang="nl">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background-color:#F0F2F5;-webkit-font-smoothing:antialiased">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F0F2F5">
+      <tr><td align="center" style="padding:40px 16px">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%">
 
-      <p>Hoi {escape(naam)},</p>
+          <!-- Logo + naam -->
+          <tr><td style="padding:0 0 24px 0" align="center">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle"><img src="{logo_url}" width="36" height="36" alt="Frontlix" style="display:block" /></td>
+                <td style="vertical-align:middle;padding-left:10px">
+                  <span style="font-family:{font};font-size:20px;font-weight:700;letter-spacing:-0.3px"><span style="color:#1A56FF">Front</span><span style="color:#00CFFF">lix</span></span>
+                </td>
+              </tr>
+            </table>
+          </td></tr>
 
-      <p>Goed nieuws — je offerte voor {escape(branche_label)} is goedgekeurd en staat klaar als PDF.</p>
+          <!-- Main card -->
+          <tr><td style="background-color:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06)">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
 
-      <div style="margin:24px 0;text-align:center">
-        <a href="{escape(pdf_url)}" style="background:#1A56FF;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin:8px">
-          Offerte bekijken (PDF)
-        </a>
-      </div>
+              <!-- Gradient top bar -->
+              <tr><td style="height:4px;background:linear-gradient(90deg,#1A56FF,#00CFFF);font-size:0;line-height:0">&nbsp;</td></tr>
 
-      <p>Wil je een afspraak inplannen? Klik hieronder of antwoord met "ja" op WhatsApp.</p>
+              <!-- Content -->
+              <tr><td style="padding:40px 40px 20px 40px">
+                <h1 style="margin:0 0 20px 0;font-family:{font};font-size:22px;font-weight:700;color:#1A1A1A">Je offerte staat klaar!</h1>
+                <p style="margin:0 0 16px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Hoi {escape(voornaam)},</p>
+                <p style="margin:0 0 16px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Goed nieuws, je offerte voor {escape(branche_label)} is goedgekeurd en staat klaar. Je vindt de offerte als PDF bijlage bij deze email.</p>
+                <p style="margin:0 0 8px 0;font-family:{font};font-size:15px;color:#555;line-height:1.6">Wil je een gratis kennismakingsgesprek inplannen? Klik hieronder of antwoord met "ja" op WhatsApp.</p>
+              </td></tr>
 
-      <div style="margin:24px 0;text-align:center">
-        <a href="{escape(schedule_url)}" style="background:linear-gradient(135deg,#1A56FF,#00CFFF);color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">
-          Afspraak inplannen
-        </a>
-      </div>
+              <!-- Schedule button -->
+              <tr><td style="padding:12px 40px 36px 40px" align="center">
+                <a href="{escape(schedule_url)}" style="display:inline-block;background-color:#1A56FF;color:#ffffff;font-family:{font};font-size:15px;font-weight:600;text-decoration:none;padding:14px 36px;border-radius:10px">Afspraak inplannen</a>
+              </td></tr>
 
-      <p style="color:#999;font-size:12px;text-align:center;margin-top:32px">
-        Dit is een automatisch gegenereerde e-mail van het Frontlix demo-systeem.
-      </p>
-    </div>
+            </table>
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="padding:24px 0 0 0" align="center">
+            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9">Automatisch gegenereerd door <span style="color:#1A56FF;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span></p>
+          </td></tr>
+
+        </table>
+      </td></tr>
+    </table>
+    </body>
+    </html>
     """
+
+    # Download PDF and attach
+    attachments = []
+    if pdf_url:
+        try:
+            pdf_data = httpx.get(pdf_url).content
+            attachments.append({
+                "filename": f"Offerte-{branche_label}.pdf",
+                "data": pdf_data,
+                "content_type": "application/pdf",
+            })
+        except Exception as e:
+            print(f"[mail] Failed to download PDF for customer email attachment: {e}")
 
     _send_email(
         to=to_email,
-        subject=f"Je offerte voor {branche_label} — Frontlix demo",
+        subject=f"Je offerte voor {branche_label}, {voornaam}",
         html_body=html,
+        attachments=attachments,
     )
