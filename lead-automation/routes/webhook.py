@@ -855,7 +855,7 @@ async def _trigger_approval(lead_id: str):
         photo_urls = [u for u in (collected.get("photos") or []) if isinstance(u, str)]
 
         await send_approval_email(
-            to_email=get_settings().mail_user,
+            to_email=lead["email"],
             naam=lead["naam"],
             telefoon=lead["telefoon"],
             email=lead["email"],
