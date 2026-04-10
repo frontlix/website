@@ -138,7 +138,9 @@ async def approve_quote(request: Request):
     # Send PDF via WhatsApp + follow-up scheduling message
     caption = f"Hier is je offerte voor {config.label}! Bekijk 'm rustig."
     try:
+        import asyncio
         await send_document(lead["telefoon"], pdf_url, f"Offerte-{config.label}.pdf", caption)
+        await asyncio.sleep(3)  # wacht zodat WhatsApp het document eerst aflevert
         await send_text(lead["telefoon"], "Als je een afspraak wilt inplannen om alles door te spreken, laat het gerust weten. Dan zoek ik een mooi moment uit!")
     except Exception as e:
         print(f"WhatsApp document/follow-up send failed: {e}")
