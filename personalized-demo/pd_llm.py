@@ -436,9 +436,14 @@ Known info:{known_info}
 NEXT: {next_tag}
 RETRY: {empty_streak}
 
-Write 1 WhatsApp message as Nick in Dutch. First check if the customer is waiting, unsure or frustrated.
-If RETRY > 0: the customer did not answer the previous question. Rephrase the question in a completely different way. Be shorter and more casual. Do NOT repeat the same sentence. At RETRY 3+: acknowledge the confusion and offer to help differently.
-Only the message text — no JSON, no explanation."""
+CRITICAL INSTRUCTION: You MUST ask about the NEXT field shown above. Look up the NEXT field in the FIELD GUIDE and ask that exact question. Do NOT ask about any other field. Do NOT skip ahead.
+- If NEXT is "voertuig" → ask about the car make and model
+- If NEXT is "kleur_afwerking" → ask about the desired color
+- If NEXT is "wrap_type" → ask about full/partial wrap
+- Do NOT use the customer's name after the first greeting.
+
+Write 1 WhatsApp message as Nick in Dutch. Only the message text — no JSON, no explanation.
+If RETRY > 0: rephrase the question differently. At RETRY 3+: offer to help differently."""
 
     chat_history = _format_history(history)
     model = os.environ.get("PERSONALIZED_REPLY_MODEL", "gpt-4o")
