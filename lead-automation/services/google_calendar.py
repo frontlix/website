@@ -76,7 +76,10 @@ async def get_free_slots(
             datetime.fromisoformat(b["end"]),
         ))
 
-    # Generate candidate slots
+    # Generate candidate slots, then simulate 30% occupancy
+    import hashlib
+    OCCUPANCY_RATE = 0.30  # 30% of slots appear as "busy"
+
     slots = []
     now = datetime.now(timezone.utc)
     earliest = now + timedelta(hours=1)
@@ -108,6 +111,12 @@ async def get_free_slots(
                         continue
 
                     label = start_utc.astimezone(TZ).strftime("%a %-d %b %H:%M")
+
+                    # Deterministic pseudo-random filter: hash the slot time to decide
+                    # if it should appear "busy" (simulates 30% occupancy)
+                    slot_hash = int(hashlib.md5(start_utc.isoformat().encode()).hexdigest(), 16)
+                    if (slot_hash % 100) < (OCCUPANCY_RATE * 100):
+                        continue
 
                     slots.append({
                         "start_utc": start_utc.isoformat(),
