@@ -88,9 +88,16 @@ async def send_approval_email(
       <tr><td align="center" style="padding:40px 16px">
         <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%">
 
-          <!-- Logo bar -->
+          <!-- Logo + naam -->
           <tr><td style="padding:0 0 24px 0" align="center">
-            <img src="{logo_url}" width="44" height="44" alt="Frontlix" style="display:block" />
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle"><img src="{logo_url}" width="36" height="36" alt="Frontlix" style="display:block" /></td>
+                <td style="vertical-align:middle;padding-left:10px">
+                  <span style="font-family:{font};font-size:20px;font-weight:700;color:#1A1A1A;letter-spacing:-0.3px"><span style="color:#1A56FF">Front</span><span style="color:#00CFFF">lix</span></span>
+                </td>
+              </tr>
+            </table>
           </td></tr>
 
           <!-- Main card -->
