@@ -14,6 +14,7 @@ from routes.webhook import router as webhook_router
 from routes.demo import router as demo_router
 from routes.approve import router as approve_router
 from routes.edit import router as edit_router
+from routes.schedule import router as schedule_router
 
 # Personalized demo routes (separate module in /personalized-demo/)
 from pd_routes import router as personalized_router
@@ -38,6 +39,7 @@ app.include_router(webhook_router)
 app.include_router(demo_router)
 app.include_router(approve_router)
 app.include_router(edit_router)
+app.include_router(schedule_router)
 app.include_router(personalized_router)
 app.include_router(pd_approve_router)
 app.include_router(pd_edit_router)

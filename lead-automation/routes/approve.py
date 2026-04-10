@@ -119,7 +119,7 @@ async def approve_quote(request: Request):
                 naam=lead.get("naam") or "klant",
                 branche_label=config.label,
                 pdf_url=pdf_url,
-                schedule_url=f"{site_url}/api/demo-schedule?token={lead['approval_token']}&type=kennismaking",
+                schedule_url=f"{site_url}/schedule?token={lead['approval_token']}",
             )
         except Exception as e:
             print(f"Customer email failed: {e}")
