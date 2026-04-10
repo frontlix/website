@@ -204,6 +204,18 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
         <h2>Aanvraag details</h2>
         {field_inputs_html}
 
+        <h2>Korting</h2>
+        <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:20px">
+          <div class="field">
+            <label for="korting_percentage">Korting percentage (%)</label>
+            <input type="number" id="korting_percentage" name="korting_percentage" min="0" max="100" step="1" value="{escape(str(collected.get('_korting_percentage') or ''))}" placeholder="bijv. 10" />
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="korting_notitie">Notitie bij korting (zichtbaar op offerte)</label>
+            <textarea id="korting_notitie" name="korting_notitie" rows="2" style="width:100%;padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:15px;font-family:inherit;color:#1A1A1A;background:#FAFBFC;resize:vertical">{escape(str(collected.get('_korting_notitie') or ''))}</textarea>
+          </div>
+        </div>
+
         <h2>Huidige prijsopbouw</h2>
         <table class="pricing">
           <thead><tr><th>Omschrijving</th><th>Aantal</th><th>Per stuk</th><th>Totaal</th></tr></thead>
@@ -247,6 +259,16 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
 
     const result = calcPricing(answers);
 
+    // Korting toepassen
+    var kortingPct = parseFloat(document.getElementById('korting_percentage').value) || 0;
+    if (kortingPct > 0 && kortingPct <= 100) {{
+      var kortingBedrag = Math.round(result.subtotaal * (kortingPct / 100) * 100) / 100;
+      result.lines.push({{label: 'Korting (' + kortingPct + '%)', quantity: 1, unit: '', unitPrice: -kortingBedrag, total: -kortingBedrag}});
+      result.subtotaal = Math.round((result.subtotaal - kortingBedrag) * 100) / 100;
+      result.btw = Math.round(result.subtotaal * 0.21 * 100) / 100;
+      result.totaal = Math.round((result.subtotaal + result.btw) * 100) / 100;
+    }}
+
     // Update table
     const tbody = document.querySelector('table.pricing tbody');
     tbody.innerHTML = result.lines.map(l =>
@@ -268,6 +290,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     el.addEventListener('input', recalc);
     el.addEventListener('change', recalc);
   }});
+  document.getElementById('korting_percentage').addEventListener('input', recalc);
   </script>
 </body>
 </html>"""
@@ -330,6 +353,18 @@ async def edit_submit(request: Request):
         v = form.get(f"field_{f.key}")
         if isinstance(v, str) and v.strip():
             new_collected[f.key] = v.strip()
+
+    # Korting velden opslaan
+    korting_pct = (str(form.get("korting_percentage") or "")).strip()
+    korting_note = (str(form.get("korting_notitie") or "")).strip()
+    if korting_pct:
+        new_collected["_korting_percentage"] = korting_pct
+    elif "_korting_percentage" in new_collected:
+        del new_collected["_korting_percentage"]
+    if korting_note:
+        new_collected["_korting_notitie"] = korting_note
+    elif "_korting_notitie" in new_collected:
+        del new_collected["_korting_notitie"]
 
     # Calculate old total for diff display
     old_answers = {k: str(v) for k, v in (lead.get("collected_data") or {}).items() if isinstance(v, (str, int, float))}

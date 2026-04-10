@@ -51,6 +51,28 @@ async def generate_quote_pdf(
     string_data = {k: str(v) for k, v in collected_data.items() if v is not None and not isinstance(v, (dict, list))}
     pricing = get_pricing(branche_id, string_data)
 
+    # Korting toepassen als die is ingesteld
+    from branches.base import round2, with_btw
+    from models.branches import PricingLine
+    korting_pct = collected_data.get("_korting_percentage")
+    korting_notitie = collected_data.get("_korting_notitie")
+    if korting_pct:
+        try:
+            pct = float(str(korting_pct))
+            if 0 < pct <= 100:
+                korting_bedrag = round2(pricing.subtotaal_excl_btw * (pct / 100))
+                pricing.lines.append(PricingLine(
+                    label=f"Korting ({pct:.0f}%)",
+                    quantity=1, unit="", unit_price=-korting_bedrag, total=-korting_bedrag,
+                ))
+                new_sub = pricing.subtotaal_excl_btw - korting_bedrag
+                btw_info = with_btw(new_sub)
+                pricing.subtotaal_excl_btw = btw_info["subtotaal_excl_btw"]
+                pricing.btw_bedrag = btw_info["btw_bedrag"]
+                pricing.totaal_incl_btw = btw_info["totaal_incl_btw"]
+        except (ValueError, TypeError):
+            pass
+
     intake_summary = _build_intake_summary(branche_id, collected_data)
 
     # Load and render HTML template
@@ -66,6 +88,7 @@ async def generate_quote_pdf(
         intake_summary=intake_summary,
         aanbod_beschrijving=config.aanbod_beschrijving,
         pricing=pricing,
+        korting_notitie=korting_notitie or "",
         escape=escape,
     )
 
