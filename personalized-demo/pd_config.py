@@ -19,5 +19,5 @@ ALL_FIELDS = sorted(set(f for fields in FIELDS_PER_DIENST.values() for f in fiel
 
 # Limits
 MAX_PHOTOS = 6
-PHOTO_WAIT_MS = 30_000
+PHOTO_WAIT_MS = 10_000
 RATE_LIMIT_MAX = 30
