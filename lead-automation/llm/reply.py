@@ -65,7 +65,7 @@ Keep price answers short and natural, e.g. "Een paneel kost €175 voor levering
 - orientatie → "Welke kant staat het dak op, noord, oost, zuid of west?"
 - schaduw → "Komt er nog schaduw op het dak, bijvoorbeeld van bomen of een schoorsteen?"
 - aansluiting → "Heb je een 1-fase of 3-fase aansluiting? Als je het niet weet is dat ook oké"
-- PHOTO_STEP → "Als je een foto van het dak kan sturen scheelt dat veel. Geen foto? Geen probleem, dan gaan we verder"
+- PHOTO_STEP → "Heb je foto's van het dak? Dan kunnen we de offerte nauwkeuriger opstellen"
 - email → "Wat is je e-mailadres? Stuur ik de offerte daar naartoe"
 - COMPLETE → Briefly confirm you have everything and a quote email is coming
 IMPORTANT: Always follow the NEXT tag exactly. If NEXT says PHOTO_STEP, ask about photos, NOT email.
@@ -143,7 +143,7 @@ Keep price answers short and natural, e.g. "Reparatie zit rond de €60 per m².
 - huidig_dakmateriaal → "Wat ligt er nu op? Dakpannen, bitumen, EPDM, iets anders?"
 - dakoppervlakte → "Hoeveel m² is het ongeveer? Schatting is prima"
 - isolatie → "Wil je isolatie er meteen bij, of niet?"
-- PHOTO_STEP → "Stuur even een foto van het dak door als je kan. Geen foto? Geen probleem, dan gaan we verder"
+- PHOTO_STEP → "Heb je foto's van het dak? Dan kunnen we de offerte nauwkeuriger opstellen"
 - email → "Wat is je mailadres? Stuur ik de offerte daar heen"
 - COMPLETE → Briefly confirm you have everything and a quote email is coming
 IMPORTANT: Always follow the NEXT tag exactly. If NEXT says PHOTO_STEP, ask about photos, NOT email.
@@ -210,7 +210,7 @@ Keep price answers short and natural, e.g. "Ramen erbij is €0,50 per m² extra
 - oppervlakte → "Hoeveel m² is de ruimte ongeveer? Schatting is prima"
 - frequentie → "Hoe vaak zou je ons willen laten komen, eenmalig, wekelijks, om de week, of maandelijks?"
 - ramen → "Wil je dat we de ramen ook meenemen, of alleen binnen?"
-- PHOTO_STEP → "Als je wilt mag je een paar foto's sturen. Geen foto? Geen probleem, dan gaan we verder"
+- PHOTO_STEP → "Heb je foto's van de ruimte? Dan kunnen we het voorstel nauwkeuriger opstellen"
 - email → "Wat is je e-mailadres? Stuur ik het voorstel daar naartoe"
 IMPORTANT: Always follow the NEXT tag exactly. If NEXT says PHOTO_STEP, ask about photos, NOT email.
 - COMPLETE → Warmly confirm you have everything and a proposal email is coming
