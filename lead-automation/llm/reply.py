@@ -11,7 +11,16 @@ from services.openai_client import get_openai
 from models.lead import ConversationMessage
 from branches import get_branche, get_missing_fields, get_photo_count, is_photo_step_done
 
-from llm.detect import format_history
+def _format_history_for_reply(history: list[ConversationMessage]) -> str:
+    """Format history in the same style as the EXAMPLES section so the LLM doesn't copy
+    'Assistent:' as a prefix (regression seen in production test)."""
+    lines = []
+    for m in history:
+        if m.role == "user":
+            lines.append(f"Klant: {m.content}")
+        else:
+            lines.append(f"→ {m.content}")
+    return "\n".join(lines)
 
 
 # ── Reply prompts per branche ───────────────────────────────────────────
@@ -50,7 +59,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - Ask exactly 1 question per message — the NEXT field below
 - If the customer asks about pricing, answer with the actual rates from the PRICING section below, then continue with the next field
 - If the customer goes off-topic (timeline, other questions): acknowledge in 1 sentence, then continue with the next field
-- If the customer is unsure ("weet niet", "geen idee"): offer an easy out, then move to the next field
+- If the customer is unsure ("weet niet", "geen idee", "geen flauw idee"): offer an easy out, move to the next field, and treat that field as PERMANENTLY CLOSED. Never mention it again — not in a later reaction, not in known_info references, not "kun je het alsnog opmeten". If known_info still shows 'unknown' for that field, ignore it silently.
 - If the customer asks HOW to find something out: give a brief practical tip, then re-ask the same field
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com" / whitespace inside the address. If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
@@ -159,7 +168,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - Ask exactly 1 question per message — the NEXT field below
 - If the customer asks about pricing, answer with the actual rates from the PRICING section below, then continue with the next field
 - If the customer goes off-topic (timeline, other questions): acknowledge in 1 sentence, then continue with the next field
-- If the customer is unsure ("weet niet"): offer an easy out ("Is goed, dan laat ik 't open"), then move on
+- If the customer is unsure ("weet niet", "geen idee", "geen flauw idee"): offer an easy out ("Is goed, dan laat ik 't open"), move on, and treat that field as PERMANENTLY CLOSED. Never mention it again — not in a later reaction, not in known_info references, not "kun je het alsnog opmeten". If known_info still shows 'unknown' for that field, ignore it silently.
 - If the customer asks HOW to find something out: give a brief practical tip as a tradesman would, then re-ask the same field
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com". If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
@@ -271,7 +280,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - Ask exactly 1 question per message — the NEXT field below
 - If the customer asks about pricing, answer with the actual rates from the PRICING section below, then continue with the next field
 - If the customer goes off-topic (timeline, other questions): acknowledge in 1 sentence, then continue with the next field
-- If the customer is unsure ("weet niet"): offer an easy out ("Geen zorgen, dan noteer ik 'nee'"), then move on
+- If the customer is unsure ("weet niet", "geen idee", "geen flauw idee"): offer an easy out ("Geen zorgen, dan noteer ik 'nee'"), move on, and treat that field as PERMANENTLY CLOSED. Never mention it again — not in a later reaction, not in known_info references. If known_info still shows 'unknown' for that field, ignore it silently.
 - If the customer asks HOW to find something out: give a brief practical tip, then re-ask the same field
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com" / whitespace inside the address. If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
@@ -406,7 +415,7 @@ NEXT: {next_tag}
 
 Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."""
 
-    chat_history = format_history(history)
+    chat_history = _format_history_for_reply(history)
     agent_name = get_branche(branche_id).agent_name
 
     model = os.environ.get("BRANCHE_REPLY_MODEL", "gpt-4o")
