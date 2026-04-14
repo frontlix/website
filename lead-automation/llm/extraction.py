@@ -24,7 +24,7 @@ You are a data extractor for a solar panel installer. Read the Dutch WhatsApp co
 
 ## FIELDS
 - naam: first name or full name (top-level)
-- email: valid email address containing @ (top-level)
+- email: valid email address. MUST contain @, MUST have a dot in the domain part, MUST have no whitespace. If malformed (missing dot, whitespace, typos like "gmialcom", "gail.com", ".co" instead of ".com"): OMIT the field entirely. Do NOT auto-correct.
 - jaarverbruik: number in kWh/year ("4000", "ongeveer 5000 kWh", "3.500" → 3500). Vague words → omit.
 - daktype: ONLY "schuin" or "plat". "hellend" → "schuin". "flat" → "plat".
 - dakmateriaal: ONLY "pannen", "riet", "leisteen" or "dakbedekking".
@@ -47,14 +47,17 @@ Conversation: "Klant: ik ben Mark, schuin dak met dakpannen, ongeveer 4000 kWh p
 → {{ "naam": "Mark", "data": {{ "jaarverbruik": "4000", "daktype": "schuin", "dakmateriaal": "pannen" }} }}
 
 Conversation: "Klant: het staat op het zuidwesten"
-→ {{}} (combination orientation is not accepted)""",
+→ {{}} (combination orientation is not accepted)
+
+Conversation: "Klant: mark@gmialcom"
+→ {{}} (malformed email, domain lacks a dot — omit)""",
 
     "dakdekker": """## ROLE
 You are a data extractor for a roofing company. Read the Dutch WhatsApp conversation and return **ONLY** newly found or corrected fields as JSON.
 
 ## FIELDS
 - naam: first name or full name (top-level)
-- email: valid email address containing @ (top-level)
+- email: valid email address. MUST contain @, MUST have a dot in the domain part, MUST have no whitespace. If malformed (missing dot, whitespace in the string, typos like "gmialcom", "gail.com", ".co" instead of ".com"): OMIT the field entirely. Do NOT auto-correct.
 - type_werk: ONLY "vervangen", "repareren" or "isoleren".
 - daktype: "plat" or "schuin"
 - huidig_dakmateriaal: free text — "dakpannen", "bitumen", "EPDM", etc.
@@ -72,14 +75,20 @@ Conversation: "Klant: hoi ik ben Peter, mijn dak lekt, plat dak met bitumen"
 → {{ "naam": "Peter", "data": {{ "type_werk": "repareren", "daktype": "plat", "huidig_dakmateriaal": "bitumen" }} }}
 
 Conversation: "Klant: weet ik niet zeker of ik isolatie wil"
-→ {{}} (doubt = no value for isolatie)""",
+→ {{}} (doubt = no value for isolatie)
+
+Conversation: "Klant: peter@gmialcom"
+→ {{}} (malformed email, domain lacks a dot — omit)
+
+Conversation: "Klant: c.c.trom pje@gmialcom"
+→ {{}} (whitespace + malformed domain — omit)""",
 
     "schoonmaak": """## ROLE
 You are a data extractor for a cleaning company. Read the Dutch WhatsApp conversation and return **ONLY** newly found or corrected fields as JSON.
 
 ## FIELDS
 - naam: first name or full name (top-level)
-- email: valid email address containing @ (top-level)
+- email: valid email address. MUST contain @, MUST have a dot in the domain part, MUST have no whitespace. If malformed (missing dot, whitespace, typos like "gmialcom", "gail.com", ".co" instead of ".com"): OMIT the field entirely. Do NOT auto-correct.
 - type_pand: ONLY "woning", "kantoor", "horeca" or "winkel".
 - oppervlakte: number in m². "weet niet" → omit.
 - frequentie: ONLY "eenmalig", "wekelijks", "2-wekelijks" or "maandelijks".
@@ -96,7 +105,10 @@ Conversation: "Klant: hoi ik ben Sara, ik zoek iemand voor ons restaurant, zo'n 
 → {{ "naam": "Sara", "data": {{ "type_pand": "horeca", "oppervlakte": "200" }} }}
 
 Conversation: "Klant: wat kost dat per maand?"
-→ {{}}""",
+→ {{}}
+
+Conversation: "Klant: sara@gmialcom"
+→ {{}} (malformed email, domain lacks a dot — omit)""",
 }
 
 
