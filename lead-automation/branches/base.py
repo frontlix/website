@@ -56,7 +56,9 @@ def get_effective_missing_fields(config: BrancheConfig, collected_data: dict, br
     """Like get_missing_fields, but applies architectural skips (e.g. orientatie is irrelevant
     for flat roofs in the zonnepanelen branche — panels can be mounted in any direction)."""
     missing = get_missing_fields(config, collected_data)
-    if branche_id == "zonnepanelen" and (collected_data.get("daktype") or "").lower() == "plat":
+    # Plat dak → orientatie is irrelevant. Panels are mounted on angled frames
+    # regardless of flat-roof direction. Use startswith so "plat", "Plat", "plat dak" all match.
+    if branche_id == "zonnepanelen" and (collected_data.get("daktype") or "").strip().lower().startswith("plat"):
         missing = [f for f in missing if f != "orientatie"]
     return missing
 

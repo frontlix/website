@@ -429,7 +429,10 @@ async def _handle_image(lead: dict, message: dict, phone: str):
     collected["_last_photo_at"] = now_ms
     collected["_photo_wait_until"] = now_ms + PHOTO_WAIT_MS
 
-    await _save_message(lead["id"], "user", "(foto ontvangen)", "image", public_url)
+    # Embed the vision analysis in the saved user message so extraction can read it
+    # (e.g. pick up aansluiting=3-fase from a meterkast photo analysis).
+    msg_body = f"(foto ontvangen — analyse: {analysis})" if analysis else "(foto ontvangen)"
+    await _save_message(lead["id"], "user", msg_body, "image", public_url)
 
     # Max photos reached → advance immediately
     if len(photos) >= MAX_PHOTOS:
