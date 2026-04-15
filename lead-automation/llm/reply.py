@@ -64,6 +64,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com" / whitespace inside the address. If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
 - If the customer is frustrated ("wtf", "hou op", swearing): acknowledge briefly, stop asking questions, wait
+- If the customer says "dit heb ik al beantwoord" / "vroeg je net al" / "dat zei ik al": apologize briefly ("Sorry, mijn fout"), DO NOT re-ask that field, and move to the NEXT different field from the FIELD GUIDE. If no other field is missing, move to PHOTO_STEP, email, or COMPLETE.
 - Never prefix your reply with ANY label like "Sanne:", "Assistent:", "Klant:" — write the message text directly, nothing else before it
 - Never use dashes (-) or em-dashes (—) in your reply. Use a comma instead
 
@@ -173,6 +174,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com". If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
 - If the customer is frustrated ("wtf", "hou op", swearing): acknowledge briefly, stop asking questions, wait
+- If the customer says "dit heb ik al beantwoord" / "vroeg je net al" / "dat zei ik al": apologize briefly ("Sorry, mijn fout"), DO NOT re-ask that field, and move to the NEXT different field from the FIELD GUIDE. If no other field is missing, move to PHOTO_STEP, email, or COMPLETE.
 - Never prefix your reply with ANY label like "Bram:", "Assistent:", "Klant:" — write the message text directly, nothing else before it
 - Never use dashes (-) or em-dashes (—) in your reply. Use a comma instead
 
@@ -285,6 +287,7 @@ You MUST still ask the NEXT field in every message (unless the customer is liter
 - When the customer gives an email, scan for obvious typos before accepting: common ones are "gail.com" / "gmial.com" / missing ".com" / double "@" / ".co" instead of ".com" / whitespace inside the address. If suspicious, reply: "Klopt dat mailadres? Ik zie <what they typed> staan." Only move to COMPLETE when the email looks valid.
 - Only reply with '[WAIT]' when the customer's LAST message LITERALLY contains a waiting phrase like "moment", "even", "1 sec", "wacht", "zo terug", "ga ff kijken". Never use [WAIT] for short one-word answers, branche selections, or because you feel there's nothing to react to.
 - If the customer is frustrated ("wtf", "hou op", swearing): acknowledge warmly, stop asking questions, wait
+- If the customer says "dit heb ik al beantwoord" / "vroeg je net al" / "dat zei ik al": apologize warmly ("Sorry, mijn fout"), DO NOT re-ask that field, and move to the NEXT different field from the FIELD GUIDE. If no other field is missing, move to PHOTO_STEP, email, or COMPLETE.
 - Never prefix your reply with ANY label like "Lotte:", "Assistent:", "Klant:" — write the message text directly, nothing else before it
 - Never use dashes (-) or em-dashes (—) in your reply. Use a comma instead
 
@@ -345,13 +348,66 @@ Klant: "dit duurt zo lang zeg"
 }
 
 
+# Keyword map per branche for detecting which field an assistant message asked about.
+# Used to auto-skip fields that were already asked but where extraction didn't find a value.
+_FIELD_KEYWORDS: dict[str, dict[str, list[str]]] = {
+    "zonnepanelen": {
+        "jaarverbruik": ["kwh", "verbruik", "jaarnota"],
+        "daktype": ["plat of schuin", "plat dak of schuin", "schuin of een plat", "schuin of plat"],
+        "dakmateriaal": ["ligt er nu op", "dakpannen, riet", "dakbedekking", "dakpannen of iets anders"],
+        "dakoppervlakte": ["m²", "hoeveel m2", "hoeveel m "],
+        "orientatie": ["welke kant staat het dak", "noord, oost", "zuid of west", "welke kant ligt"],
+        "schaduw": ["schaduw op het dak", "nog schaduw"],
+        "aansluiting": ["1-fase of 3-fase", "1-fase", "3-fase"],
+    },
+    "dakdekker": {
+        "type_werk": ["nieuw dak, een reparatie", "nieuw dak, reparatie", "reparatie, of isolatie"],
+        "daktype": ["plat dak of schuin", "plat of schuin"],
+        "huidig_dakmateriaal": ["ligt er nu op", "bitumen, epdm", "dakpannen, bitumen"],
+        "dakoppervlakte": ["m²", "hoeveel m"],
+        "isolatie": ["isolatie er meteen"],
+    },
+    "schoonmaak": {
+        "type_pand": ["woning, kantoor", "horeca of een winkel", "horeca of winkel"],
+        "oppervlakte": ["m²", "hoeveel m"],
+        "frequentie": ["wekelijks", "om de week", "eenmalig", "maandelijks"],
+        "ramen": ["ramen ook meenemen", "ramen meenemen"],
+    },
+}
+
+
+def _asked_fields_in_history(history: list["ConversationMessage"], branche_id: str) -> set[str]:
+    """Scan assistant messages for field-keywords and return which fields were already asked,
+    but only if a user reply followed (so customer had a chance to answer)."""
+    kw_map = _FIELD_KEYWORDS.get(branche_id, {})
+    asked: set[str] = set()
+    for i, m in enumerate(history):
+        if m.role != "assistant":
+            continue
+        has_user_reply_after = any(h.role == "user" for h in history[i + 1:])
+        if not has_user_reply_after:
+            continue
+        low = m.content.lower()
+        for field_key, kws in kw_map.items():
+            if field_key in asked:
+                continue
+            if any(kw in low for kw in kws):
+                asked.add(field_key)
+    return asked
+
+
 def _determine_next_tag(
     branche_id: str,
     identity: dict,
     data: dict,
     collected_data: dict,
+    history: list["ConversationMessage"] | None = None,
 ) -> str:
-    """Determine the NEXT field tag based on what's missing."""
+    """Determine the NEXT field tag based on what's missing.
+
+    Skips fields that are architecturally irrelevant (e.g. orientatie when daktype=plat)
+    and fields that were already asked once but where extraction didn't capture a value
+    (prevents infinite re-ask loops when the customer answers in free text)."""
     config = get_branche(branche_id)
     if not config:
         return "COMPLETE"
@@ -360,6 +416,17 @@ def _determine_next_tag(
         return "naam"
 
     missing = get_missing_fields(config, data)
+
+    # Branch-specific architectural skips
+    if branche_id == "zonnepanelen" and (data.get("daktype") or "").lower() == "plat":
+        # Flat roof: panels can be oriented any direction via mounting, so orientatie is not needed
+        missing = [f for f in missing if f != "orientatie"]
+
+    # History-driven skip: field was asked, user replied, but extraction still returned nothing
+    if history:
+        already_asked = _asked_fields_in_history(history, branche_id)
+        missing = [f for f in missing if f not in already_asked]
+
     if missing:
         return missing[0]
 
@@ -403,7 +470,7 @@ async def generate_reply(
         return "Sorry, er ging iets mis. Probeer het opnieuw."
 
     photo_count = get_photo_count(collected_data)
-    next_tag = _determine_next_tag(branche_id, identity, data, collected_data)
+    next_tag = _determine_next_tag(branche_id, identity, data, collected_data, history=history)
     known_info = _build_known_info(branche_id, identity, data, photo_count)
 
     full_prompt = f"""{base_prompt}

@@ -32,8 +32,8 @@ You are a data extractor for a solar panel installer. Read the Dutch WhatsApp co
   · "bitumen", "EPDM", "roofing" → "dakbedekking"
   · "lei", "leien" → "leisteen"
 - dakoppervlakte: number in m²
-- orientatie: ONLY "noord", "oost", "zuid" or "west". Combinations like "noord-oost" → do NOT return.
-- schaduw: ONLY "geen", "licht" or "veel".
+- orientatie: ONLY "noord", "oost", "zuid" or "west". Combinations like "noord-oost" → do NOT return. If customer says "alle kanten" / "geen specifieke kant" / explains flat-roof mounting: OMIT this field (don't guess).
+- schaduw: ONLY "geen", "licht" or "veel". Fuzzy map free text: "schaduw van schoorsteen" / "beetje schaduw" / "soms schaduw" → "licht". "veel schaduw" / "grote boom" / "constant in de schaduw" → "veel". "nergens schaduw" / "open" / "geen bomen" → "geen".
 - aansluiting: ONLY "1-fase" or "3-fase". "krachtstroom" → "3-fase". If unsure → omit.
 
 ## OUTPUT FORMAT
