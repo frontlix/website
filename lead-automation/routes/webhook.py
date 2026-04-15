@@ -20,7 +20,7 @@ from services.whatsapp import normalize_phone, send_text, get_media_url, downloa
 from services.photo_vision import analyze_photo
 from llm import detect_branche, extract_data, generate_reply
 from branches import (
-    get_branche, get_missing_fields, get_pricing,
+    get_branche, get_effective_missing_fields, get_pricing,
     is_photo_step_done, user_skips_photo_step,
     MAX_PHOTOS, PHOTO_WAIT_MS,
 )
@@ -284,7 +284,7 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
     history = await _fetch_history(lead["id"])
 
     # Photo wait timestamp fallback
-    all_regular_filled = bool(lead.get("naam")) and len(get_missing_fields(config, collected)) == 0
+    all_regular_filled = bool(lead.get("naam")) and len(get_effective_missing_fields(config, collected, lead.get("demo_type"))) == 0
     photo_wait_until = collected.get("_photo_wait_until")
 
     if all_regular_filled and not is_photo_step_done(collected) and isinstance(photo_wait_until, (int, float)) and time.time() * 1000 >= photo_wait_until:
@@ -346,7 +346,7 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
             fresh_collected[k] = v
 
     # Check if all done
-    still_missing = get_missing_fields(config, fresh_collected)
+    still_missing = get_effective_missing_fields(config, fresh_collected, lead.get("demo_type"))
 
     # If all fields + naam + email are filled but photo step was skipped implicitly
     # (user gave email without explicitly skipping photos), mark photos as done

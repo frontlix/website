@@ -9,7 +9,7 @@ import os
 
 from services.openai_client import get_openai
 from models.lead import ConversationMessage
-from branches import get_branche, get_missing_fields, get_photo_count, is_photo_step_done
+from branches import get_branche, get_effective_missing_fields, get_photo_count, is_photo_step_done
 
 def _format_history_for_reply(history: list[ConversationMessage]) -> str:
     """Format history in the same style as the EXAMPLES section so the LLM doesn't copy
@@ -415,12 +415,7 @@ def _determine_next_tag(
     if not identity.get("naam"):
         return "naam"
 
-    missing = get_missing_fields(config, data)
-
-    # Branch-specific architectural skips
-    if branche_id == "zonnepanelen" and (data.get("daktype") or "").lower() == "plat":
-        # Flat roof: panels can be oriented any direction via mounting, so orientatie is not needed
-        missing = [f for f in missing if f != "orientatie"]
+    missing = get_effective_missing_fields(config, data, branche_id)
 
     # History-driven skip: field was asked, user replied, but extraction still returned nothing
     if history:

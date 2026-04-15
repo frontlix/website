@@ -52,6 +52,15 @@ def get_missing_fields(config: BrancheConfig, collected_data: dict) -> list[str]
     return missing
 
 
+def get_effective_missing_fields(config: BrancheConfig, collected_data: dict, branche_id: str | None = None) -> list[str]:
+    """Like get_missing_fields, but applies architectural skips (e.g. orientatie is irrelevant
+    for flat roofs in the zonnepanelen branche — panels can be mounted in any direction)."""
+    missing = get_missing_fields(config, collected_data)
+    if branche_id == "zonnepanelen" and (collected_data.get("daktype") or "").lower() == "plat":
+        missing = [f for f in missing if f != "orientatie"]
+    return missing
+
+
 def get_photo_count(collected_data: dict) -> int:
     photos = collected_data.get("photos")
     if not isinstance(photos, list):

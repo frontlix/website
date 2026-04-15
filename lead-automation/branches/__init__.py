@@ -8,6 +8,7 @@ from branches.dakdekker import dakdekker_config, dakdekker_pricing
 from branches.schoonmaak import schoonmaak_config, schoonmaak_pricing
 from branches.base import (
     get_missing_fields,
+    get_effective_missing_fields,
     get_photo_count,
     is_photo_step_done,
     get_last_photo_at,
