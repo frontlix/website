@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Mail, MessageCircle, Phone, CheckCircle } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics'
 import { useFormTracking } from '@/hooks/useFormTracking'
 import Button from '@/components/ui/Button'
 import styles from './ContactForm.module.css'
@@ -13,18 +14,21 @@ const contactInfo = [
     label: 'E-mail',
     value: 'info@frontlix.com',
     href: 'mailto:info@frontlix.com',
+    eventName: 'email_click',
   },
   {
     icon: MessageCircle,
     label: 'WhatsApp',
     value: 'Stuur een berichtje',
     href: 'https://wa.me/31624965270',
+    eventName: 'whatsapp_click',
   },
   {
     icon: Phone,
     label: 'Telefoon',
     value: '+31 6 24965270',
     href: 'tel:+31624965270',
+    eventName: 'phone_click',
   },
 ]
 
@@ -104,6 +108,7 @@ export default function ContactForm() {
 
       setSubmitted(true)
       markCompleted()
+      trackEvent('contact_form_submit', { form_name: 'contact' })
     } catch {
       setError('Kan geen verbinding maken. Probeer het later opnieuw.')
     } finally {
@@ -139,6 +144,9 @@ export default function ContactForm() {
                     <a
                       href={item.href}
                       className={styles.contactItemValue}
+                      onClick={() =>
+                        trackEvent(item.eventName, { source: 'contact_page' })
+                      }
                       {...(item.href.startsWith('http') && {
                         target: '_blank',
                         rel: 'noopener noreferrer',

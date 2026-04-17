@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics'
 import { useFormTracking } from '@/hooks/useFormTracking'
 import styles from './ProjectModal.module.css'
 
@@ -132,6 +133,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
 
       setSubmitted(true)
       markCompleted()
+      trackEvent('project_request_submit', { form_name: 'project' })
     } catch {
       setError('Kan geen verbinding maken. Probeer het later opnieuw.')
     } finally {
