@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import '@/styles/tokens.css'
 import '@/styles/globals.css'
 import PostHogProvider from '@/components/providers/PostHogProvider'
+import GoogleAnalytics from '@/components/providers/GoogleAnalytics'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -150,6 +151,7 @@ export default function RootLayout({
             __html: JSON.stringify(structuredData),
           }}
         />
+        <GoogleAnalytics />
         <PostHogProvider>
           {children}
         </PostHogProvider>
