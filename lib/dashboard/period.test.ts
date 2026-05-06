@@ -3,7 +3,6 @@ import {
   parsePeriod,
   periodToRange,
   periodLabel,
-  type PeriodKey,
 } from './period'
 
 describe('parsePeriod', () => {
