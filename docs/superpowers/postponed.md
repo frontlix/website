@@ -45,3 +45,27 @@ Zodra de schoon-straatje klant-testfase is afgerond en we een rustig moment hebb
 **Waar staan de details voor de eventuele uitvoering?**
 
 Plan 1 is bewust beperkt tot schema-werk. De volledige bot-migratie staat hier in `postponed.md` als TODO. Wanneer we het oppakken, schrijven we een nieuw plan: `docs/superpowers/plans/<datum>-bot-config-migratie.md` met dezelfde TDD-stappen als oorspronkelijk in Plan 1 v1 zaten (zie git history `cac0fa3` voor de eerste versie van Plan 1, vóór de scope-aanpassing).
+
+---
+
+## Plan 3-vereisten gespot tijdens Plan 1 (mag niet vergeten in Plan 3)
+
+Tijdens de final review van Plan 1 (2026-05-06) zijn deze items naar boven gekomen die in Plan 3 (auth + layout-shell) of Plan 5 (lichte acties) thuishoren — niet kritisch nu, wel essentieel later:
+
+1. **RLS-policies voor alle 8 nieuwe tabellen** — momenteel is RLS aan zonder policies, dus de bot leest met service-key (bypass) en het dashboard kan straks niets met anon-key. Plan 3 moet `CREATE POLICY` statements ophanden voor:
+   - `tenant_settings`, `pricing_rules`, `service_offerings` → SELECT voor `authenticated` users met join op `dashboard_user_profiles WHERE tenant_status='approved'`
+   - `lead_notes`, `lead_tags`, `lead_status_history`, `tags` → SELECT+INSERT voor approved users, `auth.uid()` matched op `auteur`/`aangemaakt_door`/`gewijzigd_door` bij writes
+   - `dashboard_user_profiles` → user mag alleen z'n eigen rij lezen + Frontlix admin-rol mag alle rijen lezen/wijzigen
+
+2. **Auto-fill trigger voor `lead_status_history`** — momenteel schrijft niets naar deze tabel. Twee opties:
+   - `BEFORE UPDATE ON leads`-trigger die elke `dashboard_status`-wijziging automatisch logt (audit-by-database, kan niet bypassed worden)
+   - Dashboard-server-action schrijft expliciet (kan vergeten worden)
+   - Aanbeveling: trigger.
+
+3. **Auto-create dashboard_user_profile bij signup** — momenteel ontstaat er geen rij in `dashboard_user_profiles` als een nieuwe user signup doet. Plan 3 heeft een Supabase Auth Hook (`AFTER INSERT ON auth.users`) nodig die automatisch een rij aanmaakt met `tenant_status='pending'`. Anders blokkeren RLS-policies elke read voor net-signed-up users.
+
+4. **`pricing_rules.toelichting` kolom is nu leeg** — config.json heeft geen overeenkomstig veld. Plan 7 (instellingen-edit) moet beslissen: hide of als editable note tonen wanneer de bot-config-migratie edits unlockt.
+
+5. **Singleton UUID `00000000-0000-0000-0000-000000000001`** in de seed-script wordt awkward bij multi-tenant. Bij migratie naar centrale Supabase: rename naar proper tenant UUID + voeg `tenant_id` FK kolom toe op alle 7 dashboard-tabellen. Documentatie staat al in de migration comment.
+
+6. **Lead-notes UI moet `auteur IS NULL` afhandelen** — sinds de FK fix in Plan 1 is `lead_notes.auteur` nullable (`ON DELETE SET NULL`). Bij verwijderde users toont de notitie "Onbekend" / "Verwijderde gebruiker" — designkeuze voor Plan 5 wanneer notes-UI gebouwd wordt.

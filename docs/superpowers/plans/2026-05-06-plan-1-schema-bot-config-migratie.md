@@ -129,20 +129,30 @@ ALTER TABLE service_offerings ENABLE ROW LEVEL SECURITY;
 -- ============================================
 -- AUTO-UPDATE bijgewerkt_op
 -- ============================================
-DROP TRIGGER IF EXISTS tenant_settings_bijgewerkt ON tenant_settings;
-CREATE TRIGGER tenant_settings_bijgewerkt
+-- De bestaande update_bijgewerkt() functie uit 001_initial_schema.sql schrijft
+-- NEW.bijgewerkt — onze nieuwe tabellen gebruiken kolom bijgewerkt_op (consistent
+-- met aangemaakt_op in andere nieuwe tabellen). Daarom hier een aparte
+-- trigger-functie die naar de _op-kolom schrijft.
+CREATE OR REPLACE FUNCTION update_bijgewerkt_op()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.bijgewerkt_op = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tenant_settings_bijgewerkt_op ON tenant_settings;
+CREATE TRIGGER tenant_settings_bijgewerkt_op
   BEFORE UPDATE ON tenant_settings
   FOR EACH ROW
-  EXECUTE FUNCTION update_bijgewerkt();
+  EXECUTE FUNCTION update_bijgewerkt_op();
 
-DROP TRIGGER IF EXISTS pricing_rules_bijgewerkt ON pricing_rules;
-CREATE TRIGGER pricing_rules_bijgewerkt
+DROP TRIGGER IF EXISTS pricing_rules_bijgewerkt_op ON pricing_rules;
+CREATE TRIGGER pricing_rules_bijgewerkt_op
   BEFORE UPDATE ON pricing_rules
   FOR EACH ROW
-  EXECUTE FUNCTION update_bijgewerkt();
+  EXECUTE FUNCTION update_bijgewerkt_op();
 ```
-
-(De `update_bijgewerkt()` functie bestaat al in migratie `001_initial_schema.sql` regels 132-138.)
 
 - [ ] **Step 2: Commit**
 
@@ -202,7 +212,7 @@ ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 CREATE TABLE IF NOT EXISTS lead_tags (
   lead_id          TEXT NOT NULL REFERENCES leads(lead_id) ON DELETE CASCADE,
   tag_id           UUID NOT NULL REFERENCES tags(id)       ON DELETE CASCADE,
-  aangemaakt_door  UUID REFERENCES auth.users(id),
+  aangemaakt_door  UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   aangemaakt_op    TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (lead_id, tag_id)
 );
@@ -218,7 +228,7 @@ CREATE TABLE IF NOT EXISTS lead_notes (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lead_id       TEXT NOT NULL REFERENCES leads(lead_id) ON DELETE CASCADE,
   tekst         TEXT NOT NULL,
-  auteur        UUID NOT NULL REFERENCES auth.users(id),
+  auteur        UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   aangemaakt_op TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -234,7 +244,7 @@ CREATE TABLE IF NOT EXISTS lead_status_history (
   lead_id         TEXT NOT NULL REFERENCES leads(lead_id) ON DELETE CASCADE,
   oude_status     TEXT,
   nieuwe_status   TEXT NOT NULL,
-  gewijzigd_door  UUID REFERENCES auth.users(id),
+  gewijzigd_door  UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   gewijzigd_op    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
