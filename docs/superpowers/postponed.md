@@ -153,3 +153,21 @@ Items uit de eind-review die niet blocking waren maar wel verbeterpunten:
 6. **CSV line endings** — `app/api/dashboard/export/leads-csv/route.ts` gebruikt `\n`. Modern Excel handelt dit goed af, maar oudere Windows-Excel verwacht `\r\n`. Wijzig wanneer een klant erover klaagt.
 
 7. **Status dropdown error-message phrasing** — `"{dashboardStatusLabel(optimisticStatus)} kon niet worden opgeslagen"` leest als "Geen status kon niet worden opgeslagen" wanneer de user de status leegt. Re-phrase naar bv. "De status kon niet worden opgeslagen: {error}".
+
+---
+
+## Plan 7 + 8 follow-ups (final review 2026-05-06)
+
+Items uit de eind-review die niet blocking waren:
+
+1. **`--color-on-primary` token toevoegen** — `AgendaCalendar.module.css:78` en `AgendaAppointmentBlock.module.css:16` gebruiken `color: white` hardcoded. CLAUDE.md zegt geen hardcoded colors. Voeg `--color-on-primary: #FFFFFF` toe aan `tokens.css` en vervang. Combineer met de `#c33` token-kwestie uit Plan 5.
+
+2. **Inline width-style in DistributionBars** — `DistributionBars.tsx:36` gebruikt `style={{ width: ${pct}% }}`. Werkt prima maar CLAUDE.md verbiedt inline styles strikt. Kan vervangen worden door CSS-custom-property: `style={{ ['--w']: pct }}` + `width: calc(var(--w) * 1%)`. Cosmetic.
+
+3. **Wrap Supabase builder casts in een typed helper** — `stats-queries.ts` heeft ~10 `eslint-disable + any` casts op de query-builder. Een `getQueryBuilder<T>()` helper kan dit opruimen. Niet urgent — pragmatic pattern werkt.
+
+4. **`leadsPerDag` date-string vs timestamptz** — `stats-queries.ts:204` doet `.gte('aangemaakt', '2026-04-06')`. Postgres interpreteert dit als UTC midden, dus tot ±2u kunnen leads aan de start-grens missen in NL-tijd. Acceptabel voor een 30-daagse trend-chart, maar aanpassen wanneer we tijdzone-strikt willen zijn.
+
+5. **`reactietijd` outliers** — gebruikt pure gemiddelde, kan vertekend worden door 1-2 leads die pas na 3 weken opgevolgd werden. Mediaan zou robuuster zijn maar duurder; later optimaliseren.
+
+6. **Plan 7 + 8 hebben geen "vergelijking met vorige periode"** indicator (bv. "+12% vs vorige maand"). Mooi later toe te voegen als de klant erom vraagt.
