@@ -1,0 +1,121 @@
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+const DASHBOARD_HOSTS = new Set([
+  'app.frontlix.com',
+  'app.localhost:3000', // lokaal: voeg "127.0.0.1 app.localhost" toe aan /etc/hosts
+])
+
+// Paden binnen de dashboard-host die GEEN session vereisen.
+const PUBLIC_DASHBOARD_PATHS = new Set([
+  '/login',
+  '/signup',
+  '/wachtkamer',
+])
+
+function isDashboardHost(host: string | null): boolean {
+  return host !== null && DASHBOARD_HOSTS.has(host)
+}
+
+function isAssetPath(pathname: string): boolean {
+  return pathname.startsWith('/_next') ||
+         pathname.startsWith('/api') ||
+         pathname === '/favicon.ico' ||
+         pathname === '/robots.txt' ||
+         pathname === '/sitemap.xml'
+}
+
+export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host')
+  const { pathname } = request.nextUrl
+
+  // ─────────────────────────────────────────────────────────────────────
+  // MARKETING HOST (frontlix.com): block dashboard-paden, laat rest door
+  // ─────────────────────────────────────────────────────────────────────
+  if (!isDashboardHost(host)) {
+    if (pathname.startsWith('/dashboard')) {
+      return new NextResponse(null, { status: 404 })
+    }
+    return NextResponse.next()
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // DASHBOARD HOST (app.frontlix.com): rewrite naar /dashboard prefix
+  // ─────────────────────────────────────────────────────────────────────
+
+  // Assets en API routes laten we ongewijzigd door — die zitten niet in /dashboard.
+  if (isAssetPath(pathname)) {
+    return NextResponse.next()
+  }
+
+  // Als iemand expliciet /dashboard/... typed op de dashboard-host,
+  // strippen we die prefix zodat de canonical URL altijd zonder is.
+  if (pathname.startsWith('/dashboard')) {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname.replace(/^\/dashboard/, '') || '/'
+    return NextResponse.redirect(url)
+  }
+
+  // Bouw het response-object dat we doorreiken (cookies kunnen erin landen).
+  const response = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DASHBOARD!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const isPublic = PUBLIC_DASHBOARD_PATHS.has(pathname)
+
+  // Reeds ingelogd + op login/signup pagina → redirect naar /leads
+  if (user && (pathname === '/login' || pathname === '/signup')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/leads'
+    return NextResponse.redirect(url)
+  }
+
+  // Niet ingelogd + op een private pagina → naar /login
+  if (!user && !isPublic) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('next', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Rewrite: app.frontlix.com/leads → intern /dashboard/leads
+  const rewriteUrl = request.nextUrl.clone()
+  rewriteUrl.pathname = `/dashboard${pathname === '/' ? '' : pathname}`
+
+  const rewritten = NextResponse.rewrite(rewriteUrl, { request })
+  // Kopieer de Supabase auth-cookies door:
+  response.cookies.getAll().forEach((c) => {
+    rewritten.cookies.set(c.name, c.value, c)
+  })
+  return rewritten
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match alle paden behalve standaard Next.js assets. De middleware
+     * doet zelf nog een fijnere isAssetPath()-check intern.
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
+}
