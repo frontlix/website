@@ -156,7 +156,7 @@ export interface Database {
           id: string
           lead_id: string
           oude_status: string | null
-          nieuwe_status: string
+          nieuwe_status: string | null
           gewijzigd_door: string | null
           gewijzigd_op: string
         }

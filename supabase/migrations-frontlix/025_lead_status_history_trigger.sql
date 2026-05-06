@@ -11,6 +11,11 @@
 -- DRAAIEN: handmatig in schoon-straatje Supabase Studio.
 -- AFHANKELIJKHEDEN: 023_dashboard_data_tables.sql (lead_status_history bestaat).
 
+-- Maak nieuwe_status nullable zodat we "status leeggemaakt" kunnen loggen
+-- zonder de literale string 'NULL' te moeten schrijven (die zou in de UI
+-- als "Status gewijzigd naar NULL" verschijnen). Additieve change.
+ALTER TABLE lead_status_history ALTER COLUMN nieuwe_status DROP NOT NULL;
+
 CREATE OR REPLACE FUNCTION log_dashboard_status_change()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -31,8 +36,8 @@ BEGIN
     VALUES (
       NEW.lead_id,
       OLD.dashboard_status,
-      COALESCE(NEW.dashboard_status, 'NULL'),  -- nieuwe_status is NOT NULL
-      auth.uid(),                              -- service-key writes geven NULL
+      NEW.dashboard_status,  -- mag NULL zijn (status leeggemaakt)
+      auth.uid(),             -- service-key writes geven NULL
       now()
     );
   END IF;

@@ -223,13 +223,15 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     })
   }
 
-  // Status-history
+  // Status-history. nieuwe_status is nullable (status leeggemaakt) — render
+  // dat dan als "Geen status" zodat de timeline leesbaar blijft.
   for (const h of detail.statusHistory) {
+    const nieuwLabel = h.nieuwe_status ?? 'Geen status'
     events.push({
       id: `status-${h.id}`,
       type: 'status_gewijzigd',
       timestamp: h.gewijzigd_op,
-      label: `Status gewijzigd naar ${h.nieuwe_status}`,
+      label: `Status gewijzigd naar ${nieuwLabel}`,
       details: h.oude_status ? `was: ${h.oude_status}` : null,
     })
   }
