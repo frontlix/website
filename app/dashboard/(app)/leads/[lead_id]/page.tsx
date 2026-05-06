@@ -7,6 +7,9 @@ import { LeadDetailTabs } from '@/components/dashboard/leads/LeadDetailTabs'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
 import { LeadActivityTimeline } from '@/components/dashboard/leads/LeadActivityTimeline'
+import { LeadOfferte } from '@/components/dashboard/leads/LeadOfferte'
+import { LeadAfspraak } from '@/components/dashboard/leads/LeadAfspraak'
+import { LeadNotes } from '@/components/dashboard/leads/LeadNotes'
 import styles from './page.module.css'
 
 export default async function LeadDetailPage({
@@ -49,7 +52,9 @@ export default async function LeadDetailPage({
 
         {/* Rechter kolom: offerte + afspraak + notities (Task 13-15 vullen dit) */}
         <aside className={styles.colRight}>
-          <p className={styles.placeholder}>Offerte / Afspraak / Notities — komt in volgende tasks</p>
+          <LeadOfferte offertes={detail.offertes} prijsregels={detail.prijsregels} />
+          <LeadAfspraak lead={detail.lead} />
+          <LeadNotes notes={detail.notes} />
         </aside>
       </div>
     </div>
