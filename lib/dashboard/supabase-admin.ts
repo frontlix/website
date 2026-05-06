@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Service-role Supabase client. Bypasst RLS — gebruik ALLEEN server-side
@@ -7,10 +7,15 @@ import { createClient } from '@supabase/supabase-js'
  *
  * NOOIT importeren in een Client Component — dan lekt de service-key
  * naar de browser.
+ *
+ * We typeren expliciet als `SupabaseClient` (i.p.v. `ReturnType<typeof createClient>`)
+ * zodat de default `Database = any` generic correct doorwerkt naar
+ * `from(...).upsert(...)` — anders worden Insert-types `never` en breken
+ * type-checks op write-operaties.
  */
-let _admin: ReturnType<typeof createClient> | null = null
+let _admin: SupabaseClient | null = null
 
-export function getDashboardAdmin() {
+export function getDashboardAdmin(): SupabaseClient {
   if (_admin) return _admin
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD
