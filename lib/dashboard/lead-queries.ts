@@ -94,11 +94,18 @@ export async function getLeadsList(
     .eq('dashboard_archived', false)
 
   if (filters?.q) {
-    const qNaam = filters.q
-    const qTel = normalizePhone(filters.q)
-    query = query.or(
-      `naam.ilike.%${qNaam}%,telefoon.ilike.%${qTel}%`
-    )
+    // PostgREST `.or(...)` interpreteert komma's als clausule-scheider en
+    // punten als kolom/operator-scheider. Strip die uit de gebruikersinput
+    // zodat zoektermen als "jan,piet" niet de filter-syntax breken. Andere
+    // exotische tekens (`%`, `_`) zijn ilike-wildcards en mag de gebruiker
+    // bewust gebruiken.
+    const safe = filters.q.replace(/[,.]/g, ' ').trim()
+    if (safe) {
+      const qTel = normalizePhone(safe)
+      query = query.or(
+        `naam.ilike.%${safe}%,telefoon.ilike.%${qTel}%`
+      )
+    }
   }
 
   if (filters?.status) {
