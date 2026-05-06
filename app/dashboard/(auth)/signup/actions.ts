@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
 import { postSignupNotification } from '@/lib/dashboard/slack'
@@ -76,6 +77,11 @@ export async function signupAction(
     `🆕 Nieuwe dashboard-aanvraag: *${bedrijfsnaam}* — ${email}` +
       (profileErr ? ` ⚠️ profile-rij ontbreekt, handmatig aanmaken!` : '')
   )
+
+  // Invalideer layout-cache zodat /wachtkamer de net-aangemaakte session
+  // ziet (anders krijgt user een 404 op de eerste render — zelfde issue
+  // als loginAction zonder revalidatePath).
+  revalidatePath('/', 'layout')
 
   redirect('/wachtkamer')
 }

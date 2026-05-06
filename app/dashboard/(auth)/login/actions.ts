@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 
 export type LoginState = { error?: string }
@@ -45,6 +46,12 @@ export async function loginAction(
     await supabase.auth.signOut()
     return { error: 'Aanvraag afgewezen.' }
   }
+
+  // Invalideer de layout-cache zodat /wachtkamer en /leads na de redirect
+  // de net-gezette session-cookie gebruiken in plaats van een stale render.
+  // Zonder deze call zien gebruikers soms een 404 op /leads direct na login,
+  // omdat Next.js de layout-tree had gerendered zonder de nieuwe cookies.
+  revalidatePath('/', 'layout')
 
   if (profile.tenant_status === 'pending') {
     redirect('/wachtkamer')

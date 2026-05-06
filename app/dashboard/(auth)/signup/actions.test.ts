@@ -26,6 +26,7 @@ vi.mock('@/lib/dashboard/slack', () => ({
   postSignupNotification: mockSlack,
 }))
 vi.mock('next/navigation', () => ({ redirect: mockRedirect }))
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import { signupAction } from './actions'
 
