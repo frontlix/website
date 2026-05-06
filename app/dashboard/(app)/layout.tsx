@@ -1,18 +1,11 @@
-import { redirect } from 'next/navigation'
-import { getCurrentUser, getCurrentUserProfile } from '@/lib/dashboard/auth'
+import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { Topbar } from '@/components/dashboard/Topbar'
 import styles from './layout.module.css'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser()
-  if (!user) redirect('/login')
-
-  const profile = await getCurrentUserProfile()
-  if (!profile || profile.tenant_status !== 'approved') {
-    redirect('/wachtkamer')
-  }
+  const { user, profile } = await requireApprovedUser()
 
   // Bedrijfsnaam uit tenant_settings (v1: één rij). Fallback naar profile-naam.
   const supabase = await getDashboardSupabase()
