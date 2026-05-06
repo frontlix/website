@@ -129,3 +129,86 @@ describe('getLeadDetail', () => {
     expect(result!.statusHistory).toEqual([])
   })
 })
+
+import { aggregateActivityTimeline } from './lead-queries'
+
+describe('aggregateActivityTimeline', () => {
+  it('combineert berichten + fotos + offertes + notes + history + audit-velden, gesorteerd nieuwste eerst', () => {
+    const detail = {
+      lead: {
+        lead_id: 'L1', naam: 'Jan',
+        akkoord_op: '2026-04-23T11:00:00Z',
+        akkoord_via: 'web',
+        afspraak_geboekt_op: '2026-04-23T11:30:00Z',
+        afspraak_geboekt_via: 'web',
+        aangemaakt: '2026-04-22T09:00:00Z',
+      } as any,
+      berichten: [
+        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any,
+        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uit', bericht: 'goedemorgen', type: 'tekst' } as any,
+      ],
+      fotos: [
+        { id: 'F1', aangemaakt: '2026-04-22T10:30:00Z', bron: 'whatsapp' } as any,
+      ],
+      offertes: [
+        { id: 'O1', aangemaakt_op: '2026-04-22T15:00:00Z', versie: 1, totaal_incl: 250 } as any,
+      ],
+      prijsregels: [],
+      notes: [
+        { id: 'N1', aangemaakt_op: '2026-04-23T08:00:00Z', tekst: 'klant belt morgen' } as any,
+      ],
+      statusHistory: [
+        { id: 'H1', gewijzigd_op: '2026-04-23T09:00:00Z', oude_status: 'open', nieuwe_status: 'opgevolgd' } as any,
+      ],
+    }
+
+    const events = aggregateActivityTimeline(detail)
+
+    // 9 events totaal: lead aangemaakt + 2 berichten + foto + offerte + notitie + status-change + akkoord + afspraak
+    expect(events).toHaveLength(9)
+
+    // Nieuwste eerst
+    expect(events[0].timestamp).toBe('2026-04-23T11:30:00Z')  // afspraak_geboekt
+    expect(events[events.length - 1].timestamp).toBe('2026-04-22T09:00:00Z')  // lead aangemaakt
+  })
+
+  it('event-types worden correct gelabeld', () => {
+    const detail = {
+      lead: { lead_id: 'L1', aangemaakt: '2026-04-22T09:00:00Z' } as any,
+      berichten: [{ id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any],
+      fotos: [{ id: 'F1', aangemaakt: '2026-04-22T10:30:00Z', bron: 'whatsapp' } as any],
+      offertes: [],
+      prijsregels: [],
+      notes: [],
+      statusHistory: [],
+    }
+
+    const events = aggregateActivityTimeline(detail)
+    const types = events.map((e) => e.type)
+    expect(types).toContain('lead_aangemaakt')
+    expect(types).toContain('bericht_in')
+    expect(types).toContain('foto_geupload')
+  })
+
+  it('legt richting van bericht correct vast (in vs uit)', () => {
+    const detail = {
+      lead: { lead_id: 'L1', aangemaakt: '2026-04-22T09:00:00Z' } as any,
+      berichten: [
+        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any,
+        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uit', bericht: 'hi', type: 'tekst' } as any,
+      ],
+      fotos: [],
+      offertes: [],
+      prijsregels: [],
+      notes: [],
+      statusHistory: [],
+    }
+
+    const events = aggregateActivityTimeline(detail)
+    const inEvent = events.find((e) => e.id === 'msg-B1')
+    const outEvent = events.find((e) => e.id === 'msg-B2')
+
+    expect(inEvent?.type).toBe('bericht_in')
+    expect(outEvent?.type).toBe('bericht_uit')
+  })
+})
