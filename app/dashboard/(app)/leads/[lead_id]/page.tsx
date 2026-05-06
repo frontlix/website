@@ -1,8 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getLeadDetail } from '@/lib/dashboard/lead-queries'
+import { getLeadDetail, aggregateActivityTimeline } from '@/lib/dashboard/lead-queries'
 import { LeadHeader } from '@/components/dashboard/leads/LeadHeader'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
+import { LeadDetailTabs } from '@/components/dashboard/leads/LeadDetailTabs'
+import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
+import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
+import { LeadActivityTimeline } from '@/components/dashboard/leads/LeadActivityTimeline'
 import styles from './page.module.css'
 
 export default async function LeadDetailPage({
@@ -32,7 +36,15 @@ export default async function LeadDetailPage({
 
         {/* Midden: gesprek/foto's/timeline (Task 9-12 vullen dit) */}
         <section className={styles.colCenter}>
-          <p className={styles.placeholder}>Gesprek / Foto&apos;s / Timeline — komt in volgende tasks</p>
+          <LeadDetailTabs
+            gesprek={<LeadConversation berichten={detail.berichten} />}
+            fotos={<LeadPhotos fotos={detail.fotos} />}
+            timeline={
+              <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
+            }
+            countGesprek={detail.berichten.length}
+            countFotos={detail.fotos.length}
+          />
         </section>
 
         {/* Rechter kolom: offerte + afspraak + notities (Task 13-15 vullen dit) */}
