@@ -62,7 +62,7 @@ Tijdens de final review van Plan 1 (2026-05-06) zijn deze items naar boven gekom
    - Dashboard-server-action schrijft expliciet (kan vergeten worden)
    - Aanbeveling: trigger.
 
-3. **Auto-create dashboard_user_profile bij signup** — momenteel ontstaat er geen rij in `dashboard_user_profiles` als een nieuwe user signup doet. Plan 3 heeft een Supabase Auth Hook (`AFTER INSERT ON auth.users`) nodig die automatisch een rij aanmaakt met `tenant_status='pending'`. Anders blokkeren RLS-policies elke read voor net-signed-up users.
+3. **Auto-create dashboard_user_profile bij signup** — Plan 1 noemde een AFTER INSERT-trigger op `auth.users` als oplossing, maar **Supabase staat dat niet toe** (auth.users is eigendom van `supabase_auth_admin`, error: `42501: must be owner of relation users`). In Plan 3 wordt dit nu in de **signup-server-action** gedaan (service-key UPSERT op `dashboard_user_profiles` direct na `supabase.auth.signUp`). Edge case: gebruikers die buiten de signup-flow worden aangemaakt (bijv. handmatig in Studio) krijgen geen profile-rij — moet handmatig of via een latere Supabase Database Webhook opgelost worden.
 
 4. **`pricing_rules.toelichting` kolom is nu leeg** — config.json heeft geen overeenkomstig veld. Plan 7 (instellingen-edit) moet beslissen: hide of als editable note tonen wanneer de bot-config-migratie edits unlockt.
 

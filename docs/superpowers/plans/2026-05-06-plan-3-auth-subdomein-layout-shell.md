@@ -5,7 +5,7 @@
 **Goal:** Een werkende dashboard-shell op `app.frontlix.com` waarin een nieuwe klant een account kan aanmaken, in een wachtkamer komt, na handmatige goedkeuring kan inloggen, en een lege dashboard-layout met sidebar ziet die zijn bedrijfsnaam toont. Geen lead-data, geen acties — alleen de fundering.
 
 **Architecture:** Drie lagen werk, alle in de Frontlix-repo:
-1. **Schoon-straatje DB** — RLS-policies op de 8 dashboard-tabellen + Supabase Auth Hook die automatisch een `dashboard_user_profiles`-rij maakt bij signup. Wel een SQL-migratie maar die is volledig additief en raakt de bot niet (RLS was al aan zonder policies; bot gebruikt service-key dus bypasst alles).
+1. **Schoon-straatje DB** — RLS-policies op de 8 dashboard-tabellen + helper-functie `is_approved_dashboard_user()`. **Geen** trigger op `auth.users` (Supabase staat dat niet toe — `auth.users` is eigendom van `supabase_auth_admin`); in plaats daarvan maakt de signup-server-action zelf de `dashboard_user_profiles`-rij aan met service-key. Wel een SQL-migratie maar die is volledig additief en raakt de bot niet (RLS was al aan zonder policies; bot gebruikt service-key dus bypasst alles).
 2. **Frontlix Next.js shell** — `middleware.ts` doet host-based routing: bij `app.frontlix.com/<path>` rewrite naar `/dashboard/<path>` zodat de fysieke folder `app/dashboard/` serveert. Bij `frontlix.com/dashboard/<anything>` 404 om te voorkomen dat dashboard-routes via de marketing-host bereikbaar zijn. `lib/dashboard/supabase.ts` voor server/client clients, `app/dashboard/layout.tsx` met sidebar + topbar.
 3. **Auth-pagina's** — `/login`, `/signup`, `/wachtkamer` als geneste route group `app/dashboard/(auth)/...` met eigen layout (geen sidebar). Server Actions schrijven naar Supabase Auth + Slack-webhook.
 
@@ -77,7 +77,7 @@ package.json         — voegt @supabase/ssr toe
 
 ---
 
-### Task 1: SQL-migratie 024 — RLS-policies + Auth Hook
+### Task 1: SQL-migratie 024 — RLS-policies (geen Auth Hook trigger)
 
 **Files (in Frontlix-repo):**
 - Create: `supabase/migrations-frontlix/024_dashboard_rls_and_signup_hook.sql`
@@ -342,54 +342,19 @@ ORDER BY tablename, cmd, policyname;
 
 Verwacht: minstens 1 policy per tabel; `dashboard_user_profiles` heeft 2 (SELECT + UPDATE); `lead_notes`/`lead_tags`/`tags` hebben elk 3 (SELECT, INSERT, DELETE); `leads` heeft 2 (SELECT + UPDATE).
 
-- [ ] **Step 4: Verifieer Auth Hook trigger**
+- [ ] **Step 4: Verifieer helper-functie**
 
 ```sql
-SELECT tgname, tgrelid::regclass, pg_get_triggerdef(oid)
-FROM pg_trigger
-WHERE tgname = 'on_auth_user_created_create_profile';
+SELECT proname, prosecdef AS is_security_definer
+FROM pg_proc
+WHERE proname = 'is_approved_dashboard_user';
 ```
 
-Verwacht: 1 rij, `tgrelid = auth.users`.
+Verwacht: 1 rij met `is_security_definer = true`.
 
-- [ ] **Step 5: Test de Auth Hook met een dummy signup**
+(Geen Auth Hook trigger meer — profile-rij wordt door de signup-server-action aangemaakt, omdat Supabase geen DDL toestaat op `auth.users`. Zie comment in de migratie-file voor uitleg.)
 
-In SQL Editor:
-
-```sql
--- Maak een test-user via de standaard Supabase admin functie
--- (alleen voor verificatie; we deleten 'm direct daarna).
-INSERT INTO auth.users (id, email, created_at, updated_at, raw_user_meta_data, instance_id, aud, role)
-VALUES (
-  gen_random_uuid(),
-  'test-rls-' || extract(epoch from now())::text || '@frontlix.test',
-  now(), now(), '{}', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'
-);
-
--- Verifieer dat de trigger 'm heeft gevangen
-SELECT user_id, tenant_status, is_owner
-FROM dashboard_user_profiles
-WHERE user_id IN (SELECT id FROM auth.users WHERE email LIKE 'test-rls-%@frontlix.test');
-```
-
-Verwacht: 1 rij met `tenant_status='pending'` en `is_owner=true`.
-
-- [ ] **Step 6: Cleanup test-user**
-
-```sql
-DELETE FROM auth.users WHERE email LIKE 'test-rls-%@frontlix.test';
--- Cascade verwijdert de dashboard_user_profiles-rij automatisch (zie ON DELETE CASCADE in 023).
-```
-
-Verifieer:
-
-```sql
-SELECT count(*) FROM dashboard_user_profiles;
-```
-
-Verwacht: 0 (geen echte users nog).
-
-- [ ] **Step 7: Smoke-check de bot**
+- [ ] **Step 5: Smoke-check de bot**
 
 Belangrijk: RLS-policies veranderen lees-toegang voor anon-key contexten. Bot gebruikt service-key (bypass) dus zou niets moeten merken. Check `pm2 logs` (of waar je bot-logs leest) op fouten in de minuut na de migratie.
 
@@ -1550,11 +1515,11 @@ Bestand `app/dashboard/(auth)/signup/actions.test.ts`:
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockSignUp = vi.fn()
-const mockUpdate = vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }))
+const mockUpsert = vi.fn().mockResolvedValue({ error: null })
 vi.mock('@/lib/dashboard/supabase-admin', () => ({
   getDashboardAdmin: () => ({
     auth: { admin: { /* niet gebruikt door signup */ } },
-    from: () => ({ update: mockUpdate }),
+    from: () => ({ upsert: mockUpsert }),
   }),
 }))
 vi.mock('@/lib/dashboard/supabase-server', () => ({
@@ -1580,7 +1545,8 @@ function makeFormData(values: Record<string, string>): FormData {
 describe('signupAction', () => {
   beforeEach(() => {
     mockSignUp.mockReset()
-    mockUpdate.mockClear()
+    mockUpsert.mockClear()
+    mockUpsert.mockResolvedValue({ error: null })
     mockSlack.mockReset()
     mockRedirect.mockClear()
   })
@@ -1597,7 +1563,7 @@ describe('signupAction', () => {
     expect(result.error).toMatch(/wachtwoord/i)
   })
 
-  it('roept Supabase signUp + update profile met bedrijfsnaam + slack-notify, dan redirect', async () => {
+  it('roept Supabase signUp + upsert profile + slack-notify, dan redirect', async () => {
     mockSignUp.mockResolvedValue({
       data: { user: { id: 'u1', email: 'a@b.c' } },
       error: null,
@@ -1611,9 +1577,33 @@ describe('signupAction', () => {
       email: 'a@b.c',
       password: 'wachtwoord123',
     })
-    expect(mockUpdate).toHaveBeenCalledWith({ bedrijfsnaam: 'Bedrijf X' })
+    expect(mockUpsert).toHaveBeenCalledWith(
+      {
+        user_id: 'u1',
+        bedrijfsnaam: 'Bedrijf X',
+        tenant_status: 'pending',
+        is_owner: true,
+      },
+      { onConflict: 'user_id' }
+    )
     expect(mockSlack).toHaveBeenCalledWith(
       expect.stringContaining('Bedrijf X')
+    )
+    expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
+  })
+
+  it('redirect tóch als profile-upsert faalt, en vlagt in Slack', async () => {
+    mockSignUp.mockResolvedValue({
+      data: { user: { id: 'u2' } }, error: null,
+    })
+    mockUpsert.mockResolvedValueOnce({ error: { message: 'boom' } })
+
+    await expect(signupAction({}, makeFormData({
+      email: 'b@c.d', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Y',
+    }))).rejects.toThrow('REDIRECT')
+
+    expect(mockSlack).toHaveBeenCalledWith(
+      expect.stringContaining('handmatig aanmaken')
     )
     expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
   })
@@ -1677,18 +1667,36 @@ export async function signupAction(
     return { error: error?.message ?? 'Aanmelden mislukt.' }
   }
 
-  // De Auth Hook trigger heeft een dashboard_user_profiles-rij gemaakt
-  // met tenant_status='pending'. We vullen nu de bedrijfsnaam in.
-  // Gebruik service-key zodat we de UPDATE kunnen doen ongeacht of de
-  // session-cookie al actief is.
+  // Maak de dashboard_user_profiles-rij aan met tenant_status='pending'.
+  // We doen dit hier (in plaats van via een AFTER INSERT-trigger op auth.users)
+  // omdat Supabase geen DDL toestaat op auth.users — die tabel is eigendom
+  // van supabase_auth_admin. Service-key bypasst RLS zodat de INSERT slaagt
+  // ondanks dat de huidige session nog niet actief is.
+  // UPSERT zodat een retry na fouten geen duplicate key conflict geeft.
   const admin = getDashboardAdmin()
-  await admin
+  const { error: profileErr } = await admin
     .from('dashboard_user_profiles')
-    .update({ bedrijfsnaam })
-    .eq('user_id', data.user.id)
+    .upsert(
+      {
+        user_id: data.user.id,
+        bedrijfsnaam,
+        tenant_status: 'pending',
+        is_owner: true,
+      },
+      { onConflict: 'user_id' }
+    )
+
+  if (profileErr) {
+    // Auth.user is gemaakt maar profile niet — log voor manuele opvolging.
+    // We blokkeren de redirect niet zodat user toch de wachtkamer ziet;
+    // Frontlix-admin krijgt de Slack-notify en kan handmatig de profile-rij
+    // maken in Supabase Studio.
+    console.error('[signup] profile-upsert failed:', profileErr)
+  }
 
   await postSignupNotification(
-    `🆕 Nieuwe dashboard-aanvraag: *${bedrijfsnaam}* — ${email}`
+    `🆕 Nieuwe dashboard-aanvraag: *${bedrijfsnaam}* — ${email}` +
+      (profileErr ? ` ⚠️ profile-rij ontbreekt, handmatig aanmaken!` : '')
   )
 
   redirect('/wachtkamer')

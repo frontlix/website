@@ -194,36 +194,25 @@ CREATE POLICY "approved users kunnen lead_status_history lezen"
 -- Geen INSERT-policy: history wordt via trigger op leads geschreven (Plan 5).
 
 -- ============================================
--- AUTH HOOK: maak dashboard_user_profile bij elke nieuwe auth.user
+-- DASHBOARD USER PROFILE CREATION — gebeurt in de signup-server-action
 -- ============================================
--- Bij een nieuwe Supabase Auth signup wordt automatisch een profile-rij
--- gemaakt met tenant_status='pending'. De signup-server-action vult later
--- bedrijfsnaam in (UPDATE) zodra de user die heeft ingevuld in het formulier.
+-- ORIGINEEL plan was een AFTER INSERT trigger op auth.users te zetten die
+-- automatisch een dashboard_user_profile-rij maakt. Dat blijkt in Supabase
+-- niet mogelijk: auth.users is eigendom van supabase_auth_admin, niet
+-- postgres. Triggers maken op die tabel faalt met
+-- "42501: must be owner of relation users".
 --
--- Waarom een trigger en niet de signup-action? De trigger garandeert dat
--- ELKE auth.users-insert (ook via Supabase Studio of een toekomstige magic
--- link) een profile-rij krijgt — RLS-policies hangen ervan af.
-
-CREATE OR REPLACE FUNCTION create_dashboard_user_profile()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  -- Idempotent: als er al een rij is (theoretisch: dubbel gebeuren), niet falen.
-  INSERT INTO dashboard_user_profiles (user_id, tenant_status, is_owner)
-  VALUES (NEW.id, 'pending', true)
-  ON CONFLICT (user_id) DO NOTHING;
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS on_auth_user_created_create_profile ON auth.users;
-CREATE TRIGGER on_auth_user_created_create_profile
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION create_dashboard_user_profile();
-
-COMMENT ON TRIGGER on_auth_user_created_create_profile ON auth.users IS
-  'Maakt automatisch een dashboard_user_profile-rij met tenant_status=pending bij nieuwe Supabase Auth signup. is_owner=true want eerste user van een tenant — Plan 7 introduceert uitgenodigde users met is_owner=false.';
+-- ALTERNATIEF: de signup-server-action in app/dashboard/(auth)/signup/actions.ts
+-- doet expliciet een INSERT in dashboard_user_profiles met service-key,
+-- direct na de Supabase Auth signUp call. Plan 3 Task 10 documenteert dit.
+--
+-- Edge case: als iemand een auth.user aanmaakt buiten de signup-flow
+-- (bv. via Supabase Studio handmatig), krijgen ze geen profile-rij
+-- en blokkeren RLS-policies hun toegang. Frontlix-admin moet die rijen
+-- handmatig aanmaken. Voor v1 is dat acceptabel — alleen Frontlix kent
+-- de Studio-toegang.
+--
+-- TOEKOMST: zodra Supabase een meer robuust Auth Hook mechanisme aanbiedt
+-- (Database Webhook met server-to-server retry, of Supabase Auth Hooks
+-- die via dashboard-config gaan zonder DDL op auth.users) kunnen we deze
+-- responsibility verplaatsen. Zie docs/superpowers/postponed.md.
