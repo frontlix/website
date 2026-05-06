@@ -1,0 +1,43 @@
+.block {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.future {
+  background: var(--color-primary);
+  color: white;
+}
+
+.future:hover {
+  filter: brightness(1.05);
+}
+
+.past {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.past:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.tijd {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.naam {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
