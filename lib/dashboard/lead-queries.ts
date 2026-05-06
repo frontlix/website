@@ -179,7 +179,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
 
   // Berichten
   for (const b of detail.berichten) {
-    const isIn = b.richting === 'in'
+    const isIn = b.richting === 'inkomend'
     events.push({
       id: `msg-${b.id}`,
       type: isIn ? 'bericht_in' : 'bericht_uit',

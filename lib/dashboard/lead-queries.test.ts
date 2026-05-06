@@ -110,7 +110,7 @@ describe('getLeadDetail', () => {
 
   it('returnt LeadDetail object met alle gerelateerde data als lead bestaat', async () => {
     setLeadResponse({ lead_id: 'L1', naam: 'Jan', telefoon: '06-123' })
-    setListResponse('berichten', [{ id: 'B1', lead_id: 'L1', richting: 'in', bericht: 'hoi', timestamp: '2026-04-23T10:00:00Z' }])
+    setListResponse('berichten', [{ id: 'B1', lead_id: 'L1', richting: 'inkomend', bericht: 'hoi', timestamp: '2026-04-23T10:00:00Z' }])
     setListResponse('fotos', [{ id: 'F1', lead_id: 'L1', public_url: 'https://...' }])
     setListResponse('offertes', [{ id: 'O1', lead_id: 'L1', versie: 1, totaal_incl: 250 }])
     setListResponse('prijsregels', [{ id: 'P1', lead_id: 'L1', omschrijving: 'reinigen', totaal: 250 }])
@@ -144,8 +144,8 @@ describe('aggregateActivityTimeline', () => {
         aangemaakt: '2026-04-22T09:00:00Z',
       } as any,
       berichten: [
-        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any,
-        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uit', bericht: 'goedemorgen', type: 'tekst' } as any,
+        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'inkomend', bericht: 'hoi', type: 'tekst' } as any,
+        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uitgaand', bericht: 'goedemorgen', type: 'tekst' } as any,
       ],
       fotos: [
         { id: 'F1', aangemaakt: '2026-04-22T10:30:00Z', bron: 'whatsapp' } as any,
@@ -175,7 +175,7 @@ describe('aggregateActivityTimeline', () => {
   it('event-types worden correct gelabeld', () => {
     const detail = {
       lead: { lead_id: 'L1', aangemaakt: '2026-04-22T09:00:00Z' } as any,
-      berichten: [{ id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any],
+      berichten: [{ id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'inkomend', bericht: 'hoi', type: 'tekst' } as any],
       fotos: [{ id: 'F1', aangemaakt: '2026-04-22T10:30:00Z', bron: 'whatsapp' } as any],
       offertes: [],
       prijsregels: [],
@@ -194,8 +194,8 @@ describe('aggregateActivityTimeline', () => {
     const detail = {
       lead: { lead_id: 'L1', aangemaakt: '2026-04-22T09:00:00Z' } as any,
       berichten: [
-        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'in', bericht: 'hoi', type: 'tekst' } as any,
-        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uit', bericht: 'hi', type: 'tekst' } as any,
+        { id: 'B1', timestamp: '2026-04-22T10:00:00Z', richting: 'inkomend', bericht: 'hoi', type: 'tekst' } as any,
+        { id: 'B2', timestamp: '2026-04-22T10:05:00Z', richting: 'uitgaand', bericht: 'hi', type: 'tekst' } as any,
       ],
       fotos: [],
       offertes: [],

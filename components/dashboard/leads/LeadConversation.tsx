@@ -13,7 +13,7 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
       {berichten.map((b) => (
         <li
           key={b.id}
-          className={`${styles.bubble} ${b.richting === 'in' ? styles.in : styles.uit}`}
+          className={`${styles.bubble} ${b.richting === 'inkomend' ? styles.in : styles.uit}`}
         >
           <div className={styles.body}>
             {b.bericht && <p className={styles.text}>{b.bericht}</p>}
