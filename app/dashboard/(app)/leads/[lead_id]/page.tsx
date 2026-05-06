@@ -14,6 +14,7 @@ import { LeadOfferte } from '@/components/dashboard/leads/LeadOfferte'
 import { LeadAfspraak } from '@/components/dashboard/leads/LeadAfspraak'
 import { LeadNotes } from '@/components/dashboard/leads/LeadNotes'
 import { LeadDangerZone } from '@/components/dashboard/leads/LeadDangerZone'
+import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
 import styles from './page.module.css'
 
 export default async function LeadDetailPage({
@@ -43,6 +44,7 @@ export default async function LeadDetailPage({
         {/* Linker kolom: klantgegevens + status */}
         <aside className={styles.colLeft}>
           <LeadHeader lead={detail.lead} />
+          <LeadDetailRealtime leadId={detail.lead.lead_id} />
           <LeadStatusBadges lead={detail.lead} />
           <LeadTagsEditor
             leadId={detail.lead.lead_id}

@@ -31,6 +31,7 @@ export function PollApproval() {
             table: 'dashboard_user_profiles',
             filter: `user_id=eq.${user.id}`,
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (payload: any) => {
             const newRow = payload.new as { tenant_status?: string }
             if (newRow?.tenant_status === 'approved' && !cancelled) {
@@ -38,6 +39,7 @@ export function PollApproval() {
             }
           }
         )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .subscribe((status: any) => {
           if (!cancelled && status === 'SUBSCRIBED') {
             setConnected(true)
