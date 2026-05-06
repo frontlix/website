@@ -15,9 +15,13 @@
   padding: 0;
 }
 
-.thumb img {
-  width: 100% !important;
-  height: 100% !important;
+/* next/image injecteert inline width/height op basis van de width/height props.
+   We willen dat de thumbnail de volledige ouder-button vult. CSS-Modules +
+   next/image: gebruik de :where() pseudoclass om specificity te negeren
+   zonder !important. */
+.thumb :where(img) {
+  width: 100%;
+  height: 100%;
 }
 
 .thumb:hover {

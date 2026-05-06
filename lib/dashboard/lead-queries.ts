@@ -54,6 +54,7 @@ export async function getLeadsList(): Promise<LeadListItem[]> {
     .select(LIST_COLUMNS)
     .eq('dashboard_archived', false)
     .order('aangemaakt', { ascending: false })
+    .limit(100)
 
   if (error) {
     console.error('[getLeadsList] query failed:', error)

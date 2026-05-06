@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockOrder, mockEq, mockSelect, mockFrom } = vi.hoisted(() => {
-  const mockOrder = vi.fn()
+const { mockLimit, mockOrder, mockEq, mockSelect, mockFrom } = vi.hoisted(() => {
+  const mockLimit = vi.fn()
+  const mockOrder = vi.fn(() => ({ limit: mockLimit }))
   const mockEq = vi.fn(() => ({ order: mockOrder }))
   const mockSelect = vi.fn(() => ({ eq: mockEq, order: mockOrder }))
   const mockFrom = vi.fn(() => ({ select: mockSelect }))
-  return { mockOrder, mockEq, mockSelect, mockFrom }
+  return { mockLimit, mockOrder, mockEq, mockSelect, mockFrom }
 })
 
 vi.mock('./supabase-server', () => ({
@@ -16,6 +17,7 @@ import { getLeadsList } from './lead-queries'
 
 describe('getLeadsList', () => {
   beforeEach(() => {
+    mockLimit.mockReset()
     mockOrder.mockReset()
     mockEq.mockClear()
     mockSelect.mockClear()
@@ -23,7 +25,7 @@ describe('getLeadsList', () => {
   })
 
   it('queryt leads gesorteerd op aangemaakt DESC, niet-gearchiveerd, max 100', async () => {
-    mockOrder.mockResolvedValue({
+    mockLimit.mockResolvedValue({
       data: [{ lead_id: 'L1', naam: 'Jan' }, { lead_id: 'L2', naam: 'Piet' }],
       error: null,
     })
@@ -33,6 +35,7 @@ describe('getLeadsList', () => {
     expect(mockFrom).toHaveBeenCalledWith('leads')
     expect(mockEq).toHaveBeenCalledWith('dashboard_archived', false)
     expect(mockOrder).toHaveBeenCalledWith('aangemaakt', { ascending: false })
+    expect(mockLimit).toHaveBeenCalledWith(100)
     expect(result).toEqual([
       { lead_id: 'L1', naam: 'Jan' },
       { lead_id: 'L2', naam: 'Piet' },
@@ -40,7 +43,7 @@ describe('getLeadsList', () => {
   })
 
   it('returnt lege array bij Supabase-error (geen exception)', async () => {
-    mockOrder.mockResolvedValue({ data: null, error: { message: 'oops' } })
+    mockLimit.mockResolvedValue({ data: null, error: { message: 'oops' } })
 
     const result = await getLeadsList()
 
@@ -48,7 +51,7 @@ describe('getLeadsList', () => {
   })
 
   it('returnt lege array als data null is', async () => {
-    mockOrder.mockResolvedValue({ data: null, error: null })
+    mockLimit.mockResolvedValue({ data: null, error: null })
 
     const result = await getLeadsList()
 

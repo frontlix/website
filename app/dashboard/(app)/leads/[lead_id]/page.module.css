@@ -33,11 +33,6 @@
   min-height: 400px;
 }
 
-.placeholder {
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr;
