@@ -1,0 +1,42 @@
+.header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.naam {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bedrijf {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.contact {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.contact dt {
+  color: var(--color-text-muted);
+}
+
+.contact dd {
+  margin: 0;
+}
+
+.contact a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.contact a:hover {
+  text-decoration: underline;
+}
