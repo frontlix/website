@@ -69,3 +69,67 @@ Tijdens de final review van Plan 1 (2026-05-06) zijn deze items naar boven gekom
 5. **Singleton UUID `00000000-0000-0000-0000-000000000001`** in de seed-script wordt awkward bij multi-tenant. Bij migratie naar centrale Supabase: rename naar proper tenant UUID + voeg `tenant_id` FK kolom toe op alle 7 dashboard-tabellen. Documentatie staat al in de migration comment.
 
 6. **Lead-notes UI moet `auteur IS NULL` afhandelen** — sinds de FK fix in Plan 1 is `lead_notes.auteur` nullable (`ON DELETE SET NULL`). Bij verwijderde users toont de notitie "Onbekend" / "Verwijderde gebruiker" — designkeuze voor Plan 5 wanneer notes-UI gebouwd wordt.
+
+---
+
+## Plan 4-vereisten + open items gespot tijdens Plan 3 (final review 2026-05-06)
+
+### Quick-wins voor Plan 4 (leads-lijst + detail read-only):
+
+1. **Generate Supabase DB types** — `app/dashboard/(app)/layout.tsx` heeft een manuale type-cast omdat Supabase type-inference `never` returnt zonder generated types. Genereer eenmalig:
+   ```bash
+   supabase gen types typescript --project-id ntewbcbveqqrojhrkrno > lib/dashboard/database.types.ts
+   ```
+   Daarna: `createServerClient<Database>(...)` en alle queries zijn typed. Voorkomt dat de cast-workaround zich in Plan 4 vermenigvuldigt.
+
+2. **`requireApprovedUser()` helper toevoegen aan `lib/dashboard/auth.ts`** — was in Plan 3 spec genoemd maar niet gebouwd. Elke Plan 4-page herhaalt nu hetzelfde redirect-patroon. Extract zodra Plan 4 begint.
+
+3. **`<PollApproval>` loading-indicator** — momenteel returnt het `null`. Een subtiele "checking…" bij wachtkamer-pagina zou de pending user geruststellen.
+
+4. **Document de auth-redirect pattern** in `lib/dashboard/auth.ts` — beide auth-actions gebruiken `revalidatePath('/', 'layout')` + client-side `window.location.href`. Dit is een bekend Supabase+Next.js patroon dat we in Plan 4+ kunnen hergebruiken; voorkom dat het opnieuw gediscovered moet worden.
+
+### Open security/UX items (niet blocking voor Plan 4, wel opnemen):
+
+5. **RLS UPDATE policy op `dashboard_user_profiles` laat self-approval toe** — `tenant_status` kan door de user zelf gewijzigd worden via API. Niet exploitable nu (geen UI exposes dit), maar Plan 7 moet column-level constraint of trigger toevoegen. Migration comment documenteert dit risico.
+
+6. **`/logout` is een GET handler zonder CSRF-bescherming** — een `<img src="/logout">` kan users uitloggen. Lage impact (alleen vervelend), maar Plan 4+ kan dit naar POST verplaatsen.
+
+7. **Geen `app/dashboard/(app)/page.tsx`** — `app.frontlix.com/` (root) heeft geen page-bestand. Of in middleware redirecten naar `/leads`, of een index-page maken. Klein UX-puntje.
+
+8. **MobileNav niet gebouwd** — Plan 3 spec noemde een `MobileNav.tsx`, niet geïmplementeerd. Sidebar verstopt zich `< 768px` maar mobile users kunnen niet navigeren. Toevoegen wanneer mobiel relevant wordt.
+
+9. **`tenant_settings`-query is nog single-row** — bij multi-tenant migratie moet `WHERE tenant_id = ...` worden toegevoegd. Komt automatisch bij de centrale-DB migratie.
+
+10. **Logout-route gebruikt server-side `redirect('/login')`** — werkte tijdens smoke-test, maar als de cookie-clear-write race optreedt (zelfde categorie als de signup/login race) kan logout flaken. Watch in productie. Fix is hetzelfde patroon: client-side `window.location.href`.
+
+### Productie-deploy checklist voor `app.frontlix.com`:
+
+**DNS:**
+- A/CNAME-record: `app.frontlix.com` → VPS IP `72.61.23.186` (zelfde target als `frontlix.com`)
+- Verifieer met `dig app.frontlix.com`
+
+**Nginx (op VPS):**
+- Voeg `app.frontlix.com` toe aan bestaand `server_name` block, of nieuw block dat naar poort 3000 proxyt
+- `proxy_set_header Host $host;` belangrijk zodat middleware de echte hostname ziet
+- `nginx -t && systemctl reload nginx`
+
+**Let's Encrypt:**
+- `certbot --nginx -d frontlix.com -d www.frontlix.com -d app.frontlix.com`
+
+**VPS production `.env`:**
+- Voeg de 4 nieuwe DASHBOARD env-vars toe (zelfde waarden als lokaal in `.env.local`)
+- Gebruik schoon-straatje Supabase keys (ntewbcbveqqrojhrkrno)
+
+**Deploy:**
+```bash
+git pull origin main && npm install && npm run build && pm2 restart frontlix
+```
+
+**Post-deploy verificatie:**
+- `https://app.frontlix.com/login` rendert
+- `https://frontlix.com/dashboard/leads` geeft 404 (host-isolation werkt)
+- Volledige flow eenmaal testen op productie
+- Slack-webhook fired vanuit productie
+
+**Supabase Realtime:**
+- Verifieer dat Realtime aan staat voor `dashboard_user_profiles` (Studio → Database → Replication) — vereist voor wachtkamer auto-redirect.
