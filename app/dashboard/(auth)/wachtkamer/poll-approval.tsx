@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createDashboardClient } from '@/lib/dashboard/supabase-browser'
+import { getDashboardSupabaseBrowser } from '@/lib/dashboard/supabase-browser'
 
 /**
  * Detecteert wanneer de huidige user wordt goedgekeurd en ververst de
@@ -14,7 +14,7 @@ export function PollApproval() {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
-    const supabase = createDashboardClient()
+    const supabase = getDashboardSupabaseBrowser()
     let cancelled = false
 
     async function setup() {
@@ -31,14 +31,14 @@ export function PollApproval() {
             table: 'dashboard_user_profiles',
             filter: `user_id=eq.${user.id}`,
           },
-          (payload) => {
+          (payload: any) => {
             const newRow = payload.new as { tenant_status?: string }
             if (newRow?.tenant_status === 'approved' && !cancelled) {
               router.refresh()
             }
           }
         )
-        .subscribe((status) => {
+        .subscribe((status: any) => {
           if (!cancelled && status === 'SUBSCRIBED') {
             setConnected(true)
           }
