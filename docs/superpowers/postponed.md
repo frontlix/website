@@ -133,3 +133,23 @@ git pull origin main && npm install && npm run build && pm2 restart frontlix
 
 **Supabase Realtime:**
 - Verifieer dat Realtime aan staat voor `dashboard_user_profiles` (Studio → Database → Replication) — vereist voor wachtkamer auto-redirect.
+
+---
+
+## Plan 5 follow-ups (final review 2026-05-06)
+
+Items uit de eind-review die niet blocking waren maar wel verbeterpunten:
+
+1. **Introduceer `--color-error` + `--color-error-bg` tokens** — `#c33` en `rgba(255,60,60,0.08)` zijn nu hardcoded in 4 nieuwe Plan 5 module.css files (LeadStatusBadges, LeadNotes, LeadTagsEditor, LeadDangerZone). CLAUDE.md zegt "no hardcoded colors outside `tokens.css`". Voeg toe aan `styles/tokens.css` en vervang in een follow-up commit.
+
+2. **`as any` casts in tests vermijden via `if (!result.ok)` narrowing** — `lead-actions.test.ts`, `note-actions.test.ts`, `tag-actions.test.ts` gebruiken op enkele plekken `as any` voor het narrowen van de discriminated union. `.eslintrc.json` staat het toe in test-files, maar een `if (!result.ok)`-guard is cleaner. Cosmetic.
+
+3. **Outside-click-to-close voor LeadTagsEditor dropdown** — momenteel sluit de dropdown alleen door opnieuw op "+ Tag" te klikken of via een succesvolle add/create. UX-nit: voeg een ref + click-outside listener toe.
+
+4. **`confirm()` browser-dialog vervangen** — `LeadNotes.tsx` (delete-bevestiging) en `LeadDangerZone.tsx` (archive-bevestiging) gebruiken `window.confirm()`. Werkt maar styled niet mee met de rest van het dashboard. Een eigen `<ConfirmDialog>` component bouwen wanneer de v1-feedback komt.
+
+5. **`tag-actions.ts` cast `(data as unknown as { id: string })`** — kan weg zodra `database.types.ts` regenererend wordt vanuit Supabase (zie Plan 4 quick-win #1). Niet urgent.
+
+6. **CSV line endings** — `app/api/dashboard/export/leads-csv/route.ts` gebruikt `\n`. Modern Excel handelt dit goed af, maar oudere Windows-Excel verwacht `\r\n`. Wijzig wanneer een klant erover klaagt.
+
+7. **Status dropdown error-message phrasing** — `"{dashboardStatusLabel(optimisticStatus)} kon niet worden opgeslagen"` leest als "Geen status kon niet worden opgeslagen" wanneer de user de status leegt. Re-phrase naar bv. "De status kon niet worden opgeslagen: {error}".
