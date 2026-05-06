@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getLeadDetail, aggregateActivityTimeline } from '@/lib/dashboard/lead-queries'
+import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { LeadHeader } from '@/components/dashboard/leads/LeadHeader'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
 import { LeadDetailTabs } from '@/components/dashboard/leads/LeadDetailTabs'
@@ -17,6 +18,7 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ lead_id: string }>
 }) {
+  const { user } = await requireApprovedUser()
   const { lead_id } = await params
   const detail = await getLeadDetail(lead_id)
 
@@ -54,7 +56,11 @@ export default async function LeadDetailPage({
         <aside className={styles.colRight}>
           <LeadOfferte offertes={detail.offertes} prijsregels={detail.prijsregels} />
           <LeadAfspraak lead={detail.lead} />
-          <LeadNotes notes={detail.notes} />
+          <LeadNotes
+            leadId={detail.lead.lead_id}
+            notes={detail.notes}
+            currentUserId={user.id}
+          />
         </aside>
       </div>
     </div>
