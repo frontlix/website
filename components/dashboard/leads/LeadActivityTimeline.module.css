@@ -1,77 +1,88 @@
 .timeline {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--space-4) + 14px);
+  top: var(--space-6);
+  bottom: var(--space-6);
+  width: 1px;
+  background: var(--color-border);
 }
 
 .event {
-  display: grid;
-  grid-template-columns: 32px 1fr;
+  display: flex;
   gap: var(--space-3);
-  align-items: start;
+  align-items: flex-start;
+  position: relative;
 }
 
-.iconWrap {
-  width: 32px;
-  height: 32px;
+.dot {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--color-surface-2);
-  color: var(--color-text-muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  z-index: 1;
 }
 
-.iconWrap.bericht_in {
-  background: rgba(26, 86, 255, 0.1);
+.dotPrimary {
+  border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.iconWrap.bericht_uit {
-  background: rgba(0, 207, 255, 0.1);
+.dotAccent {
+  border-color: var(--color-accent);
   color: var(--color-accent);
 }
 
-.iconWrap.akkoord,
-.iconWrap.afspraak_geboekt {
-  background: rgba(0, 200, 100, 0.1);
-  color: #0c8;
+.dotMuted {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
 }
 
 .body {
-  font-size: var(--text-sm);
-}
-
-.headRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  padding-bottom: var(--space-2);
 }
 
 .label {
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-text);
 }
 
-.time {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
 .details {
-  margin: var(--space-1) 0 0;
-  color: var(--color-text-muted);
+  margin-top: var(--space-1);
   font-size: var(--text-xs);
+  color: var(--color-text-muted);
   white-space: pre-wrap;
 }
 
+.time {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 .empty {
+  padding: var(--space-4);
   color: var(--color-text-muted);
   font-style: italic;
+  font-size: var(--text-sm);
 }
