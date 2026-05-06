@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import Link from 'next/link'
 import { signupAction, type SignupState } from './actions'
 import styles from './page.module.css'
@@ -9,6 +9,14 @@ const initialState: SignupState = {}
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signupAction, initialState)
+
+  // Full page reload bij success — zelfde reden als in /login: voorkomt 404
+  // op /wachtkamer door cookie-write race in Next.js Server Actions.
+  useEffect(() => {
+    if (state.redirectTo) {
+      window.location.href = state.redirectTo
+    }
+  }, [state.redirectTo])
 
   return (
     <div className={styles.card}>
@@ -43,8 +51,8 @@ export default function SignupPage() {
 
         {state.error && <p className={styles.error}>{state.error}</p>}
 
-        <button type="submit" disabled={pending} className={styles.submit}>
-          {pending ? 'Bezig…' : 'Aanvraag versturen'}
+        <button type="submit" disabled={pending || !!state.redirectTo} className={styles.submit}>
+          {pending ? 'Bezig…' : state.redirectTo ? 'Doorsturen…' : 'Aanvraag versturen'}
         </button>
       </form>
 

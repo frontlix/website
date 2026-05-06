@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import Link from 'next/link'
 import { loginAction, type LoginState } from './actions'
 import styles from './page.module.css'
@@ -9,6 +9,16 @@ const initialState: LoginState = {}
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, initialState)
+
+  // Full page reload bij success: window.location.href forceert dat de browser
+  // een verse GET doet met de net-gezette session-cookies. Een client-side
+  // router.push() gebruikt soft-navigation en kan een race triggeren waarbij
+  // de eerste GET /leads een 404 krijgt.
+  useEffect(() => {
+    if (state.redirectTo) {
+      window.location.href = state.redirectTo
+    }
+  }, [state.redirectTo])
 
   return (
     <div className={styles.card}>
@@ -40,8 +50,8 @@ export default function LoginPage() {
 
         {state.error && <p className={styles.error}>{state.error}</p>}
 
-        <button type="submit" disabled={pending} className={styles.submit}>
-          {pending ? 'Bezig…' : 'Inloggen'}
+        <button type="submit" disabled={pending || !!state.redirectTo} className={styles.submit}>
+          {pending ? 'Bezig…' : state.redirectTo ? 'Doorsturen…' : 'Inloggen'}
         </button>
       </form>
 

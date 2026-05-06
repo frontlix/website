@@ -1,10 +1,9 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 
-export type LoginState = { error?: string }
+export type LoginState = { error?: string; redirectTo?: string }
 
 export async function loginAction(
   _prev: LoginState,
@@ -47,15 +46,15 @@ export async function loginAction(
     return { error: 'Aanvraag afgewezen.' }
   }
 
-  // Invalideer de layout-cache zodat /wachtkamer en /leads na de redirect
-  // de net-gezette session-cookie gebruiken in plaats van een stale render.
-  // Zonder deze call zien gebruikers soms een 404 op /leads direct na login,
-  // omdat Next.js de layout-tree had gerendered zonder de nieuwe cookies.
+  // Invalideer de layout-cache (defensief: voor het geval client soft-navigeert).
   revalidatePath('/', 'layout')
 
+  // Geen server-side redirect() — die race't met de cookie-write en triggert
+  // een 404 op de eerste GET /leads. In plaats daarvan returnt de action
+  // een redirectTo string; de client doet window.location.href = ... wat
+  // een full page reload is en de net-gezette session-cookie wel ziet.
   if (profile.tenant_status === 'pending') {
-    redirect('/wachtkamer')
+    return { redirectTo: '/wachtkamer' }
   }
-
-  redirect('/leads')
+  return { redirectTo: '/leads' }
 }

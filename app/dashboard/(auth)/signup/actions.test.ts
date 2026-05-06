@@ -3,12 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // vi.hoisted() is nodig in vitest 4: vi.mock-factories worden tijdens
 // hoisting al uitgevoerd voor modules die eager worden geïmporteerd
 // (zoals next/navigation), terwijl `const`-declaraties NIET hoisten.
-const { mockCreateUser, mockSignIn, mockUpsert, mockSlack, mockRedirect } = vi.hoisted(() => ({
+const { mockCreateUser, mockSignIn, mockUpsert, mockSlack } = vi.hoisted(() => ({
   mockCreateUser: vi.fn(),
   mockSignIn: vi.fn().mockResolvedValue({ error: null }),
   mockUpsert: vi.fn().mockResolvedValue({ error: null }),
   mockSlack: vi.fn(),
-  mockRedirect: vi.fn(() => { throw new Error('REDIRECT') }),
 }))
 
 vi.mock('@/lib/dashboard/supabase-admin', () => ({
@@ -25,7 +24,6 @@ vi.mock('@/lib/dashboard/supabase-server', () => ({
 vi.mock('@/lib/dashboard/slack', () => ({
   postSignupNotification: mockSlack,
 }))
-vi.mock('next/navigation', () => ({ redirect: mockRedirect }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import { signupAction } from './actions'
@@ -44,12 +42,12 @@ describe('signupAction', () => {
     mockUpsert.mockClear()
     mockUpsert.mockResolvedValue({ error: null })
     mockSlack.mockReset()
-    mockRedirect.mockClear()
   })
 
   it('vereist email, wachtwoord, bedrijfsnaam', async () => {
     const result = await signupAction({}, makeFormData({ email: '', wachtwoord: '', bedrijfsnaam: '' }))
     expect(result.error).toMatch(/vul/i)
+    expect(result.redirectTo).toBeUndefined()
   })
 
   it('vereist wachtwoord van minstens 8 tekens', async () => {
@@ -59,15 +57,15 @@ describe('signupAction', () => {
     expect(result.error).toMatch(/wachtwoord/i)
   })
 
-  it('roept admin.createUser met email_confirm=true + upsert + auto-signIn + slack, dan redirect', async () => {
+  it('roept admin.createUser met email_confirm=true + upsert + auto-signIn + slack, returnt redirectTo /wachtkamer', async () => {
     mockCreateUser.mockResolvedValue({
       data: { user: { id: 'u1', email: 'a@b.c' } },
       error: null,
     })
 
-    await expect(signupAction({}, makeFormData({
+    const result = await signupAction({}, makeFormData({
       email: 'a@b.c', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Bedrijf X',
-    }))).rejects.toThrow('REDIRECT')
+    }))
 
     expect(mockCreateUser).toHaveBeenCalledWith({
       email: 'a@b.c',
@@ -90,40 +88,41 @@ describe('signupAction', () => {
     expect(mockSlack).toHaveBeenCalledWith(
       expect.stringContaining('Bedrijf X')
     )
-    expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
+    expect(result.redirectTo).toBe('/wachtkamer')
+    expect(result.error).toBeUndefined()
   })
 
-  it('redirect tóch als profile-upsert faalt, en vlagt in Slack', async () => {
+  it('returnt redirectTo /wachtkamer ook als profile-upsert faalt, en vlagt in Slack', async () => {
     mockCreateUser.mockResolvedValue({
       data: { user: { id: 'u2' } }, error: null,
     })
     mockUpsert.mockResolvedValueOnce({ error: { message: 'boom' } })
 
-    await expect(signupAction({}, makeFormData({
+    const result = await signupAction({}, makeFormData({
       email: 'b@c.d', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Y',
-    }))).rejects.toThrow('REDIRECT')
+    }))
 
     expect(mockSlack).toHaveBeenCalledWith(
       expect.stringContaining('handmatig aanmaken')
     )
-    expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
+    expect(result.redirectTo).toBe('/wachtkamer')
   })
 
-  it('redirect tóch als auto-signIn faalt (gebruiker komt op /wachtkamer maar zonder session)', async () => {
+  it('returnt redirectTo /wachtkamer ook als auto-signIn faalt', async () => {
     mockCreateUser.mockResolvedValue({
       data: { user: { id: 'u3' } }, error: null,
     })
     mockSignIn.mockResolvedValueOnce({ error: { message: 'auth fail' } })
 
-    await expect(signupAction({}, makeFormData({
+    const result = await signupAction({}, makeFormData({
       email: 'c@d.e', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Z',
-    }))).rejects.toThrow('REDIRECT')
+    }))
 
-    expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
+    expect(result.redirectTo).toBe('/wachtkamer')
     expect(mockSlack).toHaveBeenCalled()
   })
 
-  it('retourneert error bij admin.createUser failure (geen redirect, geen slack, geen signIn)', async () => {
+  it('retourneert error bij admin.createUser failure (geen redirectTo, geen slack, geen signIn)', async () => {
     mockCreateUser.mockResolvedValue({
       data: { user: null },
       error: { message: 'User already registered' },
@@ -134,8 +133,8 @@ describe('signupAction', () => {
     }))
 
     expect(result.error).toBeDefined()
+    expect(result.redirectTo).toBeUndefined()
     expect(mockSignIn).not.toHaveBeenCalled()
     expect(mockSlack).not.toHaveBeenCalled()
-    expect(mockRedirect).not.toHaveBeenCalled()
   })
 })
