@@ -22,25 +22,30 @@ export async function signupAction(
     return { error: 'Wachtwoord moet minstens 8 tekens zijn.' }
   }
 
-  const supabase = await getDashboardSupabase()
-  const { data, error } = await supabase.auth.signUp({ email, password: wachtwoord })
+  // Maak user aan via admin.createUser met email_confirm=true. Dat omzeilt
+  // Supabase's standaard "klik eerst op de bevestigingsmail"-flow, want ONZE
+  // confirmation is de handmatige Frontlix-goedkeuring (tenant_status='approved').
+  // Voordeel boven supabase.auth.signUp: de user is direct ingelogd-baar,
+  // dus /wachtkamer ziet meteen z'n session-cookie.
+  const admin = getDashboardAdmin()
+  const { data: createData, error: createErr } = await admin.auth.admin.createUser({
+    email,
+    password: wachtwoord,
+    email_confirm: true,
+  })
 
-  if (error || !data.user) {
-    return { error: error?.message ?? 'Aanmelden mislukt.' }
+  if (createErr || !createData.user) {
+    return { error: createErr?.message ?? 'Aanmelden mislukt.' }
   }
 
   // Maak de dashboard_user_profiles-rij aan met tenant_status='pending'.
-  // We doen dit hier (in plaats van via een AFTER INSERT-trigger op auth.users)
-  // omdat Supabase geen DDL toestaat op auth.users — die tabel is eigendom
-  // van supabase_auth_admin. Service-key bypasst RLS zodat de INSERT slaagt
-  // ondanks dat de huidige session nog niet actief is.
-  // UPSERT zodat een retry na fouten geen duplicate key conflict geeft.
-  const admin = getDashboardAdmin()
+  // (We doen dit hier omdat Supabase geen DDL toestaat op auth.users — zie
+  // docs/superpowers/postponed.md.) UPSERT zodat retry's geen conflict geven.
   const { error: profileErr } = await admin
     .from('dashboard_user_profiles')
     .upsert(
       {
-        user_id: data.user.id,
+        user_id: createData.user.id,
         bedrijfsnaam,
         tenant_status: 'pending',
         is_owner: true,
@@ -49,11 +54,22 @@ export async function signupAction(
     )
 
   if (profileErr) {
-    // Auth.user is gemaakt maar profile niet — log voor manuele opvolging.
-    // We blokkeren de redirect niet zodat user toch de wachtkamer ziet;
-    // Frontlix-admin krijgt de Slack-notify en kan handmatig de profile-rij
-    // maken in Supabase Studio.
+    // User is gemaakt maar profile niet — log voor manuele opvolging.
+    // Slack-notify krijgt een vlag zodat Frontlix-admin het ziet.
     console.error('[signup] profile-upsert failed:', profileErr)
+  }
+
+  // Log de net-aangemaakte user direct in via de session-cookie client.
+  // Dat zet de Supabase-session-cookie op de browser zodat /wachtkamer
+  // de session herkent. Zonder deze stap zou getCurrentUserProfile() null
+  // returnen en zou wachtkamer redirecten naar /login.
+  const supabase = await getDashboardSupabase()
+  const { error: signInErr } = await supabase.auth.signInWithPassword({
+    email,
+    password: wachtwoord,
+  })
+  if (signInErr) {
+    console.error('[signup] auto-signin after createUser failed:', signInErr)
   }
 
   await postSignupNotification(

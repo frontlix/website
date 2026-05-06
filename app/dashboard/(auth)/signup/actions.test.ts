@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // vi.hoisted() is nodig in vitest 4: vi.mock-factories worden tijdens
 // hoisting al uitgevoerd voor modules die eager worden geïmporteerd
 // (zoals next/navigation), terwijl `const`-declaraties NIET hoisten.
-// Zonder hoisted() krijg je TDZ-errors bij module-import.
-const { mockSignUp, mockUpsert, mockSlack, mockRedirect } = vi.hoisted(() => ({
-  mockSignUp: vi.fn(),
+const { mockCreateUser, mockSignIn, mockUpsert, mockSlack, mockRedirect } = vi.hoisted(() => ({
+  mockCreateUser: vi.fn(),
+  mockSignIn: vi.fn().mockResolvedValue({ error: null }),
   mockUpsert: vi.fn().mockResolvedValue({ error: null }),
   mockSlack: vi.fn(),
   mockRedirect: vi.fn(() => { throw new Error('REDIRECT') }),
@@ -13,13 +13,13 @@ const { mockSignUp, mockUpsert, mockSlack, mockRedirect } = vi.hoisted(() => ({
 
 vi.mock('@/lib/dashboard/supabase-admin', () => ({
   getDashboardAdmin: () => ({
-    auth: { admin: {} },
+    auth: { admin: { createUser: mockCreateUser } },
     from: () => ({ upsert: mockUpsert }),
   }),
 }))
 vi.mock('@/lib/dashboard/supabase-server', () => ({
   getDashboardSupabase: async () => ({
-    auth: { signUp: mockSignUp },
+    auth: { signInWithPassword: mockSignIn },
   }),
 }))
 vi.mock('@/lib/dashboard/slack', () => ({
@@ -37,7 +37,9 @@ function makeFormData(values: Record<string, string>): FormData {
 
 describe('signupAction', () => {
   beforeEach(() => {
-    mockSignUp.mockReset()
+    mockCreateUser.mockReset()
+    mockSignIn.mockReset()
+    mockSignIn.mockResolvedValue({ error: null })
     mockUpsert.mockClear()
     mockUpsert.mockResolvedValue({ error: null })
     mockSlack.mockReset()
@@ -56,8 +58,8 @@ describe('signupAction', () => {
     expect(result.error).toMatch(/wachtwoord/i)
   })
 
-  it('roept Supabase signUp + upsert profile + slack-notify, dan redirect', async () => {
-    mockSignUp.mockResolvedValue({
+  it('roept admin.createUser met email_confirm=true + upsert + auto-signIn + slack, dan redirect', async () => {
+    mockCreateUser.mockResolvedValue({
       data: { user: { id: 'u1', email: 'a@b.c' } },
       error: null,
     })
@@ -66,9 +68,10 @@ describe('signupAction', () => {
       email: 'a@b.c', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Bedrijf X',
     }))).rejects.toThrow('REDIRECT')
 
-    expect(mockSignUp).toHaveBeenCalledWith({
+    expect(mockCreateUser).toHaveBeenCalledWith({
       email: 'a@b.c',
       password: 'wachtwoord123',
+      email_confirm: true,
     })
     expect(mockUpsert).toHaveBeenCalledWith(
       {
@@ -79,6 +82,10 @@ describe('signupAction', () => {
       },
       { onConflict: 'user_id' }
     )
+    expect(mockSignIn).toHaveBeenCalledWith({
+      email: 'a@b.c',
+      password: 'wachtwoord123',
+    })
     expect(mockSlack).toHaveBeenCalledWith(
       expect.stringContaining('Bedrijf X')
     )
@@ -86,7 +93,7 @@ describe('signupAction', () => {
   })
 
   it('redirect tóch als profile-upsert faalt, en vlagt in Slack', async () => {
-    mockSignUp.mockResolvedValue({
+    mockCreateUser.mockResolvedValue({
       data: { user: { id: 'u2' } }, error: null,
     })
     mockUpsert.mockResolvedValueOnce({ error: { message: 'boom' } })
@@ -101,8 +108,22 @@ describe('signupAction', () => {
     expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
   })
 
-  it('retourneert error bij Supabase signUp failure (geen redirect, geen slack)', async () => {
-    mockSignUp.mockResolvedValue({
+  it('redirect tóch als auto-signIn faalt (gebruiker komt op /wachtkamer maar zonder session)', async () => {
+    mockCreateUser.mockResolvedValue({
+      data: { user: { id: 'u3' } }, error: null,
+    })
+    mockSignIn.mockResolvedValueOnce({ error: { message: 'auth fail' } })
+
+    await expect(signupAction({}, makeFormData({
+      email: 'c@d.e', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'Z',
+    }))).rejects.toThrow('REDIRECT')
+
+    expect(mockRedirect).toHaveBeenCalledWith('/wachtkamer')
+    expect(mockSlack).toHaveBeenCalled()
+  })
+
+  it('retourneert error bij admin.createUser failure (geen redirect, geen slack, geen signIn)', async () => {
+    mockCreateUser.mockResolvedValue({
       data: { user: null },
       error: { message: 'User already registered' },
     })
@@ -112,6 +133,7 @@ describe('signupAction', () => {
     }))
 
     expect(result.error).toBeDefined()
+    expect(mockSignIn).not.toHaveBeenCalled()
     expect(mockSlack).not.toHaveBeenCalled()
     expect(mockRedirect).not.toHaveBeenCalled()
   })
