@@ -36,6 +36,10 @@ import {
   countConverted,
   avgOfferteWaarde,
   avgReactietijdMs,
+  statusVerdeling,
+  categorieVerdeling,
+  leadsPerDag,
+  topTags,
 } from './stats-queries'
 
 const PERIOD_MAY = { from: '2026-05-01', to: '2026-05-31T23:59:59Z' }
@@ -224,5 +228,124 @@ describe('avgReactietijdMs', () => {
     }
     ;(mockFrom.mockImplementation as any)(() => leadsBuilder)
     expect(await avgReactietijdMs(PERIOD_MAY)).toBeNull()
+  })
+})
+
+describe('statusVerdeling', () => {
+  beforeEach(resetBuilder)
+
+  it('groepeert leads op dashboard_status, NULL als "Geen status"', async () => {
+    builder.gte.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          { dashboard_status: 'open' },
+          { dashboard_status: 'open' },
+          { dashboard_status: 'opgevolgd' },
+          { dashboard_status: null },
+        ],
+        error: null,
+      })
+    )
+
+    const result = await statusVerdeling(PERIOD_MAY)
+    expect(result).toEqual([
+      { status: 'open', count: 2 },
+      { status: 'opgevolgd', count: 1 },
+      { status: null, count: 1 },
+    ])
+  })
+
+  it('returnt lege array bij geen data', async () => {
+    builder.gte.mockReturnValueOnce(Promise.resolve({ data: [], error: null }))
+    expect(await statusVerdeling(PERIOD_MAY)).toEqual([])
+  })
+})
+
+describe('categorieVerdeling', () => {
+  beforeEach(resetBuilder)
+
+  it('groepeert op hoofdcategorie, null als "Onbekend"', async () => {
+    builder.gte.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          { hoofdcategorie: 'kunststof' },
+          { hoofdcategorie: 'kunststof' },
+          { hoofdcategorie: 'schilderwerk' },
+          { hoofdcategorie: null },
+        ],
+        error: null,
+      })
+    )
+
+    const result = await categorieVerdeling(PERIOD_MAY)
+    expect(result).toEqual([
+      { categorie: 'kunststof', count: 2 },
+      { categorie: 'schilderwerk', count: 1 },
+      { categorie: 'Onbekend', count: 1 },
+    ])
+  })
+})
+
+describe('leadsPerDag', () => {
+  beforeEach(resetBuilder)
+
+  it('groepeert leads op dag (laatste 30 dagen), gevuld met 0 voor lege dagen', async () => {
+    builder.gte.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          { aangemaakt: '2026-05-05T10:00:00Z' },
+          { aangemaakt: '2026-05-05T15:00:00Z' },
+          { aangemaakt: '2026-05-04T08:00:00Z' },
+        ],
+        error: null,
+      })
+    )
+
+    const fixedNow = new Date('2026-05-05T23:59:59Z')
+    const result = await leadsPerDag(fixedNow)
+
+    expect(result.length).toBe(30)
+    expect(result[result.length - 1]).toEqual({ date: '2026-05-05', count: 2 })
+    expect(result[result.length - 2]).toEqual({ date: '2026-05-04', count: 1 })
+    expect(result[0].count).toBe(0)
+  })
+})
+
+describe('topTags', () => {
+  beforeEach(resetBuilder)
+
+  it('telt tag-frequenties via lead_tags JOIN leads, top 10 DESC', async () => {
+    builder.gte.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          { tags: { naam: 'hot' }, leads: { aangemaakt: '2026-05-05T10:00:00Z' } },
+          { tags: { naam: 'hot' }, leads: { aangemaakt: '2026-05-06T10:00:00Z' } },
+          { tags: { naam: 'hot' }, leads: { aangemaakt: '2026-05-07T10:00:00Z' } },
+          { tags: { naam: 'spoed' }, leads: { aangemaakt: '2026-05-08T10:00:00Z' } },
+        ],
+        error: null,
+      })
+    )
+
+    const result = await topTags(PERIOD_MAY, 10)
+    expect(result).toEqual([
+      { naam: 'hot', count: 3 },
+      { naam: 'spoed', count: 1 },
+    ])
+  })
+
+  it('respecteert limit', async () => {
+    builder.gte.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          { tags: { naam: 'a' }, leads: { aangemaakt: '2026-05-05T10:00:00Z' } },
+          { tags: { naam: 'b' }, leads: { aangemaakt: '2026-05-06T10:00:00Z' } },
+          { tags: { naam: 'c' }, leads: { aangemaakt: '2026-05-07T10:00:00Z' } },
+        ],
+        error: null,
+      })
+    )
+
+    expect(await topTags(PERIOD_MAY, 2)).toHaveLength(2)
   })
 })

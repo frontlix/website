@@ -125,3 +125,139 @@ export async function avgReactietijdMs(period: StatsPeriod): Promise<number | nu
   if (diffs.length === 0) return null
   return diffs.reduce((a, b) => a + b, 0) / diffs.length
 }
+
+/**
+ * Verdeling per dashboard_status. NULL als label.
+ * Gesorteerd DESC op count.
+ */
+export async function statusVerdeling(
+  period: StatsPeriod
+): Promise<Array<{ status: string | null; count: number }>> {
+  const supabase = await getDashboardSupabase()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase.from('leads').select('dashboard_status')
+  if (period.from) {
+    query = query.gte('aangemaakt', period.from)
+  }
+  const { data, error } = await query
+  if (error) {
+    console.error('[statusVerdeling] failed:', error)
+    return []
+  }
+  type Row = { dashboard_status: string | null }
+  const counts = new Map<string | null, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    counts.set(row.dashboard_status, (counts.get(row.dashboard_status) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => b.count - a.count)
+}
+
+/**
+ * Verdeling per hoofdcategorie. NULL wordt "Onbekend".
+ */
+export async function categorieVerdeling(
+  period: StatsPeriod
+): Promise<Array<{ categorie: string; count: number }>> {
+  const supabase = await getDashboardSupabase()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase.from('leads').select('hoofdcategorie')
+  if (period.from) {
+    query = query.gte('aangemaakt', period.from)
+  }
+  const { data, error } = await query
+  if (error) {
+    console.error('[categorieVerdeling] failed:', error)
+    return []
+  }
+  type Row = { hoofdcategorie: string | null }
+  const counts = new Map<string, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    const key = row.hoofdcategorie ?? 'Onbekend'
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([categorie, count]) => ({ categorie, count }))
+    .sort((a, b) => b.count - a.count)
+}
+
+/**
+ * Leads per dag voor de laatste 30 dagen, ASC op datum.
+ * Lege dagen krijgen count 0.
+ */
+export async function leadsPerDag(
+  now: Date = new Date()
+): Promise<Array<{ date: string; count: number }>> {
+  const supabase = await getDashboardSupabase()
+  const start = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - 29
+  ))
+  const startISO = start.toISOString().slice(0, 10)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const query: any = supabase
+    .from('leads')
+    .select('aangemaakt')
+    .gte('aangemaakt', startISO)
+
+  const { data, error } = await query
+  if (error) {
+    console.error('[leadsPerDag] failed:', error)
+    return []
+  }
+
+  type Row = { aangemaakt: string }
+  const counts = new Map<string, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    const day = row.aangemaakt.slice(0, 10)
+    counts.set(day, (counts.get(day) ?? 0) + 1)
+  }
+
+  const out: Array<{ date: string; count: number }> = []
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(Date.UTC(
+      start.getUTCFullYear(),
+      start.getUTCMonth(),
+      start.getUTCDate() + i
+    ))
+    const key = d.toISOString().slice(0, 10)
+    out.push({ date: key, count: counts.get(key) ?? 0 })
+  }
+  return out
+}
+
+/**
+ * Top-N tags qua frequentie, gefilterd op leads in de periode.
+ */
+export async function topTags(
+  period: StatsPeriod,
+  limit: number = 10
+): Promise<Array<{ naam: string; count: number }>> {
+  const supabase = await getDashboardSupabase()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase
+    .from('lead_tags')
+    .select('tags!inner(naam), leads!inner(aangemaakt)')
+  if (period.from) {
+    query = query.gte('leads.aangemaakt', period.from)
+  }
+  const { data, error } = await query
+  if (error) {
+    console.error('[topTags] failed:', error)
+    return []
+  }
+  type Row = { tags: { naam: string }; leads: { aangemaakt: string } }
+  const counts = new Map<string, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    const naam = row.tags?.naam
+    if (!naam) continue
+    counts.set(naam, (counts.get(naam) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([naam, count]) => ({ naam, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
