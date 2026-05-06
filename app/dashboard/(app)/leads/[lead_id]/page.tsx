@@ -4,6 +4,8 @@ import { getLeadDetail, aggregateActivityTimeline } from '@/lib/dashboard/lead-q
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { LeadHeader } from '@/components/dashboard/leads/LeadHeader'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
+import { LeadTagsEditor } from '@/components/dashboard/leads/LeadTagsEditor'
+import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
 import { LeadDetailTabs } from '@/components/dashboard/leads/LeadDetailTabs'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
@@ -20,7 +22,11 @@ export default async function LeadDetailPage({
 }) {
   const { user } = await requireApprovedUser()
   const { lead_id } = await params
-  const detail = await getLeadDetail(lead_id)
+  const [detail, allTags, leadTags] = await Promise.all([
+    getLeadDetail(lead_id),
+    getAllTags(),
+    getTagsForLead(lead_id),
+  ])
 
   if (!detail) {
     notFound()
@@ -37,6 +43,11 @@ export default async function LeadDetailPage({
         <aside className={styles.colLeft}>
           <LeadHeader lead={detail.lead} />
           <LeadStatusBadges lead={detail.lead} />
+          <LeadTagsEditor
+            leadId={detail.lead.lead_id}
+            leadTags={leadTags}
+            allTags={allTags}
+          />
         </aside>
 
         {/* Midden: gesprek/foto's/timeline (Task 9-12 vullen dit) */}
