@@ -6,7 +6,6 @@ import type {
   Offerte,
   Prijsregel,
   LeadNote,
-  Tag,
   LeadStatusHistory,
 } from './database.types'
 
