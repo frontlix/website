@@ -55,3 +55,77 @@ describe('getLeadsList', () => {
     expect(result).toEqual([])
   })
 })
+
+import { getLeadDetail } from './lead-queries'
+
+describe('getLeadDetail', () => {
+  // We gebruiken een uitgebreidere mock waar from('leads'/'berichten'/etc)
+  // verschillende responses kunnen geven.
+  const tableHandlers: Record<string, () => any> = {}
+
+  beforeEach(() => {
+    Object.keys(tableHandlers).forEach((k) => delete tableHandlers[k])
+    // Cast naar any: mockFrom is in de getLeadsList-tests getypt als `() => ...`,
+    // maar in productie wordt het aangeroepen met een tabelnaam-string.
+    ;(mockFrom.mockImplementation as any)((table: string) => {
+      const handler = tableHandlers[table]
+      if (!handler) throw new Error(`no mock handler for table: ${table}`)
+      return handler()
+    })
+  })
+
+  function setLeadResponse(data: any, error: any = null) {
+    tableHandlers['leads'] = () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data, error }),
+        }),
+      }),
+    })
+  }
+
+  function setListResponse(table: string, data: any[]) {
+    tableHandlers[table] = () => ({
+      select: () => ({
+        eq: () => ({
+          order: async () => ({ data, error: null }),
+        }),
+      }),
+    })
+  }
+
+  it('returnt null als lead niet bestaat', async () => {
+    setLeadResponse(null)
+    setListResponse('berichten', [])
+    setListResponse('fotos', [])
+    setListResponse('offertes', [])
+    setListResponse('prijsregels', [])
+    setListResponse('lead_notes', [])
+    setListResponse('lead_status_history', [])
+
+    const result = await getLeadDetail('NONEXISTENT')
+
+    expect(result).toBeNull()
+  })
+
+  it('returnt LeadDetail object met alle gerelateerde data als lead bestaat', async () => {
+    setLeadResponse({ lead_id: 'L1', naam: 'Jan', telefoon: '06-123' })
+    setListResponse('berichten', [{ id: 'B1', lead_id: 'L1', richting: 'in', bericht: 'hoi', timestamp: '2026-04-23T10:00:00Z' }])
+    setListResponse('fotos', [{ id: 'F1', lead_id: 'L1', public_url: 'https://...' }])
+    setListResponse('offertes', [{ id: 'O1', lead_id: 'L1', versie: 1, totaal_incl: 250 }])
+    setListResponse('prijsregels', [{ id: 'P1', lead_id: 'L1', omschrijving: 'reinigen', totaal: 250 }])
+    setListResponse('lead_notes', [{ id: 'N1', lead_id: 'L1', tekst: 'klant belt morgen' }])
+    setListResponse('lead_status_history', [])
+
+    const result = await getLeadDetail('L1')
+
+    expect(result).not.toBeNull()
+    expect(result!.lead.lead_id).toBe('L1')
+    expect(result!.berichten).toHaveLength(1)
+    expect(result!.fotos).toHaveLength(1)
+    expect(result!.offertes).toHaveLength(1)
+    expect(result!.prijsregels).toHaveLength(1)
+    expect(result!.notes).toHaveLength(1)
+    expect(result!.statusHistory).toEqual([])
+  })
+})

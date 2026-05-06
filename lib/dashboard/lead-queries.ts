@@ -62,3 +62,79 @@ export async function getLeadsList(): Promise<LeadListItem[]> {
   }
   return (data as unknown as LeadListItem[] | null) ?? []
 }
+
+export interface LeadDetail {
+  lead: Lead
+  berichten: Bericht[]
+  fotos: Foto[]
+  offertes: Offerte[]
+  prijsregels: Prijsregel[]
+  notes: LeadNote[]
+  statusHistory: LeadStatusHistory[]
+}
+
+/**
+ * Haalt één lead op + alle gerelateerde data voor de detail-pagina.
+ * Geeft null terug als de lead niet bestaat (of RLS hem verbergt).
+ *
+ * Alle queries draaien parallel om de page snel te laden. Bij een
+ * sub-query-error vallen we terug op een lege array zodat de page
+ * gerendered kan worden i.p.v. te crashen.
+ */
+export async function getLeadDetail(leadId: string): Promise<LeadDetail | null> {
+  const supabase = await getDashboardSupabase()
+
+  const [
+    leadRes,
+    berichtenRes,
+    fotosRes,
+    offertesRes,
+    prijsregelsRes,
+    notesRes,
+    historyRes,
+  ] = await Promise.all([
+    supabase.from('leads').select('*').eq('lead_id', leadId).maybeSingle(),
+    supabase
+      .from('berichten')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('timestamp', { ascending: true }),
+    supabase
+      .from('fotos')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('aangemaakt', { ascending: true }),
+    supabase
+      .from('offertes')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('versie', { ascending: false }),
+    supabase
+      .from('prijsregels')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('volgorde', { ascending: true }),
+    supabase
+      .from('lead_notes')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('aangemaakt_op', { ascending: false }),
+    supabase
+      .from('lead_status_history')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('gewijzigd_op', { ascending: false }),
+  ])
+
+  if (!leadRes.data) return null
+
+  return {
+    lead: leadRes.data as unknown as Lead,
+    berichten: (berichtenRes.data as unknown as Bericht[] | null) ?? [],
+    fotos: (fotosRes.data as unknown as Foto[] | null) ?? [],
+    offertes: (offertesRes.data as unknown as Offerte[] | null) ?? [],
+    prijsregels: (prijsregelsRes.data as unknown as Prijsregel[] | null) ?? [],
+    notes: (notesRes.data as unknown as LeadNote[] | null) ?? [],
+    statusHistory: (historyRes.data as unknown as LeadStatusHistory[] | null) ?? [],
+  }
+}
