@@ -32,7 +32,7 @@ function reset() {
 describe('getAppointmentsForMonth', () => {
   beforeEach(reset)
 
-  it('queryt leads met afspraak_geboekt_op in de gevraagde maand', async () => {
+  it('queryt leads met afspraak_geboekt_op in een tijdzone-bewuste range', async () => {
     builder.order.mockReturnValueOnce(
       Promise.resolve({
         data: [
@@ -53,17 +53,64 @@ describe('getAppointmentsForMonth', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('leads')
     expect(builder.not).toHaveBeenCalledWith('afspraak_geboekt_op', 'is', null)
-    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-05-01T00:00:00.000Z')
-    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-06-01T00:00:00.000Z')
+    // UTC-grenzen wijden 1 dag aan beide kanten om Europe/Amsterdam (CEST/CET)
+    // shifts op te vangen
+    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-04-30T00:00:00.000Z')
+    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-06-02T00:00:00.000Z')
     expect(builder.order).toHaveBeenCalledWith('afspraak_geboekt_op', { ascending: true })
     expect(result).toHaveLength(1)
     expect(result[0].lead_id).toBe('L1')
   })
 
-  it('december → januari: lt-grens is volgend jaar', async () => {
+  it('december → januari: lt-grens loopt door naar volgend jaar', async () => {
     await getAppointmentsForMonth(2026, 12)
-    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-12-01T00:00:00.000Z')
-    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2027-01-01T00:00:00.000Z')
+    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-11-30T00:00:00.000Z')
+    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2027-01-02T00:00:00.000Z')
+  })
+
+  it('houdt afspraak die in UTC laat-april valt maar in NL al mei is', async () => {
+    // 30 april 22:30 UTC = 1 mei 00:30 in NL (zomertijd)
+    builder.order.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          {
+            lead_id: 'EDGE',
+            naam: 'Edge',
+            telefoon: '06-9',
+            afspraak_geboekt_op: '2026-04-30T22:30:00Z',
+            dashboard_status: null,
+            status: 'akkoord',
+          },
+        ],
+        error: null,
+      })
+    )
+
+    const result = await getAppointmentsForMonth(2026, 5)
+    expect(result).toHaveLength(1)
+    expect(result[0].lead_id).toBe('EDGE')
+  })
+
+  it('filtert UTC-laat-mei afspraak die in NL al juni is uit', async () => {
+    // 31 mei 22:30 UTC = 1 juni 00:30 in NL → hoort bij juni, niet mei
+    builder.order.mockReturnValueOnce(
+      Promise.resolve({
+        data: [
+          {
+            lead_id: 'JUNE',
+            naam: 'June',
+            telefoon: '06-1',
+            afspraak_geboekt_op: '2026-05-31T22:30:00Z',
+            dashboard_status: null,
+            status: 'akkoord',
+          },
+        ],
+        error: null,
+      })
+    )
+
+    const result = await getAppointmentsForMonth(2026, 5)
+    expect(result).toHaveLength(0)
   })
 
   it('returnt lege array bij error', async () => {
