@@ -1,5 +1,6 @@
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getLeadsList } from '@/lib/dashboard/lead-queries'
+import { parseLeadsFilters } from '@/lib/dashboard/lead-filters'
 import {
   formatEuro,
   formatDateTimeNL,
@@ -30,11 +31,13 @@ function csvEscape(value: string | number | null | undefined): string {
   return s
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   // Auth check — alleen approved users mogen exporteren.
   await requireApprovedUser()
 
-  const leads = await getLeadsList()
+  const url = new URL(request.url)
+  const filters = parseLeadsFilters(url.searchParams)
+  const leads = await getLeadsList(filters)
 
   const rows: string[] = [CSV_HEADERS.join(',')]
   for (const lead of leads) {
@@ -45,7 +48,9 @@ export async function GET() {
         csvEscape(lead.telefoon),
         csvEscape(lead.hoofdcategorie),
         csvEscape(lead.m2),
-        csvEscape(lead.totaal_prijs !== null ? formatEuro(lead.totaal_prijs) : ''),
+        csvEscape(
+          lead.totaal_prijs !== null ? formatEuro(lead.totaal_prijs) : ''
+        ),
         csvEscape(lead.status),
         csvEscape(gesprekFaseLabel(lead.gesprek_fase)),
         csvEscape(dashboardStatusLabel(lead.dashboard_status)),
