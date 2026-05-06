@@ -56,7 +56,7 @@ export default async function LeadDetailPage({
           <LeadDetailTabs
             gesprek={<LeadConversation berichten={detail.berichten} />}
             activiteit={
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div className={styles.activityStack}>
                 <LeadPhotos fotos={detail.fotos} />
                 <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
               </div>

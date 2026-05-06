@@ -33,6 +33,13 @@
   min-height: 400px;
 }
 
+/* Verticale stack voor de Activiteit-tab (foto's boven, timeline eronder) */
+.activityStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr;
