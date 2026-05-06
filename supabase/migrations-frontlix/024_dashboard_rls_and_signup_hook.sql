@@ -38,10 +38,12 @@ COMMENT ON FUNCTION is_approved_dashboard_user IS
 -- ============================================
 -- DASHBOARD_USER_PROFILES — user mag alleen eigen rij zien + updaten
 -- ============================================
+DROP POLICY IF EXISTS "user kan eigen profile lezen" ON dashboard_user_profiles;
 CREATE POLICY "user kan eigen profile lezen"
   ON dashboard_user_profiles FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "user kan eigen profile updaten (beperkte velden)" ON dashboard_user_profiles;
 CREATE POLICY "user kan eigen profile updaten (beperkte velden)"
   ON dashboard_user_profiles FOR UPDATE
   USING (user_id = auth.uid())
@@ -58,14 +60,17 @@ CREATE POLICY "user kan eigen profile updaten (beperkte velden)"
 -- ============================================
 -- TENANT_SETTINGS / PRICING_RULES / SERVICE_OFFERINGS — read-only voor approved users
 -- ============================================
+DROP POLICY IF EXISTS "approved users kunnen tenant_settings lezen" ON tenant_settings;
 CREATE POLICY "approved users kunnen tenant_settings lezen"
   ON tenant_settings FOR SELECT
   USING (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen pricing_rules lezen" ON pricing_rules;
 CREATE POLICY "approved users kunnen pricing_rules lezen"
   ON pricing_rules FOR SELECT
   USING (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen service_offerings lezen" ON service_offerings;
 CREATE POLICY "approved users kunnen service_offerings lezen"
   ON service_offerings FOR SELECT
   USING (is_approved_dashboard_user());
@@ -76,6 +81,7 @@ CREATE POLICY "approved users kunnen service_offerings lezen"
 -- ============================================
 -- LEADS — approved users kunnen lezen + dashboard-velden wijzigen
 -- ============================================
+DROP POLICY IF EXISTS "approved users kunnen leads lezen" ON leads;
 CREATE POLICY "approved users kunnen leads lezen"
   ON leads FOR SELECT
   USING (is_approved_dashboard_user());
@@ -84,6 +90,7 @@ CREATE POLICY "approved users kunnen leads lezen"
 -- en dashboard_archived wijzigen. Andere kolommen blijven exclusief voor
 -- de bot (die met service-key schrijft, dus deze policy raakt 'm niet).
 -- WITH CHECK forceert dat dashboard-edits geen bot-velden veranderen.
+DROP POLICY IF EXISTS "approved users kunnen dashboard-velden van leads wijzigen" ON leads;
 CREATE POLICY "approved users kunnen dashboard-velden van leads wijzigen"
   ON leads FOR UPDATE
   USING (is_approved_dashboard_user())
@@ -104,21 +111,25 @@ COMMENT ON POLICY "approved users kunnen dashboard-velden van leads wijzigen" ON
 -- is in dit project deels al het geval; we forceren consistente policies.
 
 ALTER TABLE berichten ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "approved users kunnen berichten lezen" ON berichten;
 CREATE POLICY "approved users kunnen berichten lezen"
   ON berichten FOR SELECT
   USING (is_approved_dashboard_user());
 
 ALTER TABLE fotos ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "approved users kunnen fotos lezen" ON fotos;
 CREATE POLICY "approved users kunnen fotos lezen"
   ON fotos FOR SELECT
   USING (is_approved_dashboard_user());
 
 -- offertes had al RLS aan (zie 006_offertes.sql)
+DROP POLICY IF EXISTS "approved users kunnen offertes lezen" ON offertes;
 CREATE POLICY "approved users kunnen offertes lezen"
   ON offertes FOR SELECT
   USING (is_approved_dashboard_user());
 
 ALTER TABLE prijsregels ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "approved users kunnen prijsregels lezen" ON prijsregels;
 CREATE POLICY "approved users kunnen prijsregels lezen"
   ON prijsregels FOR SELECT
   USING (is_approved_dashboard_user());
@@ -128,45 +139,55 @@ CREATE POLICY "approved users kunnen prijsregels lezen"
 -- ============================================
 
 -- LEAD_NOTES
+DROP POLICY IF EXISTS "approved users kunnen lead_notes lezen" ON lead_notes;
 CREATE POLICY "approved users kunnen lead_notes lezen"
   ON lead_notes FOR SELECT
   USING (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen lead_notes toevoegen" ON lead_notes;
 CREATE POLICY "approved users kunnen lead_notes toevoegen"
   ON lead_notes FOR INSERT
   WITH CHECK (is_approved_dashboard_user() AND auteur = auth.uid());
 
+DROP POLICY IF EXISTS "approved users kunnen eigen lead_notes verwijderen" ON lead_notes;
 CREATE POLICY "approved users kunnen eigen lead_notes verwijderen"
   ON lead_notes FOR DELETE
   USING (is_approved_dashboard_user() AND auteur = auth.uid());
 
 -- LEAD_TAGS
+DROP POLICY IF EXISTS "approved users kunnen lead_tags lezen" ON lead_tags;
 CREATE POLICY "approved users kunnen lead_tags lezen"
   ON lead_tags FOR SELECT
   USING (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen lead_tags toevoegen" ON lead_tags;
 CREATE POLICY "approved users kunnen lead_tags toevoegen"
   ON lead_tags FOR INSERT
   WITH CHECK (is_approved_dashboard_user() AND aangemaakt_door = auth.uid());
 
+DROP POLICY IF EXISTS "approved users kunnen lead_tags verwijderen" ON lead_tags;
 CREATE POLICY "approved users kunnen lead_tags verwijderen"
   ON lead_tags FOR DELETE
   USING (is_approved_dashboard_user());
 
 -- TAGS — gedeeld over de tenant, alleen approved kan lezen + creëren
+DROP POLICY IF EXISTS "approved users kunnen tags lezen" ON tags;
 CREATE POLICY "approved users kunnen tags lezen"
   ON tags FOR SELECT
   USING (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen tags aanmaken" ON tags;
 CREATE POLICY "approved users kunnen tags aanmaken"
   ON tags FOR INSERT
   WITH CHECK (is_approved_dashboard_user());
 
+DROP POLICY IF EXISTS "approved users kunnen tags verwijderen" ON tags;
 CREATE POLICY "approved users kunnen tags verwijderen"
   ON tags FOR DELETE
   USING (is_approved_dashboard_user());
 
 -- LEAD_STATUS_HISTORY — alleen lezen voor users; INSERT komt via trigger in Plan 5
+DROP POLICY IF EXISTS "approved users kunnen lead_status_history lezen" ON lead_status_history;
 CREATE POLICY "approved users kunnen lead_status_history lezen"
   ON lead_status_history FOR SELECT
   USING (is_approved_dashboard_user());
