@@ -1,0 +1,66 @@
+.section {
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.rowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--text-sm);
+}
+
+.rowLabel {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.rowMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.barTrack {
+  height: 6px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-gradient);
+  border-radius: var(--radius-full);
+  transition: width 0.2s;
+}
+
+.empty {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
