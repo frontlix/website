@@ -6,7 +6,6 @@ const {
   mockSelect,
   mockSingle,
   mockDelete,
-  mockEq,
   mockMatch,
   mockFrom,
   mockRevalidatePath,
@@ -14,7 +13,6 @@ const {
   const mockSingle = vi.fn()
   const mockSelect = vi.fn(() => ({ single: mockSingle }))
   const mockInsert = vi.fn(() => ({ select: mockSelect }))
-  const mockEq = vi.fn(() => Promise.resolve({ error: null }))
   const mockMatch = vi.fn(() => Promise.resolve({ error: null }))
   const mockDelete = vi.fn(() => ({ match: mockMatch }))
   const mockGetUser = vi.fn()
@@ -30,7 +28,6 @@ const {
     mockSelect,
     mockSingle,
     mockDelete,
-    mockEq,
     mockMatch,
     mockFrom,
     mockRevalidatePath,
