@@ -1,17 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createDashboardClient } from '@/lib/dashboard/supabase-browser'
 
 /**
- * Detecteert wanneer de huidige user wordt goedgekeurd door Frontlix-admin
- * en ververst de pagina (waarna de Server Component naar /leads redirect).
- *
- * Werkt via realtime channel — geen polling-loop, dus geen onnodige load.
+ * Detecteert wanneer de huidige user wordt goedgekeurd en ververst de
+ * pagina. Toont subtiele "we kijken mee"-indicator zodat de pending user
+ * weet dat de pagina niet bevroren is.
  */
 export function PollApproval() {
   const router = useRouter()
+  const [connected, setConnected] = useState(false)
 
   useEffect(() => {
     const supabase = createDashboardClient()
@@ -38,7 +38,11 @@ export function PollApproval() {
             }
           }
         )
-        .subscribe()
+        .subscribe((status) => {
+          if (!cancelled && status === 'SUBSCRIBED') {
+            setConnected(true)
+          }
+        })
 
       return () => {
         cancelled = true
@@ -52,5 +56,15 @@ export function PollApproval() {
     }
   }, [router])
 
-  return null
+  return (
+    <p
+      style={{
+        margin: '12px 0 0',
+        fontSize: '0.75rem',
+        color: 'var(--color-text-muted)',
+      }}
+    >
+      {connected ? '✓ Verbonden — we sturen je automatisch door zodra je toegang krijgt.' : 'Verbinden…'}
+    </p>
+  )
 }
