@@ -1,31 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockLimit, mockOrder, mockEq, mockSelect, mockFrom } = vi.hoisted(() => {
-  const mockLimit = vi.fn()
-  const mockOrder = vi.fn(() => ({ limit: mockLimit }))
-  const mockEq = vi.fn(() => ({ order: mockOrder }))
-  const mockSelect = vi.fn(() => ({ eq: mockEq, order: mockOrder }))
-  const mockFrom = vi.fn(() => ({ select: mockSelect }))
-  return { mockLimit, mockOrder, mockEq, mockSelect, mockFrom }
+const { builder, mockFrom } = vi.hoisted(() => {
+  // Builder waarvan elke chainable method `self` retourneert,
+  // zodat elke combinatie van filters werkt (ilike/or/eq/gte/lte/in/order)
+  // en de terminale `limit()` een Promise teruggeeft.
+  type Builder = {
+    select: ReturnType<typeof vi.fn>
+    eq: ReturnType<typeof vi.fn>
+    or: ReturnType<typeof vi.fn>
+    gte: ReturnType<typeof vi.fn>
+    lte: ReturnType<typeof vi.fn>
+    in: ReturnType<typeof vi.fn>
+    order: ReturnType<typeof vi.fn>
+    limit: ReturnType<typeof vi.fn>
+  }
+  const builder = {} as Builder
+  builder.select = vi.fn(() => builder)
+  builder.eq = vi.fn(() => builder)
+  builder.or = vi.fn(() => builder)
+  builder.gte = vi.fn(() => builder)
+  builder.lte = vi.fn(() => builder)
+  builder.in = vi.fn(() => builder)
+  builder.order = vi.fn(() => builder)
+  builder.limit = vi.fn(() => Promise.resolve({ data: [], error: null }))
+
+  const mockFrom = vi.fn(() => builder)
+  return { builder, mockFrom }
 })
 
 vi.mock('./supabase-server', () => ({
   getDashboardSupabase: async () => ({ from: mockFrom }),
 }))
 
-import { getLeadsList } from './lead-queries'
+import { getLeadsList, countAllLeads } from './lead-queries'
 
-describe('getLeadsList', () => {
+describe('getLeadsList — geen filters', () => {
   beforeEach(() => {
-    mockLimit.mockReset()
-    mockOrder.mockReset()
-    mockEq.mockClear()
-    mockSelect.mockClear()
+    builder.select.mockClear()
+    builder.eq.mockClear()
+    builder.or.mockClear()
+    builder.gte.mockClear()
+    builder.lte.mockClear()
+    builder.in.mockClear()
+    builder.order.mockClear()
+    builder.limit.mockClear()
+    builder.limit.mockResolvedValue({ data: [], error: null })
     mockFrom.mockClear()
+    mockFrom.mockReturnValue(builder)
   })
 
   it('queryt leads gesorteerd op aangemaakt DESC, niet-gearchiveerd, max 100', async () => {
-    mockLimit.mockResolvedValue({
+    builder.limit.mockResolvedValue({
       data: [{ lead_id: 'L1', naam: 'Jan' }, { lead_id: 'L2', naam: 'Piet' }],
       error: null,
     })
@@ -33,9 +58,9 @@ describe('getLeadsList', () => {
     const result = await getLeadsList()
 
     expect(mockFrom).toHaveBeenCalledWith('leads')
-    expect(mockEq).toHaveBeenCalledWith('dashboard_archived', false)
-    expect(mockOrder).toHaveBeenCalledWith('aangemaakt', { ascending: false })
-    expect(mockLimit).toHaveBeenCalledWith(100)
+    expect(builder.eq).toHaveBeenCalledWith('dashboard_archived', false)
+    expect(builder.order).toHaveBeenCalledWith('aangemaakt', { ascending: false })
+    expect(builder.limit).toHaveBeenCalledWith(100)
     expect(result).toEqual([
       { lead_id: 'L1', naam: 'Jan' },
       { lead_id: 'L2', naam: 'Piet' },
@@ -43,19 +68,125 @@ describe('getLeadsList', () => {
   })
 
   it('returnt lege array bij Supabase-error (geen exception)', async () => {
-    mockLimit.mockResolvedValue({ data: null, error: { message: 'oops' } })
-
-    const result = await getLeadsList()
-
-    expect(result).toEqual([])
+    builder.limit.mockResolvedValue({ data: null, error: { message: 'oops' } })
+    expect(await getLeadsList()).toEqual([])
   })
 
   it('returnt lege array als data null is', async () => {
-    mockLimit.mockResolvedValue({ data: null, error: null })
+    builder.limit.mockResolvedValue({ data: null, error: null })
+    expect(await getLeadsList()).toEqual([])
+  })
+})
 
-    const result = await getLeadsList()
+describe('getLeadsList — met filters', () => {
+  beforeEach(() => {
+    builder.select.mockClear()
+    builder.eq.mockClear()
+    builder.or.mockClear()
+    builder.gte.mockClear()
+    builder.lte.mockClear()
+    builder.in.mockClear()
+    builder.order.mockClear()
+    builder.limit.mockClear()
+    builder.limit.mockResolvedValue({ data: [], error: null })
+    mockFrom.mockClear()
+    mockFrom.mockReturnValue(builder)
+  })
 
+  it('met status: voegt eq(dashboard_status, value) toe', async () => {
+    await getLeadsList({ status: 'opgevolgd' })
+    expect(builder.eq).toHaveBeenCalledWith('dashboard_status', 'opgevolgd')
+  })
+
+  it('met fase: voegt eq(gesprek_fase, value) toe', async () => {
+    await getLeadsList({ fase: 'onderhandelen' })
+    expect(builder.eq).toHaveBeenCalledWith('gesprek_fase', 'onderhandelen')
+  })
+
+  it('met q: voegt or-clause op naam+telefoon toe', async () => {
+    await getLeadsList({ q: 'jan' })
+    expect(builder.or).toHaveBeenCalledTimes(1)
+    const arg = builder.or.mock.calls[0][0] as string
+    expect(arg).toContain('naam.ilike.%jan%')
+    expect(arg).toContain('telefoon.ilike.')
+  })
+
+  it('met datum aangemaakt + from + to: voegt gte+lte toe op aangemaakt', async () => {
+    await getLeadsList({ dateField: 'aangemaakt', from: '2026-04-01', to: '2026-04-30' })
+    expect(builder.gte).toHaveBeenCalledWith('aangemaakt', '2026-04-01')
+    expect(builder.lte).toHaveBeenCalledWith('aangemaakt', '2026-04-30T23:59:59.999Z')
+  })
+
+  it('met datum bijgewerkt: filtert op de bijgewerkt-kolom', async () => {
+    await getLeadsList({ dateField: 'bijgewerkt', from: '2026-04-01' })
+    expect(builder.gte).toHaveBeenCalledWith('bijgewerkt', '2026-04-01')
+    expect(builder.lte).not.toHaveBeenCalled()
+  })
+
+  it('met tags: doet pre-fetch op lead_tags + filter via in(lead_id, ...)', async () => {
+    const tagsBuilder: any = {
+      select: vi.fn(() => tagsBuilder),
+      in: vi.fn(() =>
+        Promise.resolve({
+          data: [
+            { lead_id: 'L1', tag_id: 'T1' },
+            { lead_id: 'L1', tag_id: 'T2' },
+            { lead_id: 'L2', tag_id: 'T1' },
+          ],
+          error: null,
+        })
+      ),
+    }
+    // Cast naar any: mockFrom is getypt als () => Builder (geen arg), maar we
+    // dispatchten hier op tabelnaam — zelfde patroon als in getLeadDetail tests.
+    ;(mockFrom.mockImplementation as any)((table: string) => {
+      if (table === 'lead_tags') return tagsBuilder
+      return builder
+    })
+
+    await getLeadsList({ tags: ['T1', 'T2'] })
+
+    expect(mockFrom).toHaveBeenCalledWith('lead_tags')
+    expect(tagsBuilder.in).toHaveBeenCalledWith('tag_id', ['T1', 'T2'])
+    expect(builder.in).toHaveBeenCalledWith('lead_id', ['L1'])
+  })
+
+  it('met tags die geen lead matcht: returnt lege array zonder leads-query', async () => {
+    const tagsBuilder: any = {
+      select: vi.fn(() => tagsBuilder),
+      in: vi.fn(() => Promise.resolve({ data: [], error: null })),
+    }
+    ;(mockFrom.mockImplementation as any)((table: string) => {
+      if (table === 'lead_tags') return tagsBuilder
+      return builder
+    })
+
+    const result = await getLeadsList({ tags: ['T1'] })
     expect(result).toEqual([])
+    expect(builder.select).not.toHaveBeenCalled()
+  })
+})
+
+describe('countAllLeads', () => {
+  it('returnt totaal aantal niet-gearchiveerde leads', async () => {
+    const countBuilder: any = {
+      select: vi.fn(() => countBuilder),
+      eq: vi.fn(() => Promise.resolve({ count: 42, error: null })),
+    }
+    mockFrom.mockReturnValue(countBuilder)
+
+    expect(await countAllLeads()).toBe(42)
+    expect(countBuilder.select).toHaveBeenCalledWith('*', { count: 'exact', head: true })
+    expect(countBuilder.eq).toHaveBeenCalledWith('dashboard_archived', false)
+  })
+
+  it('returnt 0 bij error', async () => {
+    const countBuilder: any = {
+      select: vi.fn(() => countBuilder),
+      eq: vi.fn(() => Promise.resolve({ count: null, error: { message: 'oops' } })),
+    }
+    mockFrom.mockReturnValue(countBuilder)
+    expect(await countAllLeads()).toBe(0)
   })
 })
 

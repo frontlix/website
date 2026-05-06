@@ -8,6 +8,8 @@ import type {
   LeadNote,
   LeadStatusHistory,
 } from './database.types'
+import type { LeadsFilters } from './lead-filters'
+import { normalizePhone } from './lead-filters'
 
 /**
  * Subset van Lead-velden die de leads-tabel laat zien. Houd dit smal
@@ -44,23 +46,111 @@ const LIST_COLUMNS = [
 
 /**
  * Haalt de leads-lijst voor `/leads`. Filtert standaard gearchiveerde
- * leads weg, sorteert op aangemaakt DESC, max 100 resultaten (paginatie
- * komt in Plan 5).
+ * leads weg, sorteert op aangemaakt DESC, max 100 resultaten.
+ *
+ * Met `filters` kan de query verfijnd worden:
+ * - q: substring-match op naam OR telefoon (genormaliseerd zonder spaties/+/-/parens)
+ * - status / fase: enkele waarde
+ * - tags: meerdere tag-ids; lead matcht als hij ALLE tags heeft (AND-semantic)
+ * - dateField + from + to: range op aangemaakt of bijgewerkt
+ *
+ * Tags-AND vereist een 2-staps query: eerst de matchende lead-ids vinden,
+ * dan filteren. Acceptabel binnen de .limit(100) hierboven.
  */
-export async function getLeadsList(): Promise<LeadListItem[]> {
+export async function getLeadsList(
+  filters?: LeadsFilters
+): Promise<LeadListItem[]> {
   const supabase = await getDashboardSupabase()
-  const { data, error } = await supabase
+
+  // Tags pre-filter: vind lead-ids die ALLE opgegeven tags hebben.
+  let tagFilteredIds: string[] | null = null
+  if (filters?.tags && filters.tags.length > 0) {
+    const { data: rows, error } = await supabase
+      .from('lead_tags')
+      .select('lead_id, tag_id')
+      .in('tag_id', filters.tags)
+
+    if (error) {
+      console.error('[getLeadsList] tags pre-fetch failed:', error)
+      return []
+    }
+
+    type Row = { lead_id: string; tag_id: string }
+    const counts = new Map<string, number>()
+    for (const row of (rows as unknown as Row[] | null) ?? []) {
+      counts.set(row.lead_id, (counts.get(row.lead_id) ?? 0) + 1)
+    }
+    tagFilteredIds = [...counts.entries()]
+      .filter(([, n]) => n === filters.tags!.length)
+      .map(([leadId]) => leadId)
+
+    if (tagFilteredIds.length === 0) return []
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase
     .from('leads')
     .select(LIST_COLUMNS)
     .eq('dashboard_archived', false)
+
+  if (filters?.q) {
+    const qNaam = filters.q
+    const qTel = normalizePhone(filters.q)
+    query = query.or(
+      `naam.ilike.%${qNaam}%,telefoon.ilike.%${qTel}%`
+    )
+  }
+
+  if (filters?.status) {
+    query = query.eq('dashboard_status', filters.status)
+  }
+
+  if (filters?.fase) {
+    query = query.eq('gesprek_fase', filters.fase)
+  }
+
+  if (filters?.from || filters?.to) {
+    const col = filters?.dateField ?? 'aangemaakt'
+    if (filters.from) query = query.gte(col, filters.from)
+    if (filters.to) {
+      const toEnd = `${filters.to}T23:59:59.999Z`
+      query = query.lte(col, toEnd)
+    }
+  }
+
+  if (tagFilteredIds !== null) {
+    query = query.in('lead_id', tagFilteredIds)
+  }
+
+  query = query
     .order('aangemaakt', { ascending: false })
     .limit(100)
+
+  const { data, error } = await query
 
   if (error) {
     console.error('[getLeadsList] query failed:', error)
     return []
   }
   return (data as unknown as LeadListItem[] | null) ?? []
+}
+
+/**
+ * Telt het totaal aantal niet-gearchiveerde leads (zonder filters).
+ * Gebruikt voor de "X gevonden van Y totaal"-tekst.
+ */
+export async function countAllLeads(): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  const { count, error } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('dashboard_archived', false)
+
+  if (error) {
+    console.error('[countAllLeads] query failed:', error)
+    return 0
+  }
+  return count ?? 0
 }
 
 export interface LeadDetail {
