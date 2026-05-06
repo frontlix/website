@@ -1,58 +1,56 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import Link from 'next/link'
+import { useSearchParams, usePathname } from 'next/navigation'
 import styles from './LeadDetailTabs.module.css'
 
-type TabKey = 'gesprek' | 'fotos' | 'timeline'
+type TabKey = 'gesprek' | 'activiteit'
 
 export function LeadDetailTabs({
   gesprek,
-  fotos,
-  timeline,
-  countGesprek,
-  countFotos,
+  activiteit,
 }: {
-  gesprek: ReactNode
-  fotos: ReactNode
-  timeline: ReactNode
-  countGesprek: number
-  countFotos: number
+  gesprek: React.ReactNode
+  activiteit: React.ReactNode
 }) {
-  const [active, setActive] = useState<TabKey>('gesprek')
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const active: TabKey =
+    searchParams.get('tab') === 'activiteit' ? 'activiteit' : 'gesprek'
+
+  // Behoud andere search-params (bv. een toekomstige filter binnen detail)
+  const buildHref = (tab: TabKey) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === 'gesprek') params.delete('tab')
+    else params.set('tab', tab)
+    const qs = params.toString()
+    return qs ? `${pathname}?${qs}` : pathname
+  }
 
   return (
-    <div className={styles.tabs}>
-      <div className={styles.tablist} role="tablist">
-        <button
+    <div className={styles.wrap}>
+      <div className={styles.tabs} role="tablist">
+        <Link
+          href={buildHref('gesprek')}
+          className={`${styles.tab} ${active === 'gesprek' ? styles.active : ''}`}
           role="tab"
           aria-selected={active === 'gesprek'}
-          className={`${styles.tab} ${active === 'gesprek' ? styles.activeTab : ''}`}
-          onClick={() => setActive('gesprek')}
+          scroll={false}
         >
-          Gesprek <span className={styles.count}>{countGesprek}</span>
-        </button>
-        <button
+          Gesprek
+        </Link>
+        <Link
+          href={buildHref('activiteit')}
+          className={`${styles.tab} ${active === 'activiteit' ? styles.active : ''}`}
           role="tab"
-          aria-selected={active === 'fotos'}
-          className={`${styles.tab} ${active === 'fotos' ? styles.activeTab : ''}`}
-          onClick={() => setActive('fotos')}
+          aria-selected={active === 'activiteit'}
+          scroll={false}
         >
-          Foto&apos;s <span className={styles.count}>{countFotos}</span>
-        </button>
-        <button
-          role="tab"
-          aria-selected={active === 'timeline'}
-          className={`${styles.tab} ${active === 'timeline' ? styles.activeTab : ''}`}
-          onClick={() => setActive('timeline')}
-        >
-          Timeline
-        </button>
+          Activiteit
+        </Link>
       </div>
-
       <div className={styles.panel} role="tabpanel">
-        {active === 'gesprek' && gesprek}
-        {active === 'fotos' && fotos}
-        {active === 'timeline' && timeline}
+        {active === 'gesprek' ? gesprek : activiteit}
       </div>
     </div>
   )

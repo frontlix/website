@@ -51,16 +51,16 @@ export default async function LeadDetailPage({
           />
         </aside>
 
-        {/* Midden: gesprek/foto's/timeline (Task 9-12 vullen dit) */}
+        {/* Midden: gesprek/activiteit */}
         <section className={styles.colCenter}>
           <LeadDetailTabs
             gesprek={<LeadConversation berichten={detail.berichten} />}
-            fotos={<LeadPhotos fotos={detail.fotos} />}
-            timeline={
-              <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
+            activiteit={
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <LeadPhotos fotos={detail.fotos} />
+                <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
+              </div>
             }
-            countGesprek={detail.berichten.length}
-            countFotos={detail.fotos.length}
           />
         </section>
 
