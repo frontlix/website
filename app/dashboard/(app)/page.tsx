@@ -10,17 +10,22 @@ import {
   leadsPerDag,
 } from '@/lib/dashboard/stats-queries'
 import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
+import { getLeadsList } from '@/lib/dashboard/lead-queries'
 import { KpiCard } from '@/components/dashboard/ui/KpiCard'
 import { AreaChart } from '@/components/dashboard/ui/AreaChart'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { Pill } from '@/components/dashboard/ui/Pill'
+import { Trechter } from '@/components/dashboard/overzicht/Trechter'
+import { OwnerActies } from '@/components/dashboard/overzicht/OwnerActies'
+import {
+  LiveActivityFeed,
+  type ActivityItem,
+} from '@/components/dashboard/overzicht/LiveActivityFeed'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
 export default async function OverzichtPage() {
-  // Layout heeft auth al gechecked, maar we lezen het profile hier opnieuw
-  // voor de tenant_settings.chatbot_naam (Topbar heeft alleen bedrijfsnaam).
   await requireApprovedUser()
   const supabase = await getDashboardSupabase()
 
@@ -28,7 +33,6 @@ export default async function OverzichtPage() {
   const week = periodToRange('deze-week', now)
   const maand = periodToRange('deze-maand', now)
 
-  // Parallelle queries — alles serverside, één render geen waterval.
   const [
     nieuweLeadsWeek,
     leadsMaand,
@@ -37,6 +41,7 @@ export default async function OverzichtPage() {
     reactietijdMs,
     trend,
     appts,
+    allLeads,
     tenantRaw,
   ] = await Promise.all([
     countLeads(week),
@@ -46,6 +51,7 @@ export default async function OverzichtPage() {
     avgReactietijdMs(week),
     leadsPerDag(now),
     getAppointmentsForMonth(now.getUTCFullYear(), now.getUTCMonth() + 1),
+    getLeadsList(),
     supabase
       .from('tenant_settings')
       .select('chatbot_naam')
@@ -59,22 +65,16 @@ export default async function OverzichtPage() {
   const conversiePct =
     leadsMaand > 0 ? Math.round((convertedMaand / leadsMaand) * 100) : 0
 
-  // Geschatte maand-omzet: aantal converted × gemiddelde offerte-waarde.
-  // Approximatief (we hebben geen "betaald"-veld); voor V1 prima.
   const omzetMaand = avgWaarde !== null ? convertedMaand * avgWaarde : 0
-
   const reactietijdS =
     reactietijdMs !== null ? Math.round(reactietijdMs / 1000) : 0
 
   const trendData = trend.map((d) => d.count)
-  // Laatste 7 dagen sparkline voor de "Nieuwe leads"-KPI.
   const trendLast7 = trendData.slice(-7)
-
-  // Stats onder het trend-chart (4 vakjes).
   const totaal30d = trendData.reduce((sum, n) => sum + n, 0)
   const gemTicket = avgWaarde ?? 0
 
-  // Komende afspraken — alleen toekomstige, top 4.
+  // Komende afspraken — toekomstige, top 4.
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const upcomingAppts = appts
@@ -85,16 +85,72 @@ export default async function OverzichtPage() {
     )
     .slice(0, 4)
 
+  // Trechter — gebruikt deze-week metrics. Counts uit gesprek_fase
+  // verdeling van leads die deze week zijn binnengekomen.
+  // Voor V1 een eenvoudige proxy: tellen alle leads van deze week
+  // per gesprek_fase + dashboard_status.
+  const weekLeads = allLeads.filter(
+    (l) => new Date(l.aangemaakt).getTime() >= new Date(week.from!).getTime(),
+  )
+  const totalWeek = weekLeads.length || 1 // voorkom div-by-zero
+  const funnelRows = [
+    { label: 'Lead binnen', count: weekLeads.length, pct: 100 },
+    {
+      label: 'Bot startte gesprek',
+      count: weekLeads.length,
+      pct: 100,
+    },
+    {
+      label: 'Info compleet',
+      count: weekLeads.filter(
+        (l) =>
+          l.gesprek_fase !== 'info_verzamelen' &&
+          l.dashboard_status !== 'archief',
+      ).length,
+      pct: 0,
+    },
+    {
+      label: 'Offerte verstuurd',
+      count: weekLeads.filter(
+        (l) =>
+          l.gesprek_fase === 'offerte_besproken' ||
+          l.gesprek_fase === 'onderhandelen' ||
+          l.gesprek_fase === 'datum_kiezen' ||
+          l.gesprek_fase === 'afspraak_bevestigd',
+      ).length,
+      pct: 0,
+    },
+    {
+      label: 'Akkoord',
+      count: weekLeads.filter(
+        (l) =>
+          l.gesprek_fase === 'datum_kiezen' ||
+          l.gesprek_fase === 'afspraak_bevestigd' ||
+          l.dashboard_status === 'afgehandeld',
+      ).length,
+      pct: 0,
+    },
+  ].map((r) => ({ ...r, pct: Math.round((r.count / totalWeek) * 100) }))
+
+  // Owner-acties — leads in 'onderhandelen' fase (= wacht op owner-besluit)
+  const ownerActieLeads = allLeads
+    .filter((l) => l.gesprek_fase === 'onderhandelen')
+    .slice(0, 10)
+
+  // Activity feed — V1 statische demo uit recente leads/appointments.
+  // Realtime stream komt in een opvolg-batch.
+  const activityItems = buildActivityFeed(allLeads, upcomingAppts)
+
   return (
     <>
-      {/* ── Header — page-level ────────────────────────────── */}
       <div className="dash-section-head">
         <div>
           <div className="dash-section-title">Overzicht</div>
           <div className="dash-section-sub">
             <LiveDot />
             <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {chatbotName} is live · {upcomingAppts.length} komende afspra{upcomingAppts.length === 1 ? 'ak' : 'ken'}
+              {chatbotName} is live · {upcomingAppts.length} komende afspra
+              {upcomingAppts.length === 1 ? 'ak' : 'ken'}
             </span>
           </div>
         </div>
@@ -108,12 +164,11 @@ export default async function OverzichtPage() {
           </a>
           <a href="/leads" className="dash-btn dash-btn-primary">
             <Plus size={14} />
-            Nieuwe lead
+            Nieuwe offerte
           </a>
         </div>
       </div>
 
-      {/* ── KPI-grid ───────────────────────────────────────── */}
       <div className="dash-kpi-grid" style={{ marginBottom: 20 }}>
         <KpiCard
           label="Nieuwe leads (week)"
@@ -121,7 +176,7 @@ export default async function OverzichtPage() {
           trend={trendLast7}
         />
         <KpiCard
-          label="Conversie deze maand"
+          label="Conversie offerte→klant"
           value={conversiePct}
           suffix="%"
         />
@@ -138,90 +193,109 @@ export default async function OverzichtPage() {
         />
       </div>
 
-      {/* ── Main grid: trend (links) + komende afspraken (rechts) ── */}
       <div className={styles.mainGrid}>
-        {/* Trend chart card */}
-        <div className="dash-card">
-          <div className="dash-card-head">
-            <div>
-              <div className="dash-card-title">Lead-instroom — laatste 30 dagen</div>
-              <div className="dash-card-sub">Aantal nieuwe leads per dag</div>
+        {/* LINKERKOLOM — trend chart + onder daaronder funnel + owner-acties */}
+        <div className={styles.colLeft}>
+          <div className="dash-card">
+            <div className="dash-card-head">
+              <div>
+                <div className="dash-card-title">
+                  Lead-instroom — laatste 28 dagen
+                </div>
+                <div className="dash-card-sub">Aantal nieuwe leads per dag</div>
+              </div>
+            </div>
+            <div style={{ padding: '8px 12px 12px' }}>
+              <AreaChart data={trendData} height={170} />
+            </div>
+            <div className={styles.trendStats}>
+              <TrendStat label="Totaal leads" value={String(totaal30d)} sub="in 30d" />
+              <TrendStat
+                label="Conversie"
+                value={`${conversiePct}%`}
+                sub="deze maand"
+              />
+              <TrendStat
+                label="Owner-acties"
+                value={String(ownerActieLeads.length)}
+                sub="nog open"
+              />
+              <TrendStat
+                label="Gem. ticket"
+                value={
+                  gemTicket > 0
+                    ? `€ ${Math.round(gemTicket).toLocaleString('nl-NL')}`
+                    : '—'
+                }
+                sub="per offerte"
+              />
             </div>
           </div>
-          <div style={{ padding: '8px 12px 12px' }}>
-            <AreaChart data={trendData} height={170} />
-          </div>
-          <div className={styles.trendStats}>
-            <TrendStat label="Totaal leads" value={String(totaal30d)} sub="in 30d" />
-            <TrendStat
-              label="Conversie"
-              value={`${conversiePct}%`}
-              sub="deze maand"
-            />
-            <TrendStat
-              label="Owner-acties"
-              value={String(Math.max(0, leadsMaand - convertedMaand))}
-              sub="nog open"
-            />
-            <TrendStat
-              label="Gem. ticket"
-              value={
-                gemTicket > 0
-                  ? `€ ${Math.round(gemTicket).toLocaleString('nl-NL')}`
-                  : '—'
-              }
-              sub="per offerte"
-            />
+
+          {/* Sub-rij: trechter + owner-acties naast elkaar */}
+          <div className={styles.subRow}>
+            <Trechter rows={funnelRows} />
+            <OwnerActies leads={ownerActieLeads} />
           </div>
         </div>
 
-        {/* Komende afspraken */}
-        <div className="dash-card">
-          <div className="dash-card-head">
-            <div className="dash-card-title">Komende afspraken</div>
-            <a href="/agenda" className="dash-btn dash-btn-ghost dash-btn-sm">
-              Agenda →
-            </a>
-          </div>
-          <div className={styles.apptList}>
-            {upcomingAppts.length === 0 && (
-              <div className={styles.apptEmpty}>
-                Geen geplande afspraken.{' '}
-                <a href="/agenda" style={{ color: 'var(--primary)' }}>
-                  Open agenda
-                </a>
-              </div>
-            )}
-            {upcomingAppts.map((appt) => {
-              const date = new Date(appt.afspraak_geboekt_op!)
-              return (
-                <a
-                  key={appt.lead_id}
-                  href={`/leads/${appt.lead_id}`}
-                  className={styles.apptRow}
-                >
-                  <div className={styles.apptDate}>
-                    <div className={styles.apptMonth}>
-                      {date.toLocaleDateString('nl-NL', { month: 'short' })}
+        {/* RECHTERKOLOM — live activity feed + komende afspraken */}
+        <div className={styles.colRight}>
+          <LiveActivityFeed items={activityItems} />
+
+          <div className="dash-card">
+            <div className="dash-card-head">
+              <div className="dash-card-title">Komende afspraken</div>
+              <a href="/agenda" className="dash-btn dash-btn-ghost dash-btn-sm">
+                Agenda →
+              </a>
+            </div>
+            <div className={styles.apptList}>
+              {upcomingAppts.length === 0 && (
+                <div className={styles.apptEmpty}>
+                  Geen geplande afspraken.{' '}
+                  <a href="/agenda" style={{ color: 'var(--primary)' }}>
+                    Open agenda
+                  </a>
+                </div>
+              )}
+              {upcomingAppts.map((appt) => {
+                const date = new Date(appt.afspraak_geboekt_op!)
+                return (
+                  <a
+                    key={appt.lead_id}
+                    href={`/leads/${appt.lead_id}`}
+                    className={styles.apptRow}
+                  >
+                    <div className={styles.apptDate}>
+                      <div className={styles.apptMonth}>
+                        {date
+                          .toLocaleDateString('nl-NL', { month: 'short' })
+                          .toUpperCase()}
+                      </div>
+                      <div className={styles.apptDay}>{date.getDate()}</div>
                     </div>
-                    <div className={styles.apptDay}>{date.getDate()}</div>
-                  </div>
-                  <div className={styles.apptBody}>
-                    <div className={styles.apptName}>{appt.naam}</div>
-                    <div className={styles.apptMeta}>
-                      {date.toLocaleTimeString('nl-NL', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}{' '}
-                      · {appt.telefoon}
+                    <div className={styles.apptBody}>
+                      <div className={styles.apptName}>{appt.naam}</div>
+                      <div className={styles.apptMeta}>
+                        {date.toLocaleTimeString('nl-NL', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}{' '}
+                        · {appt.telefoon}
+                      </div>
                     </div>
-                  </div>
-                  <Pill tone={appt.dashboard_status === 'afgehandeld' ? 'green' : 'blue'}>
-                    {appt.dashboard_status ?? 'open'}
-                  </Pill>
-                </a>
-              )
-            })}
+                    <Pill
+                      tone={
+                        appt.dashboard_status === 'afgehandeld' ? 'green' : 'blue'
+                      }
+                    >
+                      {appt.dashboard_status ?? 'open'}
+                    </Pill>
+                  </a>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -247,3 +321,41 @@ function TrendStat({
   )
 }
 
+type LeadForFeed = import('@/lib/dashboard/lead-queries').LeadListItem
+type ApptForFeed = import('@/lib/dashboard/agenda-queries').Appointment
+
+function buildActivityFeed(
+  leads: LeadForFeed[],
+  appts: ApptForFeed[],
+): ActivityItem[] {
+  // V1 — laatste 10 events afgeleid uit lead-aanmaak + komende afspraken.
+  // Realtime-stream komt in een opvolgfase.
+  const events: ActivityItem[] = []
+
+  for (const lead of leads.slice(0, 6)) {
+    events.push({
+      leadId: lead.lead_id,
+      naam: lead.naam,
+      kind: 'new',
+      text: 'kwam binnen via formulier',
+      timestamp: lead.aangemaakt,
+    })
+  }
+  for (const appt of appts.slice(0, 4)) {
+    if (!appt.afspraak_geboekt_op) continue
+    events.push({
+      leadId: appt.lead_id,
+      naam: appt.naam,
+      kind: 'appt',
+      text: `bevestigde afspraak voor ${new Date(appt.afspraak_geboekt_op).toLocaleDateString(
+        'nl-NL',
+        { weekday: 'short', day: 'numeric', month: 'short' },
+      )}`,
+      timestamp: appt.afspraak_geboekt_op,
+    })
+  }
+
+  return events
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, 9)
+}
