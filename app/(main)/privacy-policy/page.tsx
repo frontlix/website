@@ -48,7 +48,10 @@ export default function PrivacyPolicyPage() {
           <h2>1. Verwerkingsverantwoordelijke</h2>
           <p>
             Frontlix, gevestigd te Theresiastraat, Den Haag, is verantwoordelijk voor de verwerking van
-            persoonsgegevens zoals weergegeven in deze privacy policy.
+            persoonsgegevens zoals weergegeven in deze privacy policy. Deze policy geldt voor het gebruik
+            van de website <strong>frontlix.com</strong>. Voor onze dashboard-omgeving op{' '}
+            <strong>app.frontlix.com</strong> gelden aanvullende voorwaarden en een aparte
+            verwerkersovereenkomst (zie sectie 15).
           </p>
           <ul>
             <li>Bedrijfsnaam: Frontlix</li>
@@ -59,48 +62,86 @@ export default function PrivacyPolicyPage() {
 
           <h2>2. Welke gegevens verzamelen wij</h2>
           <p>
-            Wij verzamelen persoonsgegevens die je zelf aan ons verstrekt via het
-            contactformulier op onze website. Het gaat om de volgende gegevens:
+            Wij verzamelen alleen die gegevens die nodig zijn om onze dienstverlening te leveren en
+            onze website te verbeteren. Onderstaand een overzicht van de gegevens die wij verwerken
+            en hoe ze bij ons terechtkomen.
           </p>
+
+          <h3>Contactformulier</h3>
           <ul>
             <li>Naam</li>
             <li>E-mailadres</li>
-            <li>Onderwerp van je bericht</li>
-            <li>Inhoud van je bericht</li>
+            <li>Telefoonnummer</li>
+            <li>Inhoud van je bericht (optioneel)</li>
           </ul>
-          <p>
-            Daarnaast verzamelen wij automatisch geanonimiseerde gegevens over het gebruik
-            van onze website via Google Analytics 4 (zie sectie 5).
-          </p>
+
+          <h3>Projectaanvraag-formulier</h3>
+          <ul>
+            <li>Voor- en achternaam</li>
+            <li>E-mailadres</li>
+            <li>Telefoonnummer</li>
+            <li>Bedrijfsnaam (optioneel)</li>
+            <li>Website (optioneel)</li>
+            <li>Aanvullende informatie over je project (optioneel)</li>
+          </ul>
+
+          <h3>Demo-aanvraag</h3>
+          <ul>
+            <li>Telefoonnummer (om de WhatsApp-demo te starten)</li>
+            <li>De gegevens die je tijdens de demo zelf met de bot deelt — zie sectie 14</li>
+          </ul>
+
+          <h3>Automatisch verzamelde gegevens</h3>
+          <ul>
+            <li>
+              Geanonimiseerde gebruiksstatistieken via Google Analytics 4 en PostHog
+              (zie secties 5 en 6)
+            </li>
+            <li>
+              Tijdelijke formulier-invoer voor het meten van formulier-uitval (zie sectie 8)
+            </li>
+            <li>Technische informatie zoals browser-type, apparaattype en geschatte locatie</li>
+          </ul>
 
           <h2>3. Doel van de verwerking</h2>
           <p>Wij verwerken jouw persoonsgegevens voor de volgende doeleinden:</p>
           <ul>
-            <li>Het beantwoorden van jouw vraag of aanvraag via het contactformulier</li>
+            <li>Het beantwoorden van vragen of aanvragen via onze formulieren</li>
+            <li>Het versturen van bevestigingen via e-mail en WhatsApp na een aanvraag</li>
             <li>Het opnemen van contact om onze dienstverlening te bespreken</li>
-            <li>Het verbeteren van onze website en dienstverlening op basis van gebruiksstatistieken</li>
+            <li>Het demonstreren van ons WhatsApp-offertesysteem (de demo)</li>
+            <li>Het verbeteren van onze website, formulieren en dienstverlening op basis van geaggregeerde, geanonimiseerde gebruiksstatistieken</li>
           </ul>
 
           <h2>4. Rechtsgrond</h2>
           <p>
-            Wij verwerken jouw persoonsgegevens op basis van de volgende rechtsgronden
-            uit de Algemene Verordening Gegevensbescherming (AVG):
+            Wij verwerken jouw persoonsgegevens op basis van de volgende rechtsgronden uit de
+            Algemene Verordening Gegevensbescherming (AVG):
           </p>
           <ul>
             <li>
-              <strong>Gerechtvaardigd belang:</strong> het beantwoorden van contactverzoeken
-              en het verbeteren van onze dienstverlening
+              <strong>Uitvoering van een (pre-)contractuele relatie:</strong> voor het verwerken
+              van je contact-, project- of demo-aanvraag en het opvolgen daarvan.
             </li>
             <li>
-              <strong>Toestemming:</strong> voor het plaatsen van analytische cookies
-              (Google Analytics 4)
+              <strong>Gerechtvaardigd belang:</strong> voor het inzicht krijgen in en verbeteren
+              van het gebruik van onze website (analytics, heatmaps, session recordings met
+              gemaskeerde invoer en formulier-uitval). Wij verzamelen geen gegevens voor
+              advertentiedoeleinden, profileren je niet en delen geen data met advertentienetwerken.
+              Onze gerechtvaardigde belangen wegen op tegen jouw privacybelang doordat invoer met
+              persoonsgegevens automatisch wordt gemaskeerd, IP-adressen worden geanonimiseerd en
+              data binnen de EU worden verwerkt.
+            </li>
+            <li>
+              <strong>Wettelijke verplichting:</strong> als wij wettelijk verplicht zijn bepaalde
+              gegevens te bewaren of te verstrekken.
             </li>
           </ul>
 
           <h2>5. Google Analytics 4</h2>
           <p>
-            Wij gebruiken Google Analytics 4 (GA4) om inzicht te krijgen in hoe bezoekers
-            onze website gebruiken. GA4 verzamelt onder andere gegevens over:
+            Wij gebruiken Google Analytics 4 (GA4) om inzicht te krijgen in hoe bezoekers onze
+            website gebruiken. GA4 verzamelt onder andere gegevens over:
           </p>
           <ul>
             <li>Bezochte pagina&apos;s en de duur van het bezoek</li>
@@ -128,7 +169,30 @@ export default function PrivacyPolicyPage() {
             te installeren.
           </p>
 
-          <h2>6. Cookies</h2>
+          <h2>6. PostHog (product-analytics)</h2>
+          <p>
+            Naast Google Analytics gebruiken wij PostHog om beter te begrijpen hoe bezoekers onze
+            website ervaren. PostHog draait op een EU-server (eu.i.posthog.com), waardoor jouw
+            gegevens binnen de Europese Unie worden verwerkt. Met PostHog meten wij:
+          </p>
+          <ul>
+            <li>Pagina-bezoeken en de tijd die je op een pagina doorbrengt</li>
+            <li>
+              Klikken, scroll-gedrag en formulier-interacties (autocapture) ten behoeve van
+              heatmaps en conversie-analyses
+            </li>
+            <li>
+              Geanonimiseerde session recordings, waarbij <strong>alle invoervelden,
+              e-mailadressen en wachtwoorden automatisch worden gemaskeerd</strong> — wij zien
+              dus géén ingevulde tekst of gevoelige gegevens, alleen anoniem klik- en navigatiegedrag
+            </li>
+          </ul>
+          <p>
+            We hebben een verwerkersovereenkomst met PostHog. Op een lokale ontwikkelomgeving
+            (localhost) wordt geen data verzameld; alleen op de live website frontlix.com.
+          </p>
+
+          <h2>7. Cookies</h2>
           <p>Onze website maakt gebruik van de volgende soorten cookies:</p>
 
           <h3>Functionele cookies</h3>
@@ -137,83 +201,123 @@ export default function PrivacyPolicyPage() {
             Ze worden niet gebruikt om je te volgen of te identificeren.
           </p>
 
-          <h3>Analytische cookies (Google Analytics 4)</h3>
+          <h3>Analytische cookies (Google Analytics 4 en PostHog)</h3>
           <p>
             Deze cookies worden gebruikt om geanonimiseerde statistieken te verzamelen
-            over het gebruik van de website. De cookies worden geplaatst door Google en
-            hebben een bewaartermijn van maximaal 14 maanden.
+            over het gebruik van de website.
           </p>
           <ul>
             <li><strong>_ga</strong> — onderscheidt unieke gebruikers (bewaartermijn: 2 jaar)</li>
             <li><strong>_ga_[ID]</strong> — behoudt sessiestatus (bewaartermijn: 2 jaar)</li>
+            <li><strong>ph_*</strong> — PostHog-cookies voor sessie- en gebruiksanalyse (bewaartermijn: 1 jaar)</li>
           </ul>
 
-          <h2>7. Opslag en bewaartermijnen</h2>
+          <h2>8. Formulier-uitval (form-tracking)</h2>
           <p>
-            Gegevens die via het contactformulier worden ingediend, worden opgeslagen in
-            onze database en per e-mail doorgestuurd naar ons. Wij bewaren deze gegevens
-            niet langer dan noodzakelijk voor het doel waarvoor ze zijn verzameld.
+            Om te begrijpen waarom bezoekers een formulier soms niet afmaken, slaan wij tijdens het
+            invullen tijdelijk de ingevulde velden op met een willekeurig sessie-ID. Dit gebeurt ook
+            als je het formulier <em>niet</em> verstuurt. We gebruiken deze gegevens uitsluitend om
+            onze formulieren te verbeteren (bijvoorbeeld: bij welk veld haakt iemand af) en nooit
+            voor marketingdoeleinden.
           </p>
           <ul>
             <li>
-              <strong>Contactformulier gegevens:</strong> worden bewaard zolang nodig voor
-              de afhandeling van je verzoek, met een maximum van 12 maanden na het laatste contact
+              <strong>Wat wordt opgeslagen:</strong> de velden die je hebt ingevuld, een sessie-ID,
+              de naam van het formulier en de pagina-URL.
             </li>
             <li>
-              <strong>WhatsApp demo gegevens:</strong> worden maximaal 30 dagen bewaard na de laatste
-              activiteit en daarna automatisch verwijderd (zie sectie 13)
+              <strong>Bewaartermijn:</strong> maximaal 30 dagen, daarna wordt de data automatisch
+              verwijderd.
             </li>
             <li>
-              <strong>Google Analytics data:</strong> wordt automatisch na 14 maanden verwijderd
+              <strong>Opslag:</strong> beveiligd in onze Supabase-database in de EU.
+            </li>
+            <li>
+              <strong>Verwijderen:</strong> wil je dat we jouw form-data eerder verwijderen? Stuur
+              een mail naar <a href="mailto:info@frontlix.com">info@frontlix.com</a>.
             </li>
           </ul>
 
-          <h2>8. Delen met derden</h2>
+          <h2>9. Opslag en bewaartermijnen</h2>
           <p>
-            Wij delen jouw persoonsgegevens niet met derden, tenzij dit noodzakelijk is
-            voor de uitvoering van onze dienstverlening of wanneer wij hiertoe wettelijk
-            verplicht zijn. De partijen waarmee wij werken zijn:
+            Wij bewaren persoonsgegevens niet langer dan noodzakelijk voor het doel waarvoor ze
+            zijn verzameld.
           </p>
           <ul>
             <li>
-              <strong>Google (Analytics):</strong> voor het verzamelen van geanonimiseerde
-              websitestatistieken. Google verwerkt deze gegevens in overeenstemming met hun
-              eigen privacybeleid.
+              <strong>Contact- en projectformulier-gegevens:</strong> bewaard zolang nodig voor de
+              afhandeling van je verzoek, met een maximum van 12 maanden na het laatste contact.
             </li>
             <li>
-              <strong>Meta (WhatsApp Business API):</strong> voor het versturen en ontvangen
-              van WhatsApp-berichten in onze demo (zie sectie 13).
+              <strong>Form-tracking (uitvalmeting):</strong> maximaal 30 dagen na de laatste
+              activiteit, daarna automatisch verwijderd.
             </li>
             <li>
-              <strong>OpenAI:</strong> voor het automatisch begrijpen en beantwoorden van
-              berichten en het analyseren van foto&apos;s in de demo (zie sectie 13).
+              <strong>Demo-gegevens (WhatsApp-demo):</strong> maximaal 30 dagen na de laatste
+              activiteit, daarna automatisch verwijderd (zie sectie 14).
             </li>
             <li>
-              <strong>Supabase (EU-regio):</strong> voor het opslaan van demo-gegevens en foto&apos;s
-              in een beveiligde database en object storage.
+              <strong>Gepersonaliseerde demo-links:</strong> bewaard zolang de demo actief is, met
+              een maximum van 12 maanden na aanmaak.
             </li>
             <li>
-              <strong>Google Calendar API:</strong> voor het inplannen van afspraken in
-              de Frontlix-agenda na een demo.
+              <strong>Google Analytics-data:</strong> automatisch verwijderd na 14 maanden.
+            </li>
+            <li>
+              <strong>PostHog-data:</strong> sessie-recordings worden maximaal 30 dagen bewaard,
+              geaggregeerde event-data maximaal 12 maanden.
+            </li>
+          </ul>
+
+          <h2>10. Delen met derden (verwerkers)</h2>
+          <p>
+            Wij delen jouw persoonsgegevens niet met derden, tenzij dit noodzakelijk is voor de
+            uitvoering van onze dienstverlening of wanneer wij hiertoe wettelijk verplicht zijn.
+            Met al deze partijen is een verwerkersovereenkomst gesloten:
+          </p>
+          <ul>
+            <li>
+              <strong>Supabase (EU-regio):</strong> voor het beveiligd opslaan van formulier-,
+              demo- en form-trackingdata in een database en object storage.
+            </li>
+            <li>
+              <strong>Google (Analytics):</strong> voor geanonimiseerde websitestatistieken.
+            </li>
+            <li>
+              <strong>PostHog (EU):</strong> voor geanonimiseerde product-analytics, heatmaps en
+              session recordings met gemaskeerde invoer.
+            </li>
+            <li>
+              <strong>Meta (WhatsApp Business API):</strong> voor het versturen van
+              WhatsApp-bevestigingen na een formulier-aanvraag en voor het versturen en ontvangen
+              van berichten in de demo.
+            </li>
+            <li>
+              <strong>OpenAI:</strong> voor het automatisch begrijpen en beantwoorden van berichten
+              en het analyseren van foto&apos;s in de demo (zie sectie 14).
+            </li>
+            <li>
+              <strong>Google Calendar API:</strong> voor het inplannen van afspraken in de
+              Frontlix-agenda na een demo of aanvraag.
             </li>
             <li>
               <strong>Hostinger SMTP:</strong> voor het versturen van bevestigings- en
-              offerte-mails vanuit het Frontlix domein.
+              notificatie-mails vanuit het Frontlix-domein.
             </li>
           </ul>
 
-          <h2>9. Beveiliging</h2>
+          <h2>11. Beveiliging</h2>
           <p>
-            Wij nemen passende technische en organisatorische maatregelen om jouw
-            persoonsgegevens te beschermen tegen verlies, onbevoegde toegang, of enige
-            vorm van onrechtmatige verwerking. Onze website maakt gebruik van een
-            SSL/TLS-versleutelde verbinding (HTTPS).
+            Wij nemen passende technische en organisatorische maatregelen om jouw persoonsgegevens
+            te beschermen tegen verlies, onbevoegde toegang of enige vorm van onrechtmatige
+            verwerking. Onze website maakt gebruik van een SSL/TLS-versleutelde verbinding (HTTPS),
+            data wordt versleuteld opgeslagen in onze Supabase-database in de EU en toegang tot
+            klantdata is beperkt tot bevoegd personeel.
           </p>
 
-          <h2>10. Jouw rechten</h2>
+          <h2>12. Jouw rechten</h2>
           <p>
-            Op grond van de AVG heb je de volgende rechten met betrekking tot jouw
-            persoonsgegevens:
+            Op grond van de AVG heb je de volgende rechten met betrekking tot jouw persoonsgegevens:
           </p>
           <ul>
             <li><strong>Recht op inzage:</strong> je kunt opvragen welke gegevens wij van je hebben</li>
@@ -221,20 +325,23 @@ export default function PrivacyPolicyPage() {
             <li><strong>Recht op verwijdering:</strong> je kunt verzoeken om je gegevens te laten verwijderen</li>
             <li><strong>Recht op beperking:</strong> je kunt verzoeken om de verwerking van je gegevens te beperken</li>
             <li><strong>Recht op dataportabiliteit:</strong> je kunt verzoeken om je gegevens in een gestructureerd formaat te ontvangen</li>
-            <li><strong>Recht van bezwaar:</strong> je kunt bezwaar maken tegen de verwerking van je gegevens</li>
+            <li>
+              <strong>Recht van bezwaar:</strong> je kunt bezwaar maken tegen de verwerking van je
+              gegevens op basis van gerechtvaardigd belang (bijvoorbeeld tegen analytics)
+            </li>
           </ul>
           <p>
             Om gebruik te maken van deze rechten kun je contact met ons opnemen via{' '}
-            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Wij reageren
-            binnen 30 dagen op jouw verzoek.
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Wij reageren binnen 30 dagen
+            op jouw verzoek.
           </p>
 
-          <h2>11. Klacht indienen</h2>
+          <h2>13. Klacht indienen</h2>
           <p>
-            Heb je een klacht over de manier waarop wij omgaan met jouw persoonsgegevens?
-            Neem dan eerst contact met ons op via{' '}
-            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Je hebt ook altijd
-            het recht om een klacht in te dienen bij de{' '}
+            Heb je een klacht over de manier waarop wij omgaan met jouw persoonsgegevens? Neem dan
+            eerst contact met ons op via{' '}
+            <a href="mailto:info@frontlix.com">info@frontlix.com</a>. Je hebt ook altijd het recht
+            om een klacht in te dienen bij de{' '}
             <a
               href="https://autoriteitpersoonsgegevens.nl"
               target="_blank"
@@ -245,14 +352,7 @@ export default function PrivacyPolicyPage() {
             , de toezichthouder op het gebied van privacy in Nederland.
           </p>
 
-          <h2>12. Wijzigingen</h2>
-          <p>
-            Wij behouden ons het recht voor om deze privacy policy te wijzigen. Wijzigingen
-            worden op deze pagina gepubliceerd. We raden je aan om deze pagina regelmatig
-            te raadplegen zodat je op de hoogte bent van eventuele wijzigingen.
-          </p>
-
-          <h2>13. WhatsApp Demo (branche-demo)</h2>
+          <h2>14. WhatsApp Demo (branche-demo)</h2>
           <p>
             Op onze website kun je een demo aanvragen waarin we via WhatsApp laten zien hoe ons
             geautomatiseerde offerte-systeem werkt. Tijdens deze demo voeren we een gesprek met
@@ -317,8 +417,30 @@ export default function PrivacyPolicyPage() {
             werking van ons systeem te tonen en zijn geen geldige offertes voor echte werkzaamheden.
           </p>
 
+          <h2>15. Dashboard-omgeving (app.frontlix.com)</h2>
+          <p>
+            Voor klanten van Frontlix bieden wij een afgeschermde dashboard-omgeving aan op{' '}
+            <strong>app.frontlix.com</strong>. Binnen deze omgeving treedt Frontlix op als{' '}
+            <strong>verwerker</strong> in de zin van de AVG: onze klanten zijn
+            verwerkings­verantwoordelijke voor de gegevens van hun eigen eindklanten die binnen het
+            dashboard worden opgeslagen (zoals leads, agenda-afspraken, inbox-berichten en reviews).
+          </p>
+          <p>
+            Voor het gebruik van app.frontlix.com gelden aanvullende voorwaarden en sluiten wij met
+            iedere klant een aparte verwerkersovereenkomst (DPA). De aparte privacy-verklaring voor
+            de dashboard-omgeving wordt op een later moment gepubliceerd. Voor vragen hierover kun
+            je contact opnemen via <a href="mailto:info@frontlix.com">info@frontlix.com</a>.
+          </p>
+
+          <h2>16. Wijzigingen</h2>
+          <p>
+            Wij behouden ons het recht voor om deze privacy policy te wijzigen. Wijzigingen worden
+            op deze pagina gepubliceerd. We raden je aan om deze pagina regelmatig te raadplegen
+            zodat je op de hoogte bent van eventuele wijzigingen.
+          </p>
+
           <p className={styles.lastUpdated}>
-            Laatst bijgewerkt: april 2026
+            Laatst bijgewerkt: mei 2026
           </p>
         </div>
       </section>
