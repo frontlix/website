@@ -1,57 +1,78 @@
+/* WhatsApp-look — ECE5DD canvas, ronde bubbles, in=wit, uit=lichtgroen. */
+
 .thread {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 8px;
+  background: #ECE5DD;
+  border-radius: 0 0 14px 14px;
+  min-height: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .bubble {
   max-width: 75%;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
+  padding: 7px 10px 5px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+  position: relative;
 }
 
 .in {
   align-self: flex-start;
-  background: var(--color-surface-2);
-  border-bottom-left-radius: var(--radius-sm);
+  background: #FFFFFF;
+  color: #111B21;
+  border-top-left-radius: 4px;
 }
 
 .uit {
   align-self: flex-end;
-  background: var(--color-primary);
-  color: white;
-  border-bottom-right-radius: var(--radius-sm);
+  background: #D9FDD3;
+  color: #111B21;
+  border-top-right-radius: 4px;
 }
 
 .body p {
-  margin: 0 0 var(--space-1);
+  margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .image {
-  margin-top: var(--space-2);
-  border-radius: var(--radius-sm);
+  margin-top: 4px;
+  margin-bottom: 2px;
+  border-radius: 6px;
   overflow: hidden;
+  display: block;
 }
 
 .placeholderType {
   font-style: italic;
-  opacity: 0.7;
+  opacity: 0.6;
+  font-size: 12px;
 }
 
 .time {
   display: block;
-  font-size: var(--text-xs);
-  opacity: 0.7;
-  margin-top: var(--space-1);
+  font-size: 10px;
+  opacity: 0.5;
+  margin-top: 4px;
+  text-align: right;
+  color: #667781;
 }
 
 .empty {
-  color: var(--color-text-muted);
+  padding: 24px 16px;
+  background: #ECE5DD;
+  border-radius: 0 0 14px 14px;
+  color: #667781;
+  font-size: 13px;
   font-style: italic;
+  text-align: center;
 }

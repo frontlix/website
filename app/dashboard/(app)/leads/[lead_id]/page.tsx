@@ -1,21 +1,22 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { getLeadDetail, aggregateActivityTimeline } from '@/lib/dashboard/lead-queries'
+import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
-import { LeadHeader } from '@/components/dashboard/leads/LeadHeader'
+import { LeadDetailHeader } from '@/components/dashboard/lead-detail/LeadDetailHeader'
+import { LeadTabs } from '@/components/dashboard/lead-detail/LeadTabs'
+import { LeadInfoTab } from '@/components/dashboard/lead-detail/LeadInfoTab'
+import { WhatsAppPane } from '@/components/dashboard/lead-detail/WhatsAppPane'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
 import { LeadTagsEditor } from '@/components/dashboard/leads/LeadTagsEditor'
-import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
-import { LeadDetailTabs } from '@/components/dashboard/leads/LeadDetailTabs'
-import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
-import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
-import { LeadActivityTimeline } from '@/components/dashboard/leads/LeadActivityTimeline'
 import { LeadOfferte } from '@/components/dashboard/leads/LeadOfferte'
 import { LeadAfspraak } from '@/components/dashboard/leads/LeadAfspraak'
 import { LeadNotes } from '@/components/dashboard/leads/LeadNotes'
+import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
+import { LeadActivityTimeline } from '@/components/dashboard/leads/LeadActivityTimeline'
 import { LeadDangerZone } from '@/components/dashboard/leads/LeadDangerZone'
-import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
 import styles from './page.module.css'
+
+export const dynamic = 'force-dynamic'
 
 export default async function LeadDetailPage({
   params,
@@ -34,50 +35,67 @@ export default async function LeadDetailPage({
     notFound()
   }
 
+  const { lead } = detail
+
   return (
-    <div>
-      <Link href="/leads" className={styles.backLink}>
-        ← Terug naar leads
-      </Link>
+    <>
+      <LeadDetailHeader lead={lead} />
 
-      <div className={styles.grid}>
-        {/* Linker kolom: klantgegevens + status */}
-        <aside className={styles.colLeft}>
-          <LeadHeader lead={detail.lead} />
-          <LeadDetailRealtime leadId={detail.lead.lead_id} />
-          <LeadStatusBadges lead={detail.lead} />
-          <LeadTagsEditor
-            leadId={detail.lead.lead_id}
-            leadTags={leadTags}
-            allTags={allTags}
-          />
-        </aside>
-
-        {/* Midden: gesprek/activiteit */}
-        <section className={styles.colCenter}>
-          <LeadDetailTabs
-            gesprek={<LeadConversation berichten={detail.berichten} />}
-            activiteit={
-              <div className={styles.activityStack}>
-                <LeadPhotos fotos={detail.fotos} />
-                <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
+      <div className={styles.split}>
+        {/* Linkerkolom: tabs met info/offerte/foto's/notities/activiteit */}
+        <div className={styles.colMain}>
+          <LeadTabs
+            info={
+              <div className={styles.tabStack}>
+                <LeadInfoTab lead={lead} />
+                <div className={styles.metaActions}>
+                  <LeadStatusBadges lead={lead} />
+                  <LeadTagsEditor
+                    leadId={lead.lead_id}
+                    leadTags={leadTags}
+                    allTags={allTags}
+                  />
+                </div>
               </div>
             }
+            offerte={
+              <div className={styles.tabStack}>
+                <LeadOfferte
+                  offertes={detail.offertes}
+                  prijsregels={detail.prijsregels}
+                />
+                <LeadAfspraak lead={lead} />
+              </div>
+            }
+            fotos={<LeadPhotos fotos={detail.fotos} />}
+            notities={
+              <div className={styles.tabStack}>
+                <LeadNotes
+                  leadId={lead.lead_id}
+                  notes={detail.notes}
+                  currentUserId={user.id}
+                />
+                <LeadDangerZone
+                  leadId={lead.lead_id}
+                  archived={lead.dashboard_archived}
+                />
+              </div>
+            }
+            activiteit={
+              <LeadActivityTimeline events={aggregateActivityTimeline(detail)} />
+            }
           />
-        </section>
+        </div>
 
-        {/* Rechter kolom: offerte + afspraak + notities (Task 13-15 vullen dit) */}
-        <aside className={styles.colRight}>
-          <LeadOfferte offertes={detail.offertes} prijsregels={detail.prijsregels} />
-          <LeadAfspraak lead={detail.lead} />
-          <LeadNotes
-            leadId={detail.lead.lead_id}
-            notes={detail.notes}
-            currentUserId={user.id}
+        {/* Rechterkolom: WhatsApp transcript */}
+        <div className={styles.colChat}>
+          <WhatsAppPane
+            leadId={lead.lead_id}
+            leadNaam={lead.naam}
+            berichten={detail.berichten}
           />
-          <LeadDangerZone leadId={detail.lead.lead_id} archived={detail.lead.dashboard_archived} />
-        </aside>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
