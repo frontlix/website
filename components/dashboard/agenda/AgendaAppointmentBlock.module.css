@@ -1,39 +1,44 @@
+/* Eén afspraak-block in een dag-cel — gekleurd voor toekomst, grijs voor verleden. */
+
 .block {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 11px;
   text-decoration: none;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  transition: filter 0.15s, transform 0.15s;
+}
+.block:hover {
+  transform: translateX(2px);
 }
 
 .future {
-  background: var(--color-primary);
+  background: var(--gradient);
   color: white;
+  font-weight: 600;
 }
-
 .future:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
 }
 
 .past {
-  background: var(--color-surface-2);
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
 }
-
 .past:hover {
-  border-color: var(--color-text-muted);
-  color: var(--color-text);
+  border-color: var(--fg-muted);
+  color: var(--fg);
 }
 
 .tijd {
-  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 .naam {

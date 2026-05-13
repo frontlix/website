@@ -7,6 +7,9 @@ import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
 import { AgendaMonthNav } from '@/components/dashboard/agenda/AgendaMonthNav'
 import { AgendaCalendar } from '@/components/dashboard/agenda/AgendaCalendar'
 import { AgendaAppointmentList } from '@/components/dashboard/agenda/AgendaAppointmentList'
+import { LiveDot } from '@/components/dashboard/ui/LiveDot'
+
+export const dynamic = 'force-dynamic'
 
 export default async function AgendaPage({
   searchParams,
@@ -17,13 +20,26 @@ export default async function AgendaPage({
   const ref = parseMonthParam(sp)
   const grid = getMonthGrid(ref.year, ref.month)
   const appointments = await getAppointmentsForMonth(ref.year, ref.month)
-  // The query filters for non-null afspraak_geboekt_op, so cast safely
+  // De query filtert al op non-null afspraak_geboekt_op — safe cast.
   const byDay = buildAppointmentsByDay(
     appointments as Array<typeof appointments[0] & { afspraak_geboekt_op: string }>
   )
 
   return (
-    <div>
+    <>
+      <div className="dash-section-head">
+        <div>
+          <div className="dash-section-title">Agenda</div>
+          <div className="dash-section-sub">
+            <LiveDot />
+            <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+              {appointments.length} afspra{appointments.length === 1 ? 'ak' : 'ken'} in{' '}
+              {grid.monthLabel.toLowerCase()}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <AgendaMonthNav
         prevMonth={grid.prevMonth}
         nextMonth={grid.nextMonth}
@@ -37,6 +53,6 @@ export default async function AgendaPage({
         appointments={appointments}
         monthLabel={grid.monthLabel}
       />
-    </div>
+    </>
   )
 }
