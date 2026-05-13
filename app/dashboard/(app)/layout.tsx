@@ -3,6 +3,8 @@ import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { Topbar } from '@/components/dashboard/Topbar'
 import styles from './layout.module.css'
+// Globale dashboard design-system classes — alleen actief in deze layout.
+import '@/styles/dashboard.css'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireApprovedUser()

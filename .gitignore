@@ -9,3 +9,6 @@ temporary screenshots/
 lead-automation/venv/
 lead-automation/.env
 .claude/scheduled_tasks.lock
+
+# Supabase CLI cache
+supabase/.temp/
