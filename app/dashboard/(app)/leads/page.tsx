@@ -1,50 +1,44 @@
-import { Suspense } from 'react'
+import { FileText } from 'lucide-react'
 import { getLeadsList, countAllLeads } from '@/lib/dashboard/lead-queries'
-import { getAllTags } from '@/lib/dashboard/tag-queries'
-import {
-  parseLeadsFilters,
-  hasActiveFilters,
-} from '@/lib/dashboard/lead-filters'
-import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
-import { LeadsFilterBar } from '@/components/dashboard/leads/LeadsFilterBar'
-import { ExportLeadsButton } from '@/components/dashboard/leads/ExportLeadsButton'
-import styles from './page.module.css'
+import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
+import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 
-export default async function LeadsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [k: string]: string | string[] | undefined }>
-}) {
-  const sp = await searchParams
-  const filters = parseLeadsFilters(sp)
-  const [leads, total, allTags] = await Promise.all([
-    getLeadsList(filters),
+export const dynamic = 'force-dynamic'
+
+export default async function LeadsPage() {
+  // V1: geen filters/search — komen terug in een opvolg-fase wanneer
+  // de pipeline live data toont. Eerst de visuele basis goedzetten.
+  const [leads, total] = await Promise.all([
+    getLeadsList(),
     countAllLeads(),
-    getAllTags(),
   ])
-  const active = hasActiveFilters(filters)
+
+  const open = leads.filter((l) => l.dashboard_status !== 'afgehandeld').length
 
   return (
-    <div>
-      <div className={styles.header}>
+    <>
+      <div className="dash-section-head">
         <div>
-          <h1>Leads</h1>
-          <p>
-            {active
-              ? `${leads.length} gevonden van ${total} totaal.`
-              : `${leads.length} ${
-                  leads.length === 1 ? 'lead' : 'leads'
-                } — niet gearchiveerd, nieuwste eerst.`}
-          </p>
+          <div className="dash-section-title">Leads</div>
+          <div className="dash-section-sub">
+            <LiveDot />
+            <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+              {open} open · {total} totaal — gesorteerd op gesprek-fase
+            </span>
+          </div>
         </div>
-        <Suspense fallback={null}>
-          <ExportLeadsButton />
-        </Suspense>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <a
+            href="/api/dashboard/export/leads-csv"
+            className="dash-btn dash-btn-secondary"
+          >
+            <FileText size={13} />
+            Export CSV
+          </a>
+        </div>
       </div>
-      <Suspense fallback={null}>
-        <LeadsFilterBar allTags={allTags} />
-      </Suspense>
-      <LeadsTable leads={leads} />
-    </div>
+
+      <LeadsPipeline leads={leads} />
+    </>
   )
 }

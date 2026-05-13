@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getDashboardSupabaseBrowser } from '@/lib/dashboard/supabase-browser'
-import { LiveIndicator } from './LiveIndicator'
+import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 
 /**
  * Onzichtbaar (qua data-flow) component dat Supabase Realtime abonneert
@@ -53,5 +53,8 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
     }
   }, [leadId, router])
 
-  return <LiveIndicator connected={connected} />
+  // LiveDot pulseert continu; bij disconnect tonen we niets (de DB-realtime
+  // is een silent feature, geen status-indicator op zich). Connected-flag
+  // blijft beschikbaar voor toekomstige uitbreiding.
+  return connected ? <LiveDot /> : null
 }

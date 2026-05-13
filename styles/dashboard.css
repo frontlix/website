@@ -287,3 +287,140 @@
   display: block;
   width: 100%;
 }
+
+/* ── Pipeline (5-fase kanban) ──────────────────────────── */
+.dash-pipeline-track {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 2px;
+}
+@media (max-width: 1280px) {
+  .dash-pipeline-track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .dash-pipeline-track {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-pipe-col {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  max-height: calc(100vh - 240px);
+}
+.dash-pipe-col-head {
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-pipe-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fg-soft);
+  flex: 1;
+  min-width: 0;
+}
+.dash-pipe-col-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+}
+.dash-pipe-col-body {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.dash-pipe-col-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.dash-pipe-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.dash-pipe-card:hover {
+  border-color: var(--card-hover-border);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+.dash-pipe-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.dash-pipe-card-name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--fg);
+}
+.dash-pipe-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 6px;
+}
+.dash-pipe-card-meta > span {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ── Avatar (initialen, gradient bg) ───────────────────── */
+.dash-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.dash-avatar.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+.dash-avatar.lg {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
