@@ -1,4 +1,4 @@
-import { FileText, Filter } from 'lucide-react'
+import { FileText, Filter, Plus } from 'lucide-react'
 import { getLeadsList, countAllLeads, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
 import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
@@ -69,14 +69,20 @@ export default async function LeadsPage({
   // Eerst filter, dan search — beide cumulatief.
   let displayed = allLeads.filter((l) => matchesFilter(l, activeFilter))
   if (search) {
-    displayed = displayed.filter(
-      (l) =>
+    displayed = displayed.filter((l) => {
+      const adres = [l.straat, l.huisnummer, l.postcode, l.plaats]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return (
         l.naam.toLowerCase().includes(search) ||
-        l.telefoon.toLowerCase().includes(search),
-    )
+        adres.includes(search) ||
+        l.telefoon.toLowerCase().includes(search)
+      )
+    })
   }
 
-  const open = allLeads.filter((l) => l.dashboard_status !== 'afgehandeld').length
+  const actief = allLeads.filter((l) => l.dashboard_status !== 'afgehandeld').length
 
   return (
     <>
@@ -86,7 +92,7 @@ export default async function LeadsPage({
           <div className="dash-section-sub">
             <LiveDot />
             <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {open} open · {total} totaal — gesorteerd op gesprek-fase
+              {actief} actief · {total} totaal
             </span>
           </div>
         </div>
@@ -102,6 +108,13 @@ export default async function LeadsPage({
             <Filter size={13} />
             Filters
           </button>
+          <a
+            href="/leads?nieuwe-offerte=1"
+            className="dash-btn dash-btn-primary"
+          >
+            <Plus size={13} />
+            Nieuwe offerte
+          </a>
         </div>
       </div>
 

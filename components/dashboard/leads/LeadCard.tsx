@@ -3,16 +3,22 @@ import { Square } from 'lucide-react'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import type { LeadListItem } from '@/lib/dashboard/lead-queries'
+import { DIENST_LABELS } from '@/lib/dashboard/manual-offerte-types'
+import type { SubDienst } from '@/lib/dashboard/manual-offerte-types'
 
 /**
- * Pipeline-card — compact, klikbaar. Toont:
- *  - avatar + naam + plaats (uit telefoon-veld? nee, postcode)
- *  - prijs OF m² als badge
- *  - meta-regel met m² + hoofdcategorie
- *  - "binnengekomen" relatieve tijd onderaan rechts
+ * Pipeline-card — layout:
+ *  - head: avatar + naam + plaats (links), prijs OF m²-pill (rechts)
+ *  - meta: m² + eerste dienst-label + "+N" voor extra diensten
+ *  - foot: bron-pill + tijd
+ *
+ * Klikbaar via Next Link naar /leads/{lead_id}.
  */
 export function LeadCard({ lead }: { lead: LeadListItem }) {
   const heeftPrijs = lead.totaal_prijs !== null && lead.totaal_prijs > 0
+  const dienstLabels = (lead.sub_diensten ?? [])
+    .map((d) => DIENST_LABELS[d as SubDienst] ?? humanize(d))
+    .filter(Boolean)
 
   return (
     <Link href={`/leads/${lead.lead_id}`} className="dash-pipe-card">
@@ -25,7 +31,7 @@ export function LeadCard({ lead }: { lead: LeadListItem }) {
               className="dash-truncate"
               style={{ fontSize: 11, color: 'var(--fg-muted)' }}
             >
-              {formatTelefoon(lead.telefoon)}
+              {lead.plaats ?? lead.postcode ?? '—'}
             </div>
           </div>
         </div>
@@ -37,7 +43,7 @@ export function LeadCard({ lead }: { lead: LeadListItem }) {
             {formatEuro(lead.totaal_prijs!)}
           </div>
         ) : lead.m2 !== null ? (
-          <Pill tone="gray">{lead.m2}m²</Pill>
+          <Pill tone="gray" sm>{lead.m2}m²</Pill>
         ) : null}
       </div>
 
@@ -48,10 +54,27 @@ export function LeadCard({ lead }: { lead: LeadListItem }) {
             {lead.m2}m²
           </span>
         )}
-        <span className="dash-truncate" style={{ flex: 1, minWidth: 0 }}>
-          {formatHoofdcategorie(lead.hoofdcategorie)}
-        </span>
-        <span style={{ marginLeft: 'auto', color: 'var(--fg-muted)' }}>
+        {dienstLabels[0] && (
+          <span className="dash-truncate" style={{ flex: 1, minWidth: 0 }}>
+            {dienstLabels[0]}
+          </span>
+        )}
+        {dienstLabels.length > 1 && (
+          <span style={{ color: 'var(--fg-muted)' }}>+{dienstLabels.length - 1}</span>
+        )}
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginTop: 8,
+          flexWrap: 'wrap',
+        }}
+      >
+        {lead.bron && <Pill tone="gray" sm>{formatBron(lead.bron)}</Pill>}
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fg-muted)' }}>
           {relativeTime(lead.aangemaakt)}
         </span>
       </div>
@@ -63,23 +86,18 @@ function formatEuro(v: number): string {
   return '€ ' + Math.round(v).toLocaleString('nl-NL')
 }
 
-function formatTelefoon(t: string): string {
-  // 31624965270 → 06 24 96 52 70 (snel parse-baar voor NL-nummers)
-  if (t.startsWith('31') && t.length === 11) {
-    const local = '0' + t.slice(2)
-    return `${local.slice(0, 2)} ${local.slice(2, 4)} ${local.slice(4, 6)} ${local.slice(6, 8)} ${local.slice(8)}`
+function formatBron(bron: string): string {
+  const map: Record<string, string> = {
+    formulier: 'Formulier',
+    website: 'Formulier',
+    whatsapp: 'WhatsApp',
+    handmatig: 'Handmatig',
   }
-  return t
+  return map[bron] ?? humanize(bron)
 }
 
-function formatHoofdcategorie(c: string): string {
-  // Database-keys → user-vriendelijk
-  const labels: Record<string, string> = {
-    oprit_terras_terrein: 'Oprit/terras',
-    onkruidbeheersing: 'Onkruid',
-    onkruidbeheersing_zakelijk: 'Onkruid zakelijk',
-  }
-  return labels[c] ?? c.replace(/_/g, ' ')
+function humanize(key: string): string {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function relativeTime(iso: string): string {

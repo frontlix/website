@@ -1,52 +1,76 @@
+import { Plus } from 'lucide-react'
 import { LeadCard } from './LeadCard'
 import type { LeadListItem } from '@/lib/dashboard/lead-queries'
-import type { GesprekFase } from '@/lib/dashboard/database.types'
 
 /**
- * Vijf-kolommen pipeline gemapped op `gesprek_fase` DB-enum. Volgorde
- * matcht de natuurlijke flow door een gesprek heen.
- *
- * Leads zonder gesprek_fase (heel oud) verdwijnen in de "info verzamelen"
- * kolom — onkundige defaults.
+ * Vijf-koloms pipeline volgens design-spec. Mapped op een combinatie van
+ * `gesprek_fase` en `dashboard_status` zodat afgeronde leads in de laatste
+ * kolom verdwijnen. Per kolom een count-pill en een "+" snel-knop in de head.
  */
-const STAGES: ReadonlyArray<{ key: GesprekFase; label: string }> = [
-  { key: 'info_verzamelen',    label: 'Info verzamelen' },
-  { key: 'offerte_besproken',  label: 'Offerte verstuurd' },
-  { key: 'onderhandelen',      label: 'In onderhandeling' },
-  { key: 'datum_kiezen',       label: 'Datum kiezen' },
-  { key: 'afspraak_bevestigd', label: 'Bevestigd' },
+type StageKey = 'info' | 'review' | 'verstuurd' | 'gepland' | 'klaar'
+
+const STAGES: ReadonlyArray<{ key: StageKey; label: string; match: (l: LeadListItem) => boolean }> = [
+  {
+    key: 'info',
+    label: 'In gesprek',
+    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'info_verzamelen',
+  },
+  {
+    key: 'review',
+    label: 'Offerte review',
+    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'onderhandelen',
+  },
+  {
+    key: 'verstuurd',
+    label: 'Offerte uit',
+    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'offerte_besproken',
+  },
+  {
+    key: 'gepland',
+    label: 'Ingepland',
+    match: (l) =>
+      l.dashboard_status !== 'afgehandeld' &&
+      (l.gesprek_fase === 'datum_kiezen' || l.gesprek_fase === 'afspraak_bevestigd'),
+  },
+  {
+    key: 'klaar',
+    label: 'Afgerond',
+    match: (l) => l.dashboard_status === 'afgehandeld',
+  },
 ]
 
 export function LeadsPipeline({ leads }: { leads: LeadListItem[] }) {
-  // Bucket per stage. Onbekende fase → info_verzamelen.
-  const byStage = new Map<GesprekFase, LeadListItem[]>()
-  for (const stage of STAGES) byStage.set(stage.key, [])
-  for (const lead of leads) {
-    const fase = (lead.gesprek_fase ?? 'info_verzamelen') as GesprekFase
-    const bucket = byStage.get(fase) ?? byStage.get('info_verzamelen')!
-    bucket.push(lead)
-  }
+  const cols = STAGES.map((stage) => ({
+    ...stage,
+    items: leads.filter(stage.match),
+  }))
 
   return (
     <div className="dash-pipeline-track">
-      {STAGES.map((stage) => {
-        const items = byStage.get(stage.key) ?? []
-        return (
-          <div className="dash-pipe-col" key={stage.key}>
-            <div className="dash-pipe-col-head">
-              <span className="dash-pipe-col-title">{stage.label}</span>
-              <span className="dash-pipe-col-count">{items.length}</span>
-            </div>
-            <div className="dash-pipe-col-body">
-              {items.length === 0 ? (
-                <div className="dash-pipe-col-empty">Leeg</div>
-              ) : (
-                items.map((lead) => <LeadCard key={lead.lead_id} lead={lead} />)
-              )}
-            </div>
+      {cols.map((col) => (
+        <div className="dash-pipe-col" key={col.key}>
+          <div className="dash-pipe-col-head">
+            <span className="dash-pipe-col-title">{col.label}</span>
+            <span className="dash-pipe-col-count">{col.items.length}</span>
+            <button
+              type="button"
+              className="dash-btn dash-btn-ghost dash-btn-sm"
+              style={{ marginLeft: 'auto', padding: '4px 6px' }}
+              aria-label={`Nieuwe lead in ${col.label}`}
+              disabled
+            >
+              <Plus size={13} />
+            </button>
           </div>
-        )
-      })}
+          <div className="dash-pipe-col-body">
+            {col.items.length === 0 ? (
+              <div className="dash-pipe-col-empty">Leeg</div>
+            ) : (
+              col.items.map((lead) => <LeadCard key={lead.lead_id} lead={lead} />)
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

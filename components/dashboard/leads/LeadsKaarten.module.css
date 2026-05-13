@@ -7,26 +7,44 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s, transform 0.15s, border-color 0.15s;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .card:hover {
-  background: var(--card-hover-bg);
-  border-color: var(--border-strong);
+  border-color: var(--card-hover-border);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
 }
 
+/* ── Gradient header band ─────────────────────────────── */
 .head {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.05), rgba(0, 207, 255, 0.05));
+  border-bottom: 1px solid var(--border);
+}
+.headTop {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.leadId {
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
 }
 .headBody {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
+}
+.headIdentity {
+  min-width: 0;
+  flex: 1;
 }
 .naam {
   font-size: 14px;
@@ -36,44 +54,62 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.phone {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
+.adres {
   font-size: 11px;
   color: var(--fg-muted);
-  font-variant-numeric: tabular-nums;
-}
-.prijs {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--primary);
-  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 2px;
 }
 
-.meta {
+/* ── Body onder de header band ───────────────────────── */
+.body {
+  padding: 12px 16px;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metaRow {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
   flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
 }
 .metaItem {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+}
+
+.dienst {
+  font-size: 12px;
+  color: var(--fg-soft);
+  line-height: 1.4;
+}
+.dienstLabel {
   color: var(--fg-muted);
 }
 
-.footer {
+.foot {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tijd {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   color: var(--fg-muted);
 }
-.time {
+.prijs {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

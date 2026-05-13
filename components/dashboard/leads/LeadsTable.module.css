@@ -47,13 +47,65 @@
   color: var(--fg-muted);
 }
 
+.timeCell {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
 .link {
   color: var(--fg);
   text-decoration: none;
+  display: block;
 }
-.link:hover strong {
+.link:hover .leadName {
   color: var(--primary);
 }
 
-/* Density-cozy: standaard padding 12px. Compact/roomy worden door
-   parent-class op shell-wrapper aangepast (zie dashboard.css). */
+/* ── Lead-cell met avatar + naam + subline (id · plaats) ─── */
+.leadCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.leadCellBody {
+  min-width: 0;
+}
+.leadName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--fg);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.leadSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* ── Chevron-kolom uiterst rechts ─────────────────────── */
+.chevronCell {
+  text-align: right;
+  width: 32px;
+}
+.chevronLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--fg-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.chevronLink:hover {
+  background: var(--card-hover-bg);
+  color: var(--primary);
+}

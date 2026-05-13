@@ -19,13 +19,24 @@ export type LeadListItem = Pick<
   Lead,
   | 'lead_id'
   | 'naam'
+  | 'bedrijfsnaam'
   | 'telefoon'
+  | 'email'
+  | 'straat'
+  | 'huisnummer'
+  | 'postcode'
+  | 'plaats'
   | 'hoofdcategorie'
+  | 'sub_diensten'
   | 'm2'
   | 'totaal_prijs'
+  | 'afstand_km'
   | 'status'
   | 'gesprek_fase'
   | 'dashboard_status'
+  | 'bron'
+  | 'afspraak_datum'
+  | 'afspraak_starttijd'
   | 'aangemaakt'
   | 'bijgewerkt'
 >
@@ -33,13 +44,24 @@ export type LeadListItem = Pick<
 const LIST_COLUMNS = [
   'lead_id',
   'naam',
+  'bedrijfsnaam',
   'telefoon',
+  'email',
+  'straat',
+  'huisnummer',
+  'postcode',
+  'plaats',
   'hoofdcategorie',
+  'sub_diensten',
   'm2',
   'totaal_prijs',
+  'afstand_km',
   'status',
   'gesprek_fase',
   'dashboard_status',
+  'bron',
+  'afspraak_datum',
+  'afspraak_starttijd',
   'aangemaakt',
   'bijgewerkt',
 ].join(', ')
