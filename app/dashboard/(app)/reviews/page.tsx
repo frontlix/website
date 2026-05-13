@@ -1,127 +1,222 @@
-import { Star, MessageSquare, TrendingUp, Send } from 'lucide-react'
-import { Pill } from '@/components/dashboard/ui/Pill'
+import { FileText, Send } from 'lucide-react'
+import { KpiCard } from '@/components/dashboard/ui/KpiCard'
+import { NPSDistributionBar } from '@/components/dashboard/reviews/NPSDistributionBar'
+import {
+  ReviewCard,
+  type ReviewItem,
+} from '@/components/dashboard/reviews/ReviewCard'
+import {
+  PendingReviewRow,
+  type PendingReview,
+} from '@/components/dashboard/reviews/PendingReviewRow'
+import {
+  ReviewsFilterTabs,
+  type ReviewsFilter,
+} from '@/components/dashboard/reviews/ReviewsFilterTabs'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Reviews — V1 placeholder. NPS-tabel + review-flow komt in een opvolg-
- * fase wanneer de schoon-straatje DB review-data verzamelt. Voor nu een
- * mooi geframede "binnenkort"-pagina zodat de Sidebar-link werkt en de
- * klant de visie ziet.
+ * Reviews & klanttevredenheid.
+ *
+ * V1: demo-data — er is nog geen NPS-tabel in de DB. De pagina toont de
+ * volledige UX (KPI's, NPS-balk, review-cards, pending-rij) zodat de
+ * klant ziet hoe het wordt. Zodra de bot na elke klus een review-vraag
+ * stuurt + de antwoorden landen in een `reviews`-tabel, vervangen we
+ * deze static data door echte queries.
  */
-export default function ReviewsPage() {
+export default async function ReviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
+  const sp = await searchParams
+  const filter = (
+    ['all', 'pending', 'detractor'].includes(sp.filter ?? '') ? sp.filter : 'all'
+  ) as ReviewsFilter
+
+  // ── DEMO-DATA ───────────────────────────────────────────────────
+  // Wordt vervangen door echte reviews-queries zodra de tabel bestaat.
+  // Tot dan: realistic-looking placeholder zodat de UI volledig zichtbaar is.
+  const reviews: ReviewItem[] = [
+    {
+      id: 'r1',
+      leadId: 'demo-1',
+      naam: 'Anna Smit',
+      plaats: 'Den Haag',
+      datum: '2 dagen geleden',
+      score: 10,
+      nps: 'promoter',
+      text: 'Geweldig werk. Op tijd, schoon werk, perfecte communicatie via WhatsApp tijdens en na de klus. Aanrader!',
+      published: true,
+    },
+    {
+      id: 'r2',
+      leadId: 'demo-2',
+      naam: 'Sandra Janssen',
+      plaats: 'Pijnacker',
+      datum: '1 week geleden',
+      score: 9,
+      nps: 'promoter',
+      text: 'Heel netjes gewerkt en eerlijk advies gekregen over de beschermlaag. Resultaat is super.',
+      published: true,
+    },
+    {
+      id: 'r3',
+      leadId: 'demo-3',
+      naam: 'Erik van der Velde',
+      plaats: 'Rotterdam',
+      datum: '2 weken geleden',
+      score: 8,
+      nps: 'passive',
+      text: 'Goed werk geleverd. Aankomsttijd was iets later dan afgesproken maar verder prima.',
+      published: true,
+    },
+    {
+      id: 'r4',
+      leadId: 'demo-4',
+      naam: 'Familie Kuiper',
+      plaats: 'Delft',
+      datum: '3 weken geleden',
+      score: 10,
+      nps: 'promoter',
+      text: 'Vakwerk! De terras ziet er weer als nieuw uit, dankzij de antraciet voegen prachtige uitstraling.',
+      published: true,
+    },
+    {
+      id: 'r5',
+      leadId: 'demo-5',
+      naam: 'Bert Koning',
+      plaats: 'Utrecht',
+      datum: '1 maand geleden',
+      score: 6,
+      nps: 'detractor',
+      text: 'Werk goed gedaan maar prijs viel iets hoger uit dan in de offerte was aangegeven.',
+      published: false,
+    },
+  ]
+
+  const pending: PendingReview[] = [
+    {
+      id: 'p1',
+      leadId: 'demo-p1',
+      naam: 'Thomas Wilms',
+      plaats: 'Delft',
+      klusDatum: 'vrijdag 8 mei',
+      daysSince: 2,
+      sent: false,
+    },
+    {
+      id: 'p2',
+      leadId: 'demo-p2',
+      naam: 'Petra de Boer',
+      plaats: 'Gouda',
+      klusDatum: 'dinsdag 28 april',
+      daysSince: 8,
+      sent: true,
+    },
+  ]
+
+  const promoters = reviews.filter((r) => r.nps === 'promoter').length
+  const passives = reviews.filter((r) => r.nps === 'passive').length
+  const detractors = reviews.filter((r) => r.nps === 'detractor').length
+  const total = promoters + passives + detractors
+  const nps = total > 0
+    ? Math.round(((promoters - detractors) / total) * 100)
+    : 0
+  const avgScore =
+    total > 0
+      ? Number(
+          (reviews.reduce((sum, r) => sum + r.score, 0) / total).toFixed(1),
+        )
+      : 0
+
+  const counts: Record<ReviewsFilter, number> = {
+    all:       reviews.length,
+    pending:   pending.length,
+    detractor: detractors,
+  }
+
+  const displayedReviews =
+    filter === 'detractor' ? reviews.filter((r) => r.nps === 'detractor') : reviews
+
   return (
     <>
       <div className="dash-section-head">
         <div>
-          <div className="dash-section-title">Reviews</div>
+          <div className="dash-section-title">Reviews & klanttevredenheid</div>
           <div className="dash-section-sub">
-            Klanttevredenheid & NPS-tracking
+            NPS-score: <strong style={{ color: 'var(--success)' }}>+{nps}</strong> ·{' '}
+            {reviews.length} reviews · 68% response rate
           </div>
         </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="dash-btn dash-btn-secondary" disabled>
+            <FileText size={13} />
+            Exporteer rapport
+          </button>
+          <button type="button" className="dash-btn dash-btn-primary" disabled>
+            <Send size={13} />
+            Stuur reviewverzoek
+          </button>
+        </div>
       </div>
 
-      {/* KPI-grid met placeholders */}
+      {/* Demo-banner: maak helder dat data placeholder is */}
+      <div className={styles.demoBanner}>
+        Voorbeelddata — zodra Surface na elke klus een review-vraag verstuurt
+        verschijnen hier echte reviews. Tracking-tabel volgt in een opvolg-batch.
+      </div>
+
+      {/* KPIs */}
       <div className="dash-kpi-grid" style={{ marginBottom: 20 }}>
-        <KpiPlaceholder label="NPS score" suffix="" />
-        <KpiPlaceholder label="Gemiddelde score" suffix="/10" />
-        <KpiPlaceholder label="Response-rate" suffix="%" />
-        <KpiPlaceholder label="Open verzoeken" suffix="" />
+        <KpiCard
+          label="NPS-score"
+          value={nps}
+          prefix="+"
+          trend={[42, 48, 52, 58, 60, 63, 67]}
+        />
+        <KpiCard
+          label="Gemiddelde score"
+          value={avgScore}
+          suffix="/10"
+          trend={[8.2, 8.4, 8.5, 8.7, 8.8, 9.0, 9.1]}
+        />
+        <KpiCard
+          label="Response rate"
+          value={68}
+          suffix="%"
+          trend={[55, 58, 60, 62, 64, 66, 68]}
+        />
+        <KpiCard
+          label="Reviews dit jaar"
+          value={reviews.length + 42}
+          trend={[20, 25, 30, 35, 40, 44, 47]}
+        />
       </div>
 
-      {/* Hero — uitleg + CTA */}
-      <div className={`dash-card ${styles.heroCard}`}>
-        <div className={styles.heroIcon}>
-          <Star size={28} />
-        </div>
-        <h2 className={styles.heroTitle}>Reviews komen binnenkort</h2>
-        <p className={styles.heroBody}>
-          Surface stuurt na elke afgeronde klus automatisch een korte
-          review-vraag via WhatsApp. Je ziet hier straks de scores per
-          dienst, kunt opvolgen op lage scores en exporteren naar Google
-          Business Profile.
-        </p>
-        <div className={styles.heroPills}>
-          <Pill tone="blue" dot>
-            <Send size={11} style={{ marginRight: 2 }} />
-            Automatische verzending
-          </Pill>
-          <Pill tone="green" dot>
-            <TrendingUp size={11} style={{ marginRight: 2 }} />
-            NPS-tracking
-          </Pill>
-          <Pill tone="amber" dot>
-            <MessageSquare size={11} style={{ marginRight: 2 }} />
-            Opvolg-flows
-          </Pill>
-        </div>
-      </div>
+      <NPSDistributionBar
+        promoters={promoters}
+        passives={passives}
+        detractors={detractors}
+      />
 
-      {/* Roadmap-cards */}
-      <div className={styles.roadmap}>
-        <RoadmapCard
-          phase="Fase 1"
-          title="Auto-vraag na klus"
-          status="In ontwikkeling"
-          statusTone="blue"
-          desc="Surface stuurt 24u na afronding een 'wat vond je ervan?'-bericht met 1-10 score-keuze."
-        />
-        <RoadmapCard
-          phase="Fase 2"
-          title="Score-dashboard"
-          status="Q3 2026"
-          statusTone="gray"
-          desc="Per-dienst NPS, trends over tijd, vergelijking met sector-benchmark."
-        />
-        <RoadmapCard
-          phase="Fase 3"
-          title="Auto-publicatie"
-          status="Q4 2026"
-          statusTone="gray"
-          desc="Hoge scores worden met klant-toestemming doorgezet naar Google Business Profile."
-        />
-      </div>
+      <ReviewsFilterTabs counts={counts} />
+
+      {filter === 'pending' ? (
+        <div className={styles.pendingList}>
+          {pending.map((p) => (
+            <PendingReviewRow key={p.id} item={p} />
+          ))}
+        </div>
+      ) : (
+        <div className={styles.reviewsGrid}>
+          {displayedReviews.map((r) => (
+            <ReviewCard key={r.id} review={r} />
+          ))}
+        </div>
+      )}
     </>
-  )
-}
-
-function KpiPlaceholder({ label, suffix }: { label: string; suffix: string }) {
-  return (
-    <div className="dash-kpi">
-      <div className="dash-kpi-label">{label}</div>
-      <div className="dash-kpi-value" style={{ color: 'var(--fg-muted)' }}>
-        <span className="dash-tabular">—</span>
-        {suffix && <span className="unit">{suffix}</span>}
-      </div>
-      <div className="dash-kpi-foot">
-        <span style={{ fontStyle: 'italic' }}>nog geen data</span>
-      </div>
-    </div>
-  )
-}
-
-function RoadmapCard({
-  phase,
-  title,
-  status,
-  statusTone,
-  desc,
-}: {
-  phase: string
-  title: string
-  status: string
-  statusTone: 'blue' | 'green' | 'amber' | 'gray'
-  desc: string
-}) {
-  return (
-    <div className={`dash-card ${styles.roadmapCard}`}>
-      <div className={styles.roadmapHead}>
-        <div className={styles.roadmapPhase}>{phase}</div>
-        <Pill tone={statusTone}>{status}</Pill>
-      </div>
-      <div className={styles.roadmapTitle}>{title}</div>
-      <p className={styles.roadmapDesc}>{desc}</p>
-    </div>
   )
 }
