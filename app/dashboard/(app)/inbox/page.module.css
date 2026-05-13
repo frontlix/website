@@ -51,17 +51,47 @@
   background: var(--bg);
 }
 
+/* ── Conversations-list head: title + search + filter-tabs ─ */
 .colHead {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .colHeadTitle {
-  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--fg);
+}
+.colHeadActions {
+  display: flex;
+  gap: 4px;
+}
+.iconBtn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
   color: var(--fg-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.iconBtn:hover:not(:disabled) {
+  background: var(--card-hover-bg);
+  color: var(--primary);
+}
+.iconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ── Thread head (donkergroene WhatsApp-balk) ─────────── */
@@ -80,6 +110,11 @@
   gap: 10px;
   min-width: 0;
 }
+.threadHeadRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .threadName {
   font-size: 14px;
   font-weight: 700;
@@ -90,6 +125,24 @@
   opacity: 0.8;
   line-height: 1.2;
   margin-top: 2px;
+}
+
+/* ── Bot-status strip — onder thread-head, boven berichten */
+.botStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(22, 163, 74, 0.08);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.botStatusLabel {
+  font-weight: 700;
+  color: var(--success);
+}
+.botStatusText {
+  color: var(--fg-soft);
 }
 
 /* ── Empty states ──────────────────────────────────────── */

@@ -1,35 +1,77 @@
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Filter, RefreshCw } from 'lucide-react'
 import {
   getActiveConversations,
   getMessagesForLead,
   getInboxLeadContext,
+  type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
+import { Pill } from '@/components/dashboard/ui/Pill'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
+import {
+  InboxFilterTabs,
+  type InboxFilter,
+} from '@/components/dashboard/inbox/InboxFilterTabs'
+import { InboxSearch } from '@/components/dashboard/inbox/InboxSearch'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
+function matchesFilter(c: ConversationPreview, filter: InboxFilter): boolean {
+  switch (filter) {
+    case 'all':
+      return true
+    case 'unread':
+      // V1 heuristic: laatste bericht is inkomend = ongelezen door owner.
+      // Strikte unread-tracking vereist een nieuwe DB-kolom.
+      return c.laatsteBericht.richting === 'inkomend'
+    case 'action':
+      // V1 heuristic: in onderhandeling = wacht op owner-actie.
+      return c.gesprekFase === 'onderhandelen'
+    case 'bot':
+      // V1 heuristic: laatste bericht is uitgaand (= bot praat).
+      return c.laatsteBericht.richting === 'uitgaand'
+  }
+}
+
 export default async function InboxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ lead?: string }>
+  searchParams: Promise<{ lead?: string; filter?: string; q?: string }>
 }) {
   const sp = await searchParams
   const selectedLeadId = sp.lead ?? null
+  const filter = (['all', 'unread', 'action', 'bot'].includes(sp.filter ?? '')
+    ? sp.filter
+    : 'all') as InboxFilter
+  const search = (sp.q ?? '').trim().toLowerCase()
 
-  // Conversations altijd fetchen. Bij geselecteerde lead: parallel ook
-  // de message-thread + context ophalen.
-  const [conversations, messages, leadContext] = await Promise.all([
+  const [allConversations, messages, leadContext] = await Promise.all([
     getActiveConversations(50),
     selectedLeadId ? getMessagesForLead(selectedLeadId) : Promise.resolve([]),
     selectedLeadId ? getInboxLeadContext(selectedLeadId) : Promise.resolve(null),
   ])
 
-  const selectedConversation = conversations.find((c) => c.leadId === selectedLeadId)
+  // Counts per tab — stabiel over alle conversations.
+  const counts: Record<InboxFilter, number> = {
+    all:    allConversations.length,
+    unread: allConversations.filter((c) => matchesFilter(c, 'unread')).length,
+    action: allConversations.filter((c) => matchesFilter(c, 'action')).length,
+    bot:    allConversations.filter((c) => matchesFilter(c, 'bot')).length,
+  }
+
+  let conversations = allConversations.filter((c) => matchesFilter(c, filter))
+  if (search) {
+    conversations = conversations.filter(
+      (c) =>
+        c.naam.toLowerCase().includes(search) ||
+        c.telefoon.toLowerCase().includes(search) ||
+        (c.laatsteBericht.tekst ?? '').toLowerCase().includes(search),
+    )
+  }
 
   return (
     <>
@@ -39,8 +81,8 @@ export default async function InboxPage({
           <div className="dash-section-sub">
             <LiveDot />
             <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {conversations.length} actief
-              {conversations.length === 1 ? ' gesprek' : 'e gesprekken'}
+              {allConversations.length} actief
+              {allConversations.length === 1 ? ' gesprek' : 'e gesprekken'}
             </span>
           </div>
         </div>
@@ -50,7 +92,19 @@ export default async function InboxPage({
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
           <div className={styles.colHead}>
-            <span className={styles.colHeadTitle}>Gesprekken</span>
+            <div className={styles.colHeadTitle}>
+              <span>Inbox</span>
+              <div className={styles.colHeadActions}>
+                <button type="button" className={styles.iconBtn} aria-label="Filter" disabled>
+                  <Filter size={14} />
+                </button>
+                <button type="button" className={styles.iconBtn} aria-label="Vernieuwen" disabled>
+                  <RefreshCw size={14} />
+                </button>
+              </div>
+            </div>
+            <InboxSearch initial={search} />
+            <InboxFilterTabs counts={counts} />
           </div>
           <ConversationsList
             conversations={conversations}
@@ -72,16 +126,28 @@ export default async function InboxPage({
                     </div>
                   </div>
                 </div>
-                <LeadDetailRealtime leadId={selectedLeadId} />
+                <div className={styles.threadHeadRight}>
+                  <Pill tone="green" dot>
+                    Bot actief — pauzeren
+                  </Pill>
+                  <LeadDetailRealtime leadId={selectedLeadId} />
+                </div>
               </div>
+
+              {/* Bot-status strip onder header — wat Surface 'denkt' nu te doen */}
+              <div className={styles.botStatus}>
+                <span className={styles.botStatusLabel}>Surface:</span>
+                <span className={styles.botStatusText}>
+                  {botStatusForFase(leadContext.gesprek_fase)}
+                </span>
+              </div>
+
               <LeadConversation berichten={messages} />
             </>
           ) : (
             <div className={styles.threadEmpty}>
               <MessageCircle size={48} className={styles.threadEmptyIcon} />
-              <div className={styles.threadEmptyTitle}>
-                Kies een gesprek
-              </div>
+              <div className={styles.threadEmptyTitle}>Kies een gesprek</div>
               <div className={styles.threadEmptySub}>
                 Selecteer een conversatie uit de lijst om de WhatsApp-thread
                 te bekijken.
@@ -94,10 +160,6 @@ export default async function InboxPage({
         <aside className={styles.colContext}>
           {leadContext ? (
             <LeadContextPane lead={leadContext} />
-          ) : selectedConversation ? (
-            <div className={styles.contextEmpty}>
-              Lead niet gevonden of gearchiveerd.
-            </div>
           ) : (
             <div className={styles.contextEmpty}>
               Selecteer een gesprek voor lead-info.
@@ -107,4 +169,15 @@ export default async function InboxPage({
       </div>
     </>
   )
+}
+
+function botStatusForFase(fase: string | null | undefined): string {
+  const labels: Record<string, string> = {
+    info_verzamelen:    'Verzamelt info — wacht op klant-antwoord',
+    offerte_besproken:  'Offerte verstuurd — wacht op reactie',
+    onderhandelen:      'Onderhandelt — owner-aandacht mogelijk nodig',
+    datum_kiezen:       'Datum kiezen — klant kiest afspraak',
+    afspraak_bevestigd: 'Afspraak bevestigd — wacht op afronding',
+  }
+  return fase ? labels[fase] ?? 'Actief in gesprek' : 'Actief in gesprek'
 }
