@@ -77,7 +77,7 @@ export function Sidebar({
       </button>
       <div className={styles.head}>
         <Image
-          src="/logo_frontlix_trans.png"
+          src="/logo-trans.png"
           alt="Frontlix"
           width={32}
           height={32}

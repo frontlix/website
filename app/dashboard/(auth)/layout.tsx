@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className={styles.formHeader}>
           <Link href="/" className={styles.logoLink}>
             <Image
-              src="/logo_frontlix_trans.png"
+              src="/logo-trans.png"
               alt="Frontlix"
               width={32}
               height={32}
