@@ -88,3 +88,40 @@
     align-items: center;
   }
 }
+
+/* ── Quick-action button rij onder de header ──────────── */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg-soft);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.actionBtn:hover {
+  border-color: var(--card-hover-border);
+  background: var(--card-hover-bg);
+  color: var(--primary);
+}
+
+.actionBtnDanger {
+  color: var(--fg-soft);
+}
+.actionBtnDanger:hover {
+  border-color: rgba(220, 38, 38, 0.4);
+  background: var(--danger-bg);
+  color: var(--danger);
+}

@@ -3,6 +3,7 @@ import { getLeadDetail, aggregateActivityTimeline } from '@/lib/dashboard/lead-q
 import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { LeadDetailHeader } from '@/components/dashboard/lead-detail/LeadDetailHeader'
+import { LeadBotStatus } from '@/components/dashboard/lead-detail/LeadBotStatus'
 import { LeadTabs } from '@/components/dashboard/lead-detail/LeadTabs'
 import { LeadInfoTab } from '@/components/dashboard/lead-detail/LeadInfoTab'
 import { WhatsAppPane } from '@/components/dashboard/lead-detail/WhatsAppPane'
@@ -40,6 +41,7 @@ export default async function LeadDetailPage({
   return (
     <>
       <LeadDetailHeader lead={lead} />
+      <LeadBotStatus lead={lead} />
 
       <div className={styles.split}>
         {/* Linkerkolom: tabs met info/offerte/foto's/notities/activiteit */}

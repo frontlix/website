@@ -1,5 +1,12 @@
 import Link from 'next/link'
-import { ChevronLeft, Mail, Phone } from 'lucide-react'
+import {
+  ChevronLeft,
+  Mail,
+  Phone,
+  StickyNote,
+  Archive,
+  Send,
+} from 'lucide-react'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import type { Lead } from '@/lib/dashboard/database.types'
@@ -48,6 +55,31 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
             {statusLabel(lead.dashboard_status)}
           </Pill>
         </div>
+      </div>
+
+      {/* Quick-action buttons — gaan naar de juiste tab voor de detail-actie */}
+      <div className={styles.actions}>
+        <Link
+          href={`/leads/${lead.lead_id}?tab=notities`}
+          className={styles.actionBtn}
+        >
+          <StickyNote size={14} />
+          <span>Notitie</span>
+        </Link>
+        <Link
+          href={`/leads/${lead.lead_id}?tab=offerte`}
+          className={styles.actionBtn}
+        >
+          <Send size={14} />
+          <span>Offerte versturen</span>
+        </Link>
+        <Link
+          href={`/leads/${lead.lead_id}?tab=notities`}
+          className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+        >
+          <Archive size={14} />
+          <span>Archiveren</span>
+        </Link>
       </div>
     </div>
   )
