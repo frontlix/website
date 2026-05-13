@@ -1,14 +1,121 @@
 .topbar {
+  height: 60px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+  padding: 0 24px;
+  flex-shrink: 0;
 }
 
-.brand {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-text);
+/* ── Title-block links: titel + subtitel ──────────────── */
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.title {
+  font: 700 18px/1 var(--font-heading);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--fg);
+}
+.sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Search: midden, krimpt mee ──────────────────────── */
+.search {
+  flex: 1;
+  max-width: 360px;
+  margin-left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.search:focus-within {
+  border-color: var(--primary);
+  background: var(--bg);
+}
+.searchIcon {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: inherit;
+}
+.searchInput::placeholder {
+  color: var(--fg-muted);
+}
+.kbd {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* ── Actions rechts: icon-buttons (notif/dark/etc.) ──── */
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--fg-soft);
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.iconBtn:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+.dot {
+  /* Notificatie-stip — bovenop het bel-icoon, met outline tegen bg. */
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--bg);
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+  }
+  .search {
+    display: none;
+  }
 }

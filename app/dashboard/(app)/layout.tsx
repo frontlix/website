@@ -23,11 +23,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const bedrijfsnaam = settings?.bedrijfsnaam ?? profile.bedrijfsnaam ?? 'Dashboard'
 
   return (
-    <div className={styles.shell}>
-      <Sidebar />
+    <div className={`${styles.shell} density-cozy`}>
+      <Sidebar bedrijfsnaam={bedrijfsnaam} email={user.email ?? ''} />
       <div className={styles.main}>
-        <Topbar bedrijfsnaam={bedrijfsnaam} email={user.email ?? ''} />
-        <div className={styles.content}>{children}</div>
+        <Topbar />
+        <main className={styles.content}>
+          <div className={styles.contentInner}>{children}</div>
+        </main>
       </div>
     </div>
   )
