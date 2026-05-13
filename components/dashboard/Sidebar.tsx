@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   Star,
+  MessageCircle,
   X,
 } from 'lucide-react'
 import { UserMenu } from './UserMenu'
@@ -25,6 +26,7 @@ type NavItem = {
 
 const WORKSPACE_ITEMS: NavItem[] = [
   { href: '/', label: 'Overzicht', Icon: Home },
+  { href: '/inbox', label: 'Inbox', Icon: MessageCircle },
   { href: '/leads', label: 'Leads', Icon: Inbox },
   { href: '/agenda', label: 'Agenda', Icon: Calendar },
   { href: '/reviews', label: 'Reviews', Icon: Star },
