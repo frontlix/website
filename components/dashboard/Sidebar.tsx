@@ -12,6 +12,7 @@ import {
   Settings,
   Star,
   MessageCircle,
+  Phone,
   X,
 } from 'lucide-react'
 import { UserMenu } from './UserMenu'
@@ -24,14 +25,51 @@ type NavItem = {
   badge?: { value: string; tone?: 'live' | 'muted' }
 }
 
-const WORKSPACE_ITEMS: NavItem[] = [
-  { href: '/', label: 'Overzicht', Icon: Home },
-  { href: '/inbox', label: 'Inbox', Icon: MessageCircle },
-  { href: '/leads', label: 'Leads', Icon: Inbox },
-  { href: '/agenda', label: 'Agenda', Icon: Calendar },
-  { href: '/reviews', label: 'Reviews', Icon: Star },
-  { href: '/statistieken', label: 'Analyses', Icon: BarChart3 },
-]
+type Counts = {
+  inbox?: number
+  leads?: number
+  agenda?: number
+  reviews?: number
+}
+
+function buildWorkspaceItems(counts: Counts): NavItem[] {
+  return [
+    { href: '/', label: 'Overzicht', Icon: Home },
+    {
+      href: '/inbox',
+      label: 'Inbox',
+      Icon: MessageCircle,
+      badge: counts.inbox ? { value: String(counts.inbox), tone: 'live' } : undefined,
+    },
+    {
+      href: '/leads',
+      label: 'Leads',
+      Icon: Inbox,
+      badge: counts.leads ? { value: String(counts.leads) } : undefined,
+    },
+    {
+      href: '/agenda',
+      label: 'Agenda',
+      Icon: Calendar,
+      badge: counts.agenda
+        ? { value: String(counts.agenda), tone: 'muted' }
+        : undefined,
+    },
+    {
+      href: '/reviews',
+      label: 'Reviews',
+      Icon: Star,
+      badge: counts.reviews ? { value: String(counts.reviews), tone: 'live' } : undefined,
+    },
+    { href: '/statistieken', label: 'Analyses', Icon: BarChart3 },
+    {
+      href: '/veldwerk',
+      label: 'Veldwerk',
+      Icon: Phone,
+      badge: { value: 'PWA', tone: 'muted' },
+    },
+  ]
+}
 
 const BEHEER_ITEMS: NavItem[] = [
   { href: '/instellingen', label: 'Instellingen', Icon: Settings },
@@ -40,12 +78,15 @@ const BEHEER_ITEMS: NavItem[] = [
 export function Sidebar({
   bedrijfsnaam,
   email,
+  counts = {},
 }: {
   bedrijfsnaam: string
   email: string
+  counts?: Counts
 }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const workspaceItems = buildWorkspaceItems(counts)
 
   // Luister naar de hamburger-toggle event van Topbar.
   useEffect(() => {
@@ -95,7 +136,7 @@ export function Sidebar({
 
       <nav className={styles.nav}>
         <div className={styles.section}>Werkruimte</div>
-        {WORKSPACE_ITEMS.map((item) => (
+        {workspaceItems.map((item) => (
           <NavLink key={item.href} item={item} pathname={pathname} />
         ))}
 

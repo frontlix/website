@@ -106,6 +106,34 @@
   align-items: center;
   gap: 8px;
 }
+
+/* "Nieuwe offerte" primary-button in topbar — gradient + shadow */
+.newQuoteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: var(--gradient);
+  color: white;
+  font: 600 13px/1 var(--font-body);
+  text-decoration: none;
+  box-shadow: var(--shadow-primary);
+  transition: opacity 0.15s, transform 0.1s;
+}
+.newQuoteBtn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.hideOnSmall {
+  /* Verberg op smalle topbars zodat hamburger + title + search past */
+}
+@media (max-width: 640px) {
+  .hideOnSmall {
+    display: none;
+  }
+}
 .iconBtn {
   width: 36px;
   height: 36px;

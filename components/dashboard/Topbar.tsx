@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, Bell, Menu } from 'lucide-react'
+import { Search, Bell, Menu, Plus } from 'lucide-react'
 import { ThemeToggle } from './ui/ThemeToggle'
 import styles from './Topbar.module.css'
 
@@ -60,6 +61,10 @@ export function Topbar() {
       </div>
 
       <div className={styles.actions}>
+        <Link href="/leads" className={`${styles.newQuoteBtn} ${styles.hideOnSmall}`}>
+          <Plus size={14} />
+          <span>Nieuwe offerte</span>
+        </Link>
         <ThemeToggle />
         <button className={styles.iconBtn} aria-label="Notificaties" type="button">
           <Bell size={18} />
