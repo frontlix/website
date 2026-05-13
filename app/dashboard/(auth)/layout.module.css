@@ -1,23 +1,148 @@
+/* Auth split-layout: form links (1.1fr), brand rechts (1fr).
+   Op mobiel valt brand-pane weg. */
+
 .shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: var(--color-bg);
 }
 
-.header {
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--color-border);
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Form-pane (links) ──────────────────────────────────── */
+.formPane {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 48px;
+  min-width: 0;
+}
+
+.formHeader {
+  margin-bottom: 48px;
 }
 
 .logoLink {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.logoText {
+  font: 800 18px/1 var(--font-heading);
+  letter-spacing: -0.02em;
+}
+.logoAccent {
+  background: var(--color-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.main {
+.formInner {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8) var(--space-6);
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Brand-pane (rechts) ────────────────────────────────── */
+.brandPane {
+  position: relative;
+  background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .brandPane {
+    display: none;
+  }
+}
+
+/* Subtiele glow-bal achter de inhoud */
+.brandPane::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.18) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.brandContent {
+  max-width: 460px;
+  color: white;
+  position: relative;
+}
+
+.brandEyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.brandHeadline {
+  font: 800 36px/1.1 var(--font-heading);
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+
+.brandAccent {
+  /* "strakke offertes." krijgt subtiele off-white tint */
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.brandSub {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.88;
+  margin: 0 0 36px;
+}
+
+.brandFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.featureDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.featureTitle {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.featureSub {
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0.8;
+  margin-top: 2px;
 }
