@@ -9,6 +9,7 @@ import {
   Calendar,
   BarChart3,
   Settings,
+  Star,
 } from 'lucide-react'
 import { UserMenu } from './UserMenu'
 import styles from './Sidebar.module.css'
@@ -21,8 +22,10 @@ type NavItem = {
 }
 
 const WORKSPACE_ITEMS: NavItem[] = [
+  { href: '/', label: 'Overzicht', Icon: Home },
   { href: '/leads', label: 'Leads', Icon: Inbox },
   { href: '/agenda', label: 'Agenda', Icon: Calendar },
+  { href: '/reviews', label: 'Reviews', Icon: Star },
   { href: '/statistieken', label: 'Analyses', Icon: BarChart3 },
 ]
 
@@ -78,10 +81,12 @@ export function Sidebar({
 
 function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   const { Icon } = item
-  // Active als pathname exact matcht of begint met item.href (zodat
-  // /leads/[id] óók de Leads-link highlight).
+  // Active als pathname exact matcht. Voor niet-root items ook prefix-match
+  // (zodat /leads/[id] de Leads-link highlight). De root '/' krijgt geen
+  // prefix-match anders zou hij overal actief zijn.
   const isActive =
-    pathname === item.href || pathname.startsWith(`${item.href}/`)
+    pathname === item.href ||
+    (item.href !== '/' && pathname.startsWith(`${item.href}/`))
 
   return (
     <Link
