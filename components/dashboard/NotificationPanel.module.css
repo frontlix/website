@@ -1,0 +1,137 @@
+.wrap {
+  position: relative;
+}
+
+.bellBtn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--fg-soft);
+  cursor: pointer;
+}
+.bellBtn:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+
+.dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  background: #dc2626;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 360px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-nav, 0 12px 40px rgba(0, 0, 0, 0.12));
+  z-index: 100;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.unreadCount {
+  padding: 2px 8px;
+  background: var(--gradient);
+  color: white;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.item:last-child {
+  border-bottom: none;
+}
+.item:hover {
+  background: var(--card-hover-bg);
+}
+.itemUnread {
+  background: rgba(26, 86, 255, 0.04);
+}
+
+.itemIcon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border-radius: 8px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+.itemTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.itemSub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+.itemTime {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+.footer {
+  display: block;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  text-decoration: none;
+}
+.footer:hover {
+  background: var(--card-hover-bg);
+}

@@ -70,10 +70,11 @@
   color: var(--fg-muted);
   line-height: 1.4;
   margin-top: 2px;
+  margin-bottom: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
 }
@@ -81,4 +82,11 @@
 .bullet {
   color: var(--fg-soft);
   font-weight: 500;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
 }

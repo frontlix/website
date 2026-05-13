@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { FileText, Plus } from 'lucide-react'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
@@ -162,10 +163,10 @@ export default async function OverzichtPage() {
             <FileText size={13} />
             Export
           </a>
-          <a href="/leads" className="dash-btn dash-btn-primary">
+          <Link href="/?nieuwe-offerte=1" className="dash-btn dash-btn-primary" scroll={false}>
             <Plus size={14} />
             Nieuwe offerte
-          </a>
+          </Link>
         </div>
       </div>
 

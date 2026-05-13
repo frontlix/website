@@ -47,6 +47,11 @@ export default async function LeadDetailPage({
         {/* Linkerkolom: tabs met info/offerte/foto's/notities/activiteit */}
         <div className={styles.colMain}>
           <LeadTabs
+            counts={{
+              fotos: detail.fotos.length,
+              notities: detail.notes.length,
+              offerte: detail.offertes.length,
+            }}
             info={
               <div className={styles.tabStack}>
                 <LeadInfoTab lead={lead} />
@@ -63,6 +68,7 @@ export default async function LeadDetailPage({
             offerte={
               <div className={styles.tabStack}>
                 <LeadOfferte
+                  leadId={lead.lead_id}
                   offertes={detail.offertes}
                   prijsregels={detail.prijsregels}
                 />

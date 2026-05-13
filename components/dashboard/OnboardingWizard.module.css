@@ -1,0 +1,128 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(10, 14, 20, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg);
+  border-radius: 18px;
+  padding: 36px 28px 28px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.skipBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.skipBtn:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.progress {
+  width: 100%;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.progressFill {
+  height: 100%;
+  background: var(--gradient);
+  transition: width 250ms ease;
+}
+.stepCounter {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 24px;
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  background: var(--gradient);
+  color: white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-primary);
+}
+
+.title {
+  margin: 0 0 8px;
+  font: 800 26px/1.2 var(--font-heading);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.body {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: var(--fg-soft);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.btnPrimary {
+  background: var(--gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btnSecondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+.btnSecondary:hover {
+  background: var(--card-hover-bg);
+}

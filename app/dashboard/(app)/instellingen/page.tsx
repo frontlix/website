@@ -6,6 +6,8 @@ import {
   SettingsNav,
   type SettingsSection,
 } from '@/components/dashboard/instellingen/SettingsNav'
+import { AccountSection } from '@/components/dashboard/instellingen/AccountSection'
+import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -56,7 +58,7 @@ export default async function InstellingenPage({
 }) {
   const sp = await searchParams
   const section = (
-    ['bedrijf', 'prijzen', 'diensten', 'tags', 'opening', 'reminders', 'notificaties', 'team'].includes(
+    ['bedrijf', 'prijzen', 'diensten', 'tags', 'opening', 'reminders', 'notificaties', 'team', 'account', 'avg'].includes(
       sp.section ?? '',
     )
       ? sp.section
@@ -64,6 +66,7 @@ export default async function InstellingenPage({
   ) as SettingsSection
 
   const supabase = await getDashboardSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
   const [tenantRaw, pricingRaw, servicesRaw, teamRaw] = await Promise.all([
@@ -121,6 +124,8 @@ export default async function InstellingenPage({
           {section === 'reminders' && <RemindersSection tenant={tenant} />}
           {section === 'notificaties' && <NotificatiesSection />}
           {section === 'team' && <TeamSection members={team} />}
+          {section === 'account' && <AccountSection email={user?.email ?? ''} />}
+          {section === 'avg' && <AvgSection />}
         </div>
       </div>
     </>

@@ -12,13 +12,14 @@ const TABS: ReadonlyArray<{ key: TabKey; label: string; Icon: typeof FileText }>
   { key: 'info',       label: 'Info',       Icon: FileText },
   { key: 'offerte',    label: 'Offerte',    Icon: Receipt },
   { key: 'fotos',      label: "Foto's",     Icon: Image },
+  { key: 'activiteit', label: 'Tijdlijn',   Icon: Clock },
   { key: 'notities',   label: 'Notities',   Icon: StickyNote },
-  { key: 'activiteit', label: 'Activiteit', Icon: Clock },
 ]
 
 /**
  * 5-tab navigatie voor lead-detail. Active tab in URL (?tab=...). Default
  * tab is 'info' (overzichtelijke landing-tab voor een nieuwe lead).
+ * Optionele `counts` toont een count-badge naast de tab-label (bv. "Foto's 4").
  */
 export function LeadTabs({
   info,
@@ -26,12 +27,14 @@ export function LeadTabs({
   fotos,
   notities,
   activiteit,
+  counts,
 }: {
   info: ReactNode
   offerte: ReactNode
   fotos: ReactNode
   notities: ReactNode
   activiteit: ReactNode
+  counts?: Partial<Record<TabKey, number>>
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -59,19 +62,25 @@ export function LeadTabs({
   return (
     <div className={styles.wrap}>
       <div className={styles.tabBar} role="tablist">
-        {TABS.map(({ key, label, Icon }) => (
-          <Link
-            key={key}
-            href={buildHref(key)}
-            className={`${styles.tab} ${active === key ? styles.active : ''}`}
-            role="tab"
-            aria-selected={active === key}
-            scroll={false}
-          >
-            <Icon size={14} />
-            <span>{label}</span>
-          </Link>
-        ))}
+        {TABS.map(({ key, label, Icon }) => {
+          const count = counts?.[key]
+          return (
+            <Link
+              key={key}
+              href={buildHref(key)}
+              className={`${styles.tab} ${active === key ? styles.active : ''}`}
+              role="tab"
+              aria-selected={active === key}
+              scroll={false}
+            >
+              <Icon size={14} />
+              <span>{label}</span>
+              {typeof count === 'number' && count > 0 && (
+                <span className={styles.tabCount}>{count}</span>
+              )}
+            </Link>
+          )
+        })}
       </div>
       <div className={styles.panel} role="tabpanel">
         {panels[active]}

@@ -1,0 +1,126 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  padding: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  min-height: 80px;
+}
+.card:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.timeBlock {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  flex-shrink: 0;
+  background: var(--gradient);
+  color: white;
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.time {
+  font: 800 20px/1 var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.cardBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.naam {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.actionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: rgba(26, 86, 255, 0.08);
+  color: var(--primary);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.chevron {
+  color: var(--fg-muted);
+}
+
+.empty {
+  padding: 36px 24px;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+.emptyTitle {
+  font: 800 22px/1.2 var(--font-heading);
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.emptySub {
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.emptySub a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 12px;
+    gap: 12px;
+  }
+  .timeBlock {
+    width: 60px;
+  }
+  .time {
+    font-size: 18px;
+  }
+  .actionPill {
+    display: none;
+  }
+}

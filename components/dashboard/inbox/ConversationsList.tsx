@@ -1,11 +1,17 @@
 import Link from 'next/link'
+import { AlertTriangle } from 'lucide-react'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
+import { Pill } from '@/components/dashboard/ui/Pill'
 import type { ConversationPreview } from '@/lib/dashboard/inbox-queries'
+import { formatEuro, gesprekFaseLabel } from '@/lib/dashboard/format'
+import type { Lead, GesprekFase } from '@/lib/dashboard/database.types'
 import styles from './ConversationsList.module.css'
 
 /**
  * Linkerkolom van Inbox — lijst van actieve gesprekken.
- * Geselecteerd gesprek krijgt active-state highlight.
+ * Toont per rij: avatar, naam + tijd, preview van laatste bericht,
+ * status-pill + optionele actie-/prijs-pill. Geselecteerd item krijgt
+ * een primary border-accent links.
  */
 export function ConversationsList({
   conversations,
@@ -47,6 +53,20 @@ export function ConversationsList({
               )}
               {previewText(c.laatsteBericht.tekst, c.laatsteBericht.type)}
             </div>
+            <div className={styles.pills}>
+              <Pill tone={faseTone(c.gesprekFase)} dot>
+                {faseLabel(c.gesprekFase, c.dashboardStatus)}
+              </Pill>
+              {c.needsAction && (
+                <Pill tone="amber">
+                  <AlertTriangle size={10} style={{ verticalAlign: '-1px', marginRight: 2 }} />
+                  Actie
+                </Pill>
+              )}
+              {c.totaalPrijs && c.totaalPrijs > 0 && (
+                <Pill tone="gray">{formatEuro(c.totaalPrijs)}</Pill>
+              )}
+            </div>
           </div>
         </Link>
       ))}
@@ -56,11 +76,39 @@ export function ConversationsList({
 
 function previewText(text: string | null, type: string): string {
   if (text) return text
-  // Berichten zonder tekst zijn typisch media-only — toon type-hint.
   if (type === 'image' || type === 'foto') return '📷 Foto'
   if (type === 'audio') return '🎤 Spraakbericht'
   if (type === 'document') return '📄 Document'
   return `[${type}]`
+}
+
+/**
+ * Status-label valt terug op dashboard_status (open/afgehandeld) wanneer
+ * de gesprek_fase nog niet bepalend is — anders prefereren we de
+ * fase-label want die zegt meer over "waar zit het gesprek nu".
+ */
+function faseLabel(fase: GesprekFase | null, status: Lead['dashboard_status']): string {
+  if (status === 'afgehandeld') return 'Afgerond'
+  if (status === 'geen_interesse') return 'Afgewezen'
+  if (status === 'no_show') return 'No-show'
+  if (!fase) return 'Nieuw'
+  switch (fase) {
+    case 'offerte_besproken':  return 'Offerte verstuurd'
+    case 'onderhandelen':      return 'In review'
+    case 'afspraak_bevestigd': return 'Goedgekeurd'
+    default:                   return gesprekFaseLabel(fase)
+  }
+}
+
+function faseTone(fase: GesprekFase | null): 'blue' | 'amber' | 'green' | 'gray' {
+  switch (fase) {
+    case 'info_verzamelen':    return 'blue'
+    case 'offerte_besproken':  return 'amber'
+    case 'onderhandelen':      return 'amber'
+    case 'datum_kiezen':       return 'green'
+    case 'afspraak_bevestigd': return 'green'
+    default:                   return 'gray'
+  }
 }
 
 function formatTime(iso: string): string {

@@ -35,6 +35,26 @@
   border-bottom-color: var(--primary);
 }
 
+/* Klein count-bubble naast tab-label, bv. "Foto's 4" */
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.tab.active .tabCount {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
 .panel {
   padding: 20px;
   min-height: 240px;

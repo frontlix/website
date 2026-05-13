@@ -1,0 +1,845 @@
+/* ── Backdrop + Shell ─────────────────────────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(10, 14, 20, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.shell {
+  width: 100%;
+  max-width: 880px;
+  max-height: 92vh;
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.header {
+  padding: 18px 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.titleBlock {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.titleIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--gradient);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.closeBtn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg-soft);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.closeBtn:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+
+/* ── Stepper ──────────────────────────────────────────────────────── */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--fg-muted);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: default;
+}
+.stepActive {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+.stepDone {
+  color: var(--fg-soft);
+  cursor: pointer;
+}
+
+.stepNum {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.stepNumActive {
+  background: var(--gradient);
+  color: white;
+}
+.stepNumDone {
+  background: rgba(22, 163, 74, 0.15);
+  color: var(--success, #16a34a);
+}
+
+.stepChevron {
+  color: var(--fg-muted);
+  padding: 0 4px;
+}
+
+/* ── Body / footer ────────────────────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.bodyStack {
+  display: grid;
+  gap: 18px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.footerRight {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Form basics ──────────────────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.input {
+  width: 100%;
+  padding: 9px 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.15);
+}
+.numericInput {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  resize: vertical;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.sectionSub {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.kicker {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.grid21 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+.gridAddr {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px;
+  gap: 12px;
+}
+
+.tip {
+  padding: 12px;
+  background: rgba(26, 86, 255, 0.05);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--fg-soft);
+  line-height: 1.5;
+}
+.tip strong {
+  color: var(--fg);
+}
+
+/* ── Card-like buttons (option-pickers) ───────────────────────────── */
+.optCard {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.optCard:hover {
+  background: var(--card-hover-bg);
+}
+.optCardActive {
+  background: rgba(26, 86, 255, 0.06);
+  border-color: rgba(26, 86, 255, 0.5);
+}
+
+.optDot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.optDotActive {
+  background: var(--gradient);
+  border: none;
+}
+.optDotActive::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+.optLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.optLabelActive {
+  color: var(--primary);
+}
+.optSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* ── Checkbox-like card ───────────────────────────────────────────── */
+.checkCard {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.checkCardActive {
+  background: rgba(26, 86, 255, 0.06);
+  border-color: rgba(26, 86, 255, 0.4);
+}
+.checkCardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.checkBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: white;
+  flex-shrink: 0;
+}
+.checkBoxActive {
+  background: var(--gradient);
+  border-color: transparent;
+}
+
+/* ── Toggle-tabs (yes/no, korstmos) ───────────────────────────────── */
+.toggleRow {
+  display: flex;
+  gap: 8px;
+}
+.toggleBtn {
+  flex: 1;
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-soft);
+  cursor: pointer;
+  font-family: inherit;
+}
+.toggleBtnActive {
+  background: var(--card-hover-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Voegzand block ───────────────────────────────────────────────── */
+.voegzandBlock {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.voegzandHead {
+  margin-bottom: 12px;
+}
+
+.zandRow {
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.zandRowActive {
+  background: rgba(26, 86, 255, 0.04);
+  border-color: rgba(26, 86, 255, 0.3);
+}
+.zandHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+.zandSummary {
+  font-size: 12px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.zandSummaryAmount {
+  color: var(--primary);
+  font-weight: 700;
+}
+.zandDetail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.euroRow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.euroLabel {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.standaardHint {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+/* ── Kleur chips ──────────────────────────────────────────────────── */
+.kleurChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+.kleurChipActive {
+  background: rgba(26, 86, 255, 0.06);
+  border-color: rgba(26, 86, 255, 0.4);
+}
+.kleurSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+/* ── Onderhoud-weken keuze ────────────────────────────────────────── */
+.weeksBox {
+  padding: 14px;
+  background: rgba(26, 86, 255, 0.04);
+  border: 1px solid rgba(26, 86, 255, 0.2);
+  border-radius: 12px;
+}
+.weeksGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.weekBtn {
+  padding: 10px 8px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+}
+.weekBtnActive {
+  background: var(--gradient);
+  color: white;
+  border-color: transparent;
+}
+.weekNum {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.weekUnit {
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 2px;
+}
+.weekPrice {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.weekBtnActive .weekPrice {
+  opacity: 0.92;
+}
+.weeksHint {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── Step 3: regels + totalen ─────────────────────────────────────── */
+.regelsList {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.regelRow {
+  display: flex;
+  padding: 10px 14px;
+  gap: 12px;
+  align-items: center;
+}
+.regelRow + .regelRow {
+  border-top: 1px solid var(--border);
+}
+.regelDesc {
+  flex: 1;
+  min-width: 0;
+}
+.regelDescText {
+  font-size: 13px;
+  font-weight: 500;
+}
+.regelDescMeta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.regelTotaal {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.regelEmpty {
+  padding: 24px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.extraGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 8px;
+}
+
+.kortingRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.kortingRange {
+  flex: 1;
+}
+.kortingPct {
+  width: 50px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalsBox {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.totalLabel {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.totalValue {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.totalRowSuccess {
+  color: var(--success, #16a34a);
+}
+.totalRowExcl {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+.totalRowExcl .totalValue {
+  font-size: 14px;
+  font-weight: 700;
+}
+.totalRowIncl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--gradient);
+  color: white;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.totalRowInclLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+.totalRowInclValue {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Step 4: summary + kanaal-keuze ───────────────────────────────── */
+.summaryCard {
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.04), rgba(0, 207, 255, 0.04));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+.summaryHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+.summaryIdent {
+  display: flex;
+  gap: 12px;
+}
+.summaryName {
+  font-size: 15px;
+  font-weight: 700;
+}
+.summaryMeta {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.summaryTotaal {
+  text-align: right;
+}
+.summaryTotaalLabel {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.summaryTotaalValue {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.summaryFacts {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  flex-wrap: wrap;
+}
+
+.kanaalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.kanaalBtn {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  font: inherit;
+}
+.kanaalBtnPrimary {
+  background: rgba(26, 86, 255, 0.06);
+  border-color: rgba(26, 86, 255, 0.4);
+  color: var(--primary);
+}
+.kanaalBtnAlt {
+  background: rgba(22, 163, 74, 0.06);
+  border-color: rgba(22, 163, 74, 0.3);
+  color: var(--success, #16a34a);
+}
+.kanaalLabel {
+  font-size: 13px;
+  font-weight: 700;
+}
+.kanaalSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.kanaalHint {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(22, 163, 74, 0.06);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--fg-soft);
+  line-height: 1.5;
+}
+.kanaalHint strong {
+  color: var(--success, #16a34a);
+}
+
+.readyBanner {
+  padding: 14px;
+  background: rgba(22, 163, 74, 0.06);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.readyBannerIcon {
+  color: var(--success, #16a34a);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.readyTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+.readyBody {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+/* ── Footer buttons ───────────────────────────────────────────────── */
+.btnGhost {
+  background: transparent;
+  border: none;
+  color: var(--fg-soft);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+.btnGhost:hover {
+  color: var(--fg);
+  background: var(--surface);
+}
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+}
+.btnSecondary:hover {
+  background: var(--card-hover-bg);
+}
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--gradient);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorBox {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 12px;
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .grid2,
+  .grid21,
+  .gridAddr,
+  .extraGrid,
+  .kanaalGrid,
+  .zandDetail {
+    grid-template-columns: 1fr;
+  }
+  .stepper {
+    overflow-x: auto;
+  }
+  .body {
+    padding: 16px;
+  }
+}

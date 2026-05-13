@@ -1,10 +1,9 @@
-import { Bot } from 'lucide-react'
-import { Pill } from '@/components/dashboard/ui/Pill'
+import { Briefcase, Pause } from 'lucide-react'
 import type { Lead, GesprekFase } from '@/lib/dashboard/database.types'
 import styles from './LeadBotStatus.module.css'
 
 const FASE_LABELS: Record<GesprekFase, string> = {
-  info_verzamelen:    'Verzamelt info',
+  info_verzamelen:    'Info verzamelen',
   offerte_besproken:  'Offerte verstuurd',
   onderhandelen:      'Owner-review',
   datum_kiezen:       'Datum kiezen',
@@ -12,7 +11,7 @@ const FASE_LABELS: Record<GesprekFase, string> = {
 }
 
 const FASE_DESCRIPTIONS: Record<GesprekFase, string> = {
-  info_verzamelen:    'Stelt vragen over m², dienst en planten',
+  info_verzamelen:    'Vraagt om bevestiging m²',
   offerte_besproken:  'Wacht op klant-reactie op offerte',
   onderhandelen:      'Onderhandelt — owner-aandacht mogelijk nodig',
   datum_kiezen:       'Klant kiest een afspraak-moment',
@@ -20,27 +19,34 @@ const FASE_DESCRIPTIONS: Record<GesprekFase, string> = {
 }
 
 /**
- * Bot-status strip — sticky-balk onder de lead-header die in één
- * regel laat zien wat Surface op dit moment 'denkt' te doen.
- * Maakt zichtbaar dat de bot autonoom werkt + welke fase het is.
+ * Bot-status strip — schone neutrale balk onder de lead-header. Toont in
+ * één regel wat Surface doet, in welke fase, en het Lead-ID. Rechts een
+ * "Bot pauzeren" knop voor handmatige overname.
  */
 export function LeadBotStatus({ lead }: { lead: Lead }) {
   const fase = lead.gesprek_fase
-  const label = FASE_LABELS[fase] ?? 'Actief'
+  const faseLabel = FASE_LABELS[fase] ?? 'Actief'
   const description = FASE_DESCRIPTIONS[fase] ?? 'In gesprek met klant'
 
   return (
     <div className={styles.strip}>
       <div className={styles.left}>
-        <Bot size={16} className={styles.botIcon} />
+        <Briefcase size={15} className={styles.icon} />
         <span className={styles.surfaceLabel}>Surface:</span>
         <span className={styles.description}>{description}</span>
       </div>
       <div className={styles.right}>
-        <Pill tone="blue">Fase: {label}</Pill>
-        <span className={styles.leadId}>L-{lead.lead_id.slice(-4).toUpperCase()}</span>
+        <span className={styles.metaPair}>
+          <span className={styles.metaLabel}>Fase:</span>
+          <span className={styles.metaValue}>{faseLabel}</span>
+        </span>
+        <span className={styles.metaPair}>
+          <span className={styles.metaLabel}>Lead-ID:</span>
+          <span className={styles.metaValue}>L-{lead.lead_id.slice(-4).toUpperCase()}</span>
+        </span>
         <button type="button" className={styles.pauseBtn} disabled>
-          Pauzeren
+          <Pause size={13} />
+          <span>Bot pauzeren</span>
         </button>
       </div>
     </div>

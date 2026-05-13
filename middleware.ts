@@ -7,10 +7,16 @@ const DASHBOARD_HOSTS = new Set([
 ])
 
 // Paden binnen de dashboard-host die GEEN session vereisen.
+// `/wachtwoord-reset` en `/uitnodiging` krijgen pas tijdens het bezoek
+// een sessie via de Supabase recovery-link — ze moeten dus bereikbaar
+// zijn vanuit een uitgelogde state.
 const PUBLIC_DASHBOARD_PATHS = new Set([
   '/login',
   '/signup',
   '/wachtkamer',
+  '/wachtwoord-vergeten',
+  '/wachtwoord-reset',
+  '/uitnodiging',
 ])
 
 function isDashboardHost(host: string | null): boolean {

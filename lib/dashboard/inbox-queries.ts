@@ -7,6 +7,13 @@ export type ConversationPreview = {
   telefoon: string
   dashboardStatus: Lead['dashboard_status']
   gesprekFase: Lead['gesprek_fase']
+  totaalPrijs: number | null
+  offerteVerstuurd: boolean
+  /**
+   * "Actie nodig" — heuristiek: onderhandelen-fase (owner-review) of
+   * een ongelezen klant-bericht na een offerte. Geen DB-veld.
+   */
+  needsAction: boolean
   laatsteBericht: {
     richting: string
     tekst: string | null
@@ -60,7 +67,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leadQuery: any = supabase
     .from('leads')
-    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase')
+    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd')
     .in('lead_id', leadIds)
     .eq('dashboard_archived', false)
   const { data: leads, error: leadErr } = await leadQuery
@@ -68,7 +75,16 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
     console.error('[getActiveConversations] leads failed:', leadErr)
     return []
   }
-  type LeadRow = Pick<Lead, 'lead_id' | 'naam' | 'telefoon' | 'dashboard_status' | 'gesprek_fase'>
+  type LeadRow = Pick<
+    Lead,
+    | 'lead_id'
+    | 'naam'
+    | 'telefoon'
+    | 'dashboard_status'
+    | 'gesprek_fase'
+    | 'totaal_prijs'
+    | 'offerte_verstuurd'
+  >
   const leadList = (leads as LeadRow[] | null) ?? []
 
   // Stap 4 — combine + sort op laatste timestamp DESC
@@ -76,12 +92,22 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   for (const lead of leadList) {
     const latest = latestPerLead.get(lead.lead_id)
     if (!latest) continue
+    // Heuristiek voor "actie nodig":
+    //  - gesprek zit in onderhandeling (vraagt owner-review), of
+    //  - laatste bericht was van de klant terwijl er al een offerte uit is.
+    const inkomendNaOfferte =
+      latest.richting === 'in' && Boolean(lead.offerte_verstuurd)
+    const needsAction = lead.gesprek_fase === 'onderhandelen' || inkomendNaOfferte
+
     out.push({
       leadId: lead.lead_id,
       naam: lead.naam,
       telefoon: lead.telefoon,
       dashboardStatus: lead.dashboard_status,
       gesprekFase: lead.gesprek_fase,
+      totaalPrijs: lead.totaal_prijs,
+      offerteVerstuurd: Boolean(lead.offerte_verstuurd),
+      needsAction,
       laatsteBericht: {
         richting: latest.richting,
         tekst: latest.bericht,
@@ -128,30 +154,50 @@ export type InboxLeadContext = Pick<
   | 'straat'
   | 'huisnummer'
   | 'hoofdcategorie'
+  | 'sub_diensten'
   | 'm2'
   | 'totaal_prijs'
+  | 'offerte_verstuurd'
+  | 'offerte_verstuurd_op'
   | 'dashboard_status'
   | 'gesprek_fase'
   | 'aangemaakt'
->
+> & {
+  fotosCount: number
+}
 
 /**
- * Lichte lead-info voor de rechter context-pane in Inbox.
+ * Lichte lead-info voor de rechter context-pane in Inbox. Doet er een
+ * tweede query bij om het aantal foto's te tellen — zo kan de pane
+ * "4 stuks" tonen zonder de hele foto-lijst te laden.
  */
 export async function getInboxLeadContext(leadId: string): Promise<InboxLeadContext | null> {
   const supabase = await getDashboardSupabase()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: any = supabase
+  const leadQuery: any = supabase
     .from('leads')
     .select(
-      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, m2, totaal_prijs, dashboard_status, gesprek_fase, aangemaakt',
+      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, aangemaakt',
     )
     .eq('lead_id', leadId)
     .maybeSingle()
-  const { data, error } = await query
-  if (error) {
-    console.error('[getInboxLeadContext] failed:', error)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fotosQuery: any = supabase
+    .from('fotos')
+    .select('id', { count: 'exact', head: true })
+    .eq('lead_id', leadId)
+
+  const [{ data: leadData, error: leadErr }, { count: fotosCount }] = await Promise.all([
+    leadQuery,
+    fotosQuery,
+  ])
+  if (leadErr) {
+    console.error('[getInboxLeadContext] failed:', leadErr)
     return null
   }
-  return (data as InboxLeadContext | null) ?? null
+  if (!leadData) return null
+  return {
+    ...(leadData as Omit<InboxLeadContext, 'fotosCount'>),
+    fotosCount: fotosCount ?? 0,
+  }
 }

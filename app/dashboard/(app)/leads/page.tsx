@@ -1,7 +1,10 @@
 import { FileText, Filter } from 'lucide-react'
 import { getLeadsList, countAllLeads, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
+import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
+import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
 import { LeadsFilterTabs } from '@/components/dashboard/leads/LeadsFilterTabs'
+import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import styles from './page.module.css'
 
@@ -32,7 +35,7 @@ function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; q?: string }>
+  searchParams: Promise<{ filter?: string; q?: string; view?: string }>
 }) {
   const sp = await searchParams
   const activeFilter = (
@@ -42,6 +45,9 @@ export default async function LeadsPage({
       ? sp.filter
       : 'all'
   ) as FilterKey
+  const view = (['pipeline', 'tabel', 'kaarten'].includes(sp.view ?? '')
+    ? sp.view
+    : 'pipeline') as 'pipeline' | 'tabel' | 'kaarten'
   const search = (sp.q ?? '').trim().toLowerCase()
 
   const [allLeads, total] = await Promise.all([
@@ -86,7 +92,7 @@ export default async function LeadsPage({
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <a
-            href="/api/dashboard/export/leads-csv"
+            href="/leads?export=1"
             className="dash-btn dash-btn-secondary"
           >
             <FileText size={13} />
@@ -114,9 +120,15 @@ export default async function LeadsPage({
               : "Zodra een aanvraag binnenkomt verschijnt 'ie hier in de pipeline."}
           </div>
         </div>
+      ) : view === 'tabel' ? (
+        <LeadsTable leads={displayed} />
+      ) : view === 'kaarten' ? (
+        <LeadsKaarten leads={displayed} />
       ) : (
         <LeadsPipeline leads={displayed} />
       )}
+
+      <LeadsRealtimeToast />
     </>
   )
 }

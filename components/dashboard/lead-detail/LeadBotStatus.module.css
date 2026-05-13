@@ -5,10 +5,11 @@
   gap: 12px;
   padding: 10px 16px;
   margin-bottom: 16px;
-  background: rgba(22, 163, 74, 0.06);
-  border: 1px solid rgba(22, 163, 74, 0.15);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 10px;
   flex-wrap: wrap;
+  box-shadow: var(--shadow-card);
 }
 
 .left {
@@ -19,15 +20,15 @@
   flex: 1;
 }
 
-.botIcon {
-  color: var(--success);
+.icon {
+  color: var(--primary);
   flex-shrink: 0;
 }
 
 .surfaceLabel {
   font-size: 13px;
   font-weight: 700;
-  color: var(--success);
+  color: var(--primary);
 }
 
 .description {
@@ -41,22 +42,33 @@
 .right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
-.leadId {
-  font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.04em;
+.metaPair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.metaLabel {
   color: var(--fg-muted);
-  padding: 4px 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  font-weight: 500;
+}
+
+.metaValue {
+  font-weight: 600;
+  color: var(--fg);
 }
 
 .pauseBtn {
-  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 7px;
@@ -64,11 +76,12 @@
   border: 1px solid var(--border);
   color: var(--fg-soft);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .pauseBtn:hover:not(:disabled) {
   background: var(--card-hover-bg);
   border-color: var(--card-hover-border);
+  color: var(--fg);
 }
 .pauseBtn:disabled {
   opacity: 0.55;

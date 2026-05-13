@@ -5,7 +5,6 @@ import {
   getInboxLeadContext,
   type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
-import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
@@ -14,6 +13,7 @@ import {
   type InboxFilter,
 } from '@/components/dashboard/inbox/InboxFilterTabs'
 import { InboxSearch } from '@/components/dashboard/inbox/InboxSearch'
+import { WhatsAppComposer } from '@/components/dashboard/inbox/WhatsAppComposer'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
 import styles from './page.module.css'
@@ -74,20 +74,7 @@ export default async function InboxPage({
   }
 
   return (
-    <>
-      <div className="dash-section-head">
-        <div>
-          <div className="dash-section-title">Inbox</div>
-          <div className="dash-section-sub">
-            <LiveDot />
-            <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {allConversations.length} actief
-              {allConversations.length === 1 ? ' gesprek' : 'e gesprekken'}
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <div className={styles.fullBleed}>
       <div className={styles.grid}>
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
@@ -142,7 +129,10 @@ export default async function InboxPage({
                 </span>
               </div>
 
-              <LeadConversation berichten={messages} />
+              <div className={styles.threadScroll}>
+                <LeadConversation berichten={messages} />
+              </div>
+              <WhatsAppComposer />
             </>
           ) : (
             <div className={styles.threadEmpty}>
@@ -167,7 +157,7 @@ export default async function InboxPage({
           )}
         </aside>
       </div>
-    </>
+    </div>
   )
 }
 

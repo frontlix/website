@@ -1,7 +1,10 @@
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { Sidebar } from '@/components/dashboard/Sidebar'
-import { Topbar } from '@/components/dashboard/Topbar'
+import { TopbarServer } from '@/components/dashboard/TopbarServer'
+import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
+import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
+import { ExportsModal } from '@/components/dashboard/ExportsModal'
 import styles from './layout.module.css'
 // Globale dashboard design-system classes — alleen actief in deze layout.
 import '@/styles/dashboard.css'
@@ -51,11 +54,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
         counts={counts}
       />
       <div className={styles.main}>
-        <Topbar />
+        <TopbarServer />
         <main className={styles.content}>
           <div className={styles.contentInner}>{children}</div>
         </main>
       </div>
+      <ManualOfferteController />
+      <ExportsModal />
+      {!profile.onboarding_voltooid_op && <OnboardingWizard />}
     </div>
   )
 }

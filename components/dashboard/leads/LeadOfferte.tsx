@@ -1,31 +1,63 @@
-import { ExternalLink } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ExternalLink, Plus } from 'lucide-react'
 import type { Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import { formatEuro, formatDateNL } from '@/lib/dashboard/format'
+import { OfferteCreateForm } from './OfferteCreateForm'
 import styles from './LeadOfferte.module.css'
 
 export function LeadOfferte({
+  leadId,
   offertes,
   prijsregels,
 }: {
+  leadId: string
   offertes: Offerte[]
   prijsregels: Prijsregel[]
 }) {
-  if (offertes.length === 0 && prijsregels.length === 0) {
-    return (
-      <div className={styles.section}>
-        <h3 className={styles.heading}>Offerte</h3>
-        <p className={styles.empty}>Nog geen offerte voor deze lead.</p>
-      </div>
-    )
-  }
+  const router = useRouter()
+  const [showForm, setShowForm] = useState(offertes.length === 0)
 
   const huidige = offertes[0]  // versie DESC, dus eerste is de laatste
+  const heeftOfferte = offertes.length > 0
+
+  const handleSaved = () => {
+    setShowForm(false)
+    router.refresh()
+  }
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.heading}>Offerte</h3>
+      <div className={styles.headerRow}>
+        <h3 className={styles.heading}>Offerte</h3>
+        {heeftOfferte && !showForm && (
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className={styles.newVersionBtn}
+          >
+            <Plus size={13} />
+            Nieuwe versie
+          </button>
+        )}
+      </div>
 
-      {huidige && (
+      {!heeftOfferte && !showForm && (
+        <p className={styles.empty}>Nog geen offerte voor deze lead.</p>
+      )}
+
+      {showForm && (
+        <OfferteCreateForm
+          leadId={leadId}
+          onSaved={handleSaved}
+          onCancel={heeftOfferte ? () => setShowForm(false) : undefined}
+          existingVersie={huidige?.versie}
+        />
+      )}
+
+      {huidige && !showForm && (
         <div className={styles.huidige}>
           <div className={styles.totaalRow}>
             <span className={styles.totaalLabel}>Totaal incl. BTW</span>
@@ -41,13 +73,20 @@ export function LeadOfferte({
             <span>Versie {huidige.versie}</span>
             <span>{formatDateNL(huidige.aangemaakt_op)}</span>
           </div>
-          <a href={huidige.pdf_url} target="_blank" rel="noopener" className={styles.pdfLink}>
-            Bekijk PDF <ExternalLink size={14} />
-          </a>
+          {huidige.pdf_url && (
+            <a
+              href={huidige.pdf_url}
+              target="_blank"
+              rel="noopener"
+              className={styles.pdfLink}
+            >
+              Bekijk PDF <ExternalLink size={14} />
+            </a>
+          )}
         </div>
       )}
 
-      {prijsregels.length > 0 && (
+      {prijsregels.length > 0 && !showForm && (
         <div className={styles.regels}>
           <h4 className={styles.subheading}>Prijsregels</h4>
           <table className={styles.regelsTable}>
@@ -75,14 +114,19 @@ export function LeadOfferte({
         </div>
       )}
 
-      {offertes.length > 1 && (
+      {offertes.length > 1 && !showForm && (
         <details className={styles.history}>
           <summary>Vorige versies ({offertes.length - 1})</summary>
           <ul>
             {offertes.slice(1).map((o) => (
               <li key={o.id}>
-                v{o.versie} — {formatEuro(o.totaal_incl)} —{' '}
-                <a href={o.pdf_url} target="_blank" rel="noopener">PDF</a>{' '}
+                v{o.versie} — {formatEuro(o.totaal_incl)}
+                {o.pdf_url && (
+                  <>
+                    {' — '}
+                    <a href={o.pdf_url} target="_blank" rel="noopener">PDF</a>
+                  </>
+                )}{' '}
                 ({formatDateNL(o.aangemaakt_op)})
               </li>
             ))}

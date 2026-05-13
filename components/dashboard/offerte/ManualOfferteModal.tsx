@@ -1,0 +1,197 @@
+'use client'
+
+import { useState, useMemo, useEffect, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  X,
+  ChevronRight,
+  Edit3,
+  Check,
+  FileText,
+  MessageCircle,
+} from 'lucide-react'
+import {
+  DEFAULTS,
+  type ManualOfferteData,
+} from '@/lib/dashboard/manual-offerte-types'
+import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
+import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-actions'
+import { StepKlant } from './StepKlant'
+import { StepWerk } from './StepWerk'
+import { StepOfferte } from './StepOfferte'
+import { StepVersturen } from './StepVersturen'
+import styles from './ManualOfferteModal.module.css'
+
+const STEPS = [
+  { n: 1, l: 'Klant' },
+  { n: 2, l: 'Werk' },
+  { n: 3, l: 'Offerte' },
+  { n: 4, l: 'Versturen' },
+] as const
+
+export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter()
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+  const [data, setData] = useState<ManualOfferteData>(DEFAULTS)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
+
+  // Lock scroll while modal open
+  useEffect(() => {
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [])
+
+  // Auto-suggest zakken o.b.v. m² (1 zak per 5m²)
+  useEffect(() => {
+    const suggested = Math.ceil((Number(data.m2) || 0) / 5)
+    setData((prev) => {
+      if (prev.voegzand_normaal_actief && !prev.voegzand_onkruidwerend_actief) {
+        return { ...prev, voegzand_normaal_zakken: suggested, voegzand_onkruidwerend_zakken: 0 }
+      }
+      if (!prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief) {
+        return { ...prev, voegzand_normaal_zakken: 0, voegzand_onkruidwerend_zakken: suggested }
+      }
+      if (prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief) {
+        const half = Math.ceil(suggested / 2)
+        return { ...prev, voegzand_normaal_zakken: half, voegzand_onkruidwerend_zakken: suggested - half }
+      }
+      return prev
+    })
+  }, [data.m2, data.voegzand_normaal_actief, data.voegzand_onkruidwerend_actief])
+
+  const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
+    setData((d) => ({ ...d, [k]: v }))
+
+  const rules = useMemo(() => computeRules(data), [data])
+  const totals = useMemo(() => computeTotals(rules, data), [rules, data])
+
+  const valid: Record<1 | 2 | 3, boolean> = {
+    1: Boolean(data.naam.trim()) && Boolean(data.telefoon.trim()),
+    2: data.sub.length > 0 && Number(data.m2) > 0,
+    3: rules.length > 0 && totals.total > 0,
+  }
+  const canNext = step <= 3 ? valid[step as 1 | 2 | 3] : true
+
+  const submit = () => {
+    setError(null)
+    startTransition(async () => {
+      const result = await createManualLeadEnOfferte(data)
+      if (result.ok) {
+        // Voor "alleen download" sturen we de owner naar de net-aangemaakte lead;
+        // andere kanalen idem (de feitelijke verzending loopt via de bot).
+        router.push(`/leads/${result.leadId}?tab=offerte`)
+        router.refresh()
+        onClose()
+      } else {
+        setError(result.error)
+      }
+    })
+  }
+
+  const isSendStep = step === 4
+  const submitLabel = data.kanaal === 'manual' ? 'PDF aanmaken' : 'Offerte versturen'
+  const SubmitIcon = data.kanaal === 'manual' ? FileText : MessageCircle
+
+  return (
+    <div className={styles.backdrop} onClick={onClose}>
+      <div className={styles.shell} onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.titleRow}>
+            <div className={styles.titleBlock}>
+              <div className={styles.titleIcon}><Edit3 size={16} /></div>
+              <div>
+                <div className={styles.title}>Handmatige offerte opstellen</div>
+                <div className={styles.subtitle}>
+                  Bv. voor een klant die je telefonisch hebt gesproken — Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
+                </div>
+              </div>
+            </div>
+            <button onClick={onClose} className={styles.closeBtn} type="button" aria-label="Sluiten">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Stepper */}
+          <div className={styles.stepper}>
+            {STEPS.map((s, i) => {
+              const active = step === s.n
+              const done = step > s.n
+              const cls = `${styles.step} ${active ? styles.stepActive : ''} ${done ? styles.stepDone : ''}`
+              const numCls = `${styles.stepNum} ${active ? styles.stepNumActive : ''} ${done ? styles.stepNumDone : ''}`
+              return (
+                <span key={s.n} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => (done || active) && setStep(s.n as 1 | 2 | 3 | 4)}
+                    className={cls}
+                  >
+                    <span className={numCls}>
+                      {done ? <Check size={12} strokeWidth={3} /> : s.n}
+                    </span>
+                    {s.l}
+                  </button>
+                  {i < STEPS.length - 1 && (
+                    <span className={styles.stepChevron}><ChevronRight size={14} /></span>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className={styles.body}>
+          <div className={styles.bodyStack}>
+            {step === 1 && <StepKlant data={data} set={set} />}
+            {step === 2 && <StepWerk data={data} set={set} />}
+            {step === 3 && <StepOfferte data={data} set={set} rules={rules} totals={totals} />}
+            {step === 4 && <StepVersturen data={data} set={set} rules={rules} totals={totals} />}
+          </div>
+          {error && <div className={styles.errorBox}>{error}</div>}
+        </div>
+
+        {/* Footer */}
+        <div className={styles.footer}>
+          <button onClick={onClose} className={styles.btnGhost} type="button">Annuleren</button>
+          <div className={styles.footerRight}>
+            {step >= 3 && (
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => alert('PDF-generator wordt later gekoppeld aan de bot — voor nu kun je de offerte alvast opslaan via "Offerte versturen".')}
+              >
+                <FileText size={13} /> Download PDF
+              </button>
+            )}
+            {step > 1 && (
+              <button type="button" className={styles.btnSecondary} onClick={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4)}>
+                ← Vorige
+              </button>
+            )}
+            {!isSendStep && (
+              <button
+                type="button"
+                className={styles.btnPrimary}
+                disabled={!canNext}
+                onClick={() => canNext && setStep((s) => Math.min(4, s + 1) as 1 | 2 | 3 | 4)}
+              >
+                Volgende <ChevronRight size={13} />
+              </button>
+            )}
+            {isSendStep && (
+              <button type="button" className={styles.btnPrimary} disabled={pending} onClick={submit}>
+                <SubmitIcon size={13} />
+                {pending ? 'Opslaan…' : submitLabel}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

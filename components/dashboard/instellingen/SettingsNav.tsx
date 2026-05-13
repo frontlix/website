@@ -11,6 +11,8 @@ import {
   Bell,
   BellRing,
   Users,
+  Lock,
+  Shield,
 } from 'lucide-react'
 
 export type SettingsSection =
@@ -22,6 +24,8 @@ export type SettingsSection =
   | 'reminders'
   | 'notificaties'
   | 'team'
+  | 'account'
+  | 'avg'
 
 const ITEMS: ReadonlyArray<{
   key: SettingsSection
@@ -36,6 +40,8 @@ const ITEMS: ReadonlyArray<{
   { key: 'reminders',    label: 'Reminders',        Icon: Bell },
   { key: 'notificaties', label: 'Notificaties',     Icon: BellRing },
   { key: 'team',         label: 'Team',             Icon: Users },
+  { key: 'account',      label: 'Account',          Icon: Lock },
+  { key: 'avg',          label: 'AVG / Privacy',    Icon: Shield },
 ]
 
 import styles from './SettingsNav.module.css'
