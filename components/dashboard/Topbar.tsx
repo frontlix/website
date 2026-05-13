@@ -1,8 +1,14 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, Menu } from 'lucide-react'
+import { ThemeToggle } from './ui/ThemeToggle'
 import styles from './Topbar.module.css'
+
+// Lightweight event-bus voor mobile-nav toggle. Sidebar luistert hierop.
+function toggleMobileNav() {
+  window.dispatchEvent(new CustomEvent('frontlix-toggle-mobile-nav'))
+}
 
 type RouteMeta = { title: string; sub: string }
 
@@ -30,6 +36,14 @@ export function Topbar() {
 
   return (
     <header className={styles.topbar}>
+      <button
+        className={styles.hamburger}
+        onClick={toggleMobileNav}
+        aria-label="Open menu"
+        type="button"
+      >
+        <Menu size={18} />
+      </button>
       <div className={styles.titleBlock}>
         <div className={styles.title}>{title}</div>
         {sub && <div className={styles.sub}>{sub}</div>}
@@ -46,6 +60,7 @@ export function Topbar() {
       </div>
 
       <div className={styles.actions}>
+        <ThemeToggle />
         <button className={styles.iconBtn} aria-label="Notificaties" type="button">
           <Bell size={18} />
           <span className={styles.dot} />

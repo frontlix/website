@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -10,6 +11,7 @@ import {
   BarChart3,
   Settings,
   Star,
+  X,
 } from 'lucide-react'
 import { UserMenu } from './UserMenu'
 import styles from './Sidebar.module.css'
@@ -41,9 +43,38 @@ export function Sidebar({
   email: string
 }) {
   const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Luister naar de hamburger-toggle event van Topbar.
+  useEffect(() => {
+    const handler = () => setMobileOpen((v) => !v)
+    window.addEventListener('frontlix-toggle-mobile-nav', handler)
+    return () => window.removeEventListener('frontlix-toggle-mobile-nav', handler)
+  }, [])
+
+  // Sluit drawer wanneer de route verandert (klik op nav-item).
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   return (
-    <aside className={styles.sidebar}>
+    <>
+      {/* Backdrop — alleen zichtbaar bij open mobile-drawer */}
+      <div
+        className={`${styles.backdrop} ${mobileOpen ? styles.backdropOpen : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
+    <aside className={`${styles.sidebar} ${mobileOpen ? styles.sidebarOpen : ''}`}>
+      <button
+        type="button"
+        onClick={() => setMobileOpen(false)}
+        className={styles.closeBtn}
+        aria-label="Sluit menu"
+      >
+        <X size={18} />
+      </button>
       <div className={styles.head}>
         <Image
           src="/logo_frontlix_trans.png"
@@ -76,6 +107,7 @@ export function Sidebar({
         <UserMenu email={email} />
       </div>
     </aside>
+    </>
   )
 }
 
