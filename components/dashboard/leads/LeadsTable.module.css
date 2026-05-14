@@ -71,6 +71,12 @@
 .leadCellBody {
   min-width: 0;
 }
+.leadNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .leadName {
   font-weight: 600;
   font-size: 13px;
@@ -80,6 +86,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: color 0.15s;
+  min-width: 0;
 }
 .leadSub {
   font-size: 11px;

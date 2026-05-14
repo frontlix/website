@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { Check, CheckCheck } from 'lucide-react'
+import { Check, CheckCheck, Globe } from 'lucide-react'
 import type { Bericht } from '@/lib/dashboard/database.types'
 import styles from './LeadConversation.module.css'
 
@@ -90,6 +90,11 @@ function BubbleRow({ b }: { b: Bericht }) {
         )}
       </div>
       <span className={styles.meta}>
+        {b.kanaal === 'web' && (
+          <span className={styles.channelIcon} aria-label="Verstuurd via web-chat">
+            <Globe size={11} />
+          </span>
+        )}
         <time dateTime={b.timestamp ?? undefined}>{formatHourMinute(b.timestamp ?? '')}</time>
         {uit && (
           <span className={styles.checks} aria-label="Bezorgd">

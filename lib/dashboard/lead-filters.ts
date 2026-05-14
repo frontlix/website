@@ -1,4 +1,4 @@
-import type { DashboardStatus, GesprekFase } from './database.types'
+import type { DashboardStatus, GesprekFase, LeadKanaal } from './database.types'
 
 export type DateField = 'aangemaakt' | 'bijgewerkt'
 
@@ -10,6 +10,9 @@ export interface LeadsFilters {
   from?: string
   to?: string
   fase?: GesprekFase
+  /** Filter op communicatie-kanaal. Orthogonaal aan status — een lead
+   *  kan zowel "In gesprek" als kanaal=web zijn. */
+  kanaal?: LeadKanaal
 }
 
 const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
@@ -85,6 +88,11 @@ export function parseLeadsFilters(source: ParamSource): LeadsFilters {
     out.fase = fase as GesprekFase
   }
 
+  const kanaal = getParam(source, 'kanaal')
+  if (kanaal === 'whatsapp' || kanaal === 'web') {
+    out.kanaal = kanaal
+  }
+
   return out
 }
 
@@ -103,6 +111,7 @@ export function serializeLeadsFilters(filters: LeadsFilters): string {
   if (filters.from) params.set('from', filters.from)
   if (filters.to) params.set('to', filters.to)
   if (filters.fase) params.set('fase', filters.fase)
+  if (filters.kanaal) params.set('kanaal', filters.kanaal)
   return params.toString()
 }
 
@@ -117,6 +126,7 @@ export function countActiveFilters(filters: LeadsFilters): number {
   if (filters.tags && filters.tags.length > 0) n++
   if (filters.from || filters.to) n++
   if (filters.fase) n++
+  if (filters.kanaal) n++
   return n
 }
 

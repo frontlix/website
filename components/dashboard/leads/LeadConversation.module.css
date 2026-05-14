@@ -116,6 +116,14 @@
   color: #8696A0;
 }
 
+/* Kanaal-icoon — globe naast de tijd op berichten die via web-chat
+   binnenkwamen (klant zonder WhatsApp). Subtiel grijs zodat het niet
+   afleidt van de bericht-tekst. */
+.channelIcon {
+  display: inline-flex;
+  color: #8696A0;
+}
+
 .empty {
   padding: 36px 16px;
   margin: 0;

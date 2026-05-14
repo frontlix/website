@@ -62,7 +62,12 @@ export function LeadsTable({ leads }: { leads: LeadListItem[] }) {
                     <div className={styles.leadCell}>
                       <Avatar name={lead.naam} size="sm" />
                       <div className={styles.leadCellBody}>
-                        <strong className={styles.leadName}>{lead.naam}</strong>
+                        <div className={styles.leadNameRow}>
+                          <strong className={styles.leadName}>{lead.naam}</strong>
+                          {lead.kanaal === 'web' && (
+                            <Pill tone="amber" sm>Geen WhatsApp</Pill>
+                          )}
+                        </div>
                         {subline && (
                           <div className={styles.leadSub}>{subline}</div>
                         )}

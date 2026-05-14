@@ -74,6 +74,7 @@ export function LeadCard({ lead }: { lead: LeadListItem }) {
         }}
       >
         {lead.bron && <Pill tone="gray" sm>{formatBron(lead.bron)}</Pill>}
+        {lead.kanaal === 'web' && <Pill tone="amber" sm>Geen WhatsApp</Pill>}
         <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fg-muted)' }}>
           {relativeTime(lead.aangemaakt)}
         </span>

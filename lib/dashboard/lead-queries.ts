@@ -39,6 +39,7 @@ export type LeadListItem = Pick<
   | 'afspraak_starttijd'
   | 'aangemaakt'
   | 'bijgewerkt'
+  | 'kanaal'
 >
 
 const LIST_COLUMNS = [
@@ -64,6 +65,7 @@ const LIST_COLUMNS = [
   'afspraak_starttijd',
   'aangemaakt',
   'bijgewerkt',
+  'kanaal',
 ].join(', ')
 
 /**
@@ -137,6 +139,10 @@ export async function getLeadsList(
 
   if (filters?.fase) {
     query = query.eq('gesprek_fase', filters.fase)
+  }
+
+  if (filters?.kanaal) {
+    query = query.eq('kanaal', filters.kanaal)
   }
 
   if (filters?.from || filters?.to) {

@@ -1,0 +1,51 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-soft);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.toggle:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--fg);
+}
+
+/* Actief = filter aan. Amber-tint matcht de "Geen WhatsApp" badge in
+   de lijst zelf zodat het visueel één geheel vormt. */
+.active {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.active:hover {
+  background: rgba(245, 158, 11, 0.20);
+  border-color: rgba(245, 158, 11, 0.55);
+  color: #b45309;
+}
+
+.count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  min-width: 18px;
+  text-align: center;
+}
+
+.active .count {
+  background: rgba(245, 158, 11, 0.20);
+  color: #b45309;
+}

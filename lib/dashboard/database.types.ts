@@ -968,15 +968,34 @@ export type GesprekFase =
 // Convenience-types voor consumers (de Row-shape van elke tabel).
 // Voor `leads` overriden we `dashboard_status` + `gesprek_fase` met de
 // applicatie-unions zodat consumers niet handmatig hoeven te casten.
+//
+// De `web_chat_*` + `kanaal` + `whatsapp_bereikbaar` velden worden door
+// een bot-side Supabase-migratie aangemaakt. Tot die migratie live is
+// zijn ze er nog niet — daarom stubben we ze hier handmatig zodat de
+// dashboard-code er nu al tegen kan worden geschreven. Zodra de migratie
+// live is en `database.types.ts` opnieuw gegenereerd wordt mogen deze
+// overrides blijven staan (ze worden dan redundant, niet conflicterend).
+export type LeadKanaal = 'whatsapp' | 'web'
+
 export type Lead = Omit<
   Database['public']['Tables']['leads']['Row'],
   'dashboard_status' | 'gesprek_fase'
 > & {
   dashboard_status: DashboardStatus | null
   gesprek_fase: GesprekFase
+  kanaal: LeadKanaal
+  whatsapp_bereikbaar: boolean | null
+  web_chat_token: string | null
+  web_chat_token_expires_at: string | null
+  web_chat_fallback_email_verzonden_op: string | null
+  web_chat_reminder_verzonden_op: string | null
+  web_chat_geopend_op: string | null
+  web_chat_voltooid_op: string | null
 }
 
-export type Bericht = Database['public']['Tables']['berichten']['Row']
+export type Bericht = Database['public']['Tables']['berichten']['Row'] & {
+  kanaal: LeadKanaal
+}
 export type Foto = Database['public']['Tables']['fotos']['Row']
 export type Offerte = Database['public']['Tables']['offertes']['Row']
 export type Prijsregel = Database['public']['Tables']['prijsregels']['Row']

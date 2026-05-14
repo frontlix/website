@@ -5,6 +5,7 @@ import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
 import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
 import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
 import { LeadsFilterTabs } from '@/components/dashboard/leads/LeadsFilterTabs'
+import { WebChatToggle } from '@/components/dashboard/leads/WebChatToggle'
 import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import styles from './page.module.css'
@@ -40,7 +41,7 @@ function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; q?: string; view?: string }>
+  searchParams: Promise<{ filter?: string; q?: string; view?: string; kanaal?: string }>
 }) {
   const sp = await searchParams
 
@@ -70,6 +71,7 @@ export default async function LeadsPage({
   }
 
   const search = (sp.q ?? '').trim().toLowerCase()
+  const kanaalFilter = sp.kanaal === 'web' ? 'web' : null
 
   // Voor de archief-tab vragen we een aparte query op (dashboard_archived=true);
   // anders zou matchesFilter('archief') altijd 0 leads tonen want de standaard
@@ -95,8 +97,14 @@ export default async function LeadsPage({
   // Bron-lijst: voor archief gebruiken we de aparte set, anders de standaard.
   const sourceLeads = activeFilter === 'archief' ? archivedLeads : allLeads
 
-  // Eerst filter, dan search — beide cumulatief.
+  // Web-chat count over ALLE niet-gearchiveerde leads, los van actieve filters.
+  const webCount = allLeads.filter((l) => l.kanaal === 'web').length
+
+  // Eerst tab-filter, dan kanaal-filter, dan search — alle cumulatief.
   let displayed = sourceLeads.filter((l) => matchesFilter(l, activeFilter))
+  if (kanaalFilter) {
+    displayed = displayed.filter((l) => l.kanaal === kanaalFilter)
+  }
   if (search) {
     displayed = displayed.filter((l) => {
       const adres = [l.straat, l.huisnummer, l.postcode, l.plaats]
@@ -150,6 +158,7 @@ export default async function LeadsPage({
       {/* Filter-tabs bovenin */}
       <div className={styles.filterRow}>
         <LeadsFilterTabs counts={counts} />
+        <WebChatToggle count={webCount} />
         <SearchBar initial={search} />
       </div>
 
