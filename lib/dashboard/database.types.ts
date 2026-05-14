@@ -991,6 +991,7 @@ export type Lead = Omit<
   web_chat_reminder_verzonden_op: string | null
   web_chat_geopend_op: string | null
   web_chat_voltooid_op: string | null
+  opening_wa_message_id: string | null
 }
 
 export type Bericht = Database['public']['Tables']['berichten']['Row'] & {

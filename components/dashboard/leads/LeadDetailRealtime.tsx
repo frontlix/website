@@ -25,9 +25,11 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
 
     // Filter doen we in de callback i.p.v. via postgres_changes filter-string;
     // die bleek onbetrouwbaar voor TEXT-IDs met hyphens (lead_id heeft die).
+    // Werkt voor zowel INSERT (berichten/fotos) als UPDATE (leads) — beide
+    // payloads hebben `new.lead_id`.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onInsert = (payload: any) => {
-      console.log('[realtime] insert event RAW', JSON.stringify(payload).slice(0, 300))
+    const onChange = (payload: any) => {
+      console.log('[realtime] event RAW', JSON.stringify(payload).slice(0, 300))
       if (payload?.new?.lead_id === leadId) {
         console.log('[realtime] match → router.refresh()')
         router.refresh()
@@ -55,12 +57,20 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'berichten' },
-          onInsert,
+          onChange,
         )
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'fotos' },
-          onInsert,
+          onChange,
+        )
+        // UPDATE op leads: vangt o.a. web-chat timestamp-mutations
+        // (geopend_op, voltooid_op) zodat de status-pill binnen ~2s
+        // refreshet zonder op de 8s polling-fallback te wachten.
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'leads' },
+          onChange,
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .subscribe((status: any) => {
