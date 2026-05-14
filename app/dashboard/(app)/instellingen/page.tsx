@@ -11,6 +11,7 @@ import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import { PricingRuleEditor } from '@/components/dashboard/instellingen/PricingRuleEditor'
+import { WatAlsSimulator } from '@/components/dashboard/instellingen/WatAlsSimulator'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -197,29 +198,43 @@ function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
 /* ── PRIJZEN ───────────────────────────────────────────── */
 function PrijzenSection({ pricing }: { pricing: PricingRule[] }) {
   return (
-    <SectionCard
-      title="Prijzen"
-      sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
-      readOnly={false}
-    >
-      <div className={styles.pricingList}>
-        {pricing.map((rule) => (
-          <div key={rule.rule_key} className={styles.pricingRow}>
-            <div>
-              <div className={styles.pricingLabel}>{rule.label}</div>
+    <>
+      <SectionCard
+        title="Prijzen"
+        sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
+        readOnly={false}
+      >
+        <div className={styles.pricingList}>
+          {pricing.map((rule) => (
+            <div key={rule.rule_key} className={styles.pricingRow}>
+              <div>
+                <div className={styles.pricingLabel}>{rule.label}</div>
+              </div>
+              <PricingRuleEditor
+                ruleKey={rule.rule_key}
+                eenheid={rule.eenheid}
+                initialValue={rule.waarde}
+              />
             </div>
-            <PricingRuleEditor
-              ruleKey={rule.rule_key}
-              eenheid={rule.eenheid}
-              initialValue={rule.waarde}
-            />
-          </div>
-        ))}
-        {pricing.length === 0 && (
-          <div className={styles.empty}>Geen prijsregels gevonden.</div>
-        )}
-      </div>
-    </SectionCard>
+          ))}
+          {pricing.length === 0 && (
+            <div className={styles.empty}>Geen prijsregels gevonden.</div>
+          )}
+        </div>
+      </SectionCard>
+
+      {pricing.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <SectionCard
+            title="Wat als…"
+            sub="Snel vergelijken: hoe verhoudt een hypothetische prijs zich tot de huidige waarde?"
+            readOnly={false}
+          >
+            <WatAlsSimulator rules={pricing} />
+          </SectionCard>
+        </div>
+      )}
+    </>
   )
 }
 
