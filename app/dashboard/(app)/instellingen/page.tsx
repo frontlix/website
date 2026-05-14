@@ -13,8 +13,10 @@ import { ServiceOfferingToggle } from '@/components/dashboard/instellingen/Servi
 import { TagsManager } from '@/components/dashboard/instellingen/TagsManager'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
+import { OpeningTemplateEditor } from '@/components/dashboard/instellingen/OpeningTemplateEditor'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
+import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -80,7 +82,7 @@ export default async function InstellingenPage({
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
-  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw] = await Promise.all([
+  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw, aanvragenRaw] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select(
@@ -108,6 +110,7 @@ export default async function InstellingenPage({
       : Promise.resolve({ data: [] }),
     section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
     section === 'tags' ? getTagsWithCounts() : Promise.resolve([] as TagWithCount[]),
+    section === 'opening' ? getRecentTemplateAanvragen(10) : Promise.resolve([] as TemplateAanvraag[]),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
@@ -116,6 +119,7 @@ export default async function InstellingenPage({
   const team = (teamRaw.data as TeamMember[] | null) ?? []
   const baseline = baselineRaw
   const tags = tagsRaw as TagWithCount[]
+  const templateAanvragen = aanvragenRaw as TemplateAanvraag[]
 
   return (
     <>
@@ -136,7 +140,13 @@ export default async function InstellingenPage({
           {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baseline} />}
           {section === 'diensten' && <DienstenSection services={services} />}
           {section === 'tags' && <TagsSection tags={tags} />}
-          {section === 'opening' && <OpeningSection chatbot={tenant?.chatbot_naam ?? 'Surface'} />}
+          {section === 'opening' && (
+            <OpeningSection
+              bedrijfsnaam={tenant?.bedrijfsnaam ?? 'Schoon Straatje'}
+              chatbot={tenant?.chatbot_naam ?? 'Surface'}
+              aanvragen={templateAanvragen}
+            />
+          )}
           {section === 'reminders' && <RemindersSection tenant={tenant} />}
           {section === 'notificaties' && <NotificatiesSection />}
           {section === 'team' && <TeamSection members={team} />}
@@ -271,24 +281,32 @@ function TagsSection({ tags }: { tags: TagWithCount[] }) {
 }
 
 /* ── OPENINGSBERICHT ───────────────────────────────────── */
-function OpeningSection({ chatbot }: { chatbot: string }) {
+function OpeningSection({
+  bedrijfsnaam,
+  chatbot,
+  aanvragen,
+}: {
+  bedrijfsnaam: string
+  chatbot: string
+  aanvragen: TemplateAanvraag[]
+}) {
   return (
     <SectionCard
       title="Openingsbericht via WhatsApp"
       sub={`Het eerste bericht dat ${chatbot} stuurt zodra een lead binnenkomt — Meta-template`}
+      readOnly={false}
     >
       <div className={styles.metaWarning}>
         ⚠ <strong>Let op:</strong> Meta keurt elke wijziging handmatig goed
-        (kan 24-48u duren). Zolang Meta de nieuwe versie nog niet heeft
-        goedgekeurd blijft de oude versie actief. Variabelen zoals{' '}
-        <code>{'{voornaam}'}</code> moeten <strong>exact</strong> overeenkomen
-        met de template-parameters bij Meta.
+        (kan 24-48u duren). Tot Meta de nieuwe versie goedkeurt blijft de oude
+        versie actief. Variabelen zoals <code>{'{voornaam}'}</code> moeten{' '}
+        <strong>exact</strong> overeenkomen met de template-parameters bij Meta.
       </div>
-      <div className={styles.placeholderBox}>
-        Template-editor + Meta sync-status komen in een opvolg-batch — vereist
-        de Meta Business API-integratie. Voor nu is de bot-config nog in
-        clients/schoon-straatje/config.json.
-      </div>
+      <OpeningTemplateEditor
+        bedrijfsnaam={bedrijfsnaam}
+        chatbotNaam={chatbot}
+        aanvragen={aanvragen}
+      />
     </SectionCard>
   )
 }
