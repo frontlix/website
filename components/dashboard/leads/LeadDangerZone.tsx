@@ -2,14 +2,18 @@
 
 import { useState, useTransition } from 'react'
 import { archiveLead, unarchiveLead } from '@/lib/dashboard/lead-actions'
+import { AvgDeleteButton } from '@/components/dashboard/bot-actions/AvgDeleteButton'
+import { BlokkeerReviewToggle } from '@/components/dashboard/bot-actions/BlokkeerReviewToggle'
 import styles from './LeadDangerZone.module.css'
 
 export function LeadDangerZone({
   leadId,
   archived,
+  klusGeblokkeerd,
 }: {
   leadId: string
   archived: boolean
+  klusGeblokkeerd: boolean
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -36,15 +40,19 @@ export function LeadDangerZone({
   return (
     <div className={styles.section}>
       <h3 className={styles.heading}>Acties</h3>
-      <button
-        type="button"
-        className={styles.button}
-        onClick={onToggle}
-        disabled={pending}
-      >
-        {pending ? 'Bezig…' : archived ? 'Uit archief halen' : 'Archiveren'}
-      </button>
-      {error && <p className={styles.error}>{error}</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <BlokkeerReviewToggle leadId={leadId} initialBlocked={klusGeblokkeerd} />
+        <button
+          type="button"
+          className={styles.button}
+          onClick={onToggle}
+          disabled={pending}
+        >
+          {pending ? 'Bezig…' : archived ? 'Uit archief halen' : 'Archiveren'}
+        </button>
+        {error && <p className={styles.error}>{error}</p>}
+        <AvgDeleteButton leadId={leadId} />
+      </div>
     </div>
   )
 }

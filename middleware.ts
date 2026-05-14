@@ -7,22 +7,31 @@ const DASHBOARD_HOSTS = new Set([
 ])
 
 // Paden binnen de dashboard-host die GEEN session vereisen.
+// `/wachtwoord-reset` en `/uitnodiging` krijgen pas tijdens het bezoek
+// een sessie via de Supabase recovery-link — ze moeten dus bereikbaar
+// zijn vanuit een uitgelogde state.
 const PUBLIC_DASHBOARD_PATHS = new Set([
   '/login',
   '/signup',
   '/wachtkamer',
+  '/wachtwoord-vergeten',
+  '/wachtwoord-reset',
+  '/uitnodiging',
+  '/callback',
 ])
 
 function isDashboardHost(host: string | null): boolean {
   return host !== null && DASHBOARD_HOSTS.has(host)
 }
 
+// Bestanden in /public/ die door de dashboard-host als statische assets
+// behandeld moeten worden (i.p.v. via auth-check te lopen).
+const STATIC_ASSET_EXTENSIONS = /\.(png|jpe?g|svg|gif|webp|ico|css|js|woff2?|ttf|otf|json|txt|xml|map)$/i
+
 function isAssetPath(pathname: string): boolean {
   return pathname.startsWith('/_next') ||
          pathname.startsWith('/api') ||
-         pathname === '/favicon.ico' ||
-         pathname === '/robots.txt' ||
-         pathname === '/sitemap.xml'
+         STATIC_ASSET_EXTENSIONS.test(pathname)
 }
 
 export async function middleware(request: NextRequest) {

@@ -1,0 +1,140 @@
+/* Overzicht — main two-column grid: trend+widgets (left 2fr) + activity+appts (right 1fr) */
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.colLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.colRight {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Sub-rij onder trend chart: trechter + owner-acties naast elkaar */
+.subRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .subRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Trend-stats: 4 vakjes onder de chart, met verticale dividers ── */
+.trendStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border);
+}
+
+.trendStat {
+  padding: 14px 18px;
+}
+.trendStat:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+.trendStatLabel {
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+.trendStatValue {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  color: var(--fg);
+}
+.trendStatSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+/* ── Komende afspraken lijst ──────────────────────────── */
+.apptList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+
+.apptEmpty {
+  font-size: 13px;
+  color: var(--fg-muted);
+  text-align: center;
+  padding: 20px 12px;
+}
+
+.apptRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.apptRow:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+}
+
+.apptDate {
+  width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.apptMonth {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.apptDay {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.apptBody {
+  flex: 1;
+  min-width: 0;
+}
+.apptName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apptMeta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}

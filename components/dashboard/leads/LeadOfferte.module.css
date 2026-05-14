@@ -4,9 +4,35 @@
 }
 
 .heading {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   font-size: var(--text-base);
   font-weight: 600;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.newVersionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 6px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.newVersionBtn:hover {
+  border-color: var(--color-primary);
+  background: rgba(26, 86, 255, 0.04);
 }
 
 .subheading {

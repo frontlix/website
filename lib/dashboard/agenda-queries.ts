@@ -10,6 +10,15 @@ export type Appointment = Pick<
   | 'afspraak_geboekt_op'
   | 'dashboard_status'
   | 'status'
+  | 'plaats'
+  | 'postcode'
+  | 'straat'
+  | 'huisnummer'
+  | 'm2'
+  | 'afstand_km'
+  | 'hoofdcategorie'
+  | 'lat'
+  | 'lng'
 >
 
 const SELECT_COLUMNS = [
@@ -19,6 +28,15 @@ const SELECT_COLUMNS = [
   'afspraak_geboekt_op',
   'dashboard_status',
   'status',
+  'plaats',
+  'postcode',
+  'straat',
+  'huisnummer',
+  'm2',
+  'afstand_km',
+  'hoofdcategorie',
+  'lat',
+  'lng',
 ].join(', ')
 
 /**
@@ -63,4 +81,29 @@ export async function getAppointmentsForMonth(
     if (!a.afspraak_geboekt_op) return false
     return toAmsterdamDayKey(a.afspraak_geboekt_op).startsWith(monthPrefix)
   })
+}
+
+/**
+ * Variant voor de week-view: pakt afspraken in een UTC-range. Caller
+ * (parseWeekParam) wident al met 1 dag aan beide kanten zodat de
+ * Amsterdam-dagkey-conversie correct werkt.
+ */
+export async function getAppointmentsForRange(
+  queryStart: string,
+  queryEnd: string,
+): Promise<Appointment[]> {
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('leads')
+    .select(SELECT_COLUMNS)
+    .not('afspraak_geboekt_op', 'is', null)
+    .gte('afspraak_geboekt_op', queryStart)
+    .lt('afspraak_geboekt_op', queryEnd)
+    .order('afspraak_geboekt_op', { ascending: true })
+
+  if (error) {
+    console.error('[getAppointmentsForRange] failed:', error)
+    return []
+  }
+  return (data as unknown as Appointment[] | null) ?? []
 }

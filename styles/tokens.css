@@ -1,4 +1,7 @@
 :root {
+  /* ─────────────────────────────────────────────────────────
+     Brand surfaces & foreground
+     ───────────────────────────────────────────────────────── */
   --color-bg:          #FFFFFF;
   --color-surface:     #F9F9F9;
   --color-surface-2:   #F0F0F0;
@@ -7,7 +10,9 @@
   --color-gradient:    linear-gradient(135deg, #1A56FF, #00CFFF);
   --color-text:        #1A1A1A;
   --color-text-muted:  #555555;
+  --color-text-soft:   #444444;
   --color-border:            rgba(0, 0, 0, 0.10);
+  --color-border-strong:     rgba(0, 0, 0, 0.16);
   --color-white:             #FFFFFF;
   --color-black:             #000000;
 
@@ -17,6 +22,23 @@
   --color-card-hover-bg:     rgba(26, 86, 255, 0.06);
   --color-track-bg:          rgba(0, 0, 0, 0.05);
 
+  /* Semantic signal colors (used sparingly) */
+  --color-success:           #16A34A;
+  --color-success-bg:        rgba(22, 163, 74, 0.08);
+  --color-danger:            #DC2626;
+  --color-danger-bg:         rgba(220, 38, 38, 0.08);
+  --color-whatsapp:          #25D366;
+
+  /* Shadows / elevation */
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+  --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(0, 0, 0, 0.10);
+  --shadow-primary:  0 4px 24px rgba(26, 86, 255, 0.30);
+  --shadow-glow:     0 0 40px rgba(26, 86, 255, 0.15);
+  --shadow-nav:      0 12px 40px rgba(0, 0, 0, 0.12);
+
+  /* ─────────────────────────────────────────────────────────
+     Typography
+     ───────────────────────────────────────────────────────── */
   --font-heading: 'Inter', sans-serif;
   --font-body:    'Inter', sans-serif;
 
@@ -30,22 +52,96 @@
   --text-4xl:  2.25rem;
   --text-5xl:  3rem;
 
+  /* ─────────────────────────────────────────────────────────
+     Spacing
+     ───────────────────────────────────────────────────────── */
   --space-1:  0.25rem;
   --space-2:  0.5rem;
   --space-3:  0.75rem;
   --space-4:  1rem;
+  --space-5:  1.25rem;
   --space-6:  1.5rem;
   --space-8:  2rem;
   --space-12: 3rem;
   --space-16: 4rem;
   --space-24: 6rem;
 
+  /* ─────────────────────────────────────────────────────────
+     Radius
+     ───────────────────────────────────────────────────────── */
   --radius-sm:  4px;
   --radius-md:  8px;
   --radius-lg:  16px;
   --radius-xl:  24px;
   --radius-full: 9999px;
 
+  /* ─────────────────────────────────────────────────────────
+     Layout
+     ───────────────────────────────────────────────────────── */
   --max-width: 1200px;
   --section-padding: var(--space-16) var(--space-6);
+  --nav-height:      68px;
+  --nav-height-mob:  52px;
+  --sidebar-w:       240px;
+
+  /* ─────────────────────────────────────────────────────────
+     Unprefixed aliases — matchen het Claude-Design exports
+     (de design-bundle gebruikt `--bg`, `--fg` etc. zonder
+     prefix; we exporteren beide namen zodat zowel het oude
+     marketing-thema als de nieuwe dashboard-componenten één
+     bron van waarheid hebben).
+     ───────────────────────────────────────────────────────── */
+  --bg:              var(--color-bg);
+  --surface:         var(--color-surface);
+  --surface-2:       var(--color-surface-2);
+  --card-bg:         var(--color-card-bg);
+  --fg:              var(--color-text);
+  --fg-muted:        var(--color-text-muted);
+  --fg-soft:         var(--color-text-soft);
+  --primary:         var(--color-primary);
+  --accent:          var(--color-accent);
+  --gradient:        var(--color-gradient);
+  --border:          var(--color-border);
+  --border-strong:   var(--color-border-strong);
+  --card-hover-border: var(--color-card-hover-border);
+  --card-hover-bg:     var(--color-card-hover-bg);
+  --track-bg:        var(--color-track-bg);
+  --success:         var(--color-success);
+  --success-bg:      var(--color-success-bg);
+  --danger:          var(--color-danger);
+  --danger-bg:       var(--color-danger-bg);
+  --whatsapp:        var(--color-whatsapp);
 }
+
+/* ─────────────────────────────────────────────────────────
+   Dark mode — opt-in via `.dark` class op een wrapper-div
+   (wordt door de dashboard-shell op een container gezet, niet
+   op <body>, zodat de marketing-site lichtmode blijft).
+   Brand-kleuren (primary, accent, gradient) blijven gelijk.
+   ───────────────────────────────────────────────────────── */
+.dark {
+  --color-bg:          #0B0E14;
+  --color-surface:     #0F131A;
+  --color-surface-2:   #161B25;
+  --color-card-bg:     #141923;
+  --color-text:        #ECEFF4;
+  --color-text-muted:  #8B95A8;
+  --color-text-soft:   #C5CCD8;
+  --color-border:          rgba(255, 255, 255, 0.08);
+  --color-border-strong:   rgba(255, 255, 255, 0.16);
+  --color-card-hover-bg:   rgba(26, 86, 255, 0.10);
+  --color-card-hover-border: rgba(26, 86, 255, 0.40);
+  --color-track-bg:        rgba(255, 255, 255, 0.05);
+
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.25), 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Density-modi (alleen voor dashboard) — schakelen via
+   `.density-{compact|cozy|roomy}` op een wrapper-div.
+   Pakt --content-pad op in dashboard layout-CSS.
+   ───────────────────────────────────────────────────────── */
+.density-compact { --content-pad: 16px; }
+.density-cozy    { --content-pad: 24px; }
+.density-roomy   { --content-pad: 36px; }

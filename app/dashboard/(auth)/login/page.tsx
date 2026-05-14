@@ -57,6 +57,8 @@ export default function LoginPage() {
 
       <p className={styles.footer}>
         Nog geen account? <Link href="/signup">Aanmelden</Link>
+        <br />
+        <Link href="/wachtwoord-vergeten">Wachtwoord vergeten?</Link>
       </p>
     </div>
   )

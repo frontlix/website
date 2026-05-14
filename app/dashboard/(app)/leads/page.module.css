@@ -1,7 +1,34 @@
-.header {
+/* /leads page-specifieke styles. Pipeline + cards komen uit dashboard.css. */
+
+.filterRow {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-4);
-  gap: var(--space-4);
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filterRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.emptyState {
+  padding: 60px 24px;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.emptyTitle {
+  font: 700 16px/1.3 var(--font-heading);
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.emptySub {
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+  max-width: 400px;
+  margin: 0 auto;
 }

@@ -1,0 +1,182 @@
+.pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── Header (sticky) ─────────────────────────────────────────────── */
+.head {
+  padding: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.headRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.headBody {
+  flex: 1;
+  min-width: 0;
+}
+.naam {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.meta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+.openBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.openBtn:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--border-strong);
+}
+
+/* ── Scroll body ─────────────────────────────────────────────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.section + .section {
+  margin-top: 18px;
+}
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 8px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Compact rows (Werk-block) ───────────────────────────────────── */
+.compactRow {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 12px;
+  align-items: baseline;
+}
+.compactLabel {
+  color: var(--fg-muted);
+}
+.compactValue {
+  color: var(--fg);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* ── Offerte-box ─────────────────────────────────────────────────── */
+.offerteBox {
+  padding: 12px;
+  background: rgba(26, 86, 255, 0.04);
+  border: 1px solid rgba(26, 86, 255, 0.15);
+  border-radius: 10px;
+}
+.offerteBedrag {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+.offerteSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* ── Snelle acties ───────────────────────────────────────────────── */
+.actionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 12px;
+  color: var(--fg-soft);
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.actionRow:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
+.actionRowDanger:hover {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+/* ── Tags ────────────────────────────────────────────────────────── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.tagPlaceholder {
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-style: italic;
+}
+.tagAddBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 9999px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-decoration: none;
+  cursor: pointer;
+}
+.tagAddBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}

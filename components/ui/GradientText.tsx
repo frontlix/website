@@ -1,9 +1,10 @@
+import type { ElementType } from 'react'
 import styles from './GradientText.module.css'
 import { cn } from '@/lib/utils'
 
 interface GradientTextProps {
   children: React.ReactNode
-  as?: keyof React.JSX.IntrinsicElements
+  as?: ElementType
   className?: string
 }
 

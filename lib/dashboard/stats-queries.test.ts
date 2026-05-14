@@ -302,7 +302,7 @@ describe('leadsPerDag', () => {
     )
 
     const fixedNow = new Date('2026-05-05T23:59:59Z')
-    const result = await leadsPerDag(fixedNow)
+    const result = await leadsPerDag(fixedNow, 30)
 
     expect(result.length).toBe(30)
     expect(result[result.length - 1]).toEqual({ date: '2026-05-05', count: 2 })

@@ -19,13 +19,24 @@ export type LeadListItem = Pick<
   Lead,
   | 'lead_id'
   | 'naam'
+  | 'bedrijfsnaam'
   | 'telefoon'
+  | 'email'
+  | 'straat'
+  | 'huisnummer'
+  | 'postcode'
+  | 'plaats'
   | 'hoofdcategorie'
+  | 'sub_diensten'
   | 'm2'
   | 'totaal_prijs'
+  | 'afstand_km'
   | 'status'
   | 'gesprek_fase'
   | 'dashboard_status'
+  | 'bron'
+  | 'afspraak_datum'
+  | 'afspraak_starttijd'
   | 'aangemaakt'
   | 'bijgewerkt'
 >
@@ -33,13 +44,24 @@ export type LeadListItem = Pick<
 const LIST_COLUMNS = [
   'lead_id',
   'naam',
+  'bedrijfsnaam',
   'telefoon',
+  'email',
+  'straat',
+  'huisnummer',
+  'postcode',
+  'plaats',
   'hoofdcategorie',
+  'sub_diensten',
   'm2',
   'totaal_prijs',
+  'afstand_km',
   'status',
   'gesprek_fase',
   'dashboard_status',
+  'bron',
+  'afspraak_datum',
+  'afspraak_starttijd',
   'aangemaakt',
   'bijgewerkt',
 ].join(', ')
@@ -58,7 +80,8 @@ const LIST_COLUMNS = [
  * dan filteren. Acceptabel binnen de .limit(100) hierboven.
  */
 export async function getLeadsList(
-  filters?: LeadsFilters
+  filters?: LeadsFilters,
+  options: { archived?: boolean } = {},
 ): Promise<LeadListItem[]> {
   const supabase = await getDashboardSupabase()
 
@@ -91,7 +114,7 @@ export async function getLeadsList(
   let query: any = supabase
     .from('leads')
     .select(LIST_COLUMNS)
-    .eq('dashboard_archived', false)
+    .eq('dashboard_archived', options.archived === true)
 
   if (filters?.q) {
     // PostgREST `.or(...)` interpreteert komma's als clausule-scheider en
@@ -270,7 +293,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
   events.push({
     id: `lead-${detail.lead.lead_id}`,
     type: 'lead_aangemaakt',
-    timestamp: detail.lead.aangemaakt,
+    timestamp: detail.lead.aangemaakt ?? '',
     label: 'Lead aangemaakt',
     details: detail.lead.bron ? `Bron: ${detail.lead.bron}` : null,
   })
@@ -281,7 +304,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `msg-${b.id}`,
       type: isIn ? 'bericht_in' : 'bericht_uit',
-      timestamp: b.timestamp,
+      timestamp: b.timestamp ?? '',
       label: isIn ? 'Klant stuurde bericht' : 'Bot stuurde bericht',
       details: b.bericht ?? (b.type !== 'tekst' ? `[${b.type}]` : null),
     })
@@ -292,7 +315,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `foto-${f.id}`,
       type: 'foto_geupload',
-      timestamp: f.aangemaakt,
+      timestamp: f.aangemaakt ?? '',
       label: 'Foto ontvangen',
       details: f.bron === 'formulier' ? 'via formulier' : 'via WhatsApp',
     })
@@ -303,7 +326,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `offerte-${o.id}`,
       type: 'offerte_verstuurd',
-      timestamp: o.aangemaakt_op,
+      timestamp: o.aangemaakt_op ?? '',
       label: `Offerte v${o.versie} verstuurd`,
       details: `€ ${o.totaal_incl.toFixed(2)} incl.`,
     })

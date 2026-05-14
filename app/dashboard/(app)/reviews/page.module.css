@@ -1,0 +1,22 @@
+.demoBanner {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #b45309;
+  line-height: 1.5;
+}
+
+.reviewsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 14px;
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

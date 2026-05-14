@@ -1,0 +1,24 @@
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Week-grid + sidebar: 1fr + 320px */
+.weekGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .weekGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}

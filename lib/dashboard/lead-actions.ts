@@ -82,3 +82,28 @@ export async function unarchiveLead(leadId: string): Promise<ActionResult> {
   revalidatePath('/leads')
   return { ok: true }
 }
+
+/**
+ * Markeert een gesprek als "gelezen" door de owner — zet
+ * leads.inbox_gelezen_op = now(). Wordt aangeroepen vanuit de inbox
+ * zodra een lead geselecteerd wordt (?lead=...). Verandert daarmee de
+ * "Ongelezen" count in de filter-tabs.
+ *
+ * Idempotent: meerdere calls achter elkaar overschrijven gewoon de
+ * timestamp. Bij DB-fouten falen we silent (return ok:false) — de inbox
+ * werkt door, alleen de unread-count update niet.
+ */
+export async function markInboxRead(leadId: string): Promise<ActionResult> {
+  const supabase = await getDashboardSupabase()
+  const { error } = await supabase
+    .from('leads')
+    .update({ inbox_gelezen_op: new Date().toISOString() })
+    .eq('lead_id', leadId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath('/inbox')
+  return { ok: true }
+}

@@ -1,0 +1,522 @@
+/* ─────────────────────────────────────────────────────────
+   Frontlix Dashboard — globale design-system classes.
+   Wordt geïmporteerd vanuit app/dashboard/(app)/layout.tsx,
+   dus alleen actief in de dashboard-tree (niet op marketing).
+   Class-namen 1-op-1 met het Claude-Design bundle.
+   ───────────────────────────────────────────────────────── */
+
+/* ── Utility flex helpers ──────────────────────────────── */
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dash-row.between {
+  justify-content: space-between;
+}
+.dash-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dash-tabular {
+  font-variant-numeric: tabular-nums;
+}
+.dash-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Section head (page-titel + actions) ───────────────── */
+.dash-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.dash-section-head > *:first-child {
+  min-width: 0;
+}
+.dash-section-title {
+  font: 800 22px/1.2 var(--font-heading);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.dash-section-sub {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+/* ── Card ──────────────────────────────────────────────── */
+.dash-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+.dash-card-pad {
+  padding: 20px;
+}
+.dash-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-card-head > *:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.dash-card-head > *:not(:first-child) {
+  flex-shrink: 0;
+}
+.dash-card-title {
+  font: 700 14px/1.2 var(--font-heading);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fg);
+}
+.dash-card-sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Pill (status badge) ───────────────────────────────── */
+.dash-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.dash-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.dash-pill-blue   { background: rgba(26, 86, 255, 0.10);  color: var(--primary); }
+.dash-pill-green  { background: rgba(22, 163, 74, 0.12);  color: var(--success); }
+.dash-pill-amber  { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.dash-pill-red    { background: rgba(220, 38, 38, 0.10);  color: var(--danger); }
+.dash-pill-gray   { background: var(--surface-2);          color: var(--fg-muted); }
+.dash-pill-wa     { background: rgba(37, 211, 102, 0.12); color: var(--whatsapp); }
+
+/* ── KPI ───────────────────────────────────────────────── */
+.dash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.dash-kpi {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.dash-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hov);
+}
+.dash-kpi-label {
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+.dash-kpi-value {
+  font: 900 32px/1.05 var(--font-heading);
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--fg);
+}
+.dash-kpi-value .unit {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.dash-kpi-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.dash-kpi-delta {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.dash-kpi-delta.up   { color: var(--success); }
+.dash-kpi-delta.down { color: var(--danger); }
+.dash-kpi-spark {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ── Live tiny dot (pulserende groene stip) ─────────────── */
+.dash-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  color: var(--success);
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.dash-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+  animation: dash-live-pulse 2s ease-out infinite;
+}
+@keyframes dash-live-pulse {
+  0%   { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.dash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font: 600 13px/1 var(--font-body);
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s, background 0.15s;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+}
+.dash-btn:hover  { transform: translateY(-1px); }
+.dash-btn:active { transform: translateY(0); }
+
+.dash-btn-primary {
+  background: var(--gradient);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+.dash-btn-primary:hover {
+  opacity: 0.94;
+  box-shadow: 0 6px 24px rgba(26, 86, 255, 0.45);
+}
+
+.dash-btn-secondary {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+.dash-btn-secondary:hover {
+  border-color: var(--card-hover-border);
+  background: var(--card-hover-bg);
+}
+
+.dash-btn-ghost {
+  color: var(--fg-soft);
+  background: transparent;
+}
+.dash-btn-ghost:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+.dash-btn-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* ── Segmented control (tabs) ──────────────────────────── */
+.dash-seg {
+  display: inline-flex;
+  background: var(--surface-2);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.dash-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.dash-seg-btn:hover { color: var(--fg); }
+.dash-seg-btn.active {
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Trend chart-canvas (zonder schaduw, scaled tot containerbreedte) */
+.dash-area-chart {
+  display: block;
+  width: 100%;
+}
+
+/* ── Pipeline (5-fase kanban) ──────────────────────────── */
+.dash-pipeline-track {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 2px;
+}
+@media (max-width: 1280px) {
+  .dash-pipeline-track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .dash-pipeline-track {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-pipe-col {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  max-height: calc(100vh - 240px);
+}
+.dash-pipe-col-head {
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-pipe-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fg-soft);
+  flex: 1;
+  min-width: 0;
+}
+.dash-pipe-col-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+}
+.dash-pipe-col-body {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.dash-pipe-col-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.dash-pipe-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.dash-pipe-card:hover {
+  border-color: var(--card-hover-border);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+.dash-pipe-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.dash-pipe-card-name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--fg);
+}
+.dash-pipe-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 6px;
+}
+.dash-pipe-card-meta > span {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ── Avatar (initialen, gradient bg) ───────────────────── */
+.dash-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.dash-avatar.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+.dash-avatar.lg {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+/* 5 distincte tints — geven elke klant een eigen herkenbare kleur.
+   Frontlix-brand blijft de default (zonder tint-class). */
+.dash-avatar-tint-1 { background: linear-gradient(135deg, #1a56ff, #00cfff); }
+.dash-avatar-tint-2 { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+.dash-avatar-tint-3 { background: linear-gradient(135deg, #16a34a, #84cc16); }
+.dash-avatar-tint-4 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+.dash-avatar-tint-5 { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+
+/* ── Tab-bar (filter-tabs bovenin lijsten) ─────────────── */
+.dash-tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  /* Verberg horizontale scrollbar visueel — voorkomt een lelijke "balk" onder
+     de tabs wanneer ze niet allemaal passen (bv. smalle inbox-sidebar).
+     Scrollen blijft functioneel werken. */
+  scrollbar-width: none; /* Firefox */
+}
+.dash-tab-bar::-webkit-scrollbar {
+  display: none; /* WebKit (Chrome / Safari) */
+}
+.dash-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  /* Trek 1px naar onder zodat de 2px active-onderlijn precies over de 1px
+     border-bottom van de bar valt — voorkomt een dubbele-streep-effect. */
+  margin-bottom: -1px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.dash-tab:hover {
+  color: var(--fg);
+}
+.dash-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.dash-tab-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: var(--surface-2);
+  min-width: 18px;
+  text-align: center;
+}
+.dash-tab.active .dash-tab-count {
+  background: rgba(26, 86, 255, 0.12);
+  color: var(--primary);
+}
+
+/* ── Search-input (compact, inline) ────────────────────── */
+.dash-search-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  transition: border-color 0.15s, background 0.15s;
+  max-width: 260px;
+  flex: 1;
+}
+.dash-search-inline:focus-within {
+  border-color: var(--primary);
+  background: var(--bg);
+}
+.dash-search-inline input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: inherit;
+  min-width: 0;
+}
+.dash-search-inline input::placeholder {
+  color: var(--fg-muted);
+}

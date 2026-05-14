@@ -1,69 +1,111 @@
 .tableWrap {
-  width: 100%;
+  padding: 0;
   overflow-x: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--text-sm);
+  font-size: 13px;
 }
 
 .table th {
-  background: var(--color-surface);
-  padding: var(--space-3) var(--space-4);
   text-align: left;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .table td {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 
-.table tbody tr:last-child td {
+.row {
+  transition: background 0.12s;
+}
+.row:hover {
+  background: var(--card-hover-bg);
+}
+.row:last-child td {
   border-bottom: none;
-}
-
-.table tbody tr:hover {
-  background: var(--color-surface);
 }
 
 .numeric {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.nameLink {
-  color: var(--color-primary);
+.muted {
+  color: var(--fg-muted);
+}
+
+.timeCell {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.link {
+  color: var(--fg);
   text-decoration: none;
-  font-weight: 500;
+  display: block;
+}
+.link:hover .leadName {
+  color: var(--primary);
 }
 
-.nameLink:hover {
-  text-decoration: underline;
+/* ── Lead-cell met avatar + naam + subline (id · plaats) ─── */
+.leadCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.leadCellBody {
+  min-width: 0;
+}
+.leadName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--fg);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.leadSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
 }
 
-.botStatus,
-.dashStatus {
-  display: inline-block;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-2);
-  font-size: var(--text-xs);
+/* ── Chevron-kolom uiterst rechts ─────────────────────── */
+.chevronCell {
+  text-align: right;
+  width: 32px;
 }
-
-.empty {
-  padding: var(--space-8);
-  text-align: center;
-  color: var(--color-text-muted);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
+.chevronLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--fg-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.chevronLink:hover {
+  background: var(--card-hover-bg);
+  color: var(--primary);
 }

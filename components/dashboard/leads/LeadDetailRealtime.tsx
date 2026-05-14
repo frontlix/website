@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getDashboardSupabaseBrowser } from '@/lib/dashboard/supabase-browser'
-import { LiveIndicator } from './LiveIndicator'
+import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 
 /**
  * Onzichtbaar (qua data-flow) component dat Supabase Realtime abonneert
@@ -19,39 +19,76 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
 
   useEffect(() => {
     const supabase = getDashboardSupabaseBrowser()
-
-    // Cast to any to avoid Supabase typings not cleanly exposing postgres_changes
+    let active = true
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const channel = (supabase.channel(`lead-${leadId}`) as any)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'berichten',
-          filter: `lead_id=eq.${leadId}`,
-        },
-        () => router.refresh()
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'fotos',
-          filter: `lead_id=eq.${leadId}`,
-        },
-        () => router.refresh()
-      )
+    let channel: any = null
+
+    // Filter doen we in de callback i.p.v. via postgres_changes filter-string;
+    // die bleek onbetrouwbaar voor TEXT-IDs met hyphens (lead_id heeft die).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const onInsert = (payload: any) => {
+      console.log('[realtime] insert event RAW', JSON.stringify(payload).slice(0, 300))
+      if (payload?.new?.lead_id === leadId) {
+        console.log('[realtime] match → router.refresh()')
+        router.refresh()
+      }
+    }
+
+    // Realtime auth: bij @supabase/ssr leeft de session in cookies maar de
+    // realtime-websocket pakt die niet altijd automatisch op. Expliciet
+    // de access token meegeven garandeert dat RLS-policies kloppen + events
+    // de subscriber bereiken. Zonder dit: subscription verbindt wel, maar
+    // events worden silently door RLS gefilterd.
+    void (async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!active) return
+      console.log('[realtime] session?', !!session?.access_token, 'user:', session?.user?.id)
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token)
+        console.log('[realtime] setAuth done')
+      } else {
+        console.warn('[realtime] NO session/token → RLS zal alle events filteren')
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .subscribe((status: any) => {
-        setConnected(status === 'SUBSCRIBED')
-      })
+      channel = (supabase.channel(`lead-${leadId}`) as any)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'berichten' },
+          onInsert,
+        )
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'fotos' },
+          onInsert,
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .subscribe((status: any) => {
+          console.log('[realtime] subscribe status', status)
+          if (active) setConnected(status === 'SUBSCRIBED')
+        })
+    })()
+
+    // Polling-fallback: elke 8s router.refresh() ALLEEN als de tab actief
+    // is. Realtime is primair, dit is verzekering — als de websocket-events
+    // niet doorkomen (RLS-filter, stale token, netwerk-flaky) zien we nieuwe
+    // berichten alsnog binnen ~8s. Idle tabs verbruiken niets dankzij de
+    // visibilityState-check.
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        router.refresh()
+      }
+    }, 8000)
 
     return () => {
-      void supabase.removeChannel(channel)
+      active = false
+      clearInterval(pollInterval)
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [leadId, router])
 
-  return <LiveIndicator connected={connected} />
+  // LiveDot pulseert continu; bij disconnect tonen we niets (de DB-realtime
+  // is een silent feature, geen status-indicator op zich). Connected-flag
+  // blijft beschikbaar voor toekomstige uitbreiding.
+  return connected ? <LiveDot /> : null
 }
