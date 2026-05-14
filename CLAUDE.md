@@ -279,6 +279,8 @@ pm2 restart frontlix       # restart server
 - `.env.local` is **never** in Git — always in `.gitignore`
 - Set production `.env` manually on the VPS
 
+**Voor de volledige deploy-flow (SSH-commando, paden, PM2-processen, troubleshooting): zie [docs/DEPLOY.md](docs/DEPLOY.md).**
+
 ---
 
 ## Environment Variables
