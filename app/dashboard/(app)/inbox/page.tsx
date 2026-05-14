@@ -5,7 +5,7 @@ import {
   getInboxLeadContext,
   type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
-import { Pill } from '@/components/dashboard/ui/Pill'
+import { InboxBotToggle } from '@/components/dashboard/inbox/InboxBotToggle'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
 import {
@@ -131,9 +131,10 @@ export default async function InboxPage({
                   </div>
                 </div>
                 <div className={styles.threadHeadRight}>
-                  <Pill tone="green" dot>
-                    Bot actief — pauzeren
-                  </Pill>
+                  <InboxBotToggle
+                    leadId={selectedLeadId}
+                    botPaused={leadContext.botGepauzeerd}
+                  />
                   <LeadDetailRealtime leadId={selectedLeadId} />
                 </div>
               </div>

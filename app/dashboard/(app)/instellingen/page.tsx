@@ -1,4 +1,4 @@
-import { Lock, Sparkles } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
@@ -197,51 +197,29 @@ function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
 /* ── PRIJZEN ───────────────────────────────────────────── */
 function PrijzenSection({ pricing }: { pricing: PricingRule[] }) {
   return (
-    <>
-      <SectionCard
-        title="Prijzen"
-        sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
-        readOnly={false}
-      >
-        <div className={styles.pricingList}>
-          {pricing.map((rule) => (
-            <div key={rule.rule_key} className={styles.pricingRow}>
-              <div>
-                <div className={styles.pricingLabel}>{rule.label}</div>
-              </div>
-              <PricingRuleEditor
-                ruleKey={rule.rule_key}
-                eenheid={rule.eenheid}
-                initialValue={rule.waarde}
-              />
+    <SectionCard
+      title="Prijzen"
+      sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
+      readOnly={false}
+    >
+      <div className={styles.pricingList}>
+        {pricing.map((rule) => (
+          <div key={rule.rule_key} className={styles.pricingRow}>
+            <div>
+              <div className={styles.pricingLabel}>{rule.label}</div>
             </div>
-          ))}
-          {pricing.length === 0 && (
-            <div className={styles.empty}>Geen prijsregels gevonden.</div>
-          )}
-        </div>
-      </SectionCard>
-
-      <WatAlsSimulator />
-    </>
-  )
-}
-
-/* ── WAT-ALS SIMULATOR (placeholder) ───────────────────── */
-function WatAlsSimulator() {
-  return (
-    <div className={styles.simulator}>
-      <div className={styles.simulatorIcon} aria-hidden="true">
-        <Sparkles size={18} />
+            <PricingRuleEditor
+              ruleKey={rule.rule_key}
+              eenheid={rule.eenheid}
+              initialValue={rule.waarde}
+            />
+          </div>
+        ))}
+        {pricing.length === 0 && (
+          <div className={styles.empty}>Geen prijsregels gevonden.</div>
+        )}
       </div>
-      <div className={styles.simulatorBody}>
-        <div className={styles.simulatorTitle}>Wat-als simulator</div>
-        <div className={styles.simulatorSub}>
-          Pas een prijs aan om het effect te zien op je laatste 30 leads
-        </div>
-      </div>
-      <Pill tone="gray">Binnenkort</Pill>
-    </div>
+    </SectionCard>
   )
 }
 
