@@ -10,8 +10,8 @@ import { AccountSection } from '@/components/dashboard/instellingen/AccountSecti
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
-import { PricingRuleEditor } from '@/components/dashboard/instellingen/PricingRuleEditor'
-import { WatAlsSimulator } from '@/components/dashboard/instellingen/WatAlsSimulator'
+import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
+import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -77,7 +77,7 @@ export default async function InstellingenPage({
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
-  const [tenantRaw, pricingRaw, servicesRaw, teamRaw] = await Promise.all([
+  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select(
@@ -103,12 +103,14 @@ export default async function InstellingenPage({
           .select('user_id, bedrijfsnaam, is_owner, tenant_status')
           .eq('tenant_status', 'approved')
       : Promise.resolve({ data: [] }),
+    section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
   const pricing = (pricingRaw.data as PricingRule[] | null) ?? []
   const services = (servicesRaw.data as ServiceOffering[] | null) ?? []
   const team = (teamRaw.data as TeamMember[] | null) ?? []
+  const baseline = baselineRaw
 
   return (
     <>
@@ -126,7 +128,7 @@ export default async function InstellingenPage({
         <SettingsNav />
         <div className={styles.content}>
           {section === 'bedrijf' && <BedrijfSection tenant={tenant} />}
-          {section === 'prijzen' && <PrijzenSection pricing={pricing} />}
+          {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baseline} />}
           {section === 'diensten' && <DienstenSection services={services} />}
           {section === 'tags' && <TagsSection />}
           {section === 'opening' && <OpeningSection chatbot={tenant?.chatbot_naam ?? 'Surface'} />}
@@ -196,45 +198,30 @@ function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
 }
 
 /* ── PRIJZEN ───────────────────────────────────────────── */
-function PrijzenSection({ pricing }: { pricing: PricingRule[] }) {
+function PrijzenSection({
+  pricing,
+  baseline,
+}: {
+  pricing: PricingRule[]
+  baseline: Awaited<ReturnType<typeof getPricingImpactBaseline>> | null
+}) {
+  // Fallback baseline als de query (om welke reden ook) niet liep.
+  const safeBaseline = baseline ?? {
+    leadCount: 0,
+    periodStart: null,
+    periodEnd: new Date().toISOString(),
+    baselineRevenue: 0,
+    baselineConversion: 0,
+    volumes: {},
+  }
   return (
-    <>
-      <SectionCard
-        title="Prijzen"
-        sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
-        readOnly={false}
-      >
-        <div className={styles.pricingList}>
-          {pricing.map((rule) => (
-            <div key={rule.rule_key} className={styles.pricingRow}>
-              <div>
-                <div className={styles.pricingLabel}>{rule.label}</div>
-              </div>
-              <PricingRuleEditor
-                ruleKey={rule.rule_key}
-                eenheid={rule.eenheid}
-                initialValue={rule.waarde}
-              />
-            </div>
-          ))}
-          {pricing.length === 0 && (
-            <div className={styles.empty}>Geen prijsregels gevonden.</div>
-          )}
-        </div>
-      </SectionCard>
-
-      {pricing.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <SectionCard
-            title="Wat als…"
-            sub="Snel vergelijken: hoe verhoudt een hypothetische prijs zich tot de huidige waarde?"
-            readOnly={false}
-          >
-            <WatAlsSimulator rules={pricing} />
-          </SectionCard>
-        </div>
-      )}
-    </>
+    <SectionCard
+      title="Prijzen"
+      sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
+      readOnly={false}
+    >
+      <PrijzenEditor rules={pricing} baseline={safeBaseline} />
+    </SectionCard>
   )
 }
 

@@ -54,3 +54,48 @@ export async function updatePricingRule(
   revalidatePath('/instellingen')
   return { ok: true }
 }
+
+/**
+ * Werkt meerdere prijsregels tegelijk bij — gebruikt door de "Alles
+ * opslaan"-knop in de Prijzen-sectie nadat de owner meerdere regels heeft
+ * aangepast en eerst de impact heeft bekeken via de Wat-als simulator.
+ *
+ * Voert per regel een aparte UPDATE uit. Bij een fout in één regel
+ * stoppen we, maar de eerder succesvolle updates blijven staan (Supabase
+ * v1 ondersteunt geen multi-row UPDATE met verschillende waarden in één
+ * statement zonder upsert; we kunnen later overstappen op een Postgres
+ * function als de lijst groot wordt).
+ */
+export async function updatePricingRulesBatch(
+  changes: Array<{ rule_key: string; waarde: number }>,
+): Promise<ActionResult> {
+  if (!Array.isArray(changes) || changes.length === 0) {
+    return { ok: false, error: 'Geen wijzigingen' }
+  }
+  // Valideer alles vóór de eerste UPDATE — voorkomt half-doorlopen.
+  for (const c of changes) {
+    if (typeof c.rule_key !== 'string' || c.rule_key.trim() === '') {
+      return { ok: false, error: 'Ongeldige prijsregel' }
+    }
+    if (!Number.isFinite(c.waarde) || c.waarde < 0) {
+      return { ok: false, error: `Ongeldige waarde voor ${c.rule_key}` }
+    }
+  }
+
+  const supabase = await getDashboardSupabase()
+  const now = new Date().toISOString()
+  for (const c of changes) {
+    const { data, error } = await supabase
+      .from('pricing_rules')
+      .update({ waarde: c.waarde, bijgewerkt_op: now })
+      .eq('rule_key', c.rule_key)
+      .select('rule_key')
+    if (error) return { ok: false, error: error.message }
+    if (!data || data.length === 0) {
+      return { ok: false, error: `Prijsregel niet gevonden: ${c.rule_key}` }
+    }
+  }
+
+  revalidatePath('/instellingen')
+  return { ok: true }
+}
