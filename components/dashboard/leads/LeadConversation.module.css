@@ -1,19 +1,15 @@
 /* WhatsApp-look — ECE5DD canvas met subtle textured pattern, ronde bubbles,
    in = wit, uit = lichtgroen (#D9FDD3). Bubble-tails via aangepaste corners. */
 
-/* Thread = column-reverse zodat:
-   - de laatste bubble onderaan plakt (boven de composer / boven de
-     pane-rand op /leads/[id])
-   - de scrollbar van de container automatisch op bottom begint
-   - geen scroll-to-bottom JS nodig
-   Items worden door LeadConversation.tsx in omgekeerde volgorde
-   meegegeven zodat visueel "oudste boven, nieuwste onder" geldt. */
+/* Thread = chronologische volgorde (oudste boven, nieuwste onder).
+   LeadConversation.tsx doet scrollIntoView op een sentinel-element zodat
+   de scroll altijd onderaan begint + meebeweegt met nieuwe berichten. */
 .thread {
   list-style: none;
   margin: 0;
   padding: 16px 14px;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 6px;
   background:
     radial-gradient(circle at 25px 25px, rgba(0, 0, 0, 0.02) 1.5px, transparent 1.5px),
@@ -23,6 +19,13 @@
   min-height: 320px;
   max-height: 60vh;
   overflow-y: auto;
+}
+
+/* Sentinel-li onderaan de thread; geen visuele weergave, alleen
+   doel voor scrollIntoView({ block: 'end' }). */
+.bottomSentinel {
+  height: 1px;
+  list-style: none;
 }
 
 .daySep {

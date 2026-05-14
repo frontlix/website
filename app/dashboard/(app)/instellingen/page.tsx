@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react'
+import { Lock, Sparkles } from 'lucide-react'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
@@ -10,6 +10,7 @@ import { AccountSection } from '@/components/dashboard/instellingen/AccountSecti
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
+import { PricingRuleEditor } from '@/components/dashboard/instellingen/PricingRuleEditor'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -196,32 +197,51 @@ function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
 /* ── PRIJZEN ───────────────────────────────────────────── */
 function PrijzenSection({ pricing }: { pricing: PricingRule[] }) {
   return (
-    <SectionCard
-      title="Prijzen"
-      sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
-    >
-      <div className={styles.pricingList}>
-        {pricing.map((rule) => (
-          <div key={rule.rule_key} className={styles.pricingRow}>
-            <div>
-              <div className={styles.pricingLabel}>{rule.label}</div>
-              <div className={styles.pricingKey}>{rule.rule_key}</div>
+    <>
+      <SectionCard
+        title="Prijzen"
+        sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
+        readOnly={false}
+      >
+        <div className={styles.pricingList}>
+          {pricing.map((rule) => (
+            <div key={rule.rule_key} className={styles.pricingRow}>
+              <div>
+                <div className={styles.pricingLabel}>{rule.label}</div>
+              </div>
+              <PricingRuleEditor
+                ruleKey={rule.rule_key}
+                eenheid={rule.eenheid}
+                initialValue={rule.waarde}
+              />
             </div>
-            <div className={styles.pricingValue}>
-              <span className="dash-tabular">
-                {formatNumber(rule.waarde)}
-              </span>
-              {rule.eenheid && (
-                <span className={styles.pricingEenheid}>{rule.eenheid}</span>
-              )}
-            </div>
-          </div>
-        ))}
-        {pricing.length === 0 && (
-          <div className={styles.empty}>Geen prijsregels gevonden.</div>
-        )}
+          ))}
+          {pricing.length === 0 && (
+            <div className={styles.empty}>Geen prijsregels gevonden.</div>
+          )}
+        </div>
+      </SectionCard>
+
+      <WatAlsSimulator />
+    </>
+  )
+}
+
+/* ── WAT-ALS SIMULATOR (placeholder) ───────────────────── */
+function WatAlsSimulator() {
+  return (
+    <div className={styles.simulator}>
+      <div className={styles.simulatorIcon} aria-hidden="true">
+        <Sparkles size={18} />
       </div>
-    </SectionCard>
+      <div className={styles.simulatorBody}>
+        <div className={styles.simulatorTitle}>Wat-als simulator</div>
+        <div className={styles.simulatorSub}>
+          Pas een prijs aan om het effect te zien op je laatste 30 leads
+        </div>
+      </div>
+      <Pill tone="gray">Binnenkort</Pill>
+    </div>
   )
 }
 
@@ -424,10 +444,15 @@ function TeamSection({ members }: { members: TeamMember[] }) {
 function SectionCard({
   title,
   sub,
+  readOnly = true,
   children,
 }: {
   title: string
   sub?: string
+  /** Toon de "Read-only" pill. Default true — zet op false voor secties
+   *  waar de UI wel echt kan opslaan (bv. Prijzen sinds we de editor
+   *  hebben). */
+  readOnly?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -437,10 +462,12 @@ function SectionCard({
           <div className="dash-card-title">{title}</div>
           {sub && <div className="dash-card-sub">{sub}</div>}
         </div>
-        <Pill tone="gray">
-          <Lock size={11} style={{ marginRight: 2 }} />
-          Read-only
-        </Pill>
+        {readOnly && (
+          <Pill tone="gray">
+            <Lock size={11} style={{ marginRight: 2 }} />
+            Read-only
+          </Pill>
+        )}
       </div>
       <div className={styles.sectionBody}>{children}</div>
     </div>
@@ -472,8 +499,3 @@ function Toggle({ disabled = false }: { disabled?: boolean }) {
   )
 }
 
-function formatNumber(n: number): string {
-  return n % 1 === 0
-    ? n.toLocaleString('nl-NL')
-    : n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}

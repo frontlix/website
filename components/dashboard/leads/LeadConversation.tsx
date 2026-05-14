@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Check, CheckCheck } from 'lucide-react'
 import type { Bericht } from '@/lib/dashboard/database.types'
@@ -9,8 +12,23 @@ import styles from './LeadConversation.module.css'
  *  - bot/owner-berichten (uitgaand) rechts, lichtgroen
  *  - datum-separators ("Vandaag", "Gisteren", weekday, of dd mmm) tussen blokken
  *  - tijd in HH:MM rechtsonder, met ✓✓ voor uitgaand
+ *
+ * Bij mount + bij elke verandering in het aantal berichten scrollen we
+ * automatisch naar de onderkant via een sentinel-element. Werkt zowel
+ * wanneer .thread zelf de scroll-container is (lead-detail) als wanneer
+ * een outer wrapper het is (inbox).
  */
 export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
+  const bottomRef = useRef<HTMLLIElement>(null)
+
+  useEffect(() => {
+    // 'auto' (= instant, geen smooth animatie). De polling refresht elke
+    // 8s en realtime kan ook door komen — we willen geen merkbare scroll-
+    // animatie elke keer dat een bericht binnenkomt, alleen 'm direct in
+    // beeld hebben.
+    bottomRef.current?.scrollIntoView({ block: 'end' })
+  }, [berichten.length])
+
   if (berichten.length === 0) {
     return <p className={styles.empty}>Nog geen berichten in dit gesprek.</p>
   }
@@ -30,11 +48,6 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
     }
     items.push({ kind: 'msg', bericht: b })
   }
-  // Reversed voor `flex-direction: column-reverse` op .thread —
-  // standaard chat-pattern (Slack/Discord/Telegram-web): bubbles plakken
-  // automatisch aan de onderkant + browser herstelt scroll-positie altijd
-  // op bottom zodat de laatste berichten direct in beeld staan.
-  items.reverse()
 
   return (
     <ol className={styles.thread}>
@@ -47,6 +60,9 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
           <BubbleRow key={it.bericht.id} b={it.bericht} />
         ),
       )}
+      {/* Sentinel waar scrollIntoView naar springt — moet als laatste
+          DOM-kind staan zodat 'end' = visuele onderkant van de thread */}
+      <li ref={bottomRef} className={styles.bottomSentinel} aria-hidden="true" />
     </ol>
   )
 }

@@ -1,0 +1,93 @@
+/* Wrapper houdt input + eenheid + status-indicator visueel bij elkaar.
+   Lijkt op de vroegere read-only badge (gradient bg, primary text) maar
+   reageert nu op focus + status-changes. */
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--card-hover-bg);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  min-width: 110px;
+  justify-content: flex-end;
+}
+.wrap:focus-within {
+  background: var(--bg);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+
+.input {
+  width: 64px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: 700 14px/1.2 var(--font-body);
+  color: var(--primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+  appearance: textfield;
+}
+/* Verberg de native spinners van number/tel inputs — eigen UI is netter */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.eenheid {
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Status-indicators ───────────────────────────────── */
+.spinner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.savedIcon {
+  color: var(--success);
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.errorMsg {
+  position: absolute;
+  margin-top: 44px;
+  margin-left: -120px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--danger);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Status-modifier-classes — gezet via prop op .wrap */
+.pending {
+  border-color: var(--border);
+}
+.saved {
+  border-color: rgba(22, 163, 74, 0.4);
+}
+.errorState {
+  border-color: rgba(220, 38, 38, 0.4);
+}
