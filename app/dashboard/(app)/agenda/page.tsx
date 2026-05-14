@@ -17,6 +17,7 @@ import {
   AgendaFollowupList,
 } from '@/components/dashboard/agenda/AgendaUpcomingList'
 import { AgendaRouteMap } from '@/components/dashboard/agenda/AgendaRouteMap'
+import { getTenantBase, DEFAULT_TENANT_BASE } from '@/lib/dashboard/tenant-base'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -149,12 +150,16 @@ async function RouteView({
   sp: { [k: string]: string | string[] | undefined }
 }) {
   const week = parseWeekParam(sp)
-  const appointments = await getAppointmentsForRange(week.queryStart, week.queryEnd)
+  const [appointments, tenantBase] = await Promise.all([
+    getAppointmentsForRange(week.queryStart, week.queryEnd),
+    getTenantBase(),
+  ])
 
   const prevWeek = shiftWeekKey(week.mondayKey, -1)
   const nextWeek = shiftWeekKey(week.mondayKey, 1)
   const focusRaw = Array.isArray(sp.dag) ? sp.dag[0] : sp.dag
   const focusDay = focusRaw && /^\d{4}-\d{2}-\d{2}$/.test(focusRaw) ? focusRaw : null
+  const base = tenantBase ?? DEFAULT_TENANT_BASE
 
   return (
     <>
@@ -197,6 +202,7 @@ async function RouteView({
         mondayKey={week.mondayKey}
         appointments={appointments}
         focusDay={focusDay}
+        base={base}
       />
     </>
   )

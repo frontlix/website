@@ -5,6 +5,7 @@ import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
 import { computeRules, computeTotals } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
+import { geocodeAddress } from './geocoding'
 import type { ManualOfferteData } from './manual-offerte-types'
 
 export type ManualOfferteResult =
@@ -159,6 +160,12 @@ export async function createManualLeadEnOfferte(
     })
   }
 
+  // ── 5) Geocoding — fire-and-forget, blokkeert lead-create niet ────
+  // De lead is al opgeslagen; als geocoding faalt (bv. postcode.tech
+  // down) heeft 'ie alleen geen pin op de routekaart. Volgende edit
+  // of een handmatige backfill-run vult 'm alsnog.
+  void geocodeAndStore(admin, leadId, data.postcode.trim(), data.huisnummer.trim())
+
   revalidatePath('/leads')
   revalidatePath('/')
 
@@ -167,5 +174,39 @@ export async function createManualLeadEnOfferte(
     leadId,
     offerteId: offerte.id as string,
     total: totaalIncl,
+  }
+}
+
+/**
+ * Geocode postcode+huisnummer en sla lat/lng op de lead op. Faalt
+ * stil — een lead zonder coords mist alleen z'n pin op de routekaart.
+ */
+async function geocodeAndStore(
+  admin: ReturnType<typeof getDashboardAdmin>,
+  leadId: string,
+  postcode: string,
+  huisnummer: string,
+): Promise<void> {
+  try {
+    const result = await geocodeAddress(postcode, huisnummer)
+    const now = new Date().toISOString()
+    if (!result) {
+      // Markeer als geprobeerd (anders blijft een batch-job 'm steeds opnieuw geocoden).
+      await admin
+        .from('leads')
+        .update({ coords_geocoded_op: now })
+        .eq('lead_id', leadId)
+      return
+    }
+    await admin
+      .from('leads')
+      .update({
+        lat: result.lat,
+        lng: result.lng,
+        coords_geocoded_op: now,
+      })
+      .eq('lead_id', leadId)
+  } catch (e) {
+    console.error(`[geocode] lead=${leadId} failed:`, e)
   }
 }

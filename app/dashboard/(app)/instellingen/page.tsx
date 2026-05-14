@@ -8,6 +8,7 @@ import {
 } from '@/components/dashboard/instellingen/SettingsNav'
 import { AccountSection } from '@/components/dashboard/instellingen/AccountSection'
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
+import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import styles from './page.module.css'
 
@@ -28,6 +29,10 @@ type TenantSettings = {
   reminder_dag_2: number | null
   reminder_dag_3: number | null
   calendar_link: string | null
+  base_huisnummer: string | null
+  base_label: string | null
+  base_lat: number | null
+  base_lng: number | null
 }
 
 type PricingRule = {
@@ -74,7 +79,7 @@ export default async function InstellingenPage({
     supabase
       .from('tenant_settings')
       .select(
-        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link',
+        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link, base_huisnummer, base_label, base_lat, base_lng',
       )
       .limit(1)
       .maybeSingle(),
@@ -148,16 +153,43 @@ function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
     { label: 'Calendar afspraak-link', value: tenant?.calendar_link, full: true },
   ]
   return (
-    <SectionCard
-      title="Bedrijfsgegevens"
-      sub="Contactgegevens en vestiging"
-    >
-      <div className={styles.fieldGrid}>
-        {fields.map((f) => (
-          <ReadOnlyField key={f.label} label={f.label} value={f.value} full={f.full} />
-        ))}
+    <>
+      <SectionCard
+        title="Bedrijfsgegevens"
+        sub="Contactgegevens en vestiging"
+      >
+        <div className={styles.fieldGrid}>
+          {fields.map((f) => (
+            <ReadOnlyField key={f.label} label={f.label} value={f.value} full={f.full} />
+          ))}
+        </div>
+      </SectionCard>
+
+      <div className="dash-card" style={{ marginTop: 16 }}>
+        <div className="dash-card-head">
+          <div>
+            <div className="dash-card-title">Thuisbasis voor routekaart</div>
+            <div className="dash-card-sub">
+              Vertrekpunt voor alle dag-routes in de agenda. Bij opslaan wordt
+              de exacte locatie automatisch opgezocht via postcode.tech.
+            </div>
+          </div>
+        </div>
+        <div className={styles.sectionBody}>
+          <TenantBaseForm
+            initialPostcode={tenant?.postcode ?? ''}
+            initialHuisnummer={tenant?.base_huisnummer ?? ''}
+            initialLabel={tenant?.base_label ?? 'BASIS'}
+            hasCoords={
+              typeof tenant?.base_lat === 'number' &&
+              typeof tenant?.base_lng === 'number'
+            }
+            currentLat={tenant?.base_lat ?? null}
+            currentLng={tenant?.base_lng ?? null}
+          />
+        </div>
       </div>
-    </SectionCard>
+    </>
   )
 }
 

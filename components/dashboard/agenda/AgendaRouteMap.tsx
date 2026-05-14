@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Lightbulb } from 'lucide-react'
 import type { Appointment } from '@/lib/dashboard/agenda-queries'
+import type { TenantBase } from '@/lib/dashboard/tenant-base'
 import {
   BASE_COORD,
   buildRouteDays,
@@ -25,10 +26,12 @@ import styles from './AgendaRouteMap.module.css'
 export function AgendaRouteMap({
   appointments,
   focusDay,
+  base,
 }: {
   mondayKey: string
   appointments: Appointment[]
   focusDay: string | null
+  base: TenantBase
 }) {
   const days = buildRouteDays(appointments)
   const totalStops = appointments.length
@@ -55,6 +58,7 @@ export function AgendaRouteMap({
           color: d.color,
           lat: s.lat as number,
           lng: s.lng as number,
+          adres: s.plaats,
         })),
     }))
     const mappedCount = mapDays.reduce((n, d) => n + d.stops.length, 0)
@@ -75,6 +79,7 @@ export function AgendaRouteMap({
         missingCount={missingCount}
         tip={buildTip(days)}
         dayTabs={dayTabs}
+        base={base}
       />
     )
   }

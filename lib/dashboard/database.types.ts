@@ -730,6 +730,10 @@ export type Database = {
       tenant_settings: {
         Row: {
           adres: string | null
+          base_huisnummer: string | null
+          base_label: string | null
+          base_lat: number | null
+          base_lng: number | null
           bedrijfsnaam: string
           bijgewerkt_op: string
           calendar_link: string | null
@@ -750,6 +754,10 @@ export type Database = {
         }
         Insert: {
           adres?: string | null
+          base_huisnummer?: string | null
+          base_label?: string | null
+          base_lat?: number | null
+          base_lng?: number | null
           bedrijfsnaam: string
           bijgewerkt_op?: string
           calendar_link?: string | null
@@ -770,6 +778,10 @@ export type Database = {
         }
         Update: {
           adres?: string | null
+          base_huisnummer?: string | null
+          base_label?: string | null
+          base_lat?: number | null
+          base_lng?: number | null
           bedrijfsnaam?: string
           bijgewerkt_op?: string
           calendar_link?: string | null
