@@ -1,56 +1,72 @@
 .pill {
   appearance: none;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  font-size: 11px;
+  gap: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.01em;
   border-radius: 9999px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s,
+    box-shadow 0.15s, opacity 0.15s;
+}
+.pill:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.pill:active:not(:disabled) {
+  transform: translateY(0);
 }
 .pill:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: progress;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 9999px;
   flex-shrink: 0;
 }
 
 /* ── Bot actief (groen) ─────────────────────────────────── */
 .active {
-  background: rgba(34, 197, 94, 0.12);
   color: #15803d;
-  border-color: rgba(34, 197, 94, 0.25);
+  border-color: #16a34a;
 }
 .active:hover:not(:disabled) {
-  background: rgba(34, 197, 94, 0.2);
-  border-color: rgba(34, 197, 94, 0.4);
+  background: #f0fdf4;
+  border-color: #15803d;
+  color: #14532d;
 }
 .active .dot {
   background: #16a34a;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25); }
+  50%      { box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.10); }
 }
 
 /* ── Bot gepauzeerd (oranje) ────────────────────────────── */
 .paused {
-  background: rgba(245, 158, 11, 0.14);
   color: #b45309;
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: #f59e0b;
 }
 .paused:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.22);
-  border-color: rgba(245, 158, 11, 0.45);
+  background: #fffbeb;
+  border-color: #b45309;
+  color: #92400e;
 }
 .paused .dot {
   background: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
 }
