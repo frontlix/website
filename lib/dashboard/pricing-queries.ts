@@ -27,6 +27,7 @@ export async function getManualOffertePricing(): Promise<ManualOffertePricing> {
     arbeid_invegen_onkruidwerend_per_m2: map.get('arbeid_invegen_onkruidwerend_per_m2') ?? FALLBACK_PRICING.arbeid_invegen_onkruidwerend_per_m2,
     voegzand_normaal_per_zak:            map.get('voegzand_normaal_per_zak') ?? FALLBACK_PRICING.voegzand_normaal_per_zak,
     voegzand_onkruidwerend_per_zak:      map.get('voegzand_onkruidwerend_per_zak') ?? FALLBACK_PRICING.voegzand_onkruidwerend_per_zak,
+    voegzand_m2_per_zak:                 map.get('voegzand_m2_per_zak') ?? FALLBACK_PRICING.voegzand_m2_per_zak,
     preventieve_onkruid_per_m2:          map.get('preventieve_onkruid_per_m2') ?? FALLBACK_PRICING.preventieve_onkruid_per_m2,
     beschermlaag_per_m2:                 map.get('beschermlaag_per_m2') ?? FALLBACK_PRICING.beschermlaag_per_m2,
     plan_4w_per_m2:                      map.get('plan_4w_per_m2') ?? FALLBACK_PRICING.plan_4w_per_m2,

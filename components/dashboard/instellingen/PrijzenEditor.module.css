@@ -63,6 +63,67 @@
   opacity: 0.6;
 }
 
+/* ── Tab-strip ────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font: 600 12px/1.2 var(--font-body);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+.tab:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+.tabActive {
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 700;
+}
+
+.tabCount {
+  font: 700 10px/1 var(--font-body);
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+}
+.tabActive .tabCount {
+  background: var(--primary);
+  color: white;
+}
+
+.tabDot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
 /* ── Pricing list ─────────────────────────────────────── */
 .pricingList {
   display: flex;

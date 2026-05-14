@@ -16,6 +16,8 @@ import {
 } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
 import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-actions'
+import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
+import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import { StepKlant } from './StepKlant'
 import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
@@ -35,6 +37,9 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const [data, setData] = useState<ManualOfferteData>(DEFAULTS)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+  // Pricing-snapshot uit pricing_rules. Initieel FALLBACK zodat de wizard
+  // direct werkt; na fetch wordt deze vervangen door de live waardes.
+  const [pricing, setPricing] = useState<ManualOffertePricing>(FALLBACK_PRICING)
 
   // Lock scroll while modal open
   useEffect(() => {
@@ -45,9 +50,38 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     }
   }, [])
 
-  // Auto-suggest zakken o.b.v. m² (1 zak per 5m²)
+  // Haal actuele pricing op en pre-fill voegzand/planten-prijzen mét de
+  // live waardes. We overschrijven alleen velden die nog op de hardcoded
+  // default staan — als de user al wat heeft ingetypt, raken we dat niet.
   useEffect(() => {
-    const suggested = Math.ceil((Number(data.m2) || 0) / 5)
+    let cancelled = false
+    getPricingForOffertePreview().then((p) => {
+      if (cancelled) return
+      setPricing(p)
+      setData((prev) => {
+        const next = { ...prev }
+        if (prev.voegzand_normaal_prijs === DEFAULTS.voegzand_normaal_prijs) {
+          next.voegzand_normaal_prijs = p.voegzand_normaal_per_zak
+        }
+        if (prev.voegzand_onkruidwerend_prijs === DEFAULTS.voegzand_onkruidwerend_prijs) {
+          next.voegzand_onkruidwerend_prijs = p.voegzand_onkruidwerend_per_zak
+        }
+        if (prev.planten_afschermen_prijs === DEFAULTS.planten_afschermen_prijs) {
+          next.planten_afschermen_prijs = p.plantenafscherming_per_rol
+        }
+        return next
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
+  // (voegzand_m2_per_zak), met 5 als laatste vangnet.
+  useEffect(() => {
+    const dekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5
+    const suggested = Math.ceil((Number(data.m2) || 0) / dekking)
     setData((prev) => {
       if (prev.voegzand_normaal_actief && !prev.voegzand_onkruidwerend_actief) {
         return { ...prev, voegzand_normaal_zakken: suggested, voegzand_onkruidwerend_zakken: 0 }
@@ -61,12 +95,12 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       }
       return prev
     })
-  }, [data.m2, data.voegzand_normaal_actief, data.voegzand_onkruidwerend_actief])
+  }, [data.m2, data.voegzand_normaal_actief, data.voegzand_onkruidwerend_actief, pricing.voegzand_m2_per_zak])
 
   const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
     setData((d) => ({ ...d, [k]: v }))
 
-  const rules = useMemo(() => computeRules(data), [data])
+  const rules = useMemo(() => computeRules(data, pricing), [data, pricing])
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
 
   const valid: Record<1 | 2 | 3, boolean> = {

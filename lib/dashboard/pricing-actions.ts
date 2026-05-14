@@ -2,8 +2,19 @@
 
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
+import { getManualOffertePricing } from './pricing-queries'
+import type { ManualOffertePricing } from './pricing-types'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
+
+/**
+ * Server action voor de manual-offerte wizard om de actuele pricing op te
+ * halen. De wizard is een client component en kan getManualOffertePricing
+ * niet direct importeren (server-only via supabase-server).
+ */
+export async function getPricingForOffertePreview(): Promise<ManualOffertePricing> {
+  return getManualOffertePricing()
+}
 
 /**
  * Werkt één prijsregel bij in `pricing_rules`. Gebruikt door de

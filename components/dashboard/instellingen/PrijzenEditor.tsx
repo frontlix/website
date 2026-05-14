@@ -24,6 +24,33 @@ type ImpactBaseline = {
 }
 
 /**
+ * Categorie-buckets voor de tab-strip. Volgorde hier = volgorde van de
+ * tabs. "overig" vangt alles op dat niet matcht — moet altijd laatst staan.
+ */
+const CATEGORIES = [
+  { key: 'reiniging',   label: 'Reiniging' },
+  { key: 'invegen',     label: 'Invegen & voegzand' },
+  { key: 'onkruid',     label: 'Onkruidbeheersing' },
+  { key: 'reiskosten',  label: 'Reiskosten' },
+  { key: 'overig',      label: 'Overig' },
+] as const
+type CategoryKey = (typeof CATEGORIES)[number]['key']
+
+/**
+ * Substring-heuristiek op rule_key. Werkt onafhankelijk van tenant-eigen
+ * namen omdat we op semantische delen matchen (reinigen, voegzand, …).
+ * Onbekend → 'overig' zodat we nooit een rule verbergen.
+ */
+function categorize(ruleKey: string): CategoryKey {
+  const k = ruleKey.toLowerCase()
+  if (k.startsWith('reinigen') || k.startsWith('reiniging')) return 'reiniging'
+  if (k.includes('voegzand') || k.includes('invegen')) return 'invegen'
+  if (k.startsWith('onkruidbeheersing') || k.includes('preventief_onkruid') || k.includes('preventieve_onkruid') || k.startsWith('beschermlaag') || k.startsWith('plan_')) return 'onkruid'
+  if (k.startsWith('reiskosten')) return 'reiskosten'
+  return 'overig'
+}
+
+/**
  * Prijzen-editor met "Wat als"-simulator.
  *
  * Model:
@@ -49,6 +76,25 @@ export function PrijzenEditor({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [savedFlash, setSavedFlash] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  // Groepeer rules per categorie zodat we per tab kunnen filteren én weten
+  // welke tabs überhaupt zichtbaar moeten zijn (geen lege tabs tonen).
+  const grouped = useMemo(() => {
+    const out: Record<CategoryKey, Rule[]> = {
+      reiniging: [], invegen: [], onkruid: [], reiskosten: [], overig: [],
+    }
+    for (const r of rules) out[categorize(r.rule_key)].push(r)
+    return out
+  }, [rules])
+
+  const visibleTabs = useMemo(
+    () => CATEGORIES.filter((c) => grouped[c.key].length > 0),
+    [grouped],
+  )
+  const [activeTab, setActiveTab] = useState<CategoryKey>(
+    visibleTabs[0]?.key ?? 'reiniging',
+  )
+  const visibleRules = grouped[activeTab] ?? []
 
   // Map huidige prijzen voor delta-berekening
   const currentPrices = useMemo<Record<string, number>>(
@@ -142,8 +188,36 @@ export function PrijzenEditor({
         </button>
       </div>
 
+      {visibleTabs.length > 1 && (
+        <div className={styles.tabs} role="tablist" aria-label="Prijscategorieën">
+          {visibleTabs.map((tab) => {
+            const inThisTab = grouped[tab.key]
+            const pendingHere = inThisTab.filter(
+              (r) => cleanPending[r.rule_key] !== undefined,
+            ).length
+            const isActive = tab.key === activeTab
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span>{tab.label}</span>
+                <span className={styles.tabCount}>{inThisTab.length}</span>
+                {pendingHere > 0 && !isActive && (
+                  <span className={styles.tabDot} aria-label={`${pendingHere} wijziging${pendingHere === 1 ? '' : 'en'}`} />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <div className={styles.pricingList}>
-        {rules.map((rule) => {
+        {visibleRules.map((rule) => {
           const pendingValue = cleanPending[rule.rule_key]
           const isChanged = pendingValue !== undefined
           const displayedValue = isChanged ? pendingValue : rule.waarde
@@ -182,6 +256,9 @@ export function PrijzenEditor({
         })}
         {rules.length === 0 && (
           <div className={styles.empty}>Geen prijsregels gevonden.</div>
+        )}
+        {rules.length > 0 && visibleRules.length === 0 && (
+          <div className={styles.empty}>Geen regels in deze categorie.</div>
         )}
       </div>
 

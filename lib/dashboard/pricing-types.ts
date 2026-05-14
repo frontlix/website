@@ -10,6 +10,9 @@ export type ManualOffertePricing = {
   arbeid_invegen_onkruidwerend_per_m2: number
   voegzand_normaal_per_zak: number
   voegzand_onkruidwerend_per_zak: number
+  /** Dekkingsfactor: hoeveel m² straatwerk je met 1 zak voegzand inveegt.
+   *  Wordt gebruikt om het aantal zakken te suggereren in de wizard. */
+  voegzand_m2_per_zak: number
   preventieve_onkruid_per_m2: number
   beschermlaag_per_m2: number
   plan_4w_per_m2: number
@@ -28,6 +31,7 @@ export const FALLBACK_PRICING: ManualOffertePricing = {
   arbeid_invegen_onkruidwerend_per_m2: 1.6,
   voegzand_normaal_per_zak: 2.9,
   voegzand_onkruidwerend_per_zak: 20.9,
+  voegzand_m2_per_zak: 5,
   preventieve_onkruid_per_m2: 1.1,
   beschermlaag_per_m2: 1.6,
   plan_4w_per_m2: 1.25,
