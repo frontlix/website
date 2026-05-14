@@ -9,6 +9,7 @@ import {
 import { AccountSection } from '@/components/dashboard/instellingen/AccountSection'
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
+import { ServiceOfferingToggle } from '@/components/dashboard/instellingen/ServiceOfferingToggle'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
@@ -228,17 +229,20 @@ function PrijzenSection({
 /* ── DIENSTEN AANBOD ───────────────────────────────────── */
 function DienstenSection({ services }: { services: ServiceOffering[] }) {
   return (
-    <SectionCard title="Diensten aanbod" sub="Welke diensten biedt je bedrijf aan?">
+    <SectionCard
+      title="Diensten aanbod"
+      sub="Welke diensten biedt je bedrijf aan? Schakel ze aan of uit met de toggle."
+      readOnly={false}
+    >
       <div className={styles.servicesList}>
         {services.map((s) => (
           <div key={s.dienst_key} className={styles.serviceRow}>
-            <div>
-              <div className={styles.serviceLabel}>{s.label}</div>
-              <div className={styles.serviceKey}>{s.dienst_key}</div>
-            </div>
-            <Pill tone={s.actief ? 'green' : 'gray'} dot>
-              {s.actief ? 'Actief' : 'Uit'}
-            </Pill>
+            <div className={styles.serviceLabel}>{s.label}</div>
+            <ServiceOfferingToggle
+              dienstKey={s.dienst_key}
+              label={s.label}
+              initialActief={s.actief}
+            />
           </div>
         ))}
         {services.length === 0 && (

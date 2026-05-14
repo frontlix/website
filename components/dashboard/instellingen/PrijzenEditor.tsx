@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition, useEffect } from 'react'
+import { useMemo, useRef, useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, AlertCircle, TrendingUp, TrendingDown, Sparkles } from 'lucide-react'
 import { updatePricingRulesBatch } from '@/lib/dashboard/pricing-actions'
@@ -155,7 +155,6 @@ export function PrijzenEditor({
             <div key={rule.rule_key} className={styles.row}>
               <div className={styles.rowLabel}>
                 <div className={styles.label}>{rule.label}</div>
-                <div className={styles.ruleKey}>{rule.rule_key}</div>
               </div>
               <div className={styles.rowEditor}>
                 <RuleInput
@@ -221,30 +220,47 @@ function RuleInput({
 }) {
   const [text, setText] = useState<string>(formatValue(currentValue))
   const [invalid, setInvalid] = useState(false)
+  // Tijdens actief typen onderdrukken we het auto-sync effect, anders
+  // wordt een tussenstap als "4." direct teruggeformatteerd naar "4".
+  const userTyping = useRef(false)
 
-  // Sync extern (bv. na succesvolle save reset) — alleen als niet focus en
-  // niet gewijzigd door user.
+  // Sync extern (bv. na succesvolle save-reset of Escape). Alleen als de
+  // gebruiker niet actief in het veld zit te typen.
   useEffect(() => {
+    if (userTyping.current) return
     setText(formatValue(currentValue))
   }, [currentValue])
 
   const handleBlur = () => {
+    userTyping.current = false
     const parsed = parseValue(text)
     if (parsed === null) {
       setInvalid(true)
-      // Reset naar laatst geldige waarde (huidig of pending)
       setText(formatValue(currentValue))
       return
     }
     setInvalid(false)
     if (Math.abs(parsed - originalValue) < 1e-9) {
-      // Gelijk aan origineel → niet pending
-      onClearPending(ruleKey)
       setText(formatValue(originalValue))
-      return
+    } else {
+      setText(formatValue(parsed))
     }
-    onSetPending(ruleKey, parsed)
-    setText(formatValue(parsed))
+  }
+
+  const handleChange = (next: string) => {
+    userTyping.current = true
+    setText(next)
+    if (invalid) setInvalid(false)
+    // Live update: parse direct en propageer naar parent zodat de
+    // sticky impact-bar tijdens het typen meebeweegt. Bij ongeldige
+    // input laten we de laatste geldige pending-waarde staan.
+    const parsed = parseValue(next)
+    if (parsed === null) return
+    if (Math.abs(parsed - originalValue) < 1e-9) {
+      onClearPending(ruleKey)
+    } else {
+      onSetPending(ruleKey, parsed)
+    }
   }
 
   const wrapClass = `${styles.inputWrap} ${isChanged ? styles.inputWrapChanged : ''} ${invalid ? styles.inputWrapInvalid : ''}`
@@ -256,14 +272,12 @@ function RuleInput({
         inputMode="decimal"
         className={styles.input}
         value={text}
-        onChange={(e) => {
-          setText(e.target.value)
-          if (invalid) setInvalid(false)
-        }}
+        onChange={(e) => handleChange(e.target.value)}
         onBlur={handleBlur}
         onKeyDown={(e) => {
           if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
           if (e.key === 'Escape') {
+            userTyping.current = false
             setText(formatValue(originalValue))
             onClearPending(ruleKey)
             setInvalid(false)
