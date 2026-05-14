@@ -22,13 +22,30 @@ import {
   LiveActivityFeed,
   type ActivityItem,
 } from '@/components/dashboard/overzicht/LiveActivityFeed'
+import { TrendRangeToggle } from '@/components/dashboard/overzicht/TrendRangeToggle'
+import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
+import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OverzichtPage() {
-  await requireApprovedUser()
+type TrendRange = '7d' | '28d' | '90d'
+const RANGE_DAYS: Record<TrendRange, number> = { '7d': 7, '28d': 28, '90d': 90 }
+
+export default async function OverzichtPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ trend?: string }>
+}) {
+  const { user } = await requireApprovedUser()
   const supabase = await getDashboardSupabase()
+
+  const greeting = getGreeting()
+  const voornaam = getVoornaam(user)
+
+  const sp = await searchParams
+  const trendRange: TrendRange = sp.trend === '7d' || sp.trend === '90d' ? sp.trend : '28d'
+  const trendDays = RANGE_DAYS[trendRange]
 
   const now = new Date()
   const week = periodToRange('deze-week', now)
@@ -50,7 +67,7 @@ export default async function OverzichtPage() {
     countConverted(maand),
     avgOfferteWaarde(maand),
     avgReactietijdMs(week),
-    leadsPerDag(now),
+    leadsPerDag(now, trendDays),
     getAppointmentsForMonth(now.getUTCFullYear(), now.getUTCMonth() + 1),
     getLeadsList(),
     supabase
@@ -91,7 +108,7 @@ export default async function OverzichtPage() {
   // Voor V1 een eenvoudige proxy: tellen alle leads van deze week
   // per gesprek_fase + dashboard_status.
   const weekLeads = allLeads.filter(
-    (l) => new Date(l.aangemaakt).getTime() >= new Date(week.from!).getTime(),
+    (l) => l.aangemaakt && new Date(l.aangemaakt).getTime() >= new Date(week.from!).getTime(),
   )
   const totalWeek = weekLeads.length || 1 // voorkom div-by-zero
   const funnelRows = [
@@ -146,7 +163,9 @@ export default async function OverzichtPage() {
     <>
       <div className="dash-section-head">
         <div>
-          <div className="dash-section-title">Overzicht</div>
+          <div className="dash-section-title">
+            <GreetingTitle initialGreeting={greeting} voornaam={voornaam} />
+          </div>
           <div className="dash-section-sub">
             <LiveDot />
             <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
@@ -201,16 +220,17 @@ export default async function OverzichtPage() {
             <div className="dash-card-head">
               <div>
                 <div className="dash-card-title">
-                  Lead-instroom — laatste 28 dagen
+                  Lead-instroom — laatste {trendDays} dagen
                 </div>
                 <div className="dash-card-sub">Aantal nieuwe leads per dag</div>
               </div>
+              <TrendRangeToggle active={trendRange} />
             </div>
             <div style={{ padding: '8px 12px 12px' }}>
               <AreaChart data={trendData} height={170} />
             </div>
             <div className={styles.trendStats}>
-              <TrendStat label="Totaal leads" value={String(totaal30d)} sub="in 30d" />
+              <TrendStat label="Totaal leads" value={String(totaal30d)} sub={`in ${trendDays}d`} />
               <TrendStat
                 label="Conversie"
                 value={`${conversiePct}%`}
@@ -339,7 +359,7 @@ function buildActivityFeed(
       naam: lead.naam,
       kind: 'new',
       text: 'kwam binnen via formulier',
-      timestamp: lead.aangemaakt,
+      timestamp: lead.aangemaakt ?? '',
     })
   }
   for (const appt of appts.slice(0, 4)) {

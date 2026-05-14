@@ -63,10 +63,10 @@ export function LeadOfferte({
             <span className={styles.totaalLabel}>Totaal incl. BTW</span>
             <span className={styles.totaalAmount}>{formatEuro(huidige.totaal_incl)}</span>
           </div>
-          {huidige.korting_pct > 0 && (
+          {(huidige.korting_pct ?? 0) > 0 && (
             <div className={styles.kortingRow}>
               <span>Korting</span>
-              <span>{huidige.korting_pct}%</span>
+              <span>{huidige.korting_pct ?? 0}%</span>
             </div>
           )}
           <div className={styles.metaRow}>

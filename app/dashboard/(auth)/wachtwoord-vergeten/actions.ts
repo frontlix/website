@@ -22,8 +22,10 @@ export async function vergetenAction(
   const supabase = await getDashboardSupabase()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL_DASHBOARD ?? 'https://app.frontlix.com'
 
+  // redirect_to wijst naar /callback (die wisselt de PKCE-code in voor
+  // een sessie) en geeft via ?next= door naar welke pagina daarna komt.
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/wachtwoord-reset`,
+    redirectTo: `${siteUrl}/callback?next=/wachtwoord-reset`,
   })
 
   // Altijd success retourneren — geen enumeratie van geldige mailadressen.

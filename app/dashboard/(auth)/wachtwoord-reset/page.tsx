@@ -11,8 +11,8 @@ export default function WachtwoordResetPage() {
   const [state, formAction, pending] = useActionState(resetAction, initial)
 
   useEffect(() => {
-    if (state.redirectTo) window.location.href = state.redirectTo
-  }, [state.redirectTo])
+    if (state?.redirectTo) window.location.href = state.redirectTo
+  }, [state?.redirectTo])
 
   return (
     <div className={styles.card}>
@@ -29,10 +29,10 @@ export default function WachtwoordResetPage() {
           <input type="password" name="herhaal" required autoComplete="new-password" className={styles.input} minLength={8} />
         </label>
 
-        {state.error && <p className={styles.error}>{state.error}</p>}
+        {state?.error && <p className={styles.error}>{state.error}</p>}
 
-        <button type="submit" disabled={pending || !!state.redirectTo} className={styles.submit}>
-          {pending ? 'Bezig…' : state.redirectTo ? 'Doorsturen…' : 'Wachtwoord opslaan'}
+        <button type="submit" disabled={pending || !!state?.redirectTo} className={styles.submit}>
+          {pending ? 'Bezig…' : state?.redirectTo ? 'Doorsturen…' : 'Wachtwoord opslaan'}
         </button>
       </form>
 

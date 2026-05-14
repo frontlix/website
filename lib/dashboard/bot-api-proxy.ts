@@ -11,6 +11,64 @@ import { getDashboardSupabase } from './supabase-server'
  * reschedule, AVG-delete) blijven in de bot — dit dashboard is alleen
  * de UI-laag. Het token zit alleen server-side in `.env`.
  */
+/**
+ * Proxy voor system-level bot-endpoints zonder leadId (bv. `/config/reload`).
+ * Dezelfde auth-flow als proxyToBotApi, andere URL-structuur.
+ */
+export async function proxyToBotApiGlobal(
+  req: NextRequest,
+  endpoint: string,
+): Promise<NextResponse> {
+  const supabase = await getDashboardSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ ok: false, error: 'Niet ingelogd' }, { status: 401 })
+  }
+
+  const botUrl = process.env.DASHBOARD_API_URL
+  const token = process.env.DASHBOARD_API_TOKEN
+  if (!botUrl || !token) {
+    return NextResponse.json(
+      { ok: false, error: 'Bot-API niet geconfigureerd (DASHBOARD_API_URL / DASHBOARD_API_TOKEN)' },
+      { status: 503 },
+    )
+  }
+
+  let body: unknown = {}
+  if (req.headers.get('content-length') && req.headers.get('content-length') !== '0') {
+    try {
+      body = await req.json()
+    } catch {
+      body = {}
+    }
+  }
+
+  try {
+    const res = await fetch(`${botUrl}/dashboard-api/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    const text = await res.text()
+    let data: unknown
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = { ok: res.ok, message: text }
+    }
+    return NextResponse.json(data, { status: res.status })
+  } catch (e) {
+    return NextResponse.json(
+      { ok: false, error: e instanceof Error ? e.message : 'Bot-API niet bereikbaar' },
+      { status: 502 },
+    )
+  }
+}
+
 export async function proxyToBotApi(
   req: NextRequest,
   leadId: string,

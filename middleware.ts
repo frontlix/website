@@ -17,6 +17,7 @@ const PUBLIC_DASHBOARD_PATHS = new Set([
   '/wachtwoord-vergeten',
   '/wachtwoord-reset',
   '/uitnodiging',
+  '/callback',
 ])
 
 function isDashboardHost(host: string | null): boolean {

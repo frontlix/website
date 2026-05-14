@@ -62,7 +62,7 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
             )}
             <span className={styles.metaItem}>
               <Clock size={13} />
-              <span>{formatRelative(lead.bijgewerkt)}</span>
+              <span>{formatRelative(lead.bijgewerkt ?? lead.aangemaakt ?? '')}</span>
             </span>
           </div>
         </div>

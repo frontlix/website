@@ -21,7 +21,8 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
   const items: Item[] = []
   let lastDay = ''
   for (const b of berichten) {
-    const d = new Date(b.timestamp)
+    const ts: string = b.timestamp ?? ''
+    const d = new Date(ts)
     const dayKey = d.toDateString()
     if (dayKey !== lastDay) {
       items.push({ kind: 'sep', label: dateLabel(d), id: `sep-${dayKey}` })
@@ -73,7 +74,7 @@ function BubbleRow({ b }: { b: Bericht }) {
         )}
       </div>
       <span className={styles.meta}>
-        <time dateTime={b.timestamp}>{formatHourMinute(b.timestamp)}</time>
+        <time dateTime={b.timestamp ?? undefined}>{formatHourMinute(b.timestamp ?? '')}</time>
         {uit && (
           <span className={styles.checks} aria-label="Bezorgd">
             <CheckCheck size={12} />

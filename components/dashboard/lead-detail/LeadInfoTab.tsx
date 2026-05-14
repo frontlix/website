@@ -29,11 +29,12 @@ export function LeadInfoTab({ lead }: { lead: Lead }) {
     { label: 'Bron', value: humanizeBron(lead.bron) },
   ]
 
+  const subDiensten = lead.sub_diensten ?? []
   const werkRows: Row[] = [
     { label: 'Hoofdcategorie', value: humanize(lead.hoofdcategorie) },
     {
       label: 'Diensten',
-      value: lead.sub_diensten.length ? lead.sub_diensten.map(humanize).join(' + ') : null,
+      value: subDiensten.length > 0 ? subDiensten.map(humanize).join(' + ') : null,
     },
     { label: 'Oppervlakte', value: lead.m2 !== null ? `${lead.m2} m²` : null },
     { label: 'Voegzand', value: lead.zand_kleur ? humanize(lead.zand_kleur) : null },
@@ -100,7 +101,8 @@ function humanize(key: string | null): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function humanizeBron(bron: string): string {
+function humanizeBron(bron: string | null): string {
+  if (!bron) return 'Onbekend'
   // Verwachte waarden: 'website', 'whatsapp', 'handmatig', ...
   const map: Record<string, string> = {
     website: 'Website-formulier',

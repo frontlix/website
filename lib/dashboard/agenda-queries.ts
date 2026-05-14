@@ -10,6 +10,13 @@ export type Appointment = Pick<
   | 'afspraak_geboekt_op'
   | 'dashboard_status'
   | 'status'
+  | 'plaats'
+  | 'postcode'
+  | 'straat'
+  | 'huisnummer'
+  | 'm2'
+  | 'afstand_km'
+  | 'hoofdcategorie'
 >
 
 const SELECT_COLUMNS = [
@@ -19,6 +26,13 @@ const SELECT_COLUMNS = [
   'afspraak_geboekt_op',
   'dashboard_status',
   'status',
+  'plaats',
+  'postcode',
+  'straat',
+  'huisnummer',
+  'm2',
+  'afstand_km',
+  'hoofdcategorie',
 ].join(', ')
 
 /**

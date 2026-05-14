@@ -14,6 +14,11 @@ export type ConversationPreview = {
    * een ongelezen klant-bericht na een offerte. Geen DB-veld.
    */
   needsAction: boolean
+  /**
+   * Tot wanneer is dit gesprek door de owner gelezen (NULL = nooit geopend).
+   * Wordt door de inbox gebruikt om de "Ongelezen" filter te bepalen.
+   */
+  inboxGelezenOp: string | null
   laatsteBericht: {
     richting: string
     tekst: string | null
@@ -67,7 +72,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leadQuery: any = supabase
     .from('leads')
-    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd')
+    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd, inbox_gelezen_op')
     .in('lead_id', leadIds)
     .eq('dashboard_archived', false)
   const { data: leads, error: leadErr } = await leadQuery
@@ -84,7 +89,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
     | 'gesprek_fase'
     | 'totaal_prijs'
     | 'offerte_verstuurd'
-  >
+  > & { inbox_gelezen_op: string | null }
   const leadList = (leads as LeadRow[] | null) ?? []
 
   // Stap 4 — combine + sort op laatste timestamp DESC
@@ -96,7 +101,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
     //  - gesprek zit in onderhandeling (vraagt owner-review), of
     //  - laatste bericht was van de klant terwijl er al een offerte uit is.
     const inkomendNaOfferte =
-      latest.richting === 'in' && Boolean(lead.offerte_verstuurd)
+      latest.richting === 'inkomend' && Boolean(lead.offerte_verstuurd)
     const needsAction = lead.gesprek_fase === 'onderhandelen' || inkomendNaOfferte
 
     out.push({
@@ -108,11 +113,12 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
       totaalPrijs: lead.totaal_prijs,
       offerteVerstuurd: Boolean(lead.offerte_verstuurd),
       needsAction,
+      inboxGelezenOp: lead.inbox_gelezen_op,
       laatsteBericht: {
         richting: latest.richting,
         tekst: latest.bericht,
-        type: latest.type,
-        timestamp: latest.timestamp,
+        type: latest.type ?? 'tekst',
+        timestamp: latest.timestamp ?? '',
       },
     })
   }

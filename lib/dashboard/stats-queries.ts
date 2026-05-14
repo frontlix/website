@@ -183,17 +183,19 @@ export async function categorieVerdeling(
 }
 
 /**
- * Leads per dag voor de laatste 30 dagen, ASC op datum.
- * Lege dagen krijgen count 0.
+ * Leads per dag voor de laatste N dagen, ASC op datum.
+ * Lege dagen krijgen count 0. Default 28d voor de overzicht-chart.
  */
 export async function leadsPerDag(
-  now: Date = new Date()
+  now: Date = new Date(),
+  days: number = 28
 ): Promise<Array<{ date: string; count: number }>> {
   const supabase = await getDashboardSupabase()
+  const span = Math.max(1, Math.floor(days))
   const start = new Date(Date.UTC(
     now.getUTCFullYear(),
     now.getUTCMonth(),
-    now.getUTCDate() - 29
+    now.getUTCDate() - (span - 1)
   ))
   const startISO = start.toISOString().slice(0, 10)
 
@@ -217,7 +219,7 @@ export async function leadsPerDag(
   }
 
   const out: Array<{ date: string; count: number }> = []
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < span; i++) {
     const d = new Date(Date.UTC(
       start.getUTCFullYear(),
       start.getUTCMonth(),

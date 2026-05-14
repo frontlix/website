@@ -13,6 +13,8 @@ import {
   type InboxFilter,
 } from '@/components/dashboard/inbox/InboxFilterTabs'
 import { InboxSearch } from '@/components/dashboard/inbox/InboxSearch'
+import { InboxMarkRead } from '@/components/dashboard/inbox/InboxMarkRead'
+import { InboxRealtime } from '@/components/dashboard/inbox/InboxRealtime'
 import { WhatsAppComposer } from '@/components/dashboard/inbox/WhatsAppComposer'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
@@ -25,15 +27,16 @@ function matchesFilter(c: ConversationPreview, filter: InboxFilter): boolean {
     case 'all':
       return true
     case 'unread':
-      // V1 heuristic: laatste bericht is inkomend = ongelezen door owner.
-      // Strikte unread-tracking vereist een nieuwe DB-kolom.
-      return c.laatsteBericht.richting === 'inkomend'
+      // Ongelezen als het laatste bericht inkomend is EN ofwel:
+      //  - nooit geopend (inboxGelezenOp === null), of
+      //  - dat inkomende bericht is binnengekomen NA de laatste opening.
+      // String-vergelijking werkt voor ISO-timestamps (lex == chrono).
+      if (c.laatsteBericht.richting !== 'inkomend') return false
+      if (c.inboxGelezenOp === null) return true
+      return c.laatsteBericht.timestamp > c.inboxGelezenOp
     case 'action':
       // V1 heuristic: in onderhandeling = wacht op owner-actie.
       return c.gesprekFase === 'onderhandelen'
-    case 'bot':
-      // V1 heuristic: laatste bericht is uitgaand (= bot praat).
-      return c.laatsteBericht.richting === 'uitgaand'
   }
 }
 
@@ -44,7 +47,7 @@ export default async function InboxPage({
 }) {
   const sp = await searchParams
   const selectedLeadId = sp.lead ?? null
-  const filter = (['all', 'unread', 'action', 'bot'].includes(sp.filter ?? '')
+  const filter = (['all', 'unread', 'action'].includes(sp.filter ?? '')
     ? sp.filter
     : 'all') as InboxFilter
   const search = (sp.q ?? '').trim().toLowerCase()
@@ -60,7 +63,6 @@ export default async function InboxPage({
     all:    allConversations.length,
     unread: allConversations.filter((c) => matchesFilter(c, 'unread')).length,
     action: allConversations.filter((c) => matchesFilter(c, 'action')).length,
-    bot:    allConversations.filter((c) => matchesFilter(c, 'bot')).length,
   }
 
   let conversations = allConversations.filter((c) => matchesFilter(c, filter))
@@ -75,6 +77,9 @@ export default async function InboxPage({
 
   return (
     <div className={styles.fullBleed}>
+      {/* Live-subscription: refresht inbox-lijst zodra een nieuw bericht binnenkomt */}
+      <InboxRealtime />
+
       <div className={styles.grid}>
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
@@ -103,6 +108,9 @@ export default async function InboxPage({
         <section className={styles.colThread}>
           {selectedLeadId && leadContext ? (
             <>
+              {/* Side-effect: markeer het gesprek als gelezen door de owner */}
+              <InboxMarkRead leadId={selectedLeadId} />
+
               <div className={styles.threadHead}>
                 <div className={styles.threadHeadLeft}>
                   <MessageCircle size={16} />

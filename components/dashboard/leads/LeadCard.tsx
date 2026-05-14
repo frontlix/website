@@ -100,7 +100,8 @@ function humanize(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string | null): string {
+  if (!iso) return '—'
   // Compacte relatieve tijd: "nu", "5 min", "2 u", "3 d".
   const then = new Date(iso).getTime()
   const diff = Date.now() - then

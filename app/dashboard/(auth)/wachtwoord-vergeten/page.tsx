@@ -17,7 +17,7 @@ export default function WachtwoordVergetenPage() {
         Vul je e-mailadres in. We sturen een link waarmee je een nieuw wachtwoord kunt instellen.
       </p>
 
-      {state.success ? (
+      {state?.success ? (
         <div className={styles.error} style={{ background: 'rgba(22,163,74,0.08)', borderColor: 'rgba(22,163,74,0.2)', color: '#15803d' }}>
           Als dit adres bij ons bekend is, ontvang je binnen een minuut een mail met instructies.
         </div>
@@ -28,7 +28,7 @@ export default function WachtwoordVergetenPage() {
             <input type="email" name="email" required autoComplete="email" className={styles.input} />
           </label>
 
-          {state.error && <p className={styles.error}>{state.error}</p>}
+          {state?.error && <p className={styles.error}>{state.error}</p>}
 
           <button type="submit" disabled={pending} className={styles.submit}>
             {pending ? 'Versturen…' : 'Verstuur reset-link'}

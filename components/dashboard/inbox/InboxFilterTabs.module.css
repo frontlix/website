@@ -1,0 +1,27 @@
+/* Compacte variant van .dash-tab-bar / .dash-tab — specifiek voor de
+   smalle inbox-sidebar. Verkleint padding, font en de count-badge zodat
+   alle 4 tabs (Alles · Ongelezen · Actie · Bot) op één regel passen.
+
+   Werkt door .dash-tab-bar / .dash-tab classes te selecteren BINNEN
+   onze wrapper — dat overschrijft de globale styling alleen hier. */
+
+.compact :global(.dash-tab-bar) {
+  gap: 0;
+  padding: 0;
+}
+
+.compact :global(.dash-tab) {
+  padding: 8px 8px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.compact :global(.dash-tab-count) {
+  font-size: 10px;
+  padding: 0 5px;
+  min-width: 14px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

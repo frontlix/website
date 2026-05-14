@@ -441,6 +441,13 @@
   padding: 0 4px;
   margin-bottom: 16px;
   overflow-x: auto;
+  /* Verberg horizontale scrollbar visueel — voorkomt een lelijke "balk" onder
+     de tabs wanneer ze niet allemaal passen (bv. smalle inbox-sidebar).
+     Scrollen blijft functioneel werken. */
+  scrollbar-width: none; /* Firefox */
+}
+.dash-tab-bar::-webkit-scrollbar {
+  display: none; /* WebKit (Chrome / Safari) */
 }
 .dash-tab {
   display: inline-flex;
@@ -453,6 +460,9 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
+  /* Trek 1px naar onder zodat de 2px active-onderlijn precies over de 1px
+     border-bottom van de bar valt — voorkomt een dubbele-streep-effect. */
+  margin-bottom: -1px;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;

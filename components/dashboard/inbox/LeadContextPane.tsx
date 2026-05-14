@@ -37,8 +37,9 @@ export function LeadContextPane({ lead }: { lead: InboxLeadContext }) {
     .filter(Boolean)
     .join(', ')
 
-  const dienstenLabel = lead.sub_diensten.length > 0
-    ? lead.sub_diensten.map(humanizeDienst).join(' + ')
+  const subDiensten = lead.sub_diensten ?? []
+  const dienstenLabel = subDiensten.length > 0
+    ? subDiensten.map(humanizeDienst).join(' + ')
     : humanize(lead.hoofdcategorie)
 
   return (

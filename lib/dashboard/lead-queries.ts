@@ -292,7 +292,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
   events.push({
     id: `lead-${detail.lead.lead_id}`,
     type: 'lead_aangemaakt',
-    timestamp: detail.lead.aangemaakt,
+    timestamp: detail.lead.aangemaakt ?? '',
     label: 'Lead aangemaakt',
     details: detail.lead.bron ? `Bron: ${detail.lead.bron}` : null,
   })
@@ -303,7 +303,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `msg-${b.id}`,
       type: isIn ? 'bericht_in' : 'bericht_uit',
-      timestamp: b.timestamp,
+      timestamp: b.timestamp ?? '',
       label: isIn ? 'Klant stuurde bericht' : 'Bot stuurde bericht',
       details: b.bericht ?? (b.type !== 'tekst' ? `[${b.type}]` : null),
     })
@@ -314,7 +314,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `foto-${f.id}`,
       type: 'foto_geupload',
-      timestamp: f.aangemaakt,
+      timestamp: f.aangemaakt ?? '',
       label: 'Foto ontvangen',
       details: f.bron === 'formulier' ? 'via formulier' : 'via WhatsApp',
     })
@@ -325,7 +325,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     events.push({
       id: `offerte-${o.id}`,
       type: 'offerte_verstuurd',
-      timestamp: o.aangemaakt_op,
+      timestamp: o.aangemaakt_op ?? '',
       label: `Offerte v${o.versie} verstuurd`,
       details: `€ ${o.totaal_incl.toFixed(2)} incl.`,
     })

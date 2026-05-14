@@ -2,10 +2,12 @@
   padding: 16px;
 }
 
-/* 8 kolommen: time-label (60px) + 7 gelijke dag-kolommen. */
+/* 8 kolommen: time-label (60px) + 7 gelijke dag-kolommen.
+   23 rijen: 1 header + 22 halfuur-rijen (11 uur × 2). */
 .grid {
   display: grid;
   grid-template-columns: 60px repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto repeat(22, 22px);
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
@@ -15,8 +17,6 @@
 
 .cell {
   background: var(--bg);
-  min-height: 36px;
-  padding: 4px 6px;
   position: relative;
 }
 
@@ -32,6 +32,9 @@
 .head.today {
   background: rgba(26, 86, 255, 0.05);
 }
+.cornerHead {
+  background: var(--card-bg);
+}
 
 .weekday {
   font-size: 11px;
@@ -46,61 +49,70 @@
   letter-spacing: -0.02em;
   color: var(--fg);
 }
+.today .dayNum {
+  color: var(--primary);
+}
 
 .timeLabel {
   font-size: 11px;
   color: var(--fg-muted);
-  text-align: center;
-  padding-top: 8px;
+  text-align: right;
+  padding: 0 8px;
   background: var(--card-bg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 4px;
 }
 
 .todayCol {
   background: rgba(26, 86, 255, 0.03);
 }
 
-/* ── Event-blok in een cel ─────────────────────────────── */
+/* ── Event-blok ─────────────────────────────
+   Event = grid-item dat de cellen onder zich overlapt via grid-row span.
+   z-index 1 om de track-cellen onder de event te laten doorlopen. */
 .event {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 5px 8px;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
   border-radius: 6px;
-  margin-bottom: 2px;
+  margin: 1px 2px;
   text-decoration: none;
   color: white;
   font-size: 11px;
-  line-height: 1.2;
+  line-height: 1.25;
   transition: filter 0.15s, transform 0.15s;
+  z-index: 1;
+  overflow: hidden;
 }
 .event:hover {
   filter: brightness(1.05);
   transform: translateX(1px);
 }
 
-.eventBlue  { background: linear-gradient(135deg, #1a56ff, #00cfff); }
-.eventGreen { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.eventAmber { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.event_blue   { background: linear-gradient(135deg, #1a56ff, #00cfff); }
+.event_green  { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.event_amber  { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.event_red    { background: linear-gradient(135deg, #dc2626, #ef4444); }
 
 .eventName {
-  font-weight: 600;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .eventTime {
   font-size: 10px;
-  opacity: 0.9;
+  opacity: 0.92;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 1024px) {
-  /* Op kleine schermen verbergen we de uur-rijen iets compacter */
   .grid {
     grid-template-columns: 48px repeat(7, minmax(0, 1fr));
-  }
-  .cell {
-    padding: 3px 4px;
-    min-height: 32px;
   }
 }
