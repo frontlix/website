@@ -8,6 +8,7 @@ import {
 } from '@/components/dashboard/instellingen/SettingsNav'
 import { AccountSection } from '@/components/dashboard/instellingen/AccountSection'
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
+import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -111,6 +112,7 @@ export default async function InstellingenPage({
             Bedrijf · Prijzen · Diensten · Openingsbericht · Reminders · Team
           </div>
         </div>
+        <BotRefreshButton />
       </div>
 
       <div className={styles.layout}>

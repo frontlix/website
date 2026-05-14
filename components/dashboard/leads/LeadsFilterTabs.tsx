@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-type FilterKey = 'all' | 'in_gesprek' | 'review' | 'offerte_uit' | 'ingepland' | 'afgerond'
+type FilterKey = 'all' | 'in_gesprek' | 'review' | 'offerte_uit' | 'ingepland' | 'afgerond' | 'archief'
 
 const TABS: ReadonlyArray<{ key: FilterKey; label: string }> = [
   { key: 'all',         label: 'Alles' },
@@ -12,6 +12,7 @@ const TABS: ReadonlyArray<{ key: FilterKey; label: string }> = [
   { key: 'offerte_uit', label: 'Offerte uit' },
   { key: 'ingepland',   label: 'Ingepland' },
   { key: 'afgerond',    label: 'Afgerond' },
+  { key: 'archief',     label: 'Archief' },
 ]
 
 export function LeadsFilterTabs({ counts }: { counts: Record<FilterKey, number> }) {

@@ -3,19 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ExternalLink, Plus } from 'lucide-react'
-import type { Offerte, Prijsregel } from '@/lib/dashboard/database.types'
+import type { Offerte, Prijsregel, Lead } from '@/lib/dashboard/database.types'
 import { formatEuro, formatDateNL } from '@/lib/dashboard/format'
 import { OfferteCreateForm } from './OfferteCreateForm'
+import { ApproveQuoteButton } from '@/components/dashboard/bot-actions/ApproveQuoteButton'
+import { ModifyQuoteForm } from '@/components/dashboard/bot-actions/ModifyQuoteForm'
 import styles from './LeadOfferte.module.css'
 
 export function LeadOfferte({
   leadId,
   offertes,
   prijsregels,
+  lead,
 }: {
   leadId: string
   offertes: Offerte[]
   prijsregels: Prijsregel[]
+  lead: Lead
 }) {
   const router = useRouter()
   const [showForm, setShowForm] = useState(offertes.length === 0)
@@ -33,14 +37,18 @@ export function LeadOfferte({
       <div className={styles.headerRow}>
         <h3 className={styles.heading}>Offerte</h3>
         {heeftOfferte && !showForm && (
-          <button
-            type="button"
-            onClick={() => setShowForm(true)}
-            className={styles.newVersionBtn}
-          >
-            <Plus size={13} />
-            Nieuwe versie
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <ApproveQuoteButton leadId={leadId} versie={huidige.versie} />
+            <ModifyQuoteForm lead={lead} />
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className={styles.newVersionBtn}
+            >
+              <Plus size={13} />
+              Nieuwe versie
+            </button>
+          </div>
         )}
       </div>
 

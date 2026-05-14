@@ -1,0 +1,299 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Map card ───────────────────────────────────────────── */
+.mapCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+.mapHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.mapTitle {
+  font: 700 14px/1.2 var(--font-heading);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.mapSub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.tab:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+.tabActive {
+  background: var(--bg);
+  color: var(--fg);
+  border-color: var(--fg);
+}
+.tabDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+}
+
+.mapBox {
+  aspect-ratio: 1.5 / 1;
+  position: relative;
+  background: var(--card-bg);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom basis-pin: zwart label met witte tekst. */
+.basisPin {
+  background: #1a1a1a;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  position: relative;
+  transform: translateY(-2px);
+}
+.basisPin::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #1a1a1a;
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.dayList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+}
+
+.empty {
+  padding: 20px 8px;
+  font-size: 12px;
+  color: var(--fg-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.dayBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.dayBlock:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dayHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dayLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.dayStats {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.dayLoading {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.dayStops {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.stop:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+}
+
+.stopPin {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.stopBody {
+  flex: 1;
+  min-width: 0;
+}
+.stopName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stopMeta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Tip card ───────────────────────────────────────────── */
+.tipCard {
+  margin-top: 16px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.06), rgba(0, 207, 255, 0.06));
+}
+.tipHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.tipBody {
+  font-size: 12px;
+  color: var(--fg);
+  line-height: 1.5;
+}
+
+/* ── Mode-toggle (Enkel / Retour) onderaan dagindeling ────── */
+.modeToggleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.modeToggleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modeToggle {
+  display: inline-flex;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 2px;
+}
+
+.modeBtn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.modeBtn:hover {
+  color: var(--fg);
+}
+.modeBtnActive {
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}

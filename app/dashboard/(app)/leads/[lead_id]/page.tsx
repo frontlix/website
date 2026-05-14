@@ -71,6 +71,7 @@ export default async function LeadDetailPage({
                   leadId={lead.lead_id}
                   offertes={detail.offertes}
                   prijsregels={detail.prijsregels}
+                  lead={lead}
                 />
                 <LeadAfspraak lead={lead} />
               </div>
@@ -86,6 +87,7 @@ export default async function LeadDetailPage({
                 <LeadDangerZone
                   leadId={lead.lead_id}
                   archived={lead.dashboard_archived}
+                  klusGeblokkeerd={lead.klus_geblokkeerd}
                 />
               </div>
             }
@@ -101,6 +103,7 @@ export default async function LeadDetailPage({
             leadId={lead.lead_id}
             leadNaam={lead.naam}
             berichten={detail.berichten}
+            botPaused={lead.bot_gepauzeerd}
           />
         </div>
       </div>

@@ -75,6 +75,14 @@ export default async function InboxPage({
     )
   }
 
+  // Behoud filter + search wanneer een gesprek wordt aangeklikt — anders
+  // klapt de URL terug naar /inbox?lead=... en verliest de gebruiker de
+  // actieve filter-tab (bv. Actie of Ongelezen).
+  const preservedParams = new URLSearchParams()
+  if (sp.filter && sp.filter !== 'all') preservedParams.set('filter', sp.filter)
+  if (sp.q) preservedParams.set('q', sp.q)
+  const preservedQuery = preservedParams.toString()
+
   return (
     <div className={styles.fullBleed}>
       {/* Live-subscription: refresht inbox-lijst zodra een nieuw bericht binnenkomt */}
@@ -101,6 +109,7 @@ export default async function InboxPage({
           <ConversationsList
             conversations={conversations}
             selectedLeadId={selectedLeadId}
+            preservedQuery={preservedQuery}
           />
         </aside>
 
@@ -140,7 +149,7 @@ export default async function InboxPage({
               <div className={styles.threadScroll}>
                 <LeadConversation berichten={messages} />
               </div>
-              <WhatsAppComposer />
+              <WhatsAppComposer leadId={selectedLeadId} botPaused={leadContext.botGepauzeerd} />
             </>
           ) : (
             <div className={styles.threadEmpty}>

@@ -170,6 +170,7 @@ export type InboxLeadContext = Pick<
   | 'aangemaakt'
 > & {
   fotosCount: number
+  botGepauzeerd: boolean
 }
 
 /**
@@ -183,7 +184,7 @@ export async function getInboxLeadContext(leadId: string): Promise<InboxLeadCont
   const leadQuery: any = supabase
     .from('leads')
     .select(
-      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, aangemaakt',
+      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, aangemaakt, bot_gepauzeerd',
     )
     .eq('lead_id', leadId)
     .maybeSingle()
@@ -202,8 +203,12 @@ export async function getInboxLeadContext(leadId: string): Promise<InboxLeadCont
     return null
   }
   if (!leadData) return null
+  const raw = leadData as Omit<InboxLeadContext, 'fotosCount' | 'botGepauzeerd'> & {
+    bot_gepauzeerd?: boolean | null
+  }
   return {
-    ...(leadData as Omit<InboxLeadContext, 'fotosCount'>),
+    ...raw,
     fotosCount: fotosCount ?? 0,
+    botGepauzeerd: Boolean(raw.bot_gepauzeerd),
   }
 }

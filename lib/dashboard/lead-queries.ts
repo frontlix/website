@@ -80,7 +80,8 @@ const LIST_COLUMNS = [
  * dan filteren. Acceptabel binnen de .limit(100) hierboven.
  */
 export async function getLeadsList(
-  filters?: LeadsFilters
+  filters?: LeadsFilters,
+  options: { archived?: boolean } = {},
 ): Promise<LeadListItem[]> {
   const supabase = await getDashboardSupabase()
 
@@ -113,7 +114,7 @@ export async function getLeadsList(
   let query: any = supabase
     .from('leads')
     .select(LIST_COLUMNS)
-    .eq('dashboard_archived', false)
+    .eq('dashboard_archived', options.archived === true)
 
   if (filters?.q) {
     // PostgREST `.or(...)` interpreteert komma's als clausule-scheider en

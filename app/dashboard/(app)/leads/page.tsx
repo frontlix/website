@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { FileText, Filter, Plus } from 'lucide-react'
 import { getLeadsList, countAllLeads, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
@@ -10,7 +11,7 @@ import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
-type FilterKey = 'all' | 'in_gesprek' | 'review' | 'offerte_uit' | 'ingepland' | 'afgerond'
+type FilterKey = 'all' | 'in_gesprek' | 'review' | 'offerte_uit' | 'ingepland' | 'afgerond' | 'archief'
 
 function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
   switch (key) {
@@ -29,6 +30,10 @@ function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
       )
     case 'afgerond':
       return lead.dashboard_status === 'afgehandeld'
+    case 'archief':
+      // Archief-leads worden via een aparte query opgehaald, dus matcht alles wat
+      // door de query heen komt (al gefilterd op dashboard_archived=true).
+      return true
   }
 }
 
@@ -38,20 +43,40 @@ export default async function LeadsPage({
   searchParams: Promise<{ filter?: string; q?: string; view?: string }>
 }) {
   const sp = await searchParams
+
   const activeFilter = (
-    ['all', 'in_gesprek', 'review', 'offerte_uit', 'ingepland', 'afgerond'].includes(
+    ['all', 'in_gesprek', 'review', 'offerte_uit', 'ingepland', 'afgerond', 'archief'].includes(
       sp.filter ?? '',
     )
       ? sp.filter
       : 'all'
   ) as FilterKey
-  const view = (['pipeline', 'tabel', 'kaarten'].includes(sp.view ?? '')
-    ? sp.view
-    : 'pipeline') as 'pipeline' | 'tabel' | 'kaarten'
+
+  // View-resolutie: expliciete `?view=` wint, anders fallback op de
+  // `leads_view` cookie (geschreven door LeadsViewSwitcher). We doen GEEN
+  // redirect: dat zou een extra round-trip toevoegen waardoor je een
+  // korte flash van de pipeline-view ziet (Next router-cache toont eerst
+  // de oude RSC voor /leads voordat de redirect doorzet). Door direct te
+  // renderen vanaf de cookie is er één request en geen flash.
+  let view: 'pipeline' | 'tabel' | 'kaarten' = 'pipeline'
+  if (sp.view === 'pipeline' || sp.view === 'tabel' || sp.view === 'kaarten') {
+    view = sp.view
+  } else {
+    const cookieStore = await cookies()
+    const stored = cookieStore.get('leads_view')?.value
+    if (stored === 'tabel' || stored === 'kaarten' || stored === 'pipeline') {
+      view = stored
+    }
+  }
+
   const search = (sp.q ?? '').trim().toLowerCase()
 
-  const [allLeads, total] = await Promise.all([
+  // Voor de archief-tab vragen we een aparte query op (dashboard_archived=true);
+  // anders zou matchesFilter('archief') altijd 0 leads tonen want de standaard
+  // query filtert die juist weg.
+  const [allLeads, archivedLeads, total] = await Promise.all([
     getLeadsList(),
+    getLeadsList(undefined, { archived: true }),
     countAllLeads(),
   ])
 
@@ -64,10 +89,14 @@ export default async function LeadsPage({
     offerte_uit: allLeads.filter((l) => matchesFilter(l, 'offerte_uit')).length,
     ingepland:   allLeads.filter((l) => matchesFilter(l, 'ingepland')).length,
     afgerond:    allLeads.filter((l) => matchesFilter(l, 'afgerond')).length,
+    archief:     archivedLeads.length,
   }
 
+  // Bron-lijst: voor archief gebruiken we de aparte set, anders de standaard.
+  const sourceLeads = activeFilter === 'archief' ? archivedLeads : allLeads
+
   // Eerst filter, dan search — beide cumulatief.
-  let displayed = allLeads.filter((l) => matchesFilter(l, activeFilter))
+  let displayed = sourceLeads.filter((l) => matchesFilter(l, activeFilter))
   if (search) {
     displayed = displayed.filter((l) => {
       const adres = [l.straat, l.huisnummer, l.postcode, l.plaats]

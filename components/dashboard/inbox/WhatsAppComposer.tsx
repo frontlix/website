@@ -1,61 +1,104 @@
 'use client'
 
-import { Paperclip, Send } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { Send, AlertCircle } from 'lucide-react'
 import styles from './WhatsAppComposer.module.css'
 
 /**
- * Composer onderaan de WhatsApp-pane. Default-state: bot doet het werk,
- * dus de input is disabled met een uitleg-placeholder. Als de owner de
- * bot pauzeert (via de "Bot actief — pauzeren"-pill bovenaan) wordt de
- * `botPaused` prop true en mag de owner zelf typen.
+ * Composer onderaan de WhatsApp-pane. Wanneer de owner `bot_gepauzeerd=true`
+ * zet (via de Bot pauzeren-knop) wordt `botPaused` true en mag de owner zelf
+ * typen. POST naar /api/dashboard/lead/[id]/send-message → Surface verstuurt
+ * via Meta WhatsApp Business API.
  *
- * Versturen-functionaliteit is voorlopig stub — de daadwerkelijke
- * outgoing-WhatsApp call gaat via een bot-API endpoint dat nog gebouwd
- * moet worden. Voor nu logt 'ie alleen + cleared het veld.
+ * Meta WhatsApp heeft een 24u-window-regel: vrije tekst kan alleen binnen 24u
+ * na de laatste klant-boodschap. Server-side wordt dit gecheckt en bij gesloten
+ * venster komt er een duidelijke foutmelding terug die we hier prominent tonen.
  */
-export function WhatsAppComposer({ botPaused = false }: { botPaused?: boolean }) {
+export function WhatsAppComposer({
+  leadId,
+  botPaused = false,
+}: {
+  leadId?: string
+  botPaused?: boolean
+}) {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+
   const placeholder = botPaused
     ? 'Typ een bericht…'
     : 'Surface antwoordt automatisch. Pauzeer om zelf te reageren.'
 
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!botPaused || !leadId) return
+    const bericht = draft.trim()
+    if (!bericht) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/dashboard/lead/${leadId}/send-message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bericht }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || data?.ok === false) {
+          setError(typeof data?.error === 'string' ? data.error : `HTTP ${res.status}`)
+          return
+        }
+        setDraft('')
+        router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Netwerkfout.')
+      }
+    })
+  }
+
   return (
-    <form
-      className={styles.composer}
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (!botPaused) return
-        const input = e.currentTarget.elements.namedItem('msg') as HTMLInputElement | null
-        if (!input?.value.trim()) return
-        // TODO: koppel aan /api/dashboard/lead/[id]/send-message
-        input.value = ''
-      }}
-    >
-      <button
-        type="button"
-        className={styles.attachBtn}
-        disabled={!botPaused}
-        aria-label="Bijlage toevoegen"
-      >
-        <Paperclip size={18} />
-      </button>
+    <>
+      {error && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 8,
+            padding: '10px 14px',
+            margin: 0,
+            background: 'rgba(255, 60, 60, 0.08)',
+            borderTop: '1px solid rgba(255, 60, 60, 0.2)',
+            color: '#c33',
+            fontSize: 'var(--text-xs)',
+            lineHeight: 1.4,
+          }}
+        >
+          <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>{error}</span>
+        </div>
+      )}
+      <form className={styles.composer} onSubmit={onSubmit}>
+        <input
+          type="text"
+          name="msg"
+          className={styles.input}
+          placeholder={placeholder}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={!botPaused || pending}
+          autoComplete="off"
+        />
 
-      <input
-        type="text"
-        name="msg"
-        className={styles.input}
-        placeholder={placeholder}
-        disabled={!botPaused}
-        autoComplete="off"
-      />
-
-      <button
-        type="submit"
-        className={styles.sendBtn}
-        disabled={!botPaused}
-        aria-label="Versturen"
-      >
-        <Send size={16} />
-      </button>
-    </form>
+        <button
+          type="submit"
+          className={styles.sendBtn}
+          disabled={!botPaused || pending || !draft.trim()}
+          aria-label="Versturen"
+        >
+          <Send size={16} />
+        </button>
+      </form>
+    </>
   )
 }

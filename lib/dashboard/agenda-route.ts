@@ -26,6 +26,9 @@ export type RouteStop = {
   tijd: string
   dagKey: string
   pinIndex: number
+  /** Echte WGS84-coordinaten (uit `leads.lat`/`lng`). Null als nog niet gegeocodeerd. */
+  lat: number | null
+  lng: number | null
   /** Coordinaten binnen 0–100 viewBox van de schematische NL-kaart. */
   x: number
   y: number
@@ -125,6 +128,8 @@ export function buildRouteDays(appointments: Appointment[]): RouteDay[] {
         tijd: a.afspraak_geboekt_op ? formatHHmm(a.afspraak_geboekt_op) : '',
         dagKey: dayKey,
         pinIndex: dayIdx + 1,
+        lat: a.lat ?? null,
+        lng: a.lng ?? null,
         x: clamp(region.x + jitter(`${a.lead_id}x`, 4), 10, 90),
         y: clamp(region.y + jitter(`${a.lead_id}y`, 4), 10, 90),
       }

@@ -16,9 +16,16 @@ import styles from './ConversationsList.module.css'
 export function ConversationsList({
   conversations,
   selectedLeadId,
+  preservedQuery = '',
 }: {
   conversations: ConversationPreview[]
   selectedLeadId: string | null
+  /**
+   * URL-query-string (zonder ?) die behouden moet blijven wanneer de
+   * gebruiker een gesprek aanklikt — bv. "filter=action&q=jansen".
+   * Zonder dit zou een klik de actieve filter-tab resetten naar Alles.
+   */
+  preservedQuery?: string
 }) {
   if (conversations.length === 0) {
     return (
@@ -31,12 +38,18 @@ export function ConversationsList({
     )
   }
 
+  const buildHref = (leadId: string) => {
+    const params = new URLSearchParams(preservedQuery)
+    params.set('lead', leadId)
+    return `/inbox?${params.toString()}`
+  }
+
   return (
     <div className={styles.list}>
       {conversations.map((c) => (
         <Link
           key={c.leadId}
-          href={`/inbox?lead=${c.leadId}`}
+          href={buildHref(c.leadId)}
           className={`${styles.item} ${selectedLeadId === c.leadId ? styles.itemActive : ''}`}
         >
           <Avatar name={c.naam} size="md" />

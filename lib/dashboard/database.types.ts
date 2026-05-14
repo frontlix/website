@@ -307,7 +307,9 @@ export type Database = {
           beschermlaag_m2: number | null
           beschermlaag_vraag_gesteld: boolean
           bijgewerkt: string | null
+          bot_gepauzeerd: boolean
           bron: string | null
+          coords_geocoded_op: string | null
           dashboard_archived: boolean
           dashboard_status: string | null
           eigenaar_overgenomen: boolean
@@ -331,12 +333,15 @@ export type Database = {
           hoofdcategorie: string
           huisnummer: string
           id: string
+          inbox_gelezen_op: string | null
           invegen_m2: number | null
           klus_geblokkeerd: boolean
           korstmos: string | null
           korting_omschrijving: string | null
           korting_percentage: number | null
+          lat: number | null
           lead_id: string
+          lng: number | null
           m2: number | null
           m2_bevestigd: boolean
           naam: string
@@ -394,7 +399,9 @@ export type Database = {
           beschermlaag_m2?: number | null
           beschermlaag_vraag_gesteld?: boolean
           bijgewerkt?: string | null
+          bot_gepauzeerd?: boolean
           bron?: string | null
+          coords_geocoded_op?: string | null
           dashboard_archived?: boolean
           dashboard_status?: string | null
           eigenaar_overgenomen?: boolean
@@ -418,12 +425,15 @@ export type Database = {
           hoofdcategorie: string
           huisnummer: string
           id?: string
+          inbox_gelezen_op?: string | null
           invegen_m2?: number | null
           klus_geblokkeerd?: boolean
           korstmos?: string | null
           korting_omschrijving?: string | null
           korting_percentage?: number | null
+          lat?: number | null
           lead_id: string
+          lng?: number | null
           m2?: number | null
           m2_bevestigd?: boolean
           naam: string
@@ -481,7 +491,9 @@ export type Database = {
           beschermlaag_m2?: number | null
           beschermlaag_vraag_gesteld?: boolean
           bijgewerkt?: string | null
+          bot_gepauzeerd?: boolean
           bron?: string | null
+          coords_geocoded_op?: string | null
           dashboard_archived?: boolean
           dashboard_status?: string | null
           eigenaar_overgenomen?: boolean
@@ -505,12 +517,15 @@ export type Database = {
           hoofdcategorie?: string
           huisnummer?: string
           id?: string
+          inbox_gelezen_op?: string | null
           invegen_m2?: number | null
           klus_geblokkeerd?: boolean
           korstmos?: string | null
           korting_omschrijving?: string | null
           korting_percentage?: number | null
+          lat?: number | null
           lead_id?: string
+          lng?: number | null
           m2?: number | null
           m2_bevestigd?: boolean
           naam?: string

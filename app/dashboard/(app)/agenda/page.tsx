@@ -1,8 +1,17 @@
 import Link from 'next/link'
-import { Calendar, MapPin, Plus } from 'lucide-react'
+import { Calendar, CalendarDays, MapPin, Plus } from 'lucide-react'
+import {
+  parseMonthParam,
+  getMonthGrid,
+  buildAppointmentsByDay,
+} from '@/lib/dashboard/calendar'
 import { parseWeekParam, shiftWeekKey } from '@/lib/dashboard/agenda-week'
-import { getAppointmentsForRange } from '@/lib/dashboard/agenda-queries'
+import {
+  getAppointmentsForMonth,
+  getAppointmentsForRange,
+} from '@/lib/dashboard/agenda-queries'
 import { AgendaWeekGrid } from '@/components/dashboard/agenda/AgendaWeekGrid'
+import { AgendaCalendar } from '@/components/dashboard/agenda/AgendaCalendar'
 import {
   AgendaUpcomingList,
   AgendaFollowupList,
@@ -12,7 +21,11 @@ import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
-type ViewMode = 'week' | 'routekaart'
+type ViewMode = 'week' | 'maand' | 'routekaart'
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, '0')
+}
 
 export default async function AgendaPage({
   searchParams,
@@ -20,13 +33,16 @@ export default async function AgendaPage({
   searchParams: Promise<{ [k: string]: string | string[] | undefined }>
 }) {
   const sp = await searchParams
-  const view: ViewMode = sp.view === 'routekaart' ? 'routekaart' : 'week'
+  const view: ViewMode =
+    sp.view === 'maand'
+      ? 'maand'
+      : sp.view === 'routekaart'
+        ? 'routekaart'
+        : 'week'
 
-  return view === 'week' ? (
-    <WeekView sp={sp} />
-  ) : (
-    <RouteView sp={sp} />
-  )
+  if (view === 'maand') return <MonthView sp={sp} />
+  if (view === 'routekaart') return <RouteView sp={sp} />
+  return <WeekView sp={sp} />
 }
 
 /* ── Week-view (primair) ─────────────────────────────── */
@@ -76,6 +92,52 @@ async function WeekView({
           <AgendaFollowupList />
         </div>
       </div>
+    </>
+  )
+}
+
+/* ── Maand-view (overzicht) ──────────────────────────── */
+async function MonthView({
+  sp,
+}: {
+  sp: { [k: string]: string | string[] | undefined }
+}) {
+  const ref = parseMonthParam(sp)
+  const grid = getMonthGrid(ref.year, ref.month)
+  const appointments = await getAppointmentsForMonth(ref.year, ref.month)
+  const byDay = buildAppointmentsByDay(
+    appointments as Array<typeof appointments[0] & { afspraak_geboekt_op: string }>,
+  )
+
+  const prevMonth = `/agenda?view=maand&month=${grid.prevMonth.year}-${pad2(grid.prevMonth.month)}`
+  const nextMonth = `/agenda?view=maand&month=${grid.nextMonth.year}-${pad2(grid.nextMonth.month)}`
+
+  return (
+    <>
+      <div className="dash-section-head">
+        <div>
+          <div className="dash-section-title">Agenda</div>
+          <div className="dash-section-sub">{grid.monthLabel}</div>
+        </div>
+        <div className={styles.actions}>
+          <ViewToggle current="maand" />
+          <Link href={prevMonth} className="dash-btn dash-btn-secondary">
+            ←
+          </Link>
+          <Link href="/agenda?view=maand" className="dash-btn dash-btn-secondary">
+            <Calendar size={13} />
+            Vandaag
+          </Link>
+          <Link href={nextMonth} className="dash-btn dash-btn-secondary">
+            →
+          </Link>
+        </div>
+      </div>
+
+      <AgendaCalendar
+        cells={grid.cells}
+        appointmentsByDay={byDay as Map<string, typeof appointments>}
+      />
     </>
   )
 }
@@ -140,7 +202,7 @@ async function RouteView({
   )
 }
 
-/* ── View toggle: Week / Routekaart ─────────────────── */
+/* ── View toggle: Week / Maand / Routekaart ─────────── */
 function ViewToggle({ current }: { current: ViewMode }) {
   return (
     <div className="dash-seg">
@@ -149,6 +211,12 @@ function ViewToggle({ current }: { current: ViewMode }) {
         className={`dash-seg-btn ${current === 'week' ? 'active' : ''}`}
       >
         <Calendar size={13} /> Week
+      </Link>
+      <Link
+        href="/agenda?view=maand"
+        className={`dash-seg-btn ${current === 'maand' ? 'active' : ''}`}
+      >
+        <CalendarDays size={13} /> Maand
       </Link>
       <Link
         href="/agenda?view=routekaart"
