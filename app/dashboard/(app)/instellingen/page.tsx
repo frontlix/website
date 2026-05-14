@@ -10,9 +10,11 @@ import { AccountSection } from '@/components/dashboard/instellingen/AccountSecti
 import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
 import { ServiceOfferingToggle } from '@/components/dashboard/instellingen/ServiceOfferingToggle'
+import { TagsManager } from '@/components/dashboard/instellingen/TagsManager'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
+import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -78,7 +80,7 @@ export default async function InstellingenPage({
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
-  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw] = await Promise.all([
+  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select(
@@ -105,6 +107,7 @@ export default async function InstellingenPage({
           .eq('tenant_status', 'approved')
       : Promise.resolve({ data: [] }),
     section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
+    section === 'tags' ? getTagsWithCounts() : Promise.resolve([] as TagWithCount[]),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
@@ -112,6 +115,7 @@ export default async function InstellingenPage({
   const services = (servicesRaw.data as ServiceOffering[] | null) ?? []
   const team = (teamRaw.data as TeamMember[] | null) ?? []
   const baseline = baselineRaw
+  const tags = tagsRaw as TagWithCount[]
 
   return (
     <>
@@ -131,7 +135,7 @@ export default async function InstellingenPage({
           {section === 'bedrijf' && <BedrijfSection tenant={tenant} />}
           {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baseline} />}
           {section === 'diensten' && <DienstenSection services={services} />}
-          {section === 'tags' && <TagsSection />}
+          {section === 'tags' && <TagsSection tags={tags} />}
           {section === 'opening' && <OpeningSection chatbot={tenant?.chatbot_naam ?? 'Surface'} />}
           {section === 'reminders' && <RemindersSection tenant={tenant} />}
           {section === 'notificaties' && <NotificatiesSection />}
@@ -254,21 +258,14 @@ function DienstenSection({ services }: { services: ServiceOffering[] }) {
 }
 
 /* ── TAGS ───────────────────────────────────────────────── */
-function TagsSection() {
+function TagsSection({ tags }: { tags: TagWithCount[] }) {
   return (
     <SectionCard
       title="Tags"
       sub="Categoriseer leads in je eigen woorden — gebruik in filters en zoekopdrachten"
+      readOnly={false}
     >
-      <div className={styles.tagsPlaceholder}>
-        <p>
-          Tags-beheer komt zodra de tags-tabel onder dashboard-RLS-policies
-          staat. Voor nu worden tags via Surface automatisch toegekend bij
-          detectie (zoals <Pill tone="amber">Korting</Pill>{' '}
-          <Pill tone="red">Buiten radius</Pill>{' '}
-          <Pill tone="green">Review</Pill>).
-        </p>
-      </div>
+      <TagsManager initialTags={tags} />
     </SectionCard>
   )
 }
