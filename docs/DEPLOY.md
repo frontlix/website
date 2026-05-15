@@ -77,10 +77,12 @@ Status: `pm2 list` · logs: `pm2 logs frontlix --lines 50`.
 - Commit + push naar `main` na een geslaagde build
 - De SSH-deploy-keten runnen (`git pull && npm run build && pm2 restart frontlix`)
 - Health-checks via `curl`
+- Env-vars in `/var/www/frontlix/.env.local` aanvullen via SSH (append-only, met backup — zie sectie [Env-vars](#env-vars))
 
 **NIET mogen**:
 - ❌ Database-migraties direct draaien op productie. Migraties (`supabase/migrations-frontlix/*.sql`) draait de eigenaar zelf via Supabase Studio.
-- ❌ Env-vars (`.env.local`) schrijven of wijzigen via SSH — de eigenaar doet dit handmatig
+- ❌ Bestaande env-var-waarden in `.env.local` stilletjes overschrijven (alleen na expliciete bevestiging van de eigenaar)
+- ❌ Secret-waarden uit `.env.local` in chat-output of logs teruggeven (lezen voor transport mag, weergeven niet)
 - ❌ `--no-verify` op git-commits gebruiken (skipt pre-commit hooks)
 - ❌ `node_modules/` of `.next/` committen
 - ❌ Force-push naar `main` (`git push --force`) zonder expliciete toestemming
@@ -91,7 +93,24 @@ Status: `pm2 list` · logs: `pm2 logs frontlix --lines 50`.
 
 ## Env-vars
 
-Hele lijst van env-var-namen staat in [CLAUDE.md](../CLAUDE.md#environment-variables). Productie-`.env.local` zit op de VPS — agents lezen de waarden niet en wijzigen niets aan dit bestand. Vraagt de eigenaar om aan te vullen wanneer er nieuwe env-vars nodig zijn (bv. `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` voor de routekaart-feature).
+Hele lijst van env-var-namen staat in [CLAUDE.md](../CLAUDE.md#environment-variables). Productie-`.env.local` zit op de VPS op `/var/www/frontlix/.env.local`.
+
+**Agents mogen ontbrekende env-vars aanvullen via SSH**, mits volgens deze regels:
+
+1. **Backup vóór elke edit** — altijd eerst kopiëren naar timestamped bestand:
+   ```bash
+   cp /var/www/frontlix/.env.local /var/www/frontlix/.env.local.bak.$(date +%Y%m%d-%H%M%S)
+   ```
+2. **Append-only voor nieuwe vars** — checken of de var al bestaat vóór appenden:
+   ```bash
+   grep -E "^VAR_NAAM=" /var/www/frontlix/.env.local && echo "EXISTS - stop" || echo "OK - append"
+   ```
+3. **Bestaande waarden wijzigen vereist expliciete user-bevestiging** — nooit stilletjes overschrijven.
+4. **Nooit secret-values in chat outputten** — agents lezen de waarde lokaal en transporteren via SSH, maar tonen 'm niet in respons.
+5. **Verifieer na de edit** — exact één regel per var:
+   ```bash
+   grep -c "^VAR_NAAM=" /var/www/frontlix/.env.local   # → moet 1 zijn
+   ```
 
 **`NEXT_PUBLIC_*` vars worden in de JS-bundle gebakken bij `npm run build`** — een `pm2 restart` zonder rebuild laadt nieuwe `NEXT_PUBLIC_` waarden niet. Altijd builden na het wijzigen van zo'n var.
 
