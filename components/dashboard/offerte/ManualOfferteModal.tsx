@@ -128,7 +128,13 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
 
   const valid: Record<1 | 2 | 3, boolean> = {
-    1: Boolean(data.naam.trim()) && Boolean(data.telefoon.trim()),
+    // Telefoon + e-mail zijn beide verplicht (alleen aanwezigheid — een
+    // ongeldig-maar-bewust-gebruikt nummer/adres blokkeren we niet, dat
+    // is alleen een soft warning onder het veld in StepKlant).
+    1:
+      Boolean(data.naam.trim()) &&
+      Boolean(data.telefoon.trim()) &&
+      Boolean(data.email.trim()),
     2: data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }

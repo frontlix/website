@@ -6,13 +6,33 @@ import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
 
+// NL-mobiel: na het strippen van spaties/streepjes/punten/haakjes moet
+// het nummer beginnen met 06/+316/00316 gevolgd door 8 cijfers. We tonen
+// de waarschuwing alleen — de eigenaar kan een afwijkend nummer (vaste
+// lijn, buitenland) gewoon doorgebruiken.
+function isValidNLMobile(raw: string): boolean {
+  const cleaned = raw.replace(/[\s\-().]/g, '')
+  return /^(?:06|\+316|00316)\d{8}$/.test(cleaned)
+}
+
+// Praktische email-check — niet RFC-compleet, wel genoeg om typfouten
+// als "jan@gmail" of "jan.gmail.com" te vangen.
+function isValidEmail(raw: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim())
+}
+
 export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }) {
+  const phoneFilled = data.telefoon.trim().length > 0
+  const emailFilled = data.email.trim().length > 0
+  const phoneWarning = phoneFilled && !isValidNLMobile(data.telefoon)
+  const emailWarning = emailFilled && !isValidEmail(data.email)
+
   return (
     <>
       <div>
         <div className={styles.sectionLabel}>Klantgegevens</div>
         <div className={styles.sectionSub}>
-          Telefoon is verplicht (om de offerte via WhatsApp te versturen). E-mail mag erbij voor de PDF.
+          Telefoon en e-mail zijn verplicht — telefoon om de offerte via WhatsApp te versturen, e-mail voor de PDF.
         </div>
       </div>
 
@@ -39,15 +59,23 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             value={data.telefoon}
             onChange={(e) => set('telefoon', e.target.value)}
             placeholder="06 - 12 34 56 78"
+            inputMode="tel"
           />
+          {phoneWarning && (
+            <div className={styles.warning}>Let op, geen geldig nummer</div>
+          )}
         </Field>
-        <Field label="E-mail">
+        <Field label="E-mail *">
           <input
             className={styles.input}
             value={data.email}
             onChange={(e) => set('email', e.target.value)}
             placeholder="jan@voorbeeld.nl"
+            inputMode="email"
           />
+          {emailWarning && (
+            <div className={styles.warning}>Let op, geen geldig e-mailadres</div>
+          )}
         </Field>
       </div>
 
