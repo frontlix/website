@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Sparkles } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import styles from './ManualOfferteModal.module.css'
 
@@ -89,14 +89,6 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
               placeholder="Delft"
             />
           </Field>
-          <Field label="Afstand (km)">
-            <input
-              className={`${styles.input} ${styles.numericInput}`}
-              type="number"
-              value={data.afstand_km}
-              onChange={(e) => set('afstand_km', Number(e.target.value))}
-            />
-          </Field>
         </div>
       </div>
 
@@ -177,10 +169,6 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
         )}
       </div>
 
-      <div className={styles.tip}>
-        <Sparkles size={13} style={{ color: 'var(--primary)', verticalAlign: '-2px', marginRight: 6 }} />
-        Tip: vul je tijd op het werk-adres bij <strong>“Afstand”</strong> in km vanaf Biervliet, dan rekent Surface automatisch de reiskosten boven 50km mee.
-      </div>
     </>
   )
 }

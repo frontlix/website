@@ -16,6 +16,7 @@ import {
 } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
 import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-actions'
+import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import { StepKlant } from './StepKlant'
@@ -76,6 +77,24 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       cancelled = true
     }
   }, [])
+
+  // Auto-bereken afstand_km zodra postcode + huisnummer geldig zijn.
+  // 400ms debounce zodat we postcode.tech niet hameren terwijl de user
+  // nog typt. Faalt stil — bij geen geocode-hit blijft de vorige waarde
+  // (of DEFAULTS.afstand_km) staan zodat de offerte-regels blijven werken.
+  useEffect(() => {
+    const pc = data.postcode.trim()
+    const hn = data.huisnummer.trim()
+    if (!pc || !hn) return
+    const t = setTimeout(() => {
+      getAutoAfstandKm(pc, hn).then((res) => {
+        if (res.ok) {
+          setData((prev) => ({ ...prev, afstand_km: res.km }))
+        }
+      })
+    }, 400)
+    return () => clearTimeout(t)
+  }, [data.postcode, data.huisnummer])
 
   // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
   // (voegzand_m2_per_zak), met 5 als laatste vangnet.
