@@ -31,8 +31,56 @@ const SYSTEM_TAG_NAMES = new Set([
   'Review',
 ])
 
+/** Vaste seed-volgorde voor systeem-tags (matched design-layout). */
+const SYSTEM_TAG_SEED = [
+  'Particulier',
+  'Zakelijk',
+  'Korting',
+  'Buiten radius',
+  'Review',
+] as const
+
+/**
+ * Self-healing: zorgt dat alle systeem-tags als rij in `tags` staan.
+ * Idempotent — als ze al bestaan, no-op. Hierdoor verschijnt de Tags-pagina
+ * voor nieuwe tenants meteen gevuld zoals het design (i.p.v. lege staat).
+ *
+ * Race condition: 2 gelijktijdige page-loads kunnen beide proberen te inserten.
+ * Aangezien er geen UNIQUE constraint op `tags.naam` is, kan dat in theorie
+ * duplicates geven — same trade-off als `createTag` al accepteert. In de
+ * praktijk is dit zeldzaam (1 user, page-loads typisch sequentieel).
+ */
+async function ensureSystemTagsExist(
+  supabase: Awaited<ReturnType<typeof getDashboardSupabase>>,
+): Promise<void> {
+  const { data: existing, error: selErr } = await supabase
+    .from('tags')
+    .select('naam')
+    .in('naam', SYSTEM_TAG_SEED as unknown as string[])
+
+  if (selErr) {
+    console.error('[ensureSystemTagsExist] select failed:', selErr)
+    return
+  }
+
+  const existingNames = new Set((existing ?? []).map((r) => r.naam))
+  const missing = SYSTEM_TAG_SEED.filter((n) => !existingNames.has(n))
+  if (missing.length === 0) return
+
+  const { error: insErr } = await supabase
+    .from('tags')
+    .insert(missing.map((naam) => ({ naam, kleur: null })))
+
+  if (insErr) {
+    // Niet hard falen — getTagsWithCounts levert daarna gewoon de bestaande tags.
+    console.error('[ensureSystemTagsExist] insert failed:', insErr)
+  }
+}
+
 export async function getTagsWithCounts(): Promise<TagWithCount[]> {
   const supabase = await getDashboardSupabase()
+  await ensureSystemTagsExist(supabase)
+
   const [tagsRes, linksRes] = await Promise.all([
     supabase
       .from('tags')
