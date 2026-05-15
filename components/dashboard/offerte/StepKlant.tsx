@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Check } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import styles from './ManualOfferteModal.module.css'
@@ -22,10 +23,15 @@ function isValidEmail(raw: string): boolean {
 }
 
 export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }) {
+  // Pas waarschuwingen tonen als de user het veld heeft verlaten —
+  // anders flikkert "geen geldig nummer" al bij de eerste toets.
+  const [phoneTouched, setPhoneTouched] = useState(false)
+  const [emailTouched, setEmailTouched] = useState(false)
+
   const phoneFilled = data.telefoon.trim().length > 0
   const emailFilled = data.email.trim().length > 0
-  const phoneWarning = phoneFilled && !isValidNLMobile(data.telefoon)
-  const emailWarning = emailFilled && !isValidEmail(data.email)
+  const phoneWarning = phoneTouched && phoneFilled && !isValidNLMobile(data.telefoon)
+  const emailWarning = emailTouched && emailFilled && !isValidEmail(data.email)
 
   return (
     <>
@@ -58,6 +64,7 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             className={styles.input}
             value={data.telefoon}
             onChange={(e) => set('telefoon', e.target.value)}
+            onBlur={() => setPhoneTouched(true)}
             placeholder="06 - 12 34 56 78"
             inputMode="tel"
           />
@@ -70,6 +77,7 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             className={styles.input}
             value={data.email}
             onChange={(e) => set('email', e.target.value)}
+            onBlur={() => setEmailTouched(true)}
             placeholder="jan@voorbeeld.nl"
             inputMode="email"
           />
