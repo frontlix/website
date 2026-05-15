@@ -12,3 +12,4 @@ lead-automation/.env
 
 # Supabase CLI cache
 supabase/.temp/
+.claude/settings.local.json

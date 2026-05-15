@@ -6,6 +6,8 @@ import { periodToRange } from '@/lib/dashboard/period'
 import {
   countLeads,
   countConverted,
+  countOffertesVerstuurd,
+  countAkkoordIn,
   avgOfferteWaarde,
   avgReactietijdMs,
   leadsPerDag,
@@ -24,6 +26,7 @@ import {
 } from '@/components/dashboard/overzicht/LiveActivityFeed'
 import { TrendRangeToggle } from '@/components/dashboard/overzicht/TrendRangeToggle'
 import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
+import { SurfaceDailySummary } from '@/components/dashboard/overzicht/SurfaceDailySummary'
 import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import styles from './page.module.css'
 
@@ -50,6 +53,15 @@ export default async function OverzichtPage({
   const now = new Date()
   const week = periodToRange('deze-week', now)
   const maand = periodToRange('deze-maand', now)
+  // "Vandaag" = sinds middernacht Europe/Amsterdam — handgemaakt omdat
+  // periodToRange geen 'vandaag' kent.
+  const vandaagStart = (() => {
+    const y = now.getUTCFullYear()
+    const m = now.getUTCMonth()
+    const d = now.getUTCDate()
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  })()
+  const vandaag = { from: vandaagStart, to: now.toISOString() }
 
   const [
     nieuweLeadsWeek,
@@ -61,6 +73,9 @@ export default async function OverzichtPage({
     appts,
     allLeads,
     tenantRaw,
+    leadsVandaag,
+    offertesWeek,
+    akkoordWeek,
   ] = await Promise.all([
     countLeads(week),
     countLeads(maand),
@@ -75,6 +90,9 @@ export default async function OverzichtPage({
       .select('chatbot_naam')
       .limit(1)
       .maybeSingle(),
+    countLeads(vandaag),
+    countOffertesVerstuurd(week),
+    countAkkoordIn(week),
   ])
 
   const tenant = tenantRaw.data as { chatbot_naam: string | null } | null
@@ -188,6 +206,19 @@ export default async function OverzichtPage({
           </Link>
         </div>
       </div>
+
+      <SurfaceDailySummary
+        greeting={greeting}
+        voornaam={voornaam}
+        chatbotName={chatbotName}
+        stats={{
+          leadsVandaag,
+          offertesWeek,
+          akkoordWeek,
+          omzetMaand: Math.round(omzetMaand),
+          gemTicket: Math.round(gemTicket),
+        }}
+      />
 
       <div className="dash-kpi-grid" style={{ marginBottom: 20 }}>
         <KpiCard

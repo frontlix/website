@@ -1,0 +1,136 @@
+/* ── Banner kaartje ──────────────────────────────────────────────── */
+.banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: 18px 22px;
+  background:
+    linear-gradient(135deg, rgba(26, 86, 255, 0.04), rgba(0, 207, 255, 0.04)),
+    var(--card-bg, #fff);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Subtiele gekleurde rand-accent links — verbindt visueel met de iconbadge */
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, #1A56FF 0%, #00CFFF 100%);
+}
+
+/* ── Icon-badge linksboven ──────────────────────────────────────── */
+.iconBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
+  box-shadow: 0 4px 12px rgba(26, 86, 255, 0.25);
+  flex-shrink: 0;
+}
+
+/* ── Body ────────────────────────────────────────────────────────── */
+.body {
+  min-width: 0;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.kickerText {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--primary, #1A56FF);
+}
+
+.kickerTime {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  font: 700 18px/1.25 var(--font-heading);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  margin: 0 0 6px 0;
+}
+
+.text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-soft);
+  margin: 0 0 14px 0;
+  max-width: 720px;
+}
+
+/* ── Actions: primaire CTA + ghost "Hoe weet ...?" ──────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
+  border: none;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(26, 86, 255, 0.25);
+  transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.cta:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 6px 16px rgba(26, 86, 255, 0.3);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .banner {
+    padding: 16px;
+    gap: 12px;
+  }
+  .iconBadge {
+    width: 34px;
+    height: 34px;
+  }
+  .title {
+    font-size: 16px;
+  }
+  .text {
+    font-size: 13px;
+  }
+  .kickerText {
+    /* op smal scherm de begroet-prefix verkorten, anders breekt 't */
+    font-size: 10.5px;
+  }
+}

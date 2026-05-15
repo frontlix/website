@@ -22,6 +22,51 @@ export async function countLeads(period: StatsPeriod): Promise<number> {
 }
 
 /**
+ * Aantal leads dat in de periode een offerte verstuurd kreeg
+ * (offerte_verstuurd_op valt binnen het venster).
+ */
+export async function countOffertesVerstuurd(period: StatsPeriod): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .not('offerte_verstuurd_op', 'is', null)
+  if (period.from) {
+    query = query.gte('offerte_verstuurd_op', period.from)
+  }
+  const { count, error } = await query
+  if (error) {
+    console.error('[countOffertesVerstuurd] failed:', error)
+    return 0
+  }
+  return count ?? 0
+}
+
+/**
+ * Aantal leads dat in de periode akkoord gaf (akkoord_op binnen venster).
+ * Verschil met countConverted: dit teller-paar gebruikt akkoord_op-timestamp
+ * i.p.v. aangemaakt — handig voor "vandaag/week" snapshots.
+ */
+export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .not('akkoord_op', 'is', null)
+  if (period.from) {
+    query = query.gte('akkoord_op', period.from)
+  }
+  const { count, error } = await query
+  if (error) {
+    console.error('[countAkkoordIn] failed:', error)
+    return 0
+  }
+  return count ?? 0
+}
+
+/**
  * Aantal "geconverteerde" leads in de periode — leads met akkoord_op of
  * afspraak_geboekt_op gevuld.
  */
