@@ -2,35 +2,32 @@
 
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
+import { isValidIcon, isValidColor } from './tag-presets'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
-export type CreateTagResult =
-  | {
-      ok: true
-      tag: {
-        id: string
-        naam: string
-        kleur: string | null
-        aangemaakt_op: string
-      }
-    }
-  | { ok: false; error: string }
+export type TagRow = {
+  id: string
+  naam: string
+  kleur: string | null
+  icon: string | null
+  aangemaakt_op: string
+}
+
+export type CreateTagResult = { ok: true; tag: TagRow } | { ok: false; error: string }
 
 const MAX_NAAM = 32
 
 /**
- * Maak een nieuwe tag aan. Faalt als de naam leeg/te lang is, of als
- * een tag met dezelfde naam (case-insensitive) al bestaat — anders krijg je
- * dubbele tags in de UI.
- *
- * Retourneert de aangemaakte row (incl. echte id) zodat de UI 'm meteen
- * met de juiste id in state kan zetten — anders crashed een directe
- * verwijder-actie op een tijdelijke client-side id.
+ * Maak een nieuwe tag aan met optionele kleur + icoon. Faalt bij lege/te
+ * lange naam, of als een tag met dezelfde naam (case-insensitive) al
+ * bestaat. Retourneert de volledige row (incl. uuid) zodat de UI 'm
+ * direct kan tonen met de echte id.
  */
 export async function createTag(input: {
   naam: string
   kleur?: string | null
+  icon?: string | null
 }): Promise<CreateTagResult> {
   const naam = input.naam.trim()
   if (!naam) return { ok: false, error: 'Naam is verplicht.' }
@@ -38,10 +35,14 @@ export async function createTag(input: {
     return { ok: false, error: `Naam mag max ${MAX_NAAM} tekens zijn.` }
   }
 
+  // Optionele kleur/icoon valideren tegen de preset-lijsten.
+  const kleur = normalizeKleur(input.kleur)
+  if (kleur === 'INVALID') return { ok: false, error: 'Ongeldige kleur.' }
+  const icon = normalizeIcon(input.icon)
+  if (icon === 'INVALID') return { ok: false, error: 'Ongeldig icoon.' }
+
   const supabase = await getDashboardSupabase()
 
-  // Duplicate-check (case-insensitive). Done client-side query om duidelijke
-  // foutmelding te kunnen tonen i.p.v. ruwe DB-constraint-error.
   const { data: existing } = await supabase
     .from('tags')
     .select('id, naam')
@@ -53,8 +54,8 @@ export async function createTag(input: {
 
   const { data: inserted, error } = await supabase
     .from('tags')
-    .insert({ naam, kleur: input.kleur ?? null })
-    .select('id, naam, kleur, aangemaakt_op')
+    .insert({ naam, kleur, icon })
+    .select('id, naam, kleur, icon, aangemaakt_op')
     .single()
 
   if (error || !inserted) {
@@ -67,13 +68,73 @@ export async function createTag(input: {
 }
 
 /**
- * Verwijder een tag. Geen onderscheid meer tussen system- en user-tags —
- * alles is verwijderbaar. Cascade via FK regelt opruiming van `lead_tags`.
- *
- * Let op: system-tags (Particulier, Zakelijk, etc.) worden automatisch
- * opnieuw aangemaakt zodra de tags-pagina geladen wordt (zie
- * `ensureSystemTagsExist` in tags-queries.ts) — wil je een definitieve
- * verwijdering, schakel die seed dan ook uit.
+ * Update naam / kleur / icoon van een bestaande tag. Velden die niet
+ * in `input` zitten blijven ongewijzigd. Naam-duplicate-check skip't de
+ * tag zelf om geen valse positive te krijgen.
+ */
+export async function updateTag(input: {
+  id: string
+  naam?: string
+  kleur?: string | null
+  icon?: string | null
+}): Promise<ActionResult> {
+  if (!input.id) return { ok: false, error: 'Ongeldige tag-id.' }
+
+  const patch: { naam?: string; kleur?: string | null; icon?: string | null } = {}
+
+  if (input.naam !== undefined) {
+    const naam = input.naam.trim()
+    if (!naam) return { ok: false, error: 'Naam is verplicht.' }
+    if (naam.length > MAX_NAAM) {
+      return { ok: false, error: `Naam mag max ${MAX_NAAM} tekens zijn.` }
+    }
+    patch.naam = naam
+  }
+
+  if (input.kleur !== undefined) {
+    const kleur = normalizeKleur(input.kleur)
+    if (kleur === 'INVALID') return { ok: false, error: 'Ongeldige kleur.' }
+    patch.kleur = kleur
+  }
+
+  if (input.icon !== undefined) {
+    const icon = normalizeIcon(input.icon)
+    if (icon === 'INVALID') return { ok: false, error: 'Ongeldig icoon.' }
+    patch.icon = icon
+  }
+
+  if (Object.keys(patch).length === 0) return { ok: true }
+
+  const supabase = await getDashboardSupabase()
+
+  // Naam-duplicate check (skip self).
+  if (patch.naam) {
+    const { data: clash } = await supabase
+      .from('tags')
+      .select('id')
+      .ilike('naam', patch.naam)
+      .neq('id', input.id)
+      .limit(1)
+    if (clash && clash.length > 0) {
+      return { ok: false, error: `Tag "${patch.naam}" bestaat al.` }
+    }
+  }
+
+  const { error } = await supabase.from('tags').update(patch).eq('id', input.id)
+  if (error) {
+    console.error('[updateTag] failed:', error)
+    return { ok: false, error: 'Opslaan mislukt — geen rechten?' }
+  }
+
+  revalidatePath('/instellingen')
+  return { ok: true }
+}
+
+/**
+ * Verwijder een tag. Alle tags zijn verwijderbaar (geen system-protectie).
+ * Systeem-tags worden bij refresh van de tags-pagina opnieuw aangemaakt
+ * via `ensureSystemTagsExist`. Cascade via FK regelt opruiming van
+ * `lead_tags`-rijen.
  */
 export async function deleteTag(tagId: string): Promise<ActionResult> {
   if (!tagId) return { ok: false, error: 'Ongeldige tag-id.' }
@@ -95,4 +156,27 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
 
   revalidatePath('/instellingen')
   return { ok: true }
+}
+
+/* ── Helpers ──────────────────────────────────────────── */
+
+/**
+ * Normaliseer een kleur-input naar:
+ *  - null (expliciete clear of geen waarde),
+ *  - de kleur-string zelf (geldige hex uit de preset-set, of vrij gegeven),
+ *  - 'INVALID' wanneer er een waarde is maar 'ie matched geen hex-regex.
+ *
+ * Vrije hex-waardes (buiten COLOR_OPTIONS) zijn toegestaan zolang ze
+ * geldig hex zijn — de UI kiest uit presets, maar database staat
+ * flexibiliteit toe.
+ */
+function normalizeKleur(value: string | null | undefined): string | null | 'INVALID' {
+  if (value === null || value === undefined || value === '') return null
+  return isValidColor(value) ? value : 'INVALID'
+}
+
+/** Idem voor icon — moet matchen met een key in ICON_OPTIONS. */
+function normalizeIcon(value: string | null | undefined): string | null | 'INVALID' {
+  if (value === null || value === undefined || value === '') return null
+  return isValidIcon(value) ? value : 'INVALID'
 }
