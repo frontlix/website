@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Sparkles, ArrowRight } from 'lucide-react'
-import { HoeWeetSurfaceDit } from './HoeWeetSurfaceDit'
 import styles from './SurfaceDailySummary.module.css'
 
 export type SurfaceSummaryStats = {
@@ -58,7 +57,6 @@ export function SurfaceDailySummary({
             Bekijk dagrapport
             <ArrowRight size={14} />
           </Link>
-          <HoeWeetSurfaceDit chatbotName={chatbotName} stats={stats} />
         </div>
       </div>
     </div>
