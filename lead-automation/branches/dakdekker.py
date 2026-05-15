@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from models.branches import BrancheConfig, BrancheField, PricingLine, PricingResult, CompanyInfo
+from models.branches import PricingLine, PricingResult
 from branches.base import parse_number, with_btw, round2
 
 
@@ -29,34 +29,3 @@ def dakdekker_pricing(answers: dict[str, str]) -> PricingResult:
 
     btw = with_btw(subtotaal)
     return PricingResult(lines=lines, **btw)
-
-
-dakdekker_config = BrancheConfig(
-    id="dakdekker",
-    label="Dakdekker",
-    agent_name="Bram",
-    personality="Bram is a no-nonsense roofer with 20 years of experience. Direct, friendly but blunt.",
-    company=CompanyInfo(
-        name="Dakwerken Holland B.V.",
-        address_lines=["Industrieweg 42", "3542 AD Utrecht", "Nederland"],
-        phone="+31 30 234 5678",
-        email="info@dakwerken-holland.nl",
-        website="www.dakwerken-holland.nl",
-        kvk="23456789",
-        btw="NL234567890B01",
-        iban="NL30 RABO 0123 4567 89",
-        contact_person="M. van Dijk",
-    ),
-    intro_offerte="Naar aanleiding van het voorgaande WhatsApp-gesprek ontvangt u hierbij ons voorstel voor de gewenste werkzaamheden aan uw dak.",
-    aanbod_beschrijving="Uitvoering van dakwerkzaamheden inclusief materiaal, arbeid, afvoer en afwerking.",
-    actie_kort="Dakwerk inplannen",
-    actie_lang="het dakwerk",
-    plaatsing_duur_min=480,
-    fields=[
-        BrancheField(key="type_werk", label="type werkzaamheden", example_question="Wat moet er gebeuren — dak vervangen, repareren of isoleren?", type="enum", enum_values=["vervangen", "repareren", "isoleren"]),
-        BrancheField(key="daktype", label="type dak", example_question="Is het een plat of schuin dak?", type="enum", enum_values=["plat", "schuin"]),
-        BrancheField(key="huidig_dakmateriaal", label="huidig dakmateriaal", example_question="Wat ligt er nu op het dak?", type="text"),
-        BrancheField(key="dakoppervlakte", label="dakoppervlakte in m²", example_question="Hoe groot is het dakvlak in m²?", type="number", unit="m²"),
-        BrancheField(key="isolatie", label="isolatie gewenst", example_question="Wil je het dak ook laten isoleren?", type="enum", enum_values=["ja", "nee"]),
-    ],
-)

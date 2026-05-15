@@ -1,11 +1,15 @@
-"""Demo start endpoint — called by the Next.js website form."""
+"""Demo start endpoint — called by the Next.js website form.
+
+Body unchanged: { "telefoon": "..." }. Behaviour unchanged. The actual lead
+creation + template send is delegated to services.lead_intake so the HMAC
+external-webhook (Pakket 4a) can reuse the same pipeline.
+"""
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from services.supabase import get_supabase
-from services.whatsapp import normalize_phone, send_demo_start_template
+from services.lead_intake import intake_lead, IntakeError, IntakePayload
 
 router = APIRouter()
 
@@ -16,37 +20,8 @@ class DemoStartRequest(BaseModel):
 
 @router.post("/demo/start")
 async def start_demo(req: DemoStartRequest):
-    """Create a new lead and send the WhatsApp demo template."""
-    phone = normalize_phone(req.telefoon)
-
-    # Check for existing active lead
-    existing = get_supabase().table("leads").select("id, status").eq("telefoon", phone).neq("status", "appointment_booked").limit(1).execute()
-    if existing.data:
-        raise HTTPException(status_code=409, detail="Er loopt al een demo voor dit nummer. Check je WhatsApp!")
-
-    # Max 5 demos per nummer
-    MAX_DEMOS = 5
-    all_leads = get_supabase().table("leads").select("id", count="exact").eq("telefoon", phone).execute()
-    if (all_leads.count or 0) >= MAX_DEMOS:
-        raise HTTPException(status_code=429, detail="Je hebt het maximaal aantal demo-pogingen bereikt voor dit nummer.")
-
-    # Create lead
-    result = get_supabase().table("leads").insert({
-        "telefoon": phone,
-        "status": "awaiting_choice",
-        "collected_data": {},
-        "photo_urls": [],
-        "photo_analyses": [],
-        "message_count": 0,
-    }).execute()
-
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Er ging iets mis bij het opslaan.")
-
-    # Send WhatsApp template
     try:
-        await send_demo_start_template(phone, "daar")
-    except Exception as e:
-        print(f"WhatsApp template failed: {e}")
-
+        await intake_lead(IntakePayload(telefoon=req.telefoon))
+    except IntakeError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
     return {"success": True}

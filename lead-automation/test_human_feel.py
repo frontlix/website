@@ -26,9 +26,31 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parent))
 
 from llm.reply import generate_reply, _determine_next_tag
-from llm.extraction import extract_data
+from llm.analyze import analyze_message
 from services.openai_client import get_openai
 from models.lead import ConversationMessage
+from branches.loader import hydrate_all
+
+# Mirror the webhook's intent-dispatcher behaviour locally so the simulation
+# matches production. See routes/webhook.py:_WORKAROUND_FIELDS for the source.
+_WORKAROUND_FIELDS = {
+    "zonnepanelen": {"jaarverbruik", "dakoppervlakte", "aansluiting"},
+    "dakdekker": {"dakoppervlakte", "huidig_dakmateriaal"},
+    "schoonmaak": {"oppervlakte"},
+}
+
+
+def _canonical_field(tag: str) -> str | None:
+    if not tag or tag in {"PHOTO_STEP", "COMPLETE", "email"}:
+        return None
+    if tag == "naam":
+        return "naam"
+    if tag.startswith("dakmateriaal_") or tag.startswith("huidig_dakmateriaal_"):
+        return tag.rsplit("_", 1)[0]
+    return tag
+
+# BRANCHES is leeg op import (Pakket 1) — hydrate eenmalig voor standalone runs.
+hydrate_all()
 
 
 WELCOME_MESSAGES = {
@@ -207,18 +229,46 @@ async def simulate(scenario: Scenario) -> dict:
 
         history.append(ConversationMessage(role="user", content=cust))
 
-        # Extract
+        # New analyzer pipeline: extract + intent + answered_current_question.
+        # Mirror the webhook's dispatcher so the simulation reflects production.
+        current_tag_before = _determine_next_tag(scenario.branche, identity, data, collected_data)
+        current_field = _canonical_field(current_tag_before)
         try:
-            extracted = await extract_data(scenario.branche, history, identity, data)
+            analysis = await analyze_message(scenario.branche, history, identity, data, current_tag_before)
         except Exception as e:
-            extracted = {}
+            analysis = None
 
-        if isinstance(extracted.get("naam"), str):
-            identity["naam"] = extracted["naam"]
-        if isinstance(extracted.get("email"), str):
-            identity["email"] = extracted["email"]
-        if isinstance(extracted.get("data"), dict):
-            data.update(extracted["data"])
+        workaround_set = _WORKAROUND_FIELDS.get(scenario.branche, set())
+        has_workaround = bool(current_field and current_field in workaround_set)
+        unsure_count = 0
+        apply_extracted = True
+        if analysis is not None:
+            if analysis.intent == "doesnt_know" and current_field and current_field in {f for f in data.keys()} | set(workaround_set) | {"jaarverbruik","dakoppervlakte","aansluiting","huidig_dakmateriaal","oppervlakte","daktype","dakmateriaal","orientatie","schaduw","type_werk","isolatie","type_pand","frequentie","ramen"}:
+                unsure_map = collected_data.setdefault("_unsure", {})
+                unsure_map[current_field] = int(unsure_map.get(current_field, 0)) + 1
+                unsure_count = unsure_map[current_field]
+                if unsure_count >= 2 or not has_workaround:
+                    skipped = collected_data.setdefault("_skipped", [])
+                    if current_field not in skipped:
+                        skipped.append(current_field)
+                if isinstance(analysis.extracted.get("data"), dict):
+                    analysis.extracted["data"].pop(current_field, None)
+            elif analysis.intent in {"price_question", "process_question", "off_topic",
+                                      "gibberish", "is_bot_question", "acknowledgement",
+                                      "not_recognized"}:
+                apply_extracted = False
+            elif analysis.intent == "will_provide_later" and current_field:
+                unsure_map = collected_data.setdefault("_unsure", {})
+                unsure_map[current_field] = int(unsure_map.get(current_field, 0)) + 1
+                unsure_count = unsure_map[current_field]
+
+            if apply_extracted:
+                if isinstance(analysis.extracted.get("naam"), str):
+                    identity["naam"] = analysis.extracted["naam"]
+                if isinstance(analysis.extracted.get("email"), str):
+                    identity["email"] = analysis.extracted["email"]
+                if isinstance(analysis.extracted.get("data"), dict):
+                    data.update(analysis.extracted["data"])
 
         # Simulate photo step: when NEXT would be PHOTO_STEP, auto-resolve based on scenario
         next_tag = _determine_next_tag(scenario.branche, identity, data, collected_data)
@@ -227,9 +277,14 @@ async def simulate(scenario: Scenario) -> dict:
             # After customer answers, mark done.
             pass
 
-        # Bot reply
+        # Bot reply — pass analysis so reply prompt picks the right intent branch
         try:
-            reply = await generate_reply(scenario.branche, history, identity, data, collected_data)
+            reply = await generate_reply(
+                scenario.branche, history, identity, data, collected_data,
+                analysis=analysis,
+                unsure_count=unsure_count,
+                has_workaround=has_workaround,
+            )
         except Exception as e:
             return {"scenario": scenario, "history": history, "status": f"bot_error: {e}"}
 

@@ -8,6 +8,7 @@ next-env.d.ts
 temporary screenshots/
 lead-automation/venv/
 lead-automation/.env
+lead-automation/test-feedback.jsonl
 .claude/scheduled_tasks.lock
 
 # Supabase CLI cache

@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Callable
 
 from models.branches import BrancheConfig, PricingResult
-from branches.zonnepanelen import zonnepanelen_config, zonnepanelen_pricing
-from branches.dakdekker import dakdekker_config, dakdekker_pricing
-from branches.schoonmaak import schoonmaak_config, schoonmaak_pricing
+from branches.zonnepanelen import zonnepanelen_pricing
+from branches.dakdekker import dakdekker_pricing
+from branches.schoonmaak import schoonmaak_pricing
 from branches.base import (
     get_missing_fields,
     get_effective_missing_fields,
@@ -21,11 +21,10 @@ from branches.base import (
 
 BrancheId = str  # "zonnepanelen" | "dakdekker" | "schoonmaak"
 
-BRANCHES: dict[str, BrancheConfig] = {
-    "zonnepanelen": zonnepanelen_config,
-    "dakdekker": dakdekker_config,
-    "schoonmaak": schoonmaak_config,
-}
+# BRANCHES start leeg en wordt expliciet gevuld door loader.hydrate_all()
+# in FastAPI's @app.on_event("startup"). Geen verborgen file/DB-I/O bij import.
+# Tests gebruiken een conftest fixture die hydrate_all() aanroept.
+BRANCHES: dict[str, BrancheConfig] = {}
 
 PRICING_FUNCS: dict[str, Callable[[dict[str, str]], PricingResult]] = {
     "zonnepanelen": zonnepanelen_pricing,
@@ -33,7 +32,9 @@ PRICING_FUNCS: dict[str, Callable[[dict[str, str]], PricingResult]] = {
     "schoonmaak": schoonmaak_pricing,
 }
 
-BRANCHE_IDS = list(BRANCHES.keys())
+# Hardcoded zodat callers BRANCHE_IDS kunnen lezen vóór hydrate_all() heeft gelopen
+# (bv. loader zelf moet dit weten om iterator-input te hebben).
+BRANCHE_IDS: list[str] = ["zonnepanelen", "dakdekker", "schoonmaak"]
 
 
 def get_branche(branche_id: str | None) -> BrancheConfig | None:
