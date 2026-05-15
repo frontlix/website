@@ -4,7 +4,7 @@
   gap: 16px;
 }
 
-/* ── Header: titel + bewerk-knop ────────────────────────── */
+/* ── Header: titel + hover-hint ─────────────────────────── */
 .head {
   display: flex;
   align-items: center;
@@ -21,28 +21,10 @@
   margin: 0;
 }
 
-.editBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--fg-soft);
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.editBtn:hover:not(:disabled) {
-  background: var(--card-hover-bg);
-  border-color: var(--card-hover-border);
-  color: var(--fg);
-}
-.editBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.hint {
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-style: italic;
 }
 
 /* ── Twee koloms layout: Klant | Werk ───────────────────── */
@@ -56,6 +38,9 @@
   .grid {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+  .hint {
+    display: none;
   }
 }
 
@@ -78,46 +63,7 @@
   margin: 0;
 }
 
-/* Elke rij: label links, value rechts (rechts-uitgelijnd) */
-.row {
-  display: grid;
-  grid-template-columns: minmax(110px, auto) 1fr;
-  align-items: baseline;
-  gap: 16px;
-  padding: 10px 0;
-  border-bottom: 1px dashed var(--border);
-}
-.row:last-child {
-  border-bottom: none;
-}
-
-.label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--fg-muted);
-  margin: 0;
-}
-
-.value {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg);
-  margin: 0;
-  text-align: right;
-  word-break: break-word;
-}
-
-.sub {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--fg-muted);
-}
-
-/* ── Optionele toelichting onderaan ─────────────────────── */
+/* ── Toelichting-blok onderaan ──────────────────────────── */
 .toelichting {
   padding: 14px 16px;
   background: var(--surface);
@@ -125,18 +71,134 @@
   border-radius: 10px;
   margin-top: 4px;
 }
+
+.toelichtingHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
 .toelichtingLabel {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fg-muted);
-  margin-bottom: 6px;
 }
+
+.toelichtingPencil {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.toelichting:hover .toelichtingPencil,
+.toelichtingPencil:focus-visible {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--fg-soft);
+}
+.toelichtingPencil:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--fg);
+}
+
 .toelichtingText {
   font-size: 13px;
   line-height: 1.5;
   color: var(--fg-soft);
   white-space: pre-wrap;
   margin: 0;
+}
+
+.toelichtingEmpty {
+  color: var(--fg-muted);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.toelichtingTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  font: 500 13px/1.5 var(--font-body);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.toelichtingTextarea:focus-visible {
+  border-color: var(--brand, #1A56FF);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+
+.toelichtingButtons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.toelichtingSave,
+.toelichtingCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, opacity 0.12s;
+}
+.toelichtingSave:disabled,
+.toelichtingCancel:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.toelichtingSave {
+  background: var(--brand, #1A56FF);
+  border: 1px solid var(--brand, #1A56FF);
+  color: #fff;
+}
+.toelichtingSave:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.toelichtingCancel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg-soft);
+}
+.toelichtingCancel:hover:not(:disabled) {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--fg);
+}
+
+.toelichtingError {
+  font-size: 12px;
+  color: #d33;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.spin {
+  animation: leadinfo-spin 0.7s linear infinite;
+}
+@keyframes leadinfo-spin {
+  to { transform: rotate(360deg); }
 }

@@ -15,6 +15,138 @@ const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
+// ── Lead-gegevens bewerken (info-tab) ────────────────────────────────
+//
+// Witte lijst van kolommen die via de "Bewerken"-flow vanuit de info-tab
+// gewijzigd mogen worden. Alle andere kolommen (status-flow, offerte-velden,
+// systeem-velden) blijven onbereikbaar — die hebben hun eigen actions.
+const EDITABLE_TEXT_FIELDS = new Set<string>([
+  'naam',
+  'bedrijfsnaam',
+  'telefoon',
+  'email',
+  'straat',
+  'huisnummer',
+  'postcode',
+  'plaats',
+  'bron',
+  'hoofdcategorie',
+  'zand_kleur',
+  'groene_aanslag',
+  'planten',
+  'planten_afschermen',
+  'toelichting',
+])
+const EDITABLE_NUMERIC_FIELDS = new Set<string>(['afstand_km', 'm2'])
+const EDITABLE_ARRAY_FIELDS = new Set<string>(['sub_diensten'])
+
+export type LeadEditPatch = Partial<{
+  naam: string
+  bedrijfsnaam: string | null
+  telefoon: string
+  email: string
+  straat: string | null
+  huisnummer: string
+  postcode: string
+  plaats: string | null
+  bron: string | null
+  hoofdcategorie: string
+  zand_kleur: string | null
+  groene_aanslag: string | null
+  planten: string | null
+  planten_afschermen: string | null
+  toelichting: string | null
+  afstand_km: number | null
+  m2: number | null
+  sub_diensten: string[] | null
+}>
+
+/**
+ * Werkt één of meerdere kolommen van een lead bij. Wordt gebruikt door de
+ * inline-edit op de info-tab. Valideert dat alleen toegestane kolommen
+ * worden meegegeven (whitelist hierboven) — dit voorkomt dat een aangepaste
+ * client per ongeluk status/offerte-velden kan overschrijven.
+ */
+export async function updateLeadFields(
+  leadId: string,
+  patch: LeadEditPatch
+): Promise<ActionResult> {
+  const keys = Object.keys(patch)
+  if (keys.length === 0) {
+    return { ok: false, error: 'Geen wijzigingen' }
+  }
+
+  // Whitelist-check
+  for (const k of keys) {
+    if (
+      !EDITABLE_TEXT_FIELDS.has(k) &&
+      !EDITABLE_NUMERIC_FIELDS.has(k) &&
+      !EDITABLE_ARRAY_FIELDS.has(k)
+    ) {
+      return { ok: false, error: `Kolom "${k}" mag niet bewerkt worden` }
+    }
+  }
+
+  // Lichte type-validatie + leeg → null waar de DB nullable is
+  const cleaned: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(patch)) {
+    if (EDITABLE_NUMERIC_FIELDS.has(k)) {
+      if (v === null || v === '' || v === undefined) {
+        cleaned[k] = null
+      } else if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
+        cleaned[k] = v
+      } else {
+        return { ok: false, error: `Veld "${k}" moet een positief getal zijn` }
+      }
+      continue
+    }
+    if (EDITABLE_ARRAY_FIELDS.has(k)) {
+      if (v === null || v === undefined) {
+        cleaned[k] = null
+      } else if (Array.isArray(v) && v.every((x) => typeof x === 'string')) {
+        cleaned[k] = v
+      } else {
+        return { ok: false, error: `Veld "${k}" moet een lijst van strings zijn` }
+      }
+      continue
+    }
+    // Tekst-velden
+    if (v === null || v === undefined) {
+      cleaned[k] = null
+    } else if (typeof v === 'string') {
+      const trimmed = v.trim()
+      cleaned[k] = trimmed === '' ? null : trimmed
+    } else {
+      return { ok: false, error: `Veld "${k}" moet tekst zijn` }
+    }
+  }
+
+  // Extra: e-mail moet er minimaal als e-mail uitzien
+  if (typeof cleaned.email === 'string' && !cleaned.email.includes('@')) {
+    return { ok: false, error: 'E-mailadres ziet er ongeldig uit' }
+  }
+  // Verplichte velden mogen niet leeggemaakt worden
+  for (const required of ['naam', 'telefoon', 'email', 'huisnummer', 'postcode', 'hoofdcategorie']) {
+    if (required in cleaned && cleaned[required] === null) {
+      return { ok: false, error: `Veld "${required}" is verplicht` }
+    }
+  }
+
+  const supabase = await getDashboardSupabase()
+  const { error } = await supabase
+    .from('leads')
+    .update(cleaned)
+    .eq('lead_id', leadId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath(`/leads/${leadId}`)
+  revalidatePath('/leads')
+  return { ok: true }
+}
+
 /**
  * Wijzigt leads.dashboard_status. De BEFORE/AFTER UPDATE trigger
  * (migratie 025) logt automatisch naar lead_status_history.
