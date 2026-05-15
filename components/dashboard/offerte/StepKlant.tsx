@@ -51,28 +51,12 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
         </Field>
       </div>
 
-      {/* Werk-adres */}
+      {/* Werk-adres — postcode + huisnummer eerst zodat de auto-fill
+          (straat, plaats, afstand) zich aankondigt voordat de user
+          die velden zelf zou invullen. */}
       <div>
         <div className={styles.kicker}>Werk-adres</div>
-        <div className={styles.grid21} style={{ marginBottom: 12 }}>
-          <Field label="Straat">
-            <input
-              className={styles.input}
-              value={data.straat}
-              onChange={(e) => set('straat', e.target.value)}
-              placeholder="Bv. Beeklaan"
-            />
-          </Field>
-          <Field label="Huisnummer">
-            <input
-              className={styles.input}
-              value={data.huisnummer}
-              onChange={(e) => set('huisnummer', e.target.value)}
-              placeholder="14"
-            />
-          </Field>
-        </div>
-        <div className={styles.gridAddr}>
+        <div className={styles.gridAddr} style={{ marginBottom: 12 }}>
           <Field label="Postcode">
             <input
               className={styles.input}
@@ -81,12 +65,12 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
               placeholder="2611 GH"
             />
           </Field>
-          <Field label="Plaats">
+          <Field label="Huisnummer">
             <input
               className={styles.input}
-              value={data.plaats}
-              onChange={(e) => set('plaats', e.target.value)}
-              placeholder="Delft"
+              value={data.huisnummer}
+              onChange={(e) => set('huisnummer', e.target.value)}
+              placeholder="14"
             />
           </Field>
           {/* Afstand wordt automatisch berekend op basis van postcode +
@@ -100,6 +84,24 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
               readOnly
               tabIndex={-1}
               aria-label="Automatisch berekende afstand in km"
+            />
+          </Field>
+        </div>
+        <div className={styles.grid21}>
+          <Field label="Straat">
+            <input
+              className={styles.input}
+              value={data.straat}
+              onChange={(e) => set('straat', e.target.value)}
+              placeholder="Bv. Beeklaan"
+            />
+          </Field>
+          <Field label="Plaats">
+            <input
+              className={styles.input}
+              value={data.plaats}
+              onChange={(e) => set('plaats', e.target.value)}
+              placeholder="Delft"
             />
           </Field>
         </div>
