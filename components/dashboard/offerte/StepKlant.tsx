@@ -7,13 +7,26 @@ import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
 
-// NL-mobiel: na het strippen van spaties/streepjes/punten/haakjes moet
-// het nummer beginnen met 06/+316/00316 gevolgd door 8 cijfers. We tonen
-// de waarschuwing alleen — de eigenaar kan een afwijkend nummer (vaste
-// lijn, buitenland) gewoon doorgebruiken.
+// NL-mobiel-validatie (soft — alleen voor de waarschuwing onder het
+// veld). Stappen:
+//   1) Spaties/streepjes/punten/haakjes strippen.
+//   2) +316 / 00316 normaliseren naar 06.
+//   3) Format 06 + 8 cijfers, waarbij het 3e cijfer in {1,2,3,4,5,8}
+//      moet zitten — dat zijn de mobile-ranges die ACM aan operators
+//      heeft uitgegeven (061-065 en 068). Daarmee valt o.a. 0600000000
+//      af (06 0xxxxxxx is geen mobiel).
+//   4) De 8 cijfers na 06 mogen niet allemaal hetzelfde zijn
+//      (vangt 0611111111, 0622222222 etc.).
+// De eigenaar kan een afwijkend nummer (vaste lijn, buitenland) gewoon
+// doorgebruiken — dit is enkel een soft warning.
 function isValidNLMobile(raw: string): boolean {
-  const cleaned = raw.replace(/[\s\-().]/g, '')
-  return /^(?:06|\+316|00316)\d{8}$/.test(cleaned)
+  let cleaned = raw.replace(/[\s\-().]/g, '')
+  if (cleaned.startsWith('+316')) cleaned = '06' + cleaned.slice(4)
+  else if (cleaned.startsWith('00316')) cleaned = '06' + cleaned.slice(5)
+  if (!/^06[1-58]\d{7}$/.test(cleaned)) return false
+  const last8 = cleaned.slice(2)
+  if (/^(\d)\1{7}$/.test(last8)) return false
+  return true
 }
 
 // Praktische email-check — niet RFC-compleet, wel genoeg om typfouten
