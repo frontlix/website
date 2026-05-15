@@ -1,0 +1,65 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titleText {
+  font: 700 16px/1.2 var(--font-heading);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.titleSep {
+  color: var(--fg-muted);
+  opacity: 0.6;
+}
+
+.titleTime {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg-soft);
+  background: var(--bg, #fff);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.closeBtn:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--fg);
+}
+
+.feedWrap {
+  /* LiveActivityFeed gebruikt zijn eigen .dash-card styling; we geven
+     'm hier alleen de full-width container zodat hij het hele veld
+     pakt in plaats van een rechter-kolom. */
+  width: 100%;
+}

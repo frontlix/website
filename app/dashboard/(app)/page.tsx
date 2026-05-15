@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Plus } from 'lucide-react'
+import { FileText, Plus, Eye } from 'lucide-react'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import {
@@ -36,6 +36,7 @@ import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
 import { SurfaceDailySummary } from '@/components/dashboard/overzicht/SurfaceDailySummary'
 import { KpiModule, parseKpiKey } from '@/components/dashboard/overzicht/KpiModule'
 import { KPI_DOELEN, type KpiKey, type KpiMetric } from '@/components/dashboard/overzicht/kpi-types'
+import { LiveActivityFocus } from '@/components/dashboard/overzicht/LiveActivityFocus'
 import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import styles from './page.module.css'
 
@@ -47,7 +48,7 @@ const RANGE_DAYS: Record<TrendRange, number> = { '7d': 7, '28d': 28, '90d': 90 }
 export default async function OverzichtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trend?: string; kpi?: string }>
+  searchParams: Promise<{ trend?: string; kpi?: string; focus?: string }>
 }) {
   const { user } = await requireApprovedUser()
   const supabase = await getDashboardSupabase()
@@ -59,6 +60,7 @@ export default async function OverzichtPage({
   const trendRange: TrendRange = sp.trend === '7d' || sp.trend === '90d' ? sp.trend : '28d'
   const trendDays = RANGE_DAYS[trendRange]
   const activeKpi: KpiKey = parseKpiKey(sp.kpi)
+  const focusMode = sp.focus === 'live'
 
   const now = new Date()
   const week = periodToRange('deze-week', now)
@@ -271,6 +273,13 @@ export default async function OverzichtPage({
   // V1 server-rendered op page load; realtime-subscriptie staat op de roadmap.
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
+  // ── Focus-modus: alleen Live activiteit in beeld ────────────────
+  // Wordt geactiveerd via "?focus=live" (oog-knop rechtsboven). Geeft een
+  // standalone view terug zodat de rest van het dashboard niet rendert.
+  if (focusMode) {
+    return <LiveActivityFocus chatbotName={chatbotName} items={activityItems} />
+  }
+
   return (
     <>
       <div className="dash-section-head">
@@ -287,6 +296,15 @@ export default async function OverzichtPage({
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <Link
+            href="/dashboard?focus=live"
+            className="dash-btn dash-btn-secondary"
+            scroll={false}
+            title="Focus-modus: alleen Live activiteit"
+            aria-label="Focus-modus openen"
+          >
+            <Eye size={14} />
+          </Link>
           <a
             href="/api/dashboard/export/leads-csv"
             className="dash-btn dash-btn-secondary"
