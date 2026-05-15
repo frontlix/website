@@ -21,41 +21,60 @@ export type RecentMessage = {
 const LOOKBACK_DAYS = 7
 const FETCH_LIMIT = 20
 
+/**
+ * Implementatie: 2-staps query (zelfde pattern als `inbox-queries.ts`):
+ *  1. Laatste N inkomende berichten ophalen
+ *  2. Lead-namen voor die lead_ids erbij ophalen
+ *  3. Samenstellen
+ *
+ * Reden voor 2 stappen i.p.v. een PostgREST relation-join: nergens anders
+ * in deze codebase wordt zo'n join op `berichten` gedaan, dus we vertrouwen
+ * niet op de relation-resolution om verrassingen te voorkomen.
+ */
 export async function getRecentInboundMessages(): Promise<RecentMessage[]> {
   const supabase = await getDashboardSupabase()
   const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 3600_000).toISOString()
 
-  // Join naar leads voor de naam; alleen klant-berichten (richting='inkomend').
-  const { data, error } = await supabase
+  const { data: msgs, error: msgErr } = await supabase
     .from('berichten')
-    .select('id, lead_id, timestamp, leads:lead_id(naam)')
+    .select('id, lead_id, timestamp')
     .eq('richting', 'inkomend')
     .gte('timestamp', since)
     .order('timestamp', { ascending: false })
     .limit(FETCH_LIMIT)
 
-  if (error) {
-    console.error('[getRecentInboundMessages] failed:', error)
+  if (msgErr) {
+    console.error('[getRecentInboundMessages] berichten failed:', msgErr)
     return []
   }
 
-  type Row = {
-    id: string
-    lead_id: string
-    timestamp: string | null
-    leads: { naam: string | null } | { naam: string | null }[] | null
+  type Msg = { id: string; lead_id: string; timestamp: string | null }
+  const messages = (msgs as Msg[] | null) ?? []
+  if (messages.length === 0) return []
+
+  const leadIds = Array.from(new Set(messages.map((m) => m.lead_id)))
+  const { data: leadsData, error: leadErr } = await supabase
+    .from('leads')
+    .select('lead_id, naam')
+    .in('lead_id', leadIds)
+
+  if (leadErr) {
+    console.error('[getRecentInboundMessages] leads failed:', leadErr)
+    return []
   }
 
-  return ((data ?? []) as Row[])
-    .map((r) => {
-      // Supabase typegen levert de relation soms als array, soms als object.
-      const leadObj = Array.isArray(r.leads) ? r.leads[0] : r.leads
-      return {
-        id: r.id,
-        lead_id: r.lead_id,
-        naam: leadObj?.naam ?? 'Onbekend',
-        timestamp: r.timestamp ?? '',
-      }
-    })
-    .filter((m) => m.timestamp !== '')
+  type LeadRow = { lead_id: string; naam: string | null }
+  const naamByLead = new Map<string, string>()
+  for (const l of (leadsData as LeadRow[] | null) ?? []) {
+    naamByLead.set(l.lead_id, l.naam ?? 'Onbekend')
+  }
+
+  return messages
+    .filter((m) => m.timestamp !== null)
+    .map((m) => ({
+      id: m.id,
+      lead_id: m.lead_id,
+      naam: naamByLead.get(m.lead_id) ?? 'Onbekend',
+      timestamp: m.timestamp as string,
+    }))
 }

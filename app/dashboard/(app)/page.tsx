@@ -14,6 +14,7 @@ import {
 } from '@/lib/dashboard/stats-queries'
 import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
 import { getLeadsList } from '@/lib/dashboard/lead-queries'
+import { getRecentInboundMessages, type RecentMessage } from '@/lib/dashboard/activity-feed'
 import { KpiCard } from '@/components/dashboard/ui/KpiCard'
 import { AreaChart } from '@/components/dashboard/ui/AreaChart'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
@@ -76,6 +77,7 @@ export default async function OverzichtPage({
     leadsVandaag,
     offertesWeek,
     akkoordWeek,
+    recentMessages,
   ] = await Promise.all([
     countLeads(week),
     countLeads(maand),
@@ -93,6 +95,7 @@ export default async function OverzichtPage({
     countLeads(vandaag),
     countOffertesVerstuurd(week),
     countAkkoordIn(week),
+    getRecentInboundMessages(),
   ])
 
   const tenant = tenantRaw.data as { chatbot_naam: string | null } | null
@@ -173,9 +176,9 @@ export default async function OverzichtPage({
     .filter((l) => l.gesprek_fase === 'onderhandelen')
     .slice(0, 10)
 
-  // Activity feed — V1 statische demo uit recente leads/appointments.
-  // Realtime stream komt in een opvolg-batch.
-  const activityItems = buildActivityFeed(allLeads, upcomingAppts)
+  // Activity feed — gecombineerde stream over 4 event-types (new/wa/appt/quote).
+  // V1 server-rendered op page load; realtime-subscriptie staat op de roadmap.
+  const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
   return (
     <>
@@ -379,11 +382,11 @@ type ApptForFeed = import('@/lib/dashboard/agenda-queries').Appointment
 function buildActivityFeed(
   leads: LeadForFeed[],
   appts: ApptForFeed[],
+  recentMessages: RecentMessage[],
 ): ActivityItem[] {
-  // V1 — laatste 10 events afgeleid uit lead-aanmaak + komende afspraken.
-  // Realtime-stream komt in een opvolgfase.
   const events: ActivityItem[] = []
 
+  // ── 'new' events — recent aangemaakte leads
   for (const lead of leads.slice(0, 6)) {
     events.push({
       leadId: lead.lead_id,
@@ -393,6 +396,8 @@ function buildActivityFeed(
       timestamp: lead.aangemaakt ?? '',
     })
   }
+
+  // ── 'appt' events — recent geboekte afspraken
   for (const appt of appts.slice(0, 4)) {
     if (!appt.afspraak_geboekt_op) continue
     events.push({
@@ -407,7 +412,33 @@ function buildActivityFeed(
     })
   }
 
+  // ── 'wa' events — recente klant-berichten (uit berichten-tabel)
+  for (const msg of recentMessages.slice(0, 8)) {
+    events.push({
+      leadId: msg.lead_id,
+      naam: msg.naam,
+      kind: 'wa',
+      text: 'stuurde een bericht',
+      timestamp: msg.timestamp,
+    })
+  }
+
+  // ── 'quote' events — leads in 'onderhandelen' fase (wacht op owner-review).
+  // Timestamp = lead.aangemaakt als proxy (we hebben geen "fase-veranderd-op"
+  // veld). Voor V1 is dit goed genoeg: het laat zien wélke offertes nu owner-
+  // actie nodig hebben in de feed.
+  const ownerReviewLeads = leads.filter((l) => l.gesprek_fase === 'onderhandelen')
+  for (const lead of ownerReviewLeads.slice(0, 6)) {
+    events.push({
+      leadId: lead.lead_id,
+      naam: lead.naam,
+      kind: 'quote',
+      text: 'wacht op owner-review',
+      timestamp: lead.aangemaakt ?? '',
+    })
+  }
+
   return events
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
-    .slice(0, 9)
+    .slice(0, 12)
 }

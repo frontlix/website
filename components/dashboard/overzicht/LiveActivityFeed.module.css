@@ -1,3 +1,57 @@
+.card {
+  overflow: hidden;
+}
+
+/* ── Tabs (Alles · Chat · Offerte · Agenda · Nieuw) ──── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 4px;
+  margin-right: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tab:hover {
+  color: var(--fg);
+}
+.tabActive {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ── Count-header ("NET BINNEN · 12") ───────────────── */
+.countBar {
+  padding: 6px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+}
+
+/* ── Feed ───────────────────────────────────────────── */
 .feed {
   display: flex;
   flex-direction: column;
@@ -19,6 +73,8 @@
   gap: 12px;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
+  /* Per-kind linker-accent: 3px solid bar in de icon-kleur (zie row_*). */
+  border-left: 3px solid transparent;
   align-items: center;
   transition: background 0.15s;
   cursor: pointer;
@@ -32,6 +88,13 @@
   border-bottom: none;
 }
 
+/* ── Per-kind linker-accent — matched met icon-kleur ─── */
+.row_new   { border-left-color: var(--primary); }                /* blauw */
+.row_wa    { border-left-color: var(--whatsapp, #25d366); }      /* groen */
+.row_appt  { border-left-color: var(--success, #16a34a); }       /* groen */
+.row_quote { border-left-color: #f59e0b; }                       /* amber */
+
+/* ── Icon-vakje per kind ─────────────────────────────── */
 .icon {
   width: 32px;
   height: 32px;
