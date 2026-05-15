@@ -1,12 +1,11 @@
 .module {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   margin-bottom: 20px;
 }
 
-/* Hero links, 2x2 mini-grid rechts. align-items: start zodat hero
-   en minis hun natuurlijke hoogte krijgen (geen stretch). */
+/* Hero+tabs links, mini-grid rechts. align-items: start zodat de
+   kolommen onafhankelijk hun natuurlijke hoogte krijgen — als de
+   mini-grid hoger uitvalt, blijven de tabs direct onder de hero
+   plakken (kortere link tussen actief KPI en de tabs). */
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
@@ -14,7 +13,10 @@
   align-items: start;
 }
 
-.heroSlot {
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -26,7 +28,7 @@
   min-width: 0;
 }
 
-/* Op minder breed scherm: minis onder hero, twee per rij. */
+/* Op minder breed scherm: minis onder hero+tabs, twee per rij. */
 @media (max-width: 1100px) {
   .grid {
     grid-template-columns: 1fr;

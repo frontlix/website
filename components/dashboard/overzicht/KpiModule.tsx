@@ -5,9 +5,13 @@ import { type KpiKey, type KpiMetric, type ExtraMetric, KPI_KEYS } from './kpi-t
 import styles from './KpiModule.module.css'
 
 /**
- * Top-level KPI-blok: links de active KPI als hero (groot met donut),
- * rechts een 2x2-grid met de overige drie tab-able metrics + één extra
- * "altijd-mini" metric (zoals "Offertes open").
+ * Top-level KPI-blok. Layout:
+ *  - Linker kolom: hero (groot met donut) + tabs direct daaronder
+ *  - Rechter kolom: 2x2 mini-grid (3 niet-actieve tab-metrics + 1 extra)
+ *
+ * Door tabs IN de linker kolom te zetten (niet onder de hele rij) blijft
+ * de tab-pill compact en dichtbij de hero, ongeacht hoe hoog de mini-grid
+ * uitvalt.
  *
  * URL-param: `?kpi=omzet|leads|conversie|reactietijd` (default 'omzet').
  */
@@ -29,8 +33,9 @@ export function KpiModule({
   return (
     <div className={styles.module}>
       <div className={styles.grid}>
-        <div className={styles.heroSlot}>
+        <div className={styles.leftColumn}>
           <KpiHeroCard metric={activeMetric} />
+          <KpiTabs active={active} hrefBase={hrefBase} />
         </div>
         <div className={styles.miniGrid}>
           {others.map((m) => (
@@ -39,7 +44,6 @@ export function KpiModule({
           {extraMetric && <KpiMiniCard key={extraMetric.key} metric={extraMetric} />}
         </div>
       </div>
-      <KpiTabs active={active} hrefBase={hrefBase} />
     </div>
   )
 }
