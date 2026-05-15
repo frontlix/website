@@ -18,7 +18,7 @@ async def detect_branche(history: list[ConversationMessage]) -> str | None:
     chat_history = format_history(history)
 
     response = get_openai().chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         temperature=0,
         response_format={"type": "json_object"},
         messages=[

@@ -20,7 +20,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from branches import get_branche
 from branches.base import get_effective_missing_fields
+from branches.loader import hydrate_all
 from llm.reply import _determine_next_tag
+
+# BRANCHES is leeg op import (Pakket 1) — hydrate eenmalig voor standalone runs.
+# Bij pytest doet conftest.py dit ook; in-place mutatie maakt het idempotent.
+hydrate_all()
 
 
 def _assert(cond: bool, msg: str) -> None:

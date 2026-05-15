@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Literal, Optional
 
 
 class Settings(BaseSettings):
@@ -32,6 +33,19 @@ class Settings(BaseSettings):
     # App
     site_url: str = "https://frontlix.com"
     service_url: str = "http://localhost:8000"  # Public URL of this Python service (ngrok or VPS)
+
+    # Multi-tenant config (Pakket 1)
+    # "json" leest clients/<id>/config.json, "db" leest branche_settings + branche_fields
+    config_source: Literal["json", "db"] = "json"
+    # Bearer-token voor POST /dashboard-api/config/reload. Leeg = endpoint geeft 503.
+    dashboard_api_token: Optional[str] = None
+
+    # External form webhook (Pakket 4a) — off | dry-run | live
+    external_webhook_mode: Literal["off", "dry-run", "live"] = "off"
+    external_webhook_secret: Optional[str] = None
+
+    # Web-chat fallback (Pakket 4b) — false = detect-only, no mail sent
+    web_chat_fallback_enabled: bool = False
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

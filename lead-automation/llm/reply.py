@@ -6,10 +6,14 @@ Instructions are in English, field guide phrases and examples stay in Dutch.
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 from services.openai_client import get_openai
 from models.lead import ConversationMessage
 from branches import get_branche, get_effective_missing_fields, get_photo_count, is_photo_step_done
+
+if TYPE_CHECKING:
+    from llm.analyze import AnalysisResult
 
 def _format_history_for_reply(history: list[ConversationMessage]) -> str:
     """Format history in the same style as the EXAMPLES section so the LLM doesn't copy
@@ -391,52 +395,14 @@ Klant: "dit duurt zo lang zeg"
 }
 
 
-# Keyword map per branche for detecting which field an assistant message asked about.
-# Used to auto-skip fields that were already asked but where extraction didn't find a value.
-_FIELD_KEYWORDS: dict[str, dict[str, list[str]]] = {
-    "zonnepanelen": {
-        "jaarverbruik": ["kwh", "verbruik", "jaarnota"],
-        "daktype": ["plat of schuin", "plat dak of schuin", "schuin of een plat", "schuin of plat"],
-        "dakmateriaal": ["ligt er nu op", "dakpannen, riet", "dakbedekking", "dakpannen of iets anders", "bitumen, epdm", "wat voor dakbedekking", "dakpannen, riet of leisteen"],
-        "dakoppervlakte": ["m²", "hoeveel m2", "hoeveel m "],
-        "orientatie": ["welke kant staat het dak", "noord, oost", "zuid of west", "welke kant ligt"],
-        "schaduw": ["schaduw op het dak", "nog schaduw"],
-        "aansluiting": ["1-fase of 3-fase", "1-fase", "3-fase"],
-    },
-    "dakdekker": {
-        "type_werk": ["nieuw dak, een reparatie", "nieuw dak, reparatie", "reparatie, of isolatie"],
-        "daktype": ["plat dak of schuin", "plat of schuin"],
-        "huidig_dakmateriaal": ["ligt er nu op", "bitumen, epdm", "dakpannen, bitumen", "bitumen, epdm, of iets anders", "dakpannen, riet, of leisteen"],
-        "dakoppervlakte": ["m²", "hoeveel m"],
-        "isolatie": ["isolatie er meteen"],
-    },
-    "schoonmaak": {
-        "type_pand": ["woning, kantoor", "horeca of een winkel", "horeca of winkel"],
-        "oppervlakte": ["m²", "hoeveel m"],
-        "frequentie": ["wekelijks", "om de week", "eenmalig", "maandelijks"],
-        "ramen": ["ramen ook meenemen", "ramen meenemen"],
-    },
-}
-
-
-def _asked_fields_in_history(history: list["ConversationMessage"], branche_id: str) -> set[str]:
-    """Scan assistant messages for field-keywords and return which fields were already asked,
-    but only if a user reply followed (so customer had a chance to answer)."""
-    kw_map = _FIELD_KEYWORDS.get(branche_id, {})
-    asked: set[str] = set()
-    for i, m in enumerate(history):
-        if m.role != "assistant":
-            continue
-        has_user_reply_after = any(h.role == "user" for h in history[i + 1:])
-        if not has_user_reply_after:
-            continue
-        low = m.content.lower()
-        for field_key, kws in kw_map.items():
-            if field_key in asked:
-                continue
-            if any(kw in low for kw in kws):
-                asked.add(field_key)
-    return asked
+def _skipped_fields(collected_data: dict) -> set[str]:
+    """Fields the customer was unsure about twice (or once for fields without
+    a workaround) — recorded by the webhook's intent dispatcher.
+    Stored under `collected_data["_skipped"]` as a list[str]."""
+    raw = collected_data.get("_skipped") if isinstance(collected_data, dict) else None
+    if isinstance(raw, list):
+        return {str(x) for x in raw}
+    return set()
 
 
 def _determine_next_tag(
@@ -444,13 +410,14 @@ def _determine_next_tag(
     identity: dict,
     data: dict,
     collected_data: dict,
-    history: list["ConversationMessage"] | None = None,
+    history: list["ConversationMessage"] | None = None,  # kept for backward-compat; unused
 ) -> str:
     """Determine the NEXT field tag based on what's missing.
 
     Skips fields that are architecturally irrelevant (e.g. orientatie when daktype=plat)
-    and fields that were already asked once but where extraction didn't capture a value
-    (prevents infinite re-ask loops when the customer answers in free text)."""
+    and fields the intent-dispatcher marked as `_skipped` (customer was unsure twice
+    or unsure once on a field without workaround). Replaces the legacy
+    history-keyword-scan which was brittle and caused infinite re-ask loops."""
     config = get_branche(branche_id)
     if not config:
         return "COMPLETE"
@@ -460,10 +427,9 @@ def _determine_next_tag(
 
     missing = get_effective_missing_fields(config, data, branche_id)
 
-    # History-driven skip: field was asked, user replied, but extraction still returned nothing
-    if history:
-        already_asked = _asked_fields_in_history(history, branche_id)
-        missing = [f for f in missing if f not in already_asked]
+    skipped = _skipped_fields(collected_data)
+    if skipped:
+        missing = [f for f in missing if f not in skipped]
 
     # Debug log to diagnose edge cases like plat-dak-orientatie skip failures.
     # Keep this: cheap, invaluable when a customer reports a bot-flow bug.
@@ -515,14 +481,53 @@ def _build_known_info(branche_id: str, identity: dict, data: dict, photo_count: 
     return "\n- ".join([""] + parts)
 
 
+# Intent-specific guidance for the reply LLM. Picked deterministically by the
+# analyzer so the reply prompt doesn't have to guess. Keep these short — the
+# persona prompts already cover the "how" for each case.
+_INTENT_GUIDANCE: dict[str, str] = {
+    "direct_answer": "Customer gave a concrete answer. React to the specific value, then ask the NEXT field.",
+    "doesnt_know_first": "Customer is unsure on the CURRENT field for the FIRST time. Offer a PRACTICAL TIP and re-ask the SAME field (do not move on).",
+    "doesnt_know_skip": "Customer was unsure on the CURRENT field a SECOND time (or it has no workaround). Acknowledge briefly (\"Is goed, dan laat ik 't open\") and move to the NEXT field. NEVER re-ask the skipped field again.",
+    "will_provide_later": "Customer wants to come back to this later. Acknowledge briefly and move to the NEXT field — they can update the value any time.",
+    "price_question": "Customer asked about price. Quote from PRICING section briefly, THEN ask the SAME field that was pending. Do NOT skip it.",
+    "process_question": "Customer asked HOW to find/measure something. Give a brief tip from PRACTICAL TIPS, then re-ask the SAME field. Do NOT skip it.",
+    "off_topic": "Customer went off-topic. Acknowledge in ONE short sentence, then ask the SAME field that was pending.",
+    "gibberish": "Customer's message is unparseable. Politely ask for clarification on the SAME field with a softened version.",
+    "is_bot_question": "Customer asked if you're a bot. Answer honestly and briefly (\"Klopt, ik ben Frontlix's slimme assistent.\"), then ask the SAME field.",
+    "acknowledgement": "Pure acknowledgement (\"ok\", \"ja\", \"thanks\"). No info given. Just ask the NEXT field with NO re-introduction.",
+    "not_recognized": "Could not classify. Re-ask the SAME field with a light clarifier.",
+}
+
+
+def _intent_guidance(intent: str | None, unsure_count: int, has_workaround: bool) -> str:
+    """Map AnalysisResult.intent + unsure-counter to a guidance line for the reply prompt."""
+    if intent == "doesnt_know":
+        # First-time unsure with workaround → tip; otherwise skip
+        if unsure_count == 0 and has_workaround:
+            return _INTENT_GUIDANCE["doesnt_know_first"]
+        return _INTENT_GUIDANCE["doesnt_know_skip"]
+    if intent in _INTENT_GUIDANCE:
+        return _INTENT_GUIDANCE[intent]
+    return _INTENT_GUIDANCE["not_recognized"]
+
+
 async def generate_reply(
     branche_id: str,
     history: list[ConversationMessage],
     identity: dict,
     data: dict,
     collected_data: dict,
+    analysis: "AnalysisResult | None" = None,
+    unsure_count: int = 0,
+    has_workaround: bool = False,
 ) -> str:
-    """Generate the next WhatsApp message for the given branche persona."""
+    """Generate the next WhatsApp message for the given branche persona.
+
+    When `analysis` is provided (new pipeline), an `## INTENT CONTEXT` section is
+    injected so the persona prompt doesn't have to infer intent from the history.
+    Backward-compatible: callers can omit `analysis` and the reply still works
+    (the prompt falls back to the persona's own intent-handling rules).
+    """
     base_prompt = REPLY_PROMPTS.get(branche_id)
     if not base_prompt:
         return "Sorry, er ging iets mis. Probeer het opnieuw."
@@ -531,13 +536,24 @@ async def generate_reply(
     next_tag = _determine_next_tag(branche_id, identity, data, collected_data, history=history)
     known_info = _build_known_info(branche_id, identity, data, photo_count)
 
+    intent_section = ""
+    if analysis is not None:
+        guidance = _intent_guidance(analysis.intent, unsure_count, has_workaround)
+        intent_section = (
+            f"\n## INTENT CONTEXT (deterministic — follow this branch)\n"
+            f"- intent: {analysis.intent}\n"
+            f"- answered_current_question: {analysis.answered_current_question}\n"
+            f"- unsure_count on current field: {unsure_count}\n"
+            f"- guidance: {guidance}\n"
+        )
+
     full_prompt = f"""{base_prompt}
 
 ## NOW
 Known info:{known_info}
 
 NEXT: {next_tag}
-
+{intent_section}
 Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."""
 
     chat_history = _format_history_for_reply(history)

@@ -10,7 +10,7 @@ import re
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from fastapi import APIRouter, Request, Response
 
@@ -18,13 +18,30 @@ from config import get_settings
 from services.supabase import get_supabase
 from services.whatsapp import normalize_phone, send_text, get_media_url, download_media
 from services.photo_vision import analyze_photo
-from llm import detect_branche, extract_data, generate_reply
+from services.web_chat_fallback import (
+    detect_template_failure_status_event,
+    FALLBACK_ERROR_CODES,
+    trigger_web_chat_fallback,
+)
+from llm import detect_branche, analyze_message, generate_reply
+from llm.reply import _determine_next_tag
 from branches import (
     get_branche, get_effective_missing_fields, get_pricing,
     is_photo_step_done, user_skips_photo_step,
     MAX_PHOTOS, PHOTO_WAIT_MS,
 )
 from models.lead import ConversationMessage
+
+
+# A channel-agnostic outbound text sender. WhatsApp callers use _whatsapp_sender(phone);
+# the web-chat route (Pakket 4b) passes a buffer-sender that captures replies in-process.
+Sender = Callable[[str], Awaitable[None]]
+
+
+def _whatsapp_sender(phone: str) -> Sender:
+    async def _send(msg: str) -> None:
+        await send_text(phone, msg)
+    return _send
 
 router = APIRouter()
 
@@ -105,6 +122,30 @@ async def _process_webhook(body: dict):
     entry = (body.get("entry") or [{}])[0]
     changes = (entry.get("changes") or [{}])[0]
     value = changes.get("value") or {}
+
+    # Status-event branch (Pakket 4b): Meta sends `statuses` (not `messages`)
+    # for delivery / read / failed events. Detect failed-delivery on our opening
+    # template and trigger the web-chat fallback. New branch added BEFORE the
+    # existing message-handling — does not reorder.
+    status_event = detect_template_failure_status_event(value)
+    if status_event:
+        wa_message_id, error_code = status_event
+        print(f"[WEBHOOK] status_event msg_id={wa_message_id} error_code={error_code}")
+        if error_code in FALLBACK_ERROR_CODES:
+            try:
+                resp = (
+                    get_supabase().table("leads").select("id")
+                    .eq("opening_wa_message_id", wa_message_id).limit(1).execute()
+                )
+                rows = resp.data or []
+                if rows:
+                    await trigger_web_chat_fallback(rows[0]["id"], reason=f"meta_error_{error_code}")
+                else:
+                    print(f"[WEBHOOK] no lead matched opening_wa_message_id={wa_message_id}")
+            except Exception as e:
+                print(f"[WEBHOOK] fallback trigger failed: {e}")
+        return
+
     messages = value.get("messages") or []
     if not messages:
         return
@@ -180,10 +221,11 @@ async def _handle_branche_webhook(lead: dict, message: dict, msg_type: str, phon
         return
 
     # Status routing
+    sender = _whatsapp_sender(phone)
     if status == "awaiting_choice":
         await _handle_choice(lead, text_body, phone)
     elif status == "collecting":
-        await _handle_collecting(lead, text_body, phone)
+        await _handle_collecting(lead, text_body, sender)
     elif status == "quote_sent":
         await _handle_start_scheduling(lead, text_body, phone)
     elif status == "scheduling":
@@ -209,7 +251,7 @@ async def _activate_branche(lead: dict, branche_id: str, phone: str):
     # First question
     updated = {**lead, "demo_type": branche_id, "status": "collecting"}
     history = await _fetch_history(lead["id"])
-    await _send_next_question(updated, history, phone)
+    await _send_next_question(updated, history, _whatsapp_sender(phone))
 
 
 async def _handle_button_reply(lead: dict, message: dict, phone: str):
@@ -267,13 +309,69 @@ async def _handle_choice(lead: dict, text_body: str, phone: str):
     await _activate_branche(lead, detected, phone)
 
 
+# ── Field-workaround map ─────────────────────────────────────────────────
+# Fields with a concrete practical tip — customer gets ONE re-ask after
+# the first "weet ik niet". Fields not listed here are skipped after the
+# very first uncertainty (per persona-prompt rules).
+_WORKAROUND_FIELDS: dict[str, set[str]] = {
+    "zonnepanelen": {"jaarverbruik", "dakoppervlakte", "aansluiting"},
+    "dakdekker": {"dakoppervlakte", "huidig_dakmateriaal"},
+    "schoonmaak": {"oppervlakte"},
+}
+
+
+def _canonical_field(tag: str) -> str | None:
+    """Convert a NEXT-tag back to the underlying field key.
+    Drops the _plat / _schuin suffixes used for differentiated questions."""
+    if not tag:
+        return None
+    if tag in {"naam", "email", "PHOTO_STEP", "COMPLETE"}:
+        return tag if tag == "naam" else None  # only `naam` doubles as a field
+    if tag.startswith("dakmateriaal_") or tag.startswith("huidig_dakmateriaal_"):
+        return tag.rsplit("_", 1)[0]
+    return tag
+
+
+def _unsure_count(collected_data: dict, field_key: str) -> int:
+    raw = collected_data.get("_unsure") if isinstance(collected_data, dict) else None
+    if isinstance(raw, dict):
+        v = raw.get(field_key)
+        if isinstance(v, int):
+            return v
+    return 0
+
+
+def _bump_unsure(collected_data: dict, field_key: str) -> int:
+    """Increment the unsure-counter for a field. Returns the new count."""
+    raw = collected_data.get("_unsure")
+    if not isinstance(raw, dict):
+        raw = {}
+        collected_data["_unsure"] = raw
+    new = int(raw.get(field_key, 0)) + 1
+    raw[field_key] = new
+    return new
+
+
+def _mark_skipped(collected_data: dict, field_key: str) -> None:
+    raw = collected_data.get("_skipped")
+    if not isinstance(raw, list):
+        raw = []
+        collected_data["_skipped"] = raw
+    if field_key not in raw:
+        raw.append(field_key)
+
+
 # ── Collecting handler ───────────────────────────────────────────────────
 
-async def _handle_collecting(lead: dict, text_body: str, phone: str):
+async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
+    """Channel-agnostic collecting flow. `sender` is the outbound text callable
+    — WhatsApp callers pass _whatsapp_sender(phone); the web-chat route passes
+    a buffer-sender so replies land in the HTTP response instead of WhatsApp.
+    """
     demo_type = lead.get("demo_type")
     if not demo_type:
         get_supabase().table("leads").update({"status": "awaiting_choice"}).eq("id", lead["id"]).execute()
-        await send_text(phone, "Even opnieuw — voor welke dienst wil je een offerte zien? Zonnepanelen, dakdekker of schoonmaak?")
+        await sender("Even opnieuw — voor welke dienst wil je een offerte zien? Zonnepanelen, dakdekker of schoonmaak?")
         return
 
     config = get_branche(demo_type)
@@ -291,10 +389,10 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
         collected["_photo_step_done"] = True
         get_supabase().table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
         if lead.get("email"):
-            await _trigger_approval(lead["id"])
+            await _trigger_approval(lead["id"], sender=sender)
             return
         refreshed = {**lead, "collected_data": collected}
-        await _send_next_question(refreshed, await _fetch_history(lead["id"]), phone)
+        await _send_next_question(refreshed, await _fetch_history(lead["id"]), sender)
         return
 
     # Photo skip detection
@@ -304,29 +402,63 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
         collected["_photo_step_done"] = True
         get_supabase().table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
         if lead.get("email"):
-            await _trigger_approval(lead["id"])
+            await _trigger_approval(lead["id"], sender=sender)
             return
         refreshed = {**lead, "collected_data": collected}
-        await _send_next_question(refreshed, await _fetch_history(lead["id"]), phone)
+        await _send_next_question(refreshed, await _fetch_history(lead["id"]), sender)
         return
 
-    # Run extraction LLM
+    # Determine what the bot was waiting on BEFORE this customer message — feeds the analyzer.
     identity = {"naam": lead.get("naam"), "email": lead.get("email")}
     current_data = {f.key: collected.get(f.key) for f in config.fields if collected.get(f.key)}
+    current_tag = _determine_next_tag(demo_type, identity, current_data, collected)
+    current_field = _canonical_field(current_tag) or current_tag  # e.g. "jaarverbruik"
 
-    extracted = await extract_data(demo_type, history, identity, current_data)
+    # Single analyzer call: extract + intent + answered_current_question
+    analysis = await analyze_message(demo_type, history, identity, current_data, current_field)
+    print(f"[collecting] intent={analysis.intent} answered={analysis.answered_current_question} field={current_field} extracted_keys={list(analysis.extracted.keys())}")
 
-    # Apply extracted data
+    # Intent-driven dispatch — controls whether to APPLY extracted data and whether
+    # to mark the current field as unsure/skipped. The reply itself is shaped by
+    # generate_reply via the analysis object further down.
+    workaround_set = _WORKAROUND_FIELDS.get(demo_type, set())
+    has_workaround = current_field in workaround_set
+    apply_extracted = True
+
+    if analysis.intent == "doesnt_know":
+        # Don't apply extraction for THIS field even if model leaked something.
+        # Bump counter; if it's the second time or there's no workaround → skip.
+        if current_field and current_field in {f.key for f in config.fields}:
+            new_count = _bump_unsure(collected, current_field)
+            if new_count >= 2 or not has_workaround:
+                _mark_skipped(collected, current_field)
+        # Still allow naam/email extraction (could come piggybacked).
+        if isinstance(analysis.extracted.get("data"), dict):
+            analysis.extracted["data"].pop(current_field, None) if current_field else None
+    elif analysis.intent in {"price_question", "process_question", "off_topic",
+                              "gibberish", "is_bot_question", "acknowledgement",
+                              "not_recognized"}:
+        # No new info on the current field — keep state and re-ask same.
+        apply_extracted = False
+    elif analysis.intent == "will_provide_later":
+        # Customer will come back — mark unsure but don't skip; they may answer next turn.
+        if current_field and current_field in {f.key for f in config.fields}:
+            _bump_unsure(collected, current_field)
+        apply_extracted = True
+    # direct_answer → apply normally
+
+    # Apply extracted data (subject to apply_extracted flag)
     new_naam = lead.get("naam")
     new_email = lead.get("email")
-    if extracted.get("naam"):
-        new_naam = extracted["naam"]
-    if extracted.get("email"):
-        new_email = extracted["email"]
-    if extracted.get("data"):
-        for k, v in extracted["data"].items():
-            if v is not None:
-                collected[k] = v
+    if apply_extracted:
+        if analysis.extracted.get("naam"):
+            new_naam = analysis.extracted["naam"]
+        if analysis.extracted.get("email"):
+            new_email = analysis.extracted["email"]
+        if isinstance(analysis.extracted.get("data"), dict):
+            for k, v in analysis.extracted["data"].items():
+                if v is not None:
+                    collected[k] = v
 
     # Update lead
     get_supabase().table("leads").update({
@@ -365,12 +497,17 @@ async def _handle_collecting(lead: dict, text_body: str, phone: str):
             "collected_data": fresh_collected,
             "updated_at": _now_iso(),
         }).eq("id", lead["id"]).execute()
-        await _trigger_approval(lead["id"])
+        await _trigger_approval(lead["id"], sender=sender)
         return
 
-    # Send next question
+    # Send next question — pass analysis so the reply prompt picks the right intent-branch
     updated = {**lead, "naam": new_naam, "email": new_email, "collected_data": fresh_collected}
-    await _send_next_question(updated, history, phone)
+    await _send_next_question(
+        updated, history, sender,
+        analysis=analysis,
+        unsure_count=_unsure_count(fresh_collected, current_field) if current_field else 0,
+        has_workaround=has_workaround,
+    )
 
 
 # ── Image handler ────────────────────────────────────────────────────────
@@ -439,12 +576,13 @@ async def _handle_image(lead: dict, message: dict, phone: str):
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
         await send_text(phone, "Foto ontvangen, dank je. Dat is het maximum — ik heb genoeg om verder te gaan.")
+        wa_sender = _whatsapp_sender(phone)
         if lead.get("email"):
-            await _trigger_approval(lead["id"])
+            await _trigger_approval(lead["id"], sender=wa_sender)
         else:
             refreshed = {**lead, "collected_data": collected}
             history = await _fetch_history(lead["id"])
-            await _send_next_question(refreshed, history, phone)
+            await _send_next_question(refreshed, history, wa_sender)
         return
 
     # Save + schedule auto-advance (no separate ack message — next question handles it)
@@ -477,19 +615,27 @@ async def _auto_advance_photo(lead_id: str, photo_timestamp: int):
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead_id).execute()
 
+        wa_sender = _whatsapp_sender(fresh["telefoon"])
         if fresh.get("email"):
-            await _trigger_approval(lead_id)
+            await _trigger_approval(lead_id, sender=wa_sender)
         else:
             refreshed = {**fresh, "collected_data": collected}
             history = await _fetch_history(lead_id)
-            await _send_next_question(refreshed, history, fresh["telefoon"])
+            await _send_next_question(refreshed, history, wa_sender)
     except Exception as e:
         print(f"auto_advance_photo error: {e}")
 
 
 # ── Reply generation ─────────────────────────────────────────────────────
 
-async def _send_next_question(lead: dict, history: list[ConversationMessage], phone: str):
+async def _send_next_question(
+    lead: dict,
+    history: list[ConversationMessage],
+    sender: Sender,
+    analysis=None,
+    unsure_count: int = 0,
+    has_workaround: bool = False,
+):
     demo_type = lead.get("demo_type")
     if not demo_type:
         return
@@ -501,14 +647,19 @@ async def _send_next_question(lead: dict, history: list[ConversationMessage], ph
     collected = dict(lead.get("collected_data") or {})
     current_data = {f.key: collected.get(f.key) for f in config.fields if collected.get(f.key)}
 
-    reply = await generate_reply(demo_type, history, identity, current_data, collected)
+    reply = await generate_reply(
+        demo_type, history, identity, current_data, collected,
+        analysis=analysis,
+        unsure_count=unsure_count,
+        has_workaround=has_workaround,
+    )
 
     # [WAIT] guard
     if reply.strip().upper().startswith("[WAIT]"):
         print(f"[reply] [WAIT] token — holding off for lead {lead['id']}")
         return
 
-    await send_text(phone, reply)
+    await sender(reply)
     await _save_message(lead["id"], "assistant", reply)
 
 
@@ -801,8 +952,11 @@ async def _run_scheduling_agent(lead: dict, phone: str):
 
 # ── Approval trigger ─────────────────────────────────────────────────────
 
-async def _trigger_approval(lead_id: str):
-    """Calculate pricing, generate approval token, send approval email."""
+async def _trigger_approval(lead_id: str, sender: Sender | None = None):
+    """Calculate pricing, generate approval token, send approval email.
+
+    `sender` is optional — if provided (e.g. web-chat path) the confirmation
+    message uses it; otherwise it falls back to WhatsApp via lead.telefoon."""
     sb = get_supabase()
     resp = sb.table("leads").select("*").eq("id", lead_id).execute()
     lead = (resp.data or [None])[0]
@@ -846,11 +1000,13 @@ async def _trigger_approval(lead_id: str):
         "updated_at": _now_iso(),
     }).eq("id", lead_id).execute()
 
-    # Send WhatsApp confirmation
-    await send_text(
-        lead["telefoon"],
-        "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de offerte. Zodra die is goedgekeurd stuur ik je hier de PDF."
-    )
+    # Outbound confirmation — use the injected sender if present (web-chat),
+    # otherwise fall back to WhatsApp via the lead's phone number.
+    confirmation = "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de offerte. Zodra die is goedgekeurd stuur ik je hier de PDF."
+    if sender is not None:
+        await sender(confirmation)
+    else:
+        await send_text(lead["telefoon"], confirmation)
 
     # Send approval email with PDF link
     try:
