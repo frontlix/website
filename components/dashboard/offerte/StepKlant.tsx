@@ -89,6 +89,19 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
               placeholder="Delft"
             />
           </Field>
+          {/* Afstand wordt automatisch berekend op basis van postcode +
+              huisnummer (zie auto-fetch in ManualOfferteModal). Read-only
+              zodat de user 'm wel kan zien maar niet handmatig overrijdt. */}
+          <Field label="Afstand (km)">
+            <input
+              className={`${styles.input} ${styles.numericInput} ${styles.inputReadonly}`}
+              type="number"
+              value={data.afstand_km}
+              readOnly
+              tabIndex={-1}
+              aria-label="Automatisch berekende afstand in km"
+            />
+          </Field>
         </div>
       </div>
 

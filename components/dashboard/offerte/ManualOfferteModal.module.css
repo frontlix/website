@@ -192,6 +192,15 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.inputReadonly {
+  background: var(--surface-2, rgba(0, 0, 0, 0.04));
+  color: var(--fg-muted, #6b7280);
+  cursor: default;
+}
+.inputReadonly:focus {
+  border-color: var(--border);
+  box-shadow: none;
+}
 .textarea {
   width: 100%;
   padding: 10px 12px;
@@ -234,7 +243,7 @@
 }
 .gridAddr {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 120px 1fr 110px;
   gap: 12px;
 }
 
