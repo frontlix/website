@@ -78,19 +78,24 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     }
   }, [])
 
-  // Auto-bereken afstand_km zodra postcode + huisnummer geldig zijn.
-  // 400ms debounce zodat we postcode.tech niet hameren terwijl de user
-  // nog typt. Faalt stil — bij geen geocode-hit blijft de vorige waarde
-  // (of DEFAULTS.afstand_km) staan zodat de offerte-regels blijven werken.
+  // Auto-vul Afstand, Straat en Plaats zodra postcode + huisnummer
+  // geldig zijn. 400ms debounce zodat we postcode.tech niet hameren
+  // terwijl de user nog typt. Straat/Plaats vullen we alleen wanneer
+  // het veld nog leeg is — een handmatige aanpassing wordt nooit
+  // overschreven. Afstand wordt altijd ververst (read-only veld).
   useEffect(() => {
     const pc = data.postcode.trim()
     const hn = data.huisnummer.trim()
     if (!pc || !hn) return
     const t = setTimeout(() => {
       getAutoAfstandKm(pc, hn).then((res) => {
-        if (res.ok) {
-          setData((prev) => ({ ...prev, afstand_km: res.km }))
-        }
+        if (!res.ok) return
+        setData((prev) => ({
+          ...prev,
+          afstand_km: res.km,
+          straat: prev.straat.trim() === '' && res.street ? res.street : prev.straat,
+          plaats: prev.plaats.trim() === '' && res.city ? res.city : prev.plaats,
+        }))
       })
     }, 400)
     return () => clearTimeout(t)

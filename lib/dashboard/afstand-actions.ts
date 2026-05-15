@@ -5,17 +5,17 @@ import { geocodeAddress } from './geocoding'
 import { getTenantBase, DEFAULT_TENANT_BASE } from './tenant-base'
 
 /**
- * Berekent de hemelsbrede afstand (km) tussen de thuisbasis van de tenant
- * en een werk-adres (postcode + huisnummer). Wordt gebruikt door de
- * handmatige-offerte wizard om het `afstand_km`-veld automatisch te vullen
- * — de user typt geen afstand meer, Surface rekent zelf.
+ * Geocodet postcode + huisnummer naar (a) hemelsbrede afstand in km tot
+ * de tenant-basis en (b) de bijbehorende straat + plaats. De handmatige-
+ * offerte wizard gebruikt 'm om Afstand, Straat en Plaats automatisch
+ * te vullen zodra postcode + huisnummer geldig zijn.
  *
- * Returnt `null` bij ontbrekende auth/input of mislukte geocoding; caller
- * houdt dan z'n vorige waarde (of de DEFAULTS.afstand_km).
+ * Returnt `ok: false` bij ontbrekende auth/input of mislukte geocoding;
+ * caller houdt dan z'n vorige waardes (DEFAULTS.afstand_km, lege strings).
  */
 
 export type AutoAfstandResult =
-  | { ok: true; km: number }
+  | { ok: true; km: number; street: string | null; city: string | null }
   | { ok: false; reason: 'auth' | 'input' | 'geocode' }
 
 // Postcode-regex: 4 cijfers + 2 letters (spatie optioneel). Voorkomt
@@ -59,5 +59,5 @@ export async function getAutoAfstandKm(
 
   const base = (await getTenantBase()) ?? DEFAULT_TENANT_BASE
   const km = Math.round(haversineKm(base, geo))
-  return { ok: true, km }
+  return { ok: true, km, street: geo.street, city: geo.city }
 }

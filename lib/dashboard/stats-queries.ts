@@ -3,6 +3,9 @@ import type { StatsPeriod } from './period'
 
 /**
  * Aantal leads in de periode (alle, ongeacht dashboard_archived).
+ *
+ * Filtert op `aangemaakt` met inclusieve from + exclusieve to (zodat
+ * een rolling-7d-window géén overlap heeft met de "vorige week"-window).
  */
 export async function countLeads(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
@@ -12,6 +15,9 @@ export async function countLeads(period: StatsPeriod): Promise<number> {
     .select('*', { count: 'exact', head: true })
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
+  }
+  if (period.to) {
+    query = query.lt('aangemaakt', period.to)
   }
   const { count, error } = await query
   if (error) {
@@ -34,6 +40,9 @@ export async function countOffertesVerstuurd(period: StatsPeriod): Promise<numbe
     .not('offerte_verstuurd_op', 'is', null)
   if (period.from) {
     query = query.gte('offerte_verstuurd_op', period.from)
+  }
+  if (period.to) {
+    query = query.lt('offerte_verstuurd_op', period.to)
   }
   const { count, error } = await query
   if (error) {
@@ -58,6 +67,9 @@ export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
   if (period.from) {
     query = query.gte('akkoord_op', period.from)
   }
+  if (period.to) {
+    query = query.lt('akkoord_op', period.to)
+  }
   const { count, error } = await query
   if (error) {
     console.error('[countAkkoordIn] failed:', error)
@@ -80,6 +92,9 @@ export async function countConverted(period: StatsPeriod): Promise<number> {
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
+  if (period.to) {
+    query = query.lt('aangemaakt', period.to)
+  }
   const { count, error } = await query
   if (error) {
     console.error('[countConverted] failed:', error)
@@ -97,6 +112,9 @@ export async function avgOfferteWaarde(period: StatsPeriod): Promise<number | nu
   let query: any = supabase.from('leads').select('totaal_prijs')
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
+  }
+  if (period.to) {
+    query = query.lt('aangemaakt', period.to)
   }
   const { data, error } = await query
   if (error) {
@@ -124,6 +142,9 @@ export async function avgReactietijdMs(period: StatsPeriod): Promise<number | nu
   let leadsQuery: any = supabase.from('leads').select('lead_id, aangemaakt')
   if (period.from) {
     leadsQuery = leadsQuery.gte('aangemaakt', period.from)
+  }
+  if (period.to) {
+    leadsQuery = leadsQuery.lt('aangemaakt', period.to)
   }
   const { data: leadsData, error: leadsErr } = await leadsQuery
   if (leadsErr) {

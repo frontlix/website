@@ -1,0 +1,84 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+}
+.card:hover {
+  background: var(--card-hover-bg, rgba(0, 0, 0, 0.02));
+  border-color: var(--card-hover-border, rgba(0, 0, 0, 0.12));
+}
+.card:active {
+  transform: translateY(1px);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg-soft);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #B85C00;
+  background: #FFEDD5;
+  border-radius: 999px;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1;
+}
+
+.number {
+  font: 800 26px/1 var(--font-heading);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.affix {
+  font: 700 16px/1 var(--font-heading);
+  color: var(--fg);
+}
+
+.suffix {
+  font: 600 14px/1 var(--font-heading);
+  color: var(--fg-muted);
+  margin-left: 1px;
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.deltaUp {
+  color: #058A4D;
+}
+.deltaDown {
+  color: #C33333;
+}

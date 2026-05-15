@@ -100,3 +100,53 @@ const LABELS: Record<PeriodKey, string> = {
 export function periodLabel(key: PeriodKey): string {
   return LABELS[key]
 }
+
+/**
+ * Vensters voor "vorige periode" — gebruikt voor diff-berekeningen
+ * (current vs previous). Beide hebben dezelfde lengte zodat de
+ * vergelijking eerlijk is.
+ *
+ * - prevWeekRange(now): [now-14d, now-7d]
+ * - prevMonthSamePeriodRange(now): hele vorige kalendermaand t/m dezelfde
+ *   dag-van-maand (zodat halverwege deze maand we ook halverwege vorige
+ *   maand vergelijken)
+ */
+export function prevWeekRange(now: Date = new Date()): StatsPeriod {
+  const day = 24 * 3600_000
+  const from = new Date(now.getTime() - 14 * day)
+  const to = new Date(now.getTime() - 7 * day)
+  return { from: from.toISOString(), to: to.toISOString() }
+}
+
+export function thisWeekRolling(now: Date = new Date()): StatsPeriod {
+  const day = 24 * 3600_000
+  const from = new Date(now.getTime() - 7 * day)
+  return { from: from.toISOString(), to: now.toISOString() }
+}
+
+export function prevMonthSamePeriodRange(now: Date = new Date()): StatsPeriod {
+  // Begin van vorige kalendermaand
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
+  // T/m dezelfde dag-van-maand als nu (in vorige maand)
+  const end = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth() - 1,
+    now.getUTCDate(),
+    now.getUTCHours(),
+    now.getUTCMinutes(),
+  ))
+  return { from: start.toISOString(), to: end.toISOString() }
+}
+
+export function prev30DaysRange(now: Date = new Date()): StatsPeriod {
+  const day = 24 * 3600_000
+  const from = new Date(now.getTime() - 60 * day)
+  const to = new Date(now.getTime() - 30 * day)
+  return { from: from.toISOString(), to: to.toISOString() }
+}
+
+export function last30DaysRange(now: Date = new Date()): StatsPeriod {
+  const day = 24 * 3600_000
+  const from = new Date(now.getTime() - 30 * day)
+  return { from: from.toISOString(), to: now.toISOString() }
+}

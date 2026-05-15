@@ -2,7 +2,14 @@ import Link from 'next/link'
 import { FileText, Plus } from 'lucide-react'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
-import { periodToRange } from '@/lib/dashboard/period'
+import {
+  periodToRange,
+  thisWeekRolling,
+  prevWeekRange,
+  prevMonthSamePeriodRange,
+  last30DaysRange,
+  prev30DaysRange,
+} from '@/lib/dashboard/period'
 import {
   countLeads,
   countConverted,
@@ -15,7 +22,6 @@ import {
 import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
 import { getLeadsList } from '@/lib/dashboard/lead-queries'
 import { getRecentInboundMessages, type RecentMessage } from '@/lib/dashboard/activity-feed'
-import { KpiCard } from '@/components/dashboard/ui/KpiCard'
 import { AreaChart } from '@/components/dashboard/ui/AreaChart'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { Pill } from '@/components/dashboard/ui/Pill'
@@ -28,6 +34,8 @@ import {
 import { TrendRangeToggle } from '@/components/dashboard/overzicht/TrendRangeToggle'
 import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
 import { SurfaceDailySummary } from '@/components/dashboard/overzicht/SurfaceDailySummary'
+import { KpiModule, parseKpiKey } from '@/components/dashboard/overzicht/KpiModule'
+import { KPI_DOELEN, type KpiKey, type KpiMetric } from '@/components/dashboard/overzicht/kpi-types'
 import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import styles from './page.module.css'
 
@@ -39,7 +47,7 @@ const RANGE_DAYS: Record<TrendRange, number> = { '7d': 7, '28d': 28, '90d': 90 }
 export default async function OverzichtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trend?: string }>
+  searchParams: Promise<{ trend?: string; kpi?: string }>
 }) {
   const { user } = await requireApprovedUser()
   const supabase = await getDashboardSupabase()
@@ -50,10 +58,17 @@ export default async function OverzichtPage({
   const sp = await searchParams
   const trendRange: TrendRange = sp.trend === '7d' || sp.trend === '90d' ? sp.trend : '28d'
   const trendDays = RANGE_DAYS[trendRange]
+  const activeKpi: KpiKey = parseKpiKey(sp.kpi)
 
   const now = new Date()
   const week = periodToRange('deze-week', now)
   const maand = periodToRange('deze-maand', now)
+  // Rolling-7d en 30d-windows voor de KPI-vergelijkingen (current vs prev).
+  const week7d = thisWeekRolling(now)
+  const prevWeek7d = prevWeekRange(now)
+  const prevMaand = prevMonthSamePeriodRange(now)
+  const last30 = last30DaysRange(now)
+  const prev30 = prev30DaysRange(now)
   // "Vandaag" = sinds middernacht Europe/Amsterdam — handgemaakt omdat
   // periodToRange geen 'vandaag' kent.
   const vandaagStart = (() => {
@@ -65,11 +80,9 @@ export default async function OverzichtPage({
   const vandaag = { from: vandaagStart, to: now.toISOString() }
 
   const [
-    nieuweLeadsWeek,
     leadsMaand,
     convertedMaand,
     avgWaarde,
-    reactietijdMs,
     trend,
     appts,
     allLeads,
@@ -78,12 +91,21 @@ export default async function OverzichtPage({
     offertesWeek,
     akkoordWeek,
     recentMessages,
+    // ── KPI-module: huidige + vorige periode ───────────────────────
+    leadsLast7d,
+    leadsPrev7d,
+    convertedMaandPrev,
+    avgWaardePrev,
+    leadsLast30d,
+    convertedLast30d,
+    leadsPrev30d,
+    convertedPrev30d,
+    reactietijdLast7Ms,
+    reactietijdPrev7Ms,
   ] = await Promise.all([
-    countLeads(week),
     countLeads(maand),
     countConverted(maand),
     avgOfferteWaarde(maand),
-    avgReactietijdMs(week),
     leadsPerDag(now, trendDays),
     getAppointmentsForMonth(now.getUTCFullYear(), now.getUTCMonth() + 1),
     getLeadsList(),
@@ -96,6 +118,17 @@ export default async function OverzichtPage({
     countOffertesVerstuurd(week),
     countAkkoordIn(week),
     getRecentInboundMessages(),
+    // KPI prev-period queries
+    countLeads(week7d),
+    countLeads(prevWeek7d),
+    countConverted(prevMaand),
+    avgOfferteWaarde(prevMaand),
+    countLeads(last30),
+    countConverted(last30),
+    countLeads(prev30),
+    countConverted(prev30),
+    avgReactietijdMs(week7d),
+    avgReactietijdMs(prevWeek7d),
   ])
 
   const tenant = tenantRaw.data as { chatbot_naam: string | null } | null
@@ -105,13 +138,71 @@ export default async function OverzichtPage({
     leadsMaand > 0 ? Math.round((convertedMaand / leadsMaand) * 100) : 0
 
   const omzetMaand = avgWaarde !== null ? convertedMaand * avgWaarde : 0
-  const reactietijdS =
-    reactietijdMs !== null ? Math.round(reactietijdMs / 1000) : 0
 
   const trendData = trend.map((d) => d.count)
-  const trendLast7 = trendData.slice(-7)
   const totaal30d = trendData.reduce((sum, n) => sum + n, 0)
   const gemTicket = avgWaarde ?? 0
+
+  // ── KPI-module: bouw metric-record voor 4 tegels ─────────────────
+  // Conversie = converted / leads in dezelfde periode * 100.
+  const conversiePctLast30 =
+    leadsLast30d > 0 ? Math.round((convertedLast30d / leadsLast30d) * 100) : 0
+  const conversiePctPrev30 =
+    leadsPrev30d > 0 ? Math.round((convertedPrev30d / leadsPrev30d) * 100) : 0
+  // Omzet prev = vorige maand t/m dezelfde dag-van-maand.
+  const omzetMaandPrev = (avgWaardePrev ?? 0) * convertedMaandPrev
+  const reactietijdLast7S =
+    reactietijdLast7Ms !== null ? Math.round(reactietijdLast7Ms / 1000) : 0
+  const reactietijdPrev7S =
+    reactietijdPrev7Ms !== null ? Math.round(reactietijdPrev7Ms / 1000) : 0
+
+  const kpiMetrics: Record<KpiKey, KpiMetric> = {
+    omzet: {
+      key: 'omzet',
+      label: 'Omzet deze maand',
+      value: Math.round(omzetMaand),
+      prevValue: Math.round(omzetMaandPrev),
+      unit: 'eur',
+      doel: KPI_DOELEN.omzet_maand,
+      rangeLabel: 'Lopende maand',
+      compareLabel: 'vs vorige week',
+      iconKind: 'wallet',
+    },
+    leads: {
+      key: 'leads',
+      label: 'Nieuwe leads (week)',
+      value: leadsLast7d,
+      prevValue: leadsPrev7d,
+      unit: 'count',
+      doel: KPI_DOELEN.leads_week,
+      rangeLabel: 'Laatste 7 dagen',
+      compareLabel: 'vs vorige week',
+      iconKind: 'inbox',
+    },
+    conversie: {
+      key: 'conversie',
+      label: 'Conversie offerte → klant',
+      value: conversiePctLast30,
+      prevValue: conversiePctPrev30,
+      unit: 'pct',
+      doel: KPI_DOELEN.conversie_pct,
+      rangeLabel: 'Laatste 30 dagen',
+      compareLabel: 'vs vorige week',
+      iconKind: 'trending',
+    },
+    reactietijd: {
+      key: 'reactietijd',
+      label: 'Reactietijd (gem.)',
+      value: reactietijdLast7S,
+      prevValue: reactietijdPrev7S,
+      unit: 's',
+      doel: KPI_DOELEN.reactietijd_doel_s,
+      rangeLabel: 'Laatste 7 dagen',
+      compareLabel: 'vs vorige week',
+      invertDelta: true,
+      iconKind: 'clock',
+    },
+  }
 
   // Komende afspraken — toekomstige, top 4.
   const today = new Date()
@@ -223,29 +314,7 @@ export default async function OverzichtPage({
         }}
       />
 
-      <div className="dash-kpi-grid" style={{ marginBottom: 20 }}>
-        <KpiCard
-          label="Nieuwe leads (week)"
-          value={nieuweLeadsWeek}
-          trend={trendLast7}
-        />
-        <KpiCard
-          label="Conversie offerte→klant"
-          value={conversiePct}
-          suffix="%"
-        />
-        <KpiCard
-          label="Reactietijd (gem.)"
-          value={reactietijdS}
-          suffix="s"
-          invertDelta
-        />
-        <KpiCard
-          label="Omzet deze maand"
-          value={Math.round(omzetMaand)}
-          prefix="€"
-        />
-      </div>
+      <KpiModule metrics={kpiMetrics} active={activeKpi} hrefBase="/dashboard" />
 
       <div className={styles.mainGrid}>
         {/* LINKERKOLOM — trend chart + onder daaronder funnel + owner-acties */}
