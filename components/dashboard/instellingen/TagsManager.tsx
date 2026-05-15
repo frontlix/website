@@ -79,15 +79,15 @@ export function TagsManager({ initialTags }: { initialTags: TagWithCount[] }) {
         setError(result.error)
         return
       }
-      // Optimistic: voeg toe met tijdelijke id (server-refresh haalt de
-      // echte data binnen via revalidatePath).
+      // Server retourneert de echte row (incl. uuid). Die zetten we direct
+      // in state — geen temp-id meer die later crash't op delete.
       setTags((prev) => [
         ...prev,
         {
-          id: `temp-${Date.now()}`,
-          naam,
-          kleur: null,
-          aangemaakt_op: new Date().toISOString(),
+          id: result.tag.id,
+          naam: result.tag.naam,
+          kleur: result.tag.kleur,
+          aangemaakt_op: result.tag.aangemaakt_op,
           count: 0,
           isSystem: false,
         },
@@ -98,7 +98,6 @@ export function TagsManager({ initialTags }: { initialTags: TagWithCount[] }) {
   }
 
   const onDelete = (tag: TagWithCount) => {
-    if (tag.isSystem) return
     if (
       tag.count > 0 &&
       !window.confirm(
@@ -197,8 +196,9 @@ export function TagsManager({ initialTags }: { initialTags: TagWithCount[] }) {
         <Sparkles size={13} className={styles.infoIcon} />
         <span>
           <strong>Systeem-tags</strong> ({renderSystemList()}) worden
-          automatisch door Surface gezet op basis van bot-detectie en kunnen
-          niet verwijderd worden — wel hernoemen of kleur aanpassen.
+          automatisch door Surface gezet op basis van bot-detectie. Je kunt
+          ze verwijderen, hernoemen of een andere kleur geven — bij refresh
+          van deze pagina worden ontbrekende systeem-tags opnieuw aangemaakt.
         </span>
       </div>
     </div>
@@ -249,20 +249,17 @@ function TagCard({
           ? 'nog niet gebruikt'
           : `${tag.count} lead${tag.count === 1 ? '' : 's'}`}
       </div>
-      {tag.isSystem ? (
-        <span className={styles.sysBadge}>SYS</span>
-      ) : (
-        <button
-          type="button"
-          className={styles.deleteBtn}
-          onClick={onDelete}
-          disabled={disabled}
-          aria-label={`Verwijder tag ${tag.naam}`}
-          title="Verwijderen"
-        >
-          <X size={13} />
-        </button>
-      )}
+      {tag.isSystem && <span className={styles.sysBadge}>SYS</span>}
+      <button
+        type="button"
+        className={styles.deleteBtn}
+        onClick={onDelete}
+        disabled={disabled}
+        aria-label={`Verwijder tag ${tag.naam}`}
+        title="Verwijderen"
+      >
+        <X size={13} />
+      </button>
     </div>
   )
 }

@@ -5,27 +5,33 @@ import { getDashboardSupabase } from './supabase-server'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
+export type CreateTagResult =
+  | {
+      ok: true
+      tag: {
+        id: string
+        naam: string
+        kleur: string | null
+        aangemaakt_op: string
+      }
+    }
+  | { ok: false; error: string }
+
 const MAX_NAAM = 32
 
-/** Synced met `SYSTEM_TAG_NAMES` in tags-queries.ts — system-tags zijn
- *  beschermd tegen verwijdering, alleen hernoemen / kleur aanpassen mag. */
-const SYSTEM_TAG_NAMES = new Set([
-  'Particulier',
-  'Zakelijk',
-  'Korting',
-  'Buiten radius',
-  'Review',
-])
-
 /**
- * Maak een nieuwe (user-)tag aan. Faalt als de naam leeg/te lang is, of als
+ * Maak een nieuwe tag aan. Faalt als de naam leeg/te lang is, of als
  * een tag met dezelfde naam (case-insensitive) al bestaat — anders krijg je
  * dubbele tags in de UI.
+ *
+ * Retourneert de aangemaakte row (incl. echte id) zodat de UI 'm meteen
+ * met de juiste id in state kan zetten — anders crashed een directe
+ * verwijder-actie op een tijdelijke client-side id.
  */
 export async function createTag(input: {
   naam: string
   kleur?: string | null
-}): Promise<ActionResult> {
+}): Promise<CreateTagResult> {
   const naam = input.naam.trim()
   if (!naam) return { ok: false, error: 'Naam is verplicht.' }
   if (naam.length > MAX_NAAM) {
@@ -45,42 +51,41 @@ export async function createTag(input: {
     return { ok: false, error: `Tag "${naam}" bestaat al.` }
   }
 
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('tags')
     .insert({ naam, kleur: input.kleur ?? null })
+    .select('id, naam, kleur, aangemaakt_op')
+    .single()
 
-  if (error) {
+  if (error || !inserted) {
     console.error('[createTag] failed:', error)
     return { ok: false, error: 'Aanmaken mislukt — geen rechten?' }
   }
 
   revalidatePath('/instellingen')
-  return { ok: true }
+  return { ok: true, tag: inserted }
 }
 
 /**
- * Verwijder een tag. System-tags (Korting, Buiten radius, etc.) zijn
- * beschermd — Surface kent ze automatisch toe en weer-aanmaken zou
- * verwarrend zijn. Cascade via FK regelt opruiming van `lead_tags`-rijen.
+ * Verwijder een tag. Geen onderscheid meer tussen system- en user-tags —
+ * alles is verwijderbaar. Cascade via FK regelt opruiming van `lead_tags`.
+ *
+ * Let op: system-tags (Particulier, Zakelijk, etc.) worden automatisch
+ * opnieuw aangemaakt zodra de tags-pagina geladen wordt (zie
+ * `ensureSystemTagsExist` in tags-queries.ts) — wil je een definitieve
+ * verwijdering, schakel die seed dan ook uit.
  */
 export async function deleteTag(tagId: string): Promise<ActionResult> {
   if (!tagId) return { ok: false, error: 'Ongeldige tag-id.' }
 
   const supabase = await getDashboardSupabase()
 
-  // Beschermen tegen verwijdering van system-tags.
   const { data: tag } = await supabase
     .from('tags')
-    .select('naam')
+    .select('id')
     .eq('id', tagId)
     .maybeSingle()
   if (!tag) return { ok: false, error: 'Tag niet gevonden.' }
-  if (SYSTEM_TAG_NAMES.has(tag.naam)) {
-    return {
-      ok: false,
-      error: 'System-tags kunnen niet verwijderd worden — wel hernoemen of kleur aanpassen.',
-    }
-  }
 
   const { error } = await supabase.from('tags').delete().eq('id', tagId)
   if (error) {
