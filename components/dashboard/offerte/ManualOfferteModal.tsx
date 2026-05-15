@@ -101,6 +101,30 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     return () => clearTimeout(t)
   }, [data.postcode, data.huisnummer])
 
+  // Zusje van het werk-adres effect, maar voor factuur-adres. Hier
+  // gebruiken we het km-resultaat niet (afstand hoort bij werk). Alleen
+  // straat + plaats vullen als ze leeg zijn. Triggert ook wanneer de
+  // user 'factuur is gelijk aan werk' uitvinkt en daarna gaat typen.
+  useEffect(() => {
+    if (data.factuur_zelfde) return
+    const pc = data.factuur_postcode.trim()
+    const hn = data.factuur_huisnummer.trim()
+    if (!pc || !hn) return
+    const t = setTimeout(() => {
+      getAutoAfstandKm(pc, hn).then((res) => {
+        if (!res.ok) return
+        setData((prev) => ({
+          ...prev,
+          factuur_straat:
+            prev.factuur_straat.trim() === '' && res.street ? res.street : prev.factuur_straat,
+          factuur_plaats:
+            prev.factuur_plaats.trim() === '' && res.city ? res.city : prev.factuur_plaats,
+        }))
+      })
+    }, 400)
+    return () => clearTimeout(t)
+  }, [data.factuur_zelfde, data.factuur_postcode, data.factuur_huisnummer])
+
   // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
   // (voegzand_m2_per_zak), met 5 als laatste vangnet.
   useEffect(() => {

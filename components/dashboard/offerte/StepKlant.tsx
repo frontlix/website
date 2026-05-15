@@ -213,13 +213,16 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
               gap: 12,
             }}
           >
-            <div className={styles.grid21}>
-              <Field label="Straat">
+            {/* Zelfde volgorde als werk-adres: postcode + huisnummer
+                eerst zodat de auto-fill (straat, plaats) zich aankondigt
+                voordat de user die velden zelf invult. */}
+            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12 }}>
+              <Field label="Postcode">
                 <input
                   className={styles.input}
-                  value={data.factuur_straat}
-                  onChange={(e) => set('factuur_straat', e.target.value)}
-                  placeholder="Bv. Postbusstraat"
+                  value={data.factuur_postcode}
+                  onChange={(e) => set('factuur_postcode', e.target.value)}
+                  placeholder="2611 GH"
                 />
               </Field>
               <Field label="Huisnummer">
@@ -231,13 +234,13 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
                 />
               </Field>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 12 }}>
-              <Field label="Postcode">
+            <div className={styles.grid21}>
+              <Field label="Straat">
                 <input
                   className={styles.input}
-                  value={data.factuur_postcode}
-                  onChange={(e) => set('factuur_postcode', e.target.value)}
-                  placeholder="2611 GH"
+                  value={data.factuur_straat}
+                  onChange={(e) => set('factuur_straat', e.target.value)}
+                  placeholder="Bv. Postbusstraat"
                 />
               </Field>
               <Field label="Plaats">
