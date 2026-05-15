@@ -64,6 +64,7 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             className={styles.input}
             value={data.telefoon}
             onChange={(e) => set('telefoon', e.target.value)}
+            onFocus={() => setPhoneTouched(false)}
             onBlur={() => setPhoneTouched(true)}
             placeholder="06 - 12 34 56 78"
             inputMode="tel"
@@ -77,6 +78,7 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             className={styles.input}
             value={data.email}
             onChange={(e) => set('email', e.target.value)}
+            onFocus={() => setEmailTouched(false)}
             onBlur={() => setEmailTouched(true)}
             placeholder="jan@voorbeeld.nl"
             inputMode="email"
