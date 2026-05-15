@@ -2,28 +2,33 @@ import Link from 'next/link'
 import { ArrowUp, ArrowDown, Flame } from 'lucide-react'
 import {
   type KpiMetric,
+  type ExtraMetric,
   formatKpiValue,
   computeDelta,
 } from './kpi-types'
 import styles from './KpiMiniCard.module.css'
 
 /**
- * Compacte KPI-kaart die je naast de hero ziet. Klik op de kaart maakt
- * 'm de nieuwe active (hero) — werkt via URL-param `?kpi=...`.
+ * Compacte KPI-kaart die je naast de hero ziet.
+ *
+ * Twee gebruiken:
+ * - Klikbaar (via `href`) → klik maakt 'm de nieuwe active (hero).
+ *   Gebruikt voor de drie niet-actieve tab-able metrics.
+ * - Statisch (geen `href`) → puur informatief, geen click-actie.
+ *   Gebruikt voor de "Offertes open"-extra metric die geen hero kan zijn.
  */
 export function KpiMiniCard({
   metric,
-  hrefBase,
+  href,
 }: {
-  metric: KpiMetric
-  /** Pathname + bestaande query-params, zonder ?kpi=. */
-  hrefBase: string
+  metric: KpiMetric | ExtraMetric
+  href?: string
 }) {
   const { prefix, number, suffix } = formatKpiValue(metric.value, metric.unit)
-  const delta = computeDelta(metric)
+  const delta = computeDelta(metric as KpiMetric)
 
-  return (
-    <Link href={`${hrefBase}?kpi=${metric.key}`} className={styles.card} scroll={false}>
+  const content = (
+    <>
       <div className={styles.head}>
         <span className={styles.label}>{metric.label}</span>
         {delta.uitschieter && (
@@ -38,13 +43,22 @@ export function KpiMiniCard({
         {suffix && <span className={styles.suffix}>{suffix}</span>}
       </div>
       <div className={`${styles.delta} ${delta.up ? styles.deltaUp : styles.deltaDown}`}>
-        {delta.up ? (
+        {delta.display !== '—' && (delta.up ? (
           <ArrowUp size={12} strokeWidth={2.5} />
         ) : (
           <ArrowDown size={12} strokeWidth={2.5} />
-        )}
+        ))}
         {delta.display}
       </div>
-    </Link>
+    </>
   )
+
+  if (href) {
+    return (
+      <Link href={href} className={`${styles.card} ${styles.clickable}`} scroll={false}>
+        {content}
+      </Link>
+    )
+  }
+  return <div className={styles.card}>{content}</div>
 }

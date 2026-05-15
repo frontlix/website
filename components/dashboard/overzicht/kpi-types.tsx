@@ -1,4 +1,4 @@
-import { Wallet, Inbox, TrendingUp, Clock } from 'lucide-react'
+import { Wallet, Inbox, TrendingUp, Clock, FileText } from 'lucide-react'
 import type { ComponentType, ReactElement } from 'react'
 
 /**
@@ -39,14 +39,22 @@ export type KpiMetric = {
   /** Voor reactietijd: lager is beter, dus diff-teken inverteren. */
   invertDelta?: boolean
   /** Icon voor de mini-card + hero-badge. */
-  iconKind: 'wallet' | 'inbox' | 'trending' | 'clock'
+  iconKind: 'wallet' | 'inbox' | 'trending' | 'clock' | 'file'
 }
+
+/**
+ * "Extra"-metric die altijd als mini-card naast de actieve hero
+ * wordt getoond, maar geen eigen tab heeft (bv. "Offertes open" — een
+ * stand-snapshot ipv een periode-totaal).
+ */
+export type ExtraMetric = Omit<KpiMetric, 'key'> & { key: string }
 
 const ICONS: Record<KpiMetric['iconKind'], ComponentType<{ size?: number; strokeWidth?: number }>> = {
   wallet: Wallet,
   inbox: Inbox,
   trending: TrendingUp,
   clock: Clock,
+  file: FileText,
 }
 
 export function renderIcon(kind: KpiMetric['iconKind'], size = 18): ReactElement {

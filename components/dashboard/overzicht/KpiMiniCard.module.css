@@ -8,14 +8,18 @@
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
-  cursor: pointer;
   transition: background 0.12s, border-color 0.12s, transform 0.08s;
 }
-.card:hover {
+
+/* Alleen klikbare minis (Link-variant) krijgen pointer + hover. */
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
   background: var(--card-hover-bg, rgba(0, 0, 0, 0.02));
   border-color: var(--card-hover-border, rgba(0, 0, 0, 0.12));
 }
-.card:active {
+.clickable:active {
   transform: translateY(1px);
 }
 

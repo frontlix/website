@@ -14,6 +14,7 @@ import {
   countLeads,
   countConverted,
   countOffertesVerstuurd,
+  countOpenOffertes,
   countAkkoordIn,
   avgOfferteWaarde,
   avgReactietijdMs,
@@ -35,7 +36,12 @@ import { TrendRangeToggle } from '@/components/dashboard/overzicht/TrendRangeTog
 import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
 import { SurfaceDailySummary } from '@/components/dashboard/overzicht/SurfaceDailySummary'
 import { KpiModule, parseKpiKey } from '@/components/dashboard/overzicht/KpiModule'
-import { KPI_DOELEN, type KpiKey, type KpiMetric } from '@/components/dashboard/overzicht/kpi-types'
+import {
+  KPI_DOELEN,
+  type KpiKey,
+  type KpiMetric,
+  type ExtraMetric,
+} from '@/components/dashboard/overzicht/kpi-types'
 import { LiveActivityFocus } from '@/components/dashboard/overzicht/LiveActivityFocus'
 import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import styles from './page.module.css'
@@ -104,6 +110,7 @@ export default async function OverzichtPage({
     convertedPrev30d,
     reactietijdLast7Ms,
     reactietijdPrev7Ms,
+    openOffertes,
   ] = await Promise.all([
     countLeads(maand),
     countConverted(maand),
@@ -131,6 +138,7 @@ export default async function OverzichtPage({
     countConverted(prev30),
     avgReactietijdMs(week7d),
     avgReactietijdMs(prevWeek7d),
+    countOpenOffertes(),
   ])
 
   const tenant = tenantRaw.data as { chatbot_naam: string | null } | null
@@ -204,6 +212,21 @@ export default async function OverzichtPage({
       invertDelta: true,
       iconKind: 'clock',
     },
+  }
+
+  // Extra mini-card: huidige stand "Offertes open" (geen tab, niet
+  // klikbaar). Geen meaningful prev-vergelijking voor stock-metrics —
+  // delta laten we op 0 zodat de mini "—" toont i.p.v. een misleidende ↑.
+  const extraOffertesOpen: ExtraMetric = {
+    key: 'offertes_open',
+    label: 'Offertes open',
+    value: openOffertes,
+    prevValue: openOffertes,
+    unit: 'count',
+    doel: 0,
+    rangeLabel: 'Nu open',
+    compareLabel: '',
+    iconKind: 'file',
   }
 
   // Komende afspraken — toekomstige, top 4.
@@ -332,7 +355,12 @@ export default async function OverzichtPage({
         }}
       />
 
-      <KpiModule metrics={kpiMetrics} active={activeKpi} hrefBase="/dashboard" />
+      <KpiModule
+        metrics={kpiMetrics}
+        active={activeKpi}
+        hrefBase="/dashboard"
+        extraMetric={extraOffertesOpen}
+      />
 
       <div className={styles.mainGrid}>
         {/* LINKERKOLOM — trend chart + onder daaronder funnel + owner-acties */}
