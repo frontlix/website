@@ -6,12 +6,24 @@ import { getDashboardSupabase } from './supabase-server'
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
 /**
- * Welke templates kunnen vanuit /instellingen?section=opening worden
- * voorgesteld. Hardcoded omdat de source-of-truth in de Surface-config
- * (Python service) zit. Een aanvraag muteert die config niet — Frontlix
- * past hem handmatig toe na Meta-goedkeuring.
+ * Welke templates kunnen via de aanvraag-flow worden voorgesteld. Hardcoded
+ * omdat de source-of-truth in de Surface-config (Python service) zit. Een
+ * aanvraag muteert die config niet — Frontlix past hem handmatig toe na
+ * Meta-goedkeuring (WhatsApp Business Templates).
+ *
+ * - `lead_intake_*` → openingsbericht-templates (per hoofddienst)
+ * - `reminder_1/2/3` → herinnerings-templates die Surface stuurt wanneer
+ *   een klant niet reageert op de offerte. De DELAY (`reminder_dag_X` in
+ *   tenant_settings) past de owner direct aan; alleen de TEKST loopt
+ *   via Meta-approval.
  */
-const ALLOWED_TEMPLATES = ['lead_intake_oprit', 'lead_intake_onkruid'] as const
+const ALLOWED_TEMPLATES = [
+  'lead_intake_oprit',
+  'lead_intake_onkruid',
+  'reminder_1',
+  'reminder_2',
+  'reminder_3',
+] as const
 type TemplateNaam = (typeof ALLOWED_TEMPLATES)[number]
 
 function isAllowedTemplate(s: string): s is TemplateNaam {
