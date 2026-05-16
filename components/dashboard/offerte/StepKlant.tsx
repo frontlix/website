@@ -147,7 +147,18 @@ function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase()
 }
 
-export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }) {
+export function StepKlant({
+  data,
+  set,
+  onBeforeAiFill,
+}: {
+  data: ManualOfferteData
+  set: SetFn
+  // Optionele hook die vlak vóór de AI-set-calls wordt aangeroepen.
+  // ManualOfferteModal gebruikt 'm om een effect te suppressen dat
+  // anders de net-ge-extracteerde zakken-aantallen overschrijft.
+  onBeforeAiFill?: () => void
+}) {
   // Pas waarschuwingen tonen als de user het veld heeft verlaten —
   // anders flikkert "geen geldig nummer" al bij de eerste toets.
   const [phoneTouched, setPhoneTouched] = useState(false)
@@ -191,6 +202,10 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
   // staan voor velden die de AI niet kon vinden. `wensen` gaat naar
   // `notitie` (de begeleidende tekst-veld in stap 4).
   const handleAiExtracted = (f: ExtractedFields) => {
+    // Vertel de modal dat 'ie het auto-zakken-effect moet skippen,
+    // anders overschrijft het effect een AI-extracted aantal direct
+    // met Math.ceil(m2 / dekking).
+    onBeforeAiFill?.()
     if (f.naam) set('naam', f.naam)
     if (f.bedrijf) set('bedrijf', f.bedrijf)
     if (f.telefoon) set('telefoon', f.telefoon)
@@ -215,12 +230,48 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
     if (f.hoofdcategorie) set('hoofdcategorie', f.hoofdcategorie)
     if (f.sub_diensten && f.sub_diensten.length > 0) set('sub', f.sub_diensten)
     if (typeof f.m2 === 'number' && f.m2 > 0) set('m2', f.m2)
+
+    // Voegzand normaal — bij actief=true mag het auto-zakken-effect in
+    // ManualOfferteModal het aantal nog overschrijven, behalve als de
+    // user expliciet een aantal heeft genoemd. Daarom set het aantal
+    // ná de boolean (zelfde tick, react batched).
     if (f.voegzand_normaal !== null) set('voegzand_normaal_actief', f.voegzand_normaal)
+    if (typeof f.voegzand_normaal_zakken === 'number' && f.voegzand_normaal_zakken > 0) {
+      set('voegzand_normaal_zakken', f.voegzand_normaal_zakken)
+    }
+    if (typeof f.voegzand_normaal_prijs === 'number' && f.voegzand_normaal_prijs > 0) {
+      set('voegzand_normaal_prijs', f.voegzand_normaal_prijs)
+    }
+
     if (f.voegzand_onkruidwerend !== null) {
       set('voegzand_onkruidwerend_actief', f.voegzand_onkruidwerend)
     }
+    if (typeof f.voegzand_onkruidwerend_zakken === 'number' && f.voegzand_onkruidwerend_zakken > 0) {
+      set('voegzand_onkruidwerend_zakken', f.voegzand_onkruidwerend_zakken)
+    }
+    if (typeof f.voegzand_onkruidwerend_prijs === 'number' && f.voegzand_onkruidwerend_prijs > 0) {
+      set('voegzand_onkruidwerend_prijs', f.voegzand_onkruidwerend_prijs)
+    }
+
+    // Kleur — als AI iets teruggeeft, vervangen we de defaults; anders
+    // raken we de kleurkeuze niet aan (default = naturel aan).
+    if (f.kleur_naturel !== null) set('kleur_naturel', f.kleur_naturel)
+    if (f.kleur_antraciet !== null) set('kleur_antraciet', f.kleur_antraciet)
+
     if (f.planten_afschermen !== null) set('planten_afschermen_actief', f.planten_afschermen)
+    if (typeof f.planten_afschermen_rollen === 'number' && f.planten_afschermen_rollen > 0) {
+      set('planten_afschermen_rollen', f.planten_afschermen_rollen)
+    }
+    if (typeof f.planten_afschermen_prijs === 'number' && f.planten_afschermen_prijs > 0) {
+      set('planten_afschermen_prijs', f.planten_afschermen_prijs)
+    }
+
     if (f.groene_aanslag !== null) set('groene_aanslag', f.groene_aanslag ? 'ja' : 'nee')
+
+    if (f.onderhoud_weken === 4 || f.onderhoud_weken === 8 || f.onderhoud_weken === 12 || f.onderhoud_weken === 16) {
+      set('onderhoud_weken', f.onderhoud_weken)
+    }
+
     if (f.wensen) set('notitie', f.wensen)
   }
 

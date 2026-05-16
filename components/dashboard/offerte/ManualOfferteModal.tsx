@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useTransition } from 'react'
+import { useState, useMemo, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   X,
@@ -125,9 +125,22 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     return () => clearTimeout(t)
   }, [data.factuur_zelfde, data.factuur_postcode, data.factuur_huisnummer])
 
+  // Wordt op `true` gezet door StepKlant net vóór een AI-fill. Het
+  // auto-zakken-effect skipt dan één run, zodat een door de AI
+  // geëxtraheerd zakken-aantal (bv. "7 zakken onkruidwerend") niet
+  // direct overschreven wordt door de m²-suggestie.
+  const aiJustFilledZakken = useRef(false)
+  const suppressNextZakkenAuto = () => {
+    aiJustFilledZakken.current = true
+  }
+
   // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
   // (voegzand_m2_per_zak), met 5 als laatste vangnet.
   useEffect(() => {
+    if (aiJustFilledZakken.current) {
+      aiJustFilledZakken.current = false
+      return
+    }
     const dekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5
     const suggested = Math.ceil((Number(data.m2) || 0) / dekking)
     setData((prev) => {
@@ -236,7 +249,13 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         {/* Body */}
         <div className={styles.body}>
           <div className={styles.bodyStack}>
-            {step === 1 && <StepKlant data={data} set={set} />}
+            {step === 1 && (
+              <StepKlant
+                data={data}
+                set={set}
+                onBeforeAiFill={suppressNextZakkenAuto}
+              />
+            )}
             {step === 2 && <StepWerk data={data} set={set} />}
             {step === 3 && <StepOfferte data={data} set={set} rules={rules} totals={totals} />}
             {step === 4 && <StepVersturen data={data} set={set} rules={rules} totals={totals} />}
