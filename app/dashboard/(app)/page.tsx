@@ -29,6 +29,8 @@ import { Pill } from '@/components/dashboard/ui/Pill'
 import { Trechter } from '@/components/dashboard/overzicht/Trechter'
 import { EerstDitDoen } from '@/components/dashboard/overzicht/EerstDitDoen'
 import { deriveActions, countByTone } from '@/lib/dashboard/eerst-dit-doen'
+import { DagrapportDrawer } from '@/components/dashboard/overzicht/DagrapportDrawer'
+import { getDagrapport } from '@/lib/dashboard/dagrapport-queries'
 import {
   LiveActivityFeed,
   type ActivityItem,
@@ -55,7 +57,12 @@ const RANGE_DAYS: Record<TrendRange, number> = { '7d': 7, '28d': 28, '90d': 90 }
 export default async function OverzichtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trend?: string; kpi?: string; focus?: string }>
+  searchParams: Promise<{
+    trend?: string
+    kpi?: string
+    focus?: string
+    dagrapport?: string
+  }>
 }) {
   const { user } = await requireApprovedUser()
   const supabase = await getDashboardSupabase()
@@ -68,6 +75,7 @@ export default async function OverzichtPage({
   const trendDays = RANGE_DAYS[trendRange]
   const activeKpi: KpiKey = parseKpiKey(sp.kpi)
   const focusMode = sp.focus === 'live'
+  const dagrapportOpen = sp.dagrapport === '1'
 
   const now = new Date()
   const week = periodToRange('deze-week', now)
@@ -304,6 +312,10 @@ export default async function OverzichtPage({
   // V1 server-rendered op page load; realtime-subscriptie staat op de roadmap.
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
+  // Dagrapport-data alleen ophalen als de drawer open is — voorkomt extra
+  // queries op elke pageload. URL-param `?dagrapport=1` triggert het.
+  const dagrapportData = dagrapportOpen ? await getDagrapport(now) : null
+
   // ── Focus-modus: alleen Live activiteit in beeld ────────────────
   // Wordt geactiveerd via "?focus=live" (oog-knop rechtsboven). Geeft een
   // standalone view terug zodat de rest van het dashboard niet rendert.
@@ -485,6 +497,11 @@ export default async function OverzichtPage({
           </div>
         </div>
       </div>
+
+      {/* Dagrapport-drawer — alleen gemount als ?dagrapport=1 in de URL
+          staat. Server-pre-fetched data wordt meegegeven, het paneel zelf
+          is een client-component voor de sluit-flow (router.replace). */}
+      {dagrapportData && <DagrapportDrawer data={dagrapportData} />}
     </>
   )
 }
