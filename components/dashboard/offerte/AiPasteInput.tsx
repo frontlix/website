@@ -60,7 +60,7 @@ export function AiPasteInput({ onExtracted }: Props) {
             Surface vult naam, adres, m² en wensen automatisch in
           </span>
         </div>
-        <span className={styles.aiBadge}>AI</span>
+        <span className={styles.aiBadge}>BETA</span>
       </button>
     )
   }
