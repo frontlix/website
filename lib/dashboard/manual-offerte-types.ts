@@ -18,6 +18,11 @@ export type SubDienst =
 export type SendKanaal = 'wa' | 'mail' | 'both' | 'manual'
 
 export type ManualOfferteData = {
+  // koppeling — gevuld als de wizard via "zoek bestaande klant" een
+  // bestaande lead heeft geselecteerd. Bij submit gebruikt de action dit
+  // om de offerte onder de bestaande lead te hangen i.p.v. een nieuwe
+  // lead aan te maken.
+  existing_lead_id: string | null
   // klant
   naam: string
   bedrijf: string
@@ -85,6 +90,7 @@ export type TotalsComputed = {
 }
 
 export const DEFAULTS: ManualOfferteData = {
+  existing_lead_id: null,
   naam: '',
   bedrijf: '',
   telefoon: '',

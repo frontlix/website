@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
+import { ExistingClientSearch } from './ExistingClientSearch'
+import type { ExistingClientMatch } from '@/lib/dashboard/manual-offerte-search'
 import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
@@ -161,8 +163,44 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
       ? suggestEmailFix(data.email)
       : null
 
+  // Vul de klant-velden vanuit een bestaande lead. Adres laat de
+  // postcode-auto-fetch vervolgens met rust (afstand_km wordt opnieuw
+  // berekend door het effect in ManualOfferteModal). Sub-dienst /
+  // m² / etc. raken we expliciet niet aan — dit is alleen "klant".
+  const handlePickExisting = (m: ExistingClientMatch) => {
+    set('existing_lead_id', m.lead_id)
+    set('naam', m.naam ?? '')
+    set('bedrijf', m.bedrijfsnaam ?? '')
+    set('telefoon', m.telefoon ?? '')
+    set('email', m.email ?? '')
+    set('postcode', m.postcode ?? '')
+    set('huisnummer', m.huisnummer ?? '')
+    set('straat', m.straat ?? '')
+    set('plaats', m.plaats ?? '')
+  }
+
+  // Loskoppelen: alleen het id wegklikken. Velden laten staan zodat de
+  // user gewoon kan doortikken — anders verlies je z'n net-ingevulde
+  // edits door één misklik.
+  const handleClearExisting = () => set('existing_lead_id', null)
+
   return (
     <>
+      <ExistingClientSearch
+        pickedLeadId={data.existing_lead_id}
+        pickedNaam={data.naam}
+        onPick={handlePickExisting}
+        onClear={handleClearExisting}
+      />
+
+      {!data.existing_lead_id && (
+        <div className={styles.orDivider}>
+          <span className={styles.orDividerLine} />
+          <span className={styles.orDividerText}>of vul handmatig in</span>
+          <span className={styles.orDividerLine} />
+        </div>
+      )}
+
       <div>
         <div className={styles.sectionLabel}>Klantgegevens</div>
         <div className={styles.sectionSub}>
