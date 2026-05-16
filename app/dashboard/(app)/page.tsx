@@ -27,7 +27,8 @@ import { AreaChart } from '@/components/dashboard/ui/AreaChart'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { Trechter } from '@/components/dashboard/overzicht/Trechter'
-import { OwnerActies } from '@/components/dashboard/overzicht/OwnerActies'
+import { EerstDitDoen } from '@/components/dashboard/overzicht/EerstDitDoen'
+import { deriveActions, countByTone } from '@/lib/dashboard/eerst-dit-doen'
 import {
   LiveActivityFeed,
   type ActivityItem,
@@ -287,10 +288,17 @@ export default async function OverzichtPage({
     },
   ].map((r) => ({ ...r, pct: Math.round((r.count / totalWeek) * 100) }))
 
-  // Owner-acties — leads in 'onderhandelen' fase (= wacht op owner-besluit)
-  const ownerActieLeads = allLeads
-    .filter((l) => l.gesprek_fase === 'onderhandelen')
-    .slice(0, 10)
+  // "Eerst dit doen" — gederiveerde prioriteits-acties uit de leads-lijst.
+  // Max 5 zodat het lijstje overzichtelijk blijft; rest moet de owner via
+  // de leads-tab benaderen.
+  const eerstDitDoenActies = deriveActions(allLeads, 5)
+  const eerstDitDoenCounts = countByTone(eerstDitDoenActies)
+
+  // Owner-acties trend-stat = aantal leads in 'onderhandelen' fase.
+  // Niet hetzelfde als eerstDitDoenActies (die is breder gederiveerd).
+  const ownerActieCount = allLeads.filter(
+    (l) => l.gesprek_fase === 'onderhandelen',
+  ).length
 
   // Activity feed — gecombineerde stream over 4 event-types (new/wa/appt/quote).
   // V1 server-rendered op page load; realtime-subscriptie staat op de roadmap.
@@ -355,6 +363,16 @@ export default async function OverzichtPage({
         }}
       />
 
+      {/* "Eerst dit doen" — alleen renderen als er daadwerkelijk acties zijn.
+          Bij 0 acties verdwijnt de hele sectie zodat het dashboard niet
+          gepollueerd wordt door een leeg blok. */}
+      {eerstDitDoenActies.length > 0 && (
+        <EerstDitDoen
+          actions={eerstDitDoenActies}
+          counts={eerstDitDoenCounts}
+        />
+      )}
+
       <KpiModule
         metrics={kpiMetrics}
         active={activeKpi}
@@ -387,7 +405,7 @@ export default async function OverzichtPage({
               />
               <TrendStat
                 label="Owner-acties"
-                value={String(ownerActieLeads.length)}
+                value={String(ownerActieCount)}
                 sub="nog open"
               />
               <TrendStat
@@ -402,11 +420,9 @@ export default async function OverzichtPage({
             </div>
           </div>
 
-          {/* Sub-rij: trechter + owner-acties naast elkaar */}
-          <div className={styles.subRow}>
-            <Trechter rows={funnelRows} />
-            <OwnerActies leads={ownerActieLeads} />
-          </div>
+          {/* Trechter — staat nu alleen op deze rij; de actie-lijst is
+              verhuisd naar "Eerst dit doen" bovenaan. */}
+          <Trechter rows={funnelRows} />
         </div>
 
         {/* RECHTERKOLOM — live activity feed + komende afspraken */}

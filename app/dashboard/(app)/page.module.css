@@ -27,19 +27,6 @@
   min-width: 0;
 }
 
-/* Sub-rij onder trend chart: trechter + owner-acties naast elkaar */
-.subRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .subRow {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ── Trend-stats: 4 vakjes onder de chart, met verticale dividers ── */
 .trendStats {
   display: grid;
