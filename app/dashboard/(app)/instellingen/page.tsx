@@ -337,6 +337,7 @@ function RemindersSection({
     <SectionCard
       title="Reminders"
       sub="Surface stuurt deze berichten automatisch wanneer een klant niet reageert op de offerte"
+      readOnly={false}
     >
       <RemindersEditor
         bedrijfsnaam={bedrijfsnaam}

@@ -261,9 +261,6 @@ function ReminderCard({
             <span className={styles.counter}>
               {tekst.length} tekens · {woorden} woorden
             </span>
-            <span className={styles.suggestieBadge}>
-              <Sparkles size={11} /> Surface-suggestie
-            </span>
           </div>
 
           <div className={styles.variablesBox}>

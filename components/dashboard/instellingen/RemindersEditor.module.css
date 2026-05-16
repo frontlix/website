@@ -140,19 +140,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.suggestieBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--fg-muted);
-  background: var(--surface-2);
-  padding: 3px 8px;
-  border-radius: 9999px;
-  border: 1px solid var(--border);
-}
-
 /* ── Variables ────────────────────────────────────────── */
 .variablesBox {
   margin-top: 4px;
