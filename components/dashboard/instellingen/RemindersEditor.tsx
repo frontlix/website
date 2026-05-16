@@ -65,10 +65,19 @@ const REMINDERS = [
   },
 ] as const
 
-// Meta WhatsApp Business Template stuurt alleen {{1}} = voornaam mee
-// (zie src/services/reminders.ts in bot-repo). Andere variabelen zouden
-// niet vervangen worden, dus tonen we ze ook niet als optie.
-const VARIABLES = ['{voornaam}'] as const
+// Beschikbare variabelen voor reminder-templates. Let op: de huidige Meta-
+// templates (`herinnering_1/2/3`) accepteren alleen {{1}} = voornaam — de
+// andere variabelen werken pas wanneer Frontlix een template-aanvraag heeft
+// goedgekeurd én de bot is geüpdatet om extra parameters door te geven.
+const VARIABLES = [
+  '{voornaam}',
+  '{naam}',
+  '{bedrijf}',
+  '{bot_naam}',
+  '{totaal}',
+  '{dienst}',
+  '{geldig_tot}',
+] as const
 
 const MAX_LEN = 1024
 
@@ -184,12 +193,24 @@ function ReminderCard({
     [tekst],
   )
 
-  // Preview: vervang {voornaam} met voorbeeld-naam. Andere variabelen
-  // worden niet door Meta-template uitgewisseld (zie VARIABLES-comment).
-  const preview = useMemo(
-    () => tekst.replaceAll('{voornaam}', 'Jeroen'),
-    [tekst],
-  )
+  // Preview: vervang variabelen met voorbeeldwaardes (puur visueel — zegt
+  // niets over of de bot ze daadwerkelijk doorgeeft, zie VARIABLES-comment).
+  const preview = useMemo(() => {
+    const geldigTotDate = new Date()
+    geldigTotDate.setDate(geldigTotDate.getDate() + 14)
+    const geldigTot = geldigTotDate.toLocaleDateString('nl-NL', {
+      day: 'numeric',
+      month: 'short',
+    })
+    return tekst
+      .replaceAll('{voornaam}', 'Jeroen')
+      .replaceAll('{naam}', 'Jeroen de Vries')
+      .replaceAll('{bedrijf}', 'Schoon Straatje')
+      .replaceAll('{bot_naam}', 'Surface')
+      .replaceAll('{totaal}', '1.659,85')
+      .replaceAll('{dienst}', 'oprit')
+      .replaceAll('{geldig_tot}', geldigTot)
+  }, [tekst])
 
   return (
     <div className={styles.card}>
