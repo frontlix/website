@@ -26,7 +26,11 @@
   grid-template-columns: 36px 1fr auto 14px;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px 12px 18px;
+  /* Padding match met .dash-card-head (16px 20px) zodat links/rechts content
+     verticaal in lijn staat met de card-titel en de hot/warm-pills bovenaan.
+     Iets meer verticale ademruimte (14px) dan de header zodat rij-content
+     niet platgedrukt aanvoelt. */
+  padding: 14px 20px;
   text-decoration: none;
   color: inherit;
   border-top: 1px solid var(--border);
