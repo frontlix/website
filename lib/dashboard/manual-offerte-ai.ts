@@ -219,10 +219,12 @@ Belangrijk:
 - sub_diensten: kies meerdere als de klant meerdere wensen noemt.
 - wensen: alles wat geen ander veld past — kleurvoorkeur, urgentie, opmerkingen — kort samengevat.
 
-Voegzand & kleur:
-- "voegzand" / "voegen invegen" / "voegen vullen" zonder type → voegzand_normaal=true.
-- "onkruidwerend" / "onkruidwerend voegzand" / "polymeer" → voegzand_onkruidwerend=true.
-- Klant mag beide types kiezen (mix). Aantal zakken / prijs alleen als concreet genoemd.
+Voegzand & kleur — let goed op het onderscheid tussen WERKZAAMHEID en MATERIAAL:
+- "invegen" / "voegen invegen" → dit is een sub-dienst (werkzaamheid). Zet sub_diensten:["invegen"], maar laat voegzand_normaal en voegzand_onkruidwerend BEIDE null tenzij klant expliciet zegt welk type zand.
+- "normaal voegzand" / "standaard voegzand" / "kwarts" / "zilverzand" → voegzand_normaal=true.
+- "onkruidwerend" / "onkruidwerend voegzand" / "polymeer" / "polymeer voegzand" → voegzand_onkruidwerend=true.
+- Alleen "voegzand" zonder type-vermelding → beide null laten (user kiest in de wizard).
+- Klant mag beide types kiezen (mix bij vermelding van beide). Aantal zakken / prijs alleen als concreet genoemd.
 - Kleur "naturel" / "zand" / "lichtgrijs" → kleur_naturel=true. "antraciet" / "donker" / "zwart" → kleur_antraciet=true. Mag beide tegelijk.
 - Bedragen met komma → punt (3,10 → 3.10).
 
