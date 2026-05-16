@@ -43,7 +43,7 @@ const REMINDERS = [
     sub: 'Vriendelijk, zonder druk',
     accent: '#3b82f6',
     default:
-      "Ik heb gisteren de offerte van € {totaal} doorgestuurd. Heb je 'm kunnen bekijken? Even tikje sturen als je nog vragen hebt, dan denk ik graag met je mee.\n\nGroet,\n{bot_naam} namens {bedrijf}",
+      'Hoi {voornaam}, ik wilde even checken of je de offerte goed hebt ontvangen.\n\nMocht je vragen hebben of ergens over twijfelen, stuur gerust een berichtje. Ik denk graag met je mee.',
   },
   {
     key: 'reminder_2',
@@ -52,7 +52,7 @@ const REMINDERS = [
     sub: 'Vraagt expliciet of klant nog interesse heeft',
     accent: '#3b82f6',
     default:
-      "Hoi {voornaam},\n\nNog even een check: is de offerte voor het {dienst} duidelijk? Geen druk hoor — gewoon laten weten of je 'm in beraad houdt of liever afmeldt. Beide is prima.\n\nDe offerte is nog geldig tot {geldig_tot}.",
+      'Hi {voornaam},\n\nEven een berichtje naar aanleiding van de offerte die we je hebben gestuurd.\n\nMocht je nog vragen hebben, iets aangepast willen zien of de offerte samen willen bespreken, dan horen we het graag. We denken graag met je mee.\n\nGroetjes,\nSurface',
   },
   {
     key: 'reminder_3',
@@ -61,30 +61,21 @@ const REMINDERS = [
     sub: 'Laatste poging, met optie tot afmelden',
     accent: '#ef4444',
     default:
-      "Hoi {voornaam},\n\nLaatste tikje — als ik over een paar dagen niks hoor sluit ik de offerte automatisch af. Geen probleem als het niet doorgaat; wel fijn als je het even bevestigt.\n\nWil je 'm toch nog gebruiken? Reageer dan vóór {geldig_tot}.",
+      'Hoi {voornaam},\n\nMochten we deze week niets meer van je horen, dan gaan we ervan uit dat je er op dit moment geen gebruik van wilt maken en sluiten we de offerte voor nu af.\n\nUiteraard kun je op elk moment vrijblijvend opnieuw contact opnemen voor een nieuwe offerte.\n\nNogmaals dank voor je tijd.\n\nGroetjes,\nSurface',
   },
 ] as const
 
-const VARIABLES = [
-  '{voornaam}',
-  '{naam}',
-  '{bedrijf}',
-  '{bot_naam}',
-  '{totaal}',
-  '{dienst}',
-  '{geldig_tot}',
-] as const
+// Meta WhatsApp Business Template stuurt alleen {{1}} = voornaam mee
+// (zie src/services/reminders.ts in bot-repo). Andere variabelen zouden
+// niet vervangen worden, dus tonen we ze ook niet als optie.
+const VARIABLES = ['{voornaam}'] as const
 
 const MAX_LEN = 1024
 
 export function RemindersEditor({
-  bedrijfsnaam,
-  chatbotNaam,
   initialDays,
   aanvragen,
 }: {
-  bedrijfsnaam: string
-  chatbotNaam: string
   initialDays: { 1: number; 2: number; 3: number }
   aanvragen: TemplateAanvraag[]
 }) {
@@ -95,8 +86,6 @@ export function RemindersEditor({
           key={r.key}
           reminder={r}
           initialDays={initialDays[r.num as 1 | 2 | 3]}
-          bedrijfsnaam={bedrijfsnaam}
-          chatbotNaam={chatbotNaam}
           aanvragen={aanvragen.filter((a) => a.template_naam === r.key)}
         />
       ))}
@@ -108,14 +97,10 @@ export function RemindersEditor({
 function ReminderCard({
   reminder,
   initialDays,
-  bedrijfsnaam,
-  chatbotNaam,
   aanvragen,
 }: {
   reminder: (typeof REMINDERS)[number]
   initialDays: number
-  bedrijfsnaam: string
-  chatbotNaam: string
   aanvragen: TemplateAanvraag[]
 }) {
   const router = useRouter()
@@ -199,23 +184,12 @@ function ReminderCard({
     [tekst],
   )
 
-  // Preview: vervang variabelen met voorbeeldwaardes
-  const preview = useMemo(() => {
-    const geldigTotDate = new Date()
-    geldigTotDate.setDate(geldigTotDate.getDate() + 14)
-    const geldigTot = geldigTotDate.toLocaleDateString('nl-NL', {
-      day: 'numeric',
-      month: 'short',
-    })
-    return tekst
-      .replaceAll('{voornaam}', 'Jeroen')
-      .replaceAll('{naam}', 'Jeroen de Vries')
-      .replaceAll('{bedrijf}', bedrijfsnaam || 'Schoon Straatje')
-      .replaceAll('{bot_naam}', chatbotNaam || 'Surface')
-      .replaceAll('{totaal}', '1.659,85')
-      .replaceAll('{dienst}', 'oprit')
-      .replaceAll('{geldig_tot}', geldigTot)
-  }, [tekst, bedrijfsnaam, chatbotNaam])
+  // Preview: vervang {voornaam} met voorbeeld-naam. Andere variabelen
+  // worden niet door Meta-template uitgewisseld (zie VARIABLES-comment).
+  const preview = useMemo(
+    () => tekst.replaceAll('{voornaam}', 'Jeroen'),
+    [tekst],
+  )
 
   return (
     <div className={styles.card}>

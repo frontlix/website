@@ -153,8 +153,6 @@ export default async function InstellingenPage({
           {section === 'reminders' && (
             <RemindersSection
               tenant={tenant}
-              bedrijfsnaam={tenant?.bedrijfsnaam ?? 'Schoon Straatje'}
-              chatbot={tenant?.chatbot_naam ?? 'Surface'}
               aanvragen={templateAanvragen}
             />
           )}
@@ -324,13 +322,9 @@ function OpeningSection({
 /* ── REMINDERS ────────────────────────────────────────── */
 function RemindersSection({
   tenant,
-  bedrijfsnaam,
-  chatbot,
   aanvragen,
 }: {
   tenant: TenantSettings | null
-  bedrijfsnaam: string
-  chatbot: string
   aanvragen: TemplateAanvraag[]
 }) {
   return (
@@ -340,8 +334,6 @@ function RemindersSection({
       readOnly={false}
     >
       <RemindersEditor
-        bedrijfsnaam={bedrijfsnaam}
-        chatbotNaam={chatbot}
         initialDays={{
           1: tenant?.reminder_dag_1 ?? 2,
           2: tenant?.reminder_dag_2 ?? 5,
