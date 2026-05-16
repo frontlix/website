@@ -43,10 +43,104 @@ function normalizeToInternational(raw: string): string {
   return national ? '+316' + national.slice(2) : raw
 }
 
-// Praktische email-check — niet RFC-compleet, wel genoeg om typfouten
-// als "jan@gmail" of "jan.gmail.com" te vangen.
-function isValidEmail(raw: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim())
+// Praktische email-check — niet RFC-compleet, wel een stuk strenger dan
+// "@ + punt". Vangt o.a. ongeldige domeinen ("@glL", "@gmail"), te-korte
+// TLD's, dubbele punten, leading/trailing dots, en respect voor de
+// max-lengtes uit RFC 5321 (64 lokaal, 254 totaal).
+export function isValidEmail(raw: string): boolean {
+  const email = raw.trim()
+  if (email.length === 0 || email.length > 254) return false
+  const at = email.lastIndexOf('@')
+  if (at < 1 || at === email.length - 1) return false
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  if (local.length > 64) return false
+  if (!/^[a-zA-Z0-9._%+-]+$/.test(local)) return false
+  if (local.startsWith('.') || local.endsWith('.') || local.includes('..')) return false
+  // Domein: één of meer labels, gescheiden door punten, eindigend op
+  // een TLD van ≥ 2 letters. Labels mogen geen leading/trailing dash.
+  if (!/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(domain)) return false
+  return true
+}
+
+// Domeinen die je in een NL-context vrijwel altijd ziet. Lijst bewust
+// kort gehouden — voor exotische providers willen we geen false
+// "bedoelde je …?" tonen.
+const COMMON_EMAIL_DOMAINS = [
+  'gmail.com',
+  'hotmail.com',
+  'hotmail.nl',
+  'outlook.com',
+  'outlook.nl',
+  'live.nl',
+  'live.com',
+  'icloud.com',
+  'me.com',
+  'yahoo.com',
+  'yahoo.nl',
+  'ziggo.nl',
+  'kpnmail.nl',
+  'planet.nl',
+  'xs4all.nl',
+  'home.nl',
+  'casema.nl',
+  'quicknet.nl',
+  'tele2.nl',
+  'upcmail.nl',
+]
+
+// Klassieke Levenshtein-implementatie. Klein genoeg (domein-lengtes <
+// ~20) dat de naïeve matrix-aanpak prima werkt; geen libdep nodig.
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0
+  if (a.length === 0) return b.length
+  if (b.length === 0) return a.length
+  const m: number[][] = Array.from({ length: a.length + 1 }, () =>
+    new Array(b.length + 1).fill(0),
+  )
+  for (let i = 0; i <= a.length; i++) m[i][0] = i
+  for (let j = 0; j <= b.length; j++) m[0][j] = j
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + cost)
+    }
+  }
+  return m[a.length][b.length]
+}
+
+// Geeft een gecorrigeerd email-adres terug als het domein binnen
+// edit-distance 1–2 zit van een veelvoorkomende provider; anders null.
+// Korte domeinen (< 5 chars) sluiten we uit — daar wordt afstand 2
+// snel te coulant (bv. "abc.nl" zou suggereren "icloud.com").
+function suggestEmailFix(raw: string): string | null {
+  const email = raw.trim().toLowerCase()
+  const at = email.lastIndexOf('@')
+  if (at < 1) return null
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  if (domain.length < 5) return null
+  if (COMMON_EMAIL_DOMAINS.includes(domain)) return null
+
+  let best: { domain: string; dist: number } | null = null
+  for (const candidate of COMMON_EMAIL_DOMAINS) {
+    const dist = levenshtein(domain, candidate)
+    // Strenger voor korte candidates: anders is bv. "live.nl" ↔ "kpn.nl"
+    // al binnen distance 2. Pak max(2, candidate.length * 0.25) niet —
+    // simpeler: ≤ 2 én niet meer dan de helft van de candidate-lengte.
+    const maxDist = Math.min(2, Math.floor(candidate.length / 2))
+    if (dist > 0 && dist <= maxDist && (best === null || dist < best.dist)) {
+      best = { domain: candidate, dist }
+    }
+  }
+  return best ? `${local}@${best.domain}` : null
+}
+
+// Normaliseert e-mail naar lower-case + zonder spaties. Doe je op blur
+// zodat de user nog tijdens het typen casing/spaties kan zien — pas
+// als ze het veld verlaten "snap" je 'm.
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase()
 }
 
 export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }) {
@@ -59,6 +153,13 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
   const emailFilled = data.email.trim().length > 0
   const phoneWarning = phoneTouched && phoneFilled && !isValidNLMobile(data.telefoon)
   const emailWarning = emailTouched && emailFilled && !isValidEmail(data.email)
+  // Suggestie alleen tonen als (a) format op zich oké is — anders
+  // willen we eerst dat ze de format-fout fixen — en (b) er ook echt
+  // een waarschijnlijke fix bestaat.
+  const emailSuggestion =
+    emailTouched && emailFilled && isValidEmail(data.email)
+      ? suggestEmailFix(data.email)
+      : null
 
   return (
     <>
@@ -110,12 +211,25 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
             value={data.email}
             onChange={(e) => set('email', e.target.value)}
             onFocus={() => setEmailTouched(false)}
-            onBlur={() => setEmailTouched(true)}
+            onBlur={() => {
+              const normalized = normalizeEmail(data.email)
+              if (normalized !== data.email) set('email', normalized)
+              setEmailTouched(true)
+            }}
             placeholder="jan@voorbeeld.nl"
             inputMode="email"
           />
           {emailWarning && (
             <div className={styles.warning}>Let op, geen geldig e-mailadres</div>
+          )}
+          {emailSuggestion && (
+            <button
+              type="button"
+              onClick={() => set('email', emailSuggestion)}
+              className={styles.suggestion}
+            >
+              Bedoelde je <strong>{emailSuggestion}</strong>?
+            </button>
           )}
         </Field>
       </div>

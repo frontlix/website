@@ -210,6 +210,28 @@
   color: #b45309;
   line-height: 1.3;
 }
+
+/* Klikbare "Bedoelde je …?"-suggestie onder een veld. Visueel een
+   subtiele link in de primary-kleur — duidelijk anders dan .warning
+   zodat de user 'm herkent als een actie i.p.v. een waarschuwing. */
+.suggestion {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0;
+  font-size: 11px;
+  color: var(--primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.3;
+}
+.suggestion:hover {
+  text-decoration: underline;
+}
+.suggestion strong {
+  font-weight: 600;
+}
 .textarea {
   width: 100%;
   padding: 10px 12px;

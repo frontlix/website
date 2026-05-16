@@ -19,7 +19,7 @@ import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-action
 import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
-import { StepKlant } from './StepKlant'
+import { StepKlant, isValidEmail } from './StepKlant'
 import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
@@ -152,13 +152,14 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
 
   const valid: Record<1 | 2 | 3, boolean> = {
-    // Telefoon + e-mail zijn beide verplicht (alleen aanwezigheid — een
-    // ongeldig-maar-bewust-gebruikt nummer/adres blokkeren we niet, dat
-    // is alleen een soft warning onder het veld in StepKlant).
+    // Naam + telefoon (aanwezigheid) + e-mail (format-geldig). E-mail
+    // is harder dan telefoon omdat we 'm voor de PDF-verzending nodig
+    // hebben — een typo verspilt een offerte. Telefoon blijft soft
+    // (vaste lijn / buitenlands nummer mag).
     1:
       Boolean(data.naam.trim()) &&
       Boolean(data.telefoon.trim()) &&
-      Boolean(data.email.trim()),
+      isValidEmail(data.email),
     2: data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }
