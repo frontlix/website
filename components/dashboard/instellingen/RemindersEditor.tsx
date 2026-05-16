@@ -237,13 +237,23 @@ function ReminderCard({
             value={days}
             onChange={(e) => setDays(parseInt(e.target.value || '0', 10))}
             onBlur={onDaysBlur}
+            onKeyDown={(e) => {
+              // Enter slaat ook direct op (zonder dat user weg hoeft te klikken).
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                ;(e.target as HTMLInputElement).blur()
+              }
+            }}
             disabled={isPending}
             className={styles.daysInput}
             aria-label="Aantal dagen"
           />
           <span>dagen</span>
           {daysFlash && (
-            <Check size={12} className={styles.daysFlash} aria-label="Opgeslagen" />
+            <span className={styles.daysFlash} aria-label="Opgeslagen">
+              <Check size={12} />
+              Opgeslagen
+            </span>
           )}
         </div>
       </div>
