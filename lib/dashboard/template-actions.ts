@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
+import { getDashboardAdmin } from './supabase-admin'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -91,26 +92,36 @@ export async function requestTemplateChange(
  * de aanvraag nog `pending` is — zodra Frontlix 'm doorzet naar Meta
  * (`forwarded`) of een eindstatus heeft, is annuleren niet meer zinvol.
  *
- * Implementatie: DELETE de rij. We hadden ook een status='cancelled'
- * kunnen toevoegen, maar dat vereist een enum-uitbreiding (CHECK-
- * constraint migratie); voor een geannuleerde-vóór-doorzet-aanvraag
- * heeft een audit-rij weinig waarde.
+ * Implementatie: DELETE de rij via admin-client. RLS op template_aanvragen
+ * heeft geen DELETE-policy voor dashboard-users; auth + ownership-check
+ * regelen we hier in code. Zelfde pattern als `saveTenantBase` in
+ * tenant-base-actions.ts.
  */
 export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> {
   if (!id) return { ok: false, error: 'Ongeldige id.' }
 
+  // Auth-check via user-client.
   const supabase = await getDashboardSupabase()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
-  const { data: row } = await supabase
+  // Status + ownership-check + delete via admin-client (omzeilt RLS).
+  const admin = getDashboardAdmin()
+  const { data: row, error: selErr } = await admin
     .from('template_aanvragen')
-    .select('status')
+    .select('status, aanvrager_user_id')
     .eq('id', id)
     .maybeSingle()
+  if (selErr) {
+    console.error('[cancelTemplateAanvraag] select failed:', selErr)
+    return { ok: false, error: 'Kon aanvraag niet ophalen.' }
+  }
   if (!row) return { ok: false, error: 'Aanvraag niet gevonden.' }
+  if (row.aanvrager_user_id !== user.id) {
+    return { ok: false, error: 'Niet toegestaan — niet jouw aanvraag.' }
+  }
   if (row.status !== 'pending') {
     return {
       ok: false,
@@ -118,10 +129,10 @@ export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> 
     }
   }
 
-  const { error } = await supabase.from('template_aanvragen').delete().eq('id', id)
+  const { error } = await admin.from('template_aanvragen').delete().eq('id', id)
   if (error) {
-    console.error('[cancelTemplateAanvraag] failed:', error)
-    return { ok: false, error: 'Annuleren mislukt — geen rechten?' }
+    console.error('[cancelTemplateAanvraag] delete failed:', error)
+    return { ok: false, error: `Annuleren mislukt: ${error.message}` }
   }
 
   revalidatePath('/instellingen')
