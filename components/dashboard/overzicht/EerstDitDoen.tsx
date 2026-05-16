@@ -20,7 +20,7 @@ export function EerstDitDoen({
   counts: { hot: number; warm: number }
 }) {
   return (
-    <div className="dash-card">
+    <div className={`dash-card ${styles.card}`}>
       <div className="dash-card-head">
         <div>
           <div className="dash-card-title">Eerst dit doen</div>
