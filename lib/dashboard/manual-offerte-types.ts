@@ -105,16 +105,19 @@ export const DEFAULTS: ManualOfferteData = {
   factuur_postcode: '',
   factuur_plaats: '',
   hoofdcategorie: 'oprit_terras_terrein',
-  sub: ['invegen'],
+  // Geen sub-dienst, voegzand-type of kleur standaard aan — user (of
+  // de AI-fill) moet expliciet kiezen. Validatie in stap 2 (sub.length
+  // > 0) blokkeert anders Volgende, dat is de bewuste guardrail.
+  sub: [],
   onderhoud_weken: 8,
   m2: 100,
-  voegzand_normaal_actief: true,
+  voegzand_normaal_actief: false,
   voegzand_normaal_zakken: 20,
   voegzand_normaal_prijs: 2.9,
   voegzand_onkruidwerend_actief: false,
   voegzand_onkruidwerend_zakken: 0,
   voegzand_onkruidwerend_prijs: 20.9,
-  kleur_naturel: true,
+  kleur_naturel: false,
   kleur_antraciet: false,
   groene_aanslag: 'nee',
   korstmos: 'nee',
