@@ -199,6 +199,19 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
     if (f.huisnummer) set('huisnummer', f.huisnummer)
     if (f.straat) set('straat', f.straat)
     if (f.plaats) set('plaats', f.plaats)
+
+    // Factuur-adres: zodra de AI een aparte postcode of huisnummer
+    // teruggeeft, klappen we factuur_zelfde uit (vink van het "gelijk
+    // aan werk-adres"-vakje af) en vullen we de factuur-velden.
+    const heeftFactuur = Boolean(f.factuur_postcode || f.factuur_huisnummer)
+    if (heeftFactuur) {
+      set('factuur_zelfde', false)
+      if (f.factuur_postcode) set('factuur_postcode', f.factuur_postcode)
+      if (f.factuur_huisnummer) set('factuur_huisnummer', f.factuur_huisnummer)
+      if (f.factuur_straat) set('factuur_straat', f.factuur_straat)
+      if (f.factuur_plaats) set('factuur_plaats', f.factuur_plaats)
+    }
+
     if (f.hoofdcategorie) set('hoofdcategorie', f.hoofdcategorie)
     if (f.sub_diensten && f.sub_diensten.length > 0) set('sub', f.sub_diensten)
     if (typeof f.m2 === 'number' && f.m2 > 0) set('m2', f.m2)

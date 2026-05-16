@@ -17,6 +17,14 @@ export type ExtractedFields = {
   huisnummer: string | null
   straat: string | null
   plaats: string | null
+  // Factuur-adres — alleen invullen als de tekst expliciet een ánder
+  // adres voor de factuur noemt. Bij één adres of impliciet hetzelfde
+  // adres → alle factuur-velden null (de wizard houdt dan factuur_zelfde
+  // op true).
+  factuur_postcode: string | null
+  factuur_huisnummer: string | null
+  factuur_straat: string | null
+  factuur_plaats: string | null
   hoofdcategorie: 'oprit_terras_terrein' | 'onkruidbeheersing' | null
   sub_diensten: Array<'invegen' | 'preventieve_onkruid' | 'beschermlaag' | 'onderhoud'>
   m2: number | null
@@ -49,6 +57,10 @@ const SCHEMA = {
     'huisnummer',
     'straat',
     'plaats',
+    'factuur_postcode',
+    'factuur_huisnummer',
+    'factuur_straat',
+    'factuur_plaats',
     'hoofdcategorie',
     'sub_diensten',
     'm2',
@@ -67,6 +79,17 @@ const SCHEMA = {
     huisnummer: { type: ['string', 'null'], description: 'Huisnummer met optionele toevoeging (14, 14A, 14-2)' },
     straat: { type: ['string', 'null'] },
     plaats: { type: ['string', 'null'] },
+    factuur_postcode: {
+      type: ['string', 'null'],
+      description:
+        'Postcode van het factuur-adres — ALLEEN invullen als klant expliciet een ander adres voor de factuur noemt (woorden als "factuur", "facturatie", "factuuradres", "rekening naar"). Anders null.',
+    },
+    factuur_huisnummer: {
+      type: ['string', 'null'],
+      description: 'Huisnummer van het factuur-adres. Zelfde regel: alleen bij expliciet ander adres.',
+    },
+    factuur_straat: { type: ['string', 'null'] },
+    factuur_plaats: { type: ['string', 'null'] },
     hoofdcategorie: {
       type: ['string', 'null'],
       enum: ['oprit_terras_terrein', 'onkruidbeheersing', null],
@@ -103,7 +126,12 @@ Belangrijk:
 - Telefoonnummer: laat de originele schrijfwijze staan (geen normalisatie).
 - m²: enkel als er een concreet getal staat ("ongeveer 120m²" → 120).
 - sub_diensten: kies meerdere als de klant meerdere wensen noemt.
-- wensen: alles wat geen ander veld past — kleurvoorkeur, urgentie, opmerkingen — kort samengevat.`
+- wensen: alles wat geen ander veld past — kleurvoorkeur, urgentie, opmerkingen — kort samengevat.
+
+Factuur-adres:
+- Het normale adres is het werk-adres (waar de klus uitgevoerd wordt).
+- ALLEEN als de klant expliciet een ánder adres noemt voor de factuur (bv. "factuur naar...", "factuuradres is...", "factureren op..."), vul dan factuur_postcode/huisnummer/straat/plaats in.
+- Bij twijfel of als er maar één adres genoemd wordt: factuur-velden allemaal null.`
 
 /**
  * Extract klant- en werkvelden uit een ruwe bericht-tekst via OpenAI.
