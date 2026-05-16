@@ -998,6 +998,175 @@
   color: var(--fg);
 }
 
+/* 2-koloms layout voor de twee bovenin-tools (search + AI). Op mobile
+   stapelt 'ie via de bestaande @media (max-width: 720px) regel onderin. */
+.topToolsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+/* AI-card — gesloten state. Klikbaar paneel met sparkles-icoon en
+   tekst, als visueel "duo" naast de search. */
+.aiCardClosed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.04), rgba(0, 207, 255, 0.04));
+  border: 1px solid rgba(26, 86, 255, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.aiCardClosed:hover {
+  border-color: rgba(26, 86, 255, 0.35);
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.07), rgba(0, 207, 255, 0.07));
+}
+.aiCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--gradient);
+  color: white;
+  flex-shrink: 0;
+}
+.aiCardClosedText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.aiCardClosedTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.aiCardClosedSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aiBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--gradient);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* AI-card — open state. Spans beide kolommen zodra geopend, zodat de
+   textarea genoeg breedte krijgt. */
+.aiCardOpen {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(26, 86, 255, 0.04), rgba(0, 207, 255, 0.04));
+  border: 1px solid rgba(26, 86, 255, 0.25);
+  border-radius: 10px;
+}
+.aiCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.aiCardOpenTitle {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+.aiCardClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--fg-muted);
+}
+.aiCardClose:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--fg);
+}
+.aiTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 110px;
+}
+.aiTextarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.15);
+}
+.aiTextarea::placeholder {
+  color: var(--fg-muted);
+  opacity: 0.7;
+}
+.aiError {
+  font-size: 12px;
+  color: #b45309;
+  background: rgba(180, 83, 9, 0.08);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.aiCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.aiCardHint {
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.aiFillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--gradient);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.aiFillBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* "of vul handmatig in"-divider tussen search en formulier. */
 .orDivider {
   display: flex;
@@ -1024,7 +1193,8 @@
   .gridAddr,
   .extraGrid,
   .kanaalGrid,
-  .zandDetail {
+  .zandDetail,
+  .topToolsGrid {
     grid-template-columns: 1fr;
   }
   .stepper {

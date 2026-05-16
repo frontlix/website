@@ -5,6 +5,8 @@ import { Check } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import { ExistingClientSearch } from './ExistingClientSearch'
 import type { ExistingClientMatch } from '@/lib/dashboard/manual-offerte-search'
+import { AiPasteInput } from './AiPasteInput'
+import type { ExtractedFields } from '@/lib/dashboard/manual-offerte-ai'
 import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
@@ -184,14 +186,51 @@ export function StepKlant({ data, set }: { data: ManualOfferteData; set: SetFn }
   // edits door één misklik.
   const handleClearExisting = () => set('existing_lead_id', null)
 
+  // Merge AI-extractie in de wizard-data. Alleen niet-null velden
+  // overschrijven we — een gedeeltelijk gevuld formulier blijft dus
+  // staan voor velden die de AI niet kon vinden. `wensen` gaat naar
+  // `notitie` (de begeleidende tekst-veld in stap 4).
+  const handleAiExtracted = (f: ExtractedFields) => {
+    if (f.naam) set('naam', f.naam)
+    if (f.bedrijf) set('bedrijf', f.bedrijf)
+    if (f.telefoon) set('telefoon', f.telefoon)
+    if (f.email) set('email', f.email)
+    if (f.postcode) set('postcode', f.postcode)
+    if (f.huisnummer) set('huisnummer', f.huisnummer)
+    if (f.straat) set('straat', f.straat)
+    if (f.plaats) set('plaats', f.plaats)
+    if (f.hoofdcategorie) set('hoofdcategorie', f.hoofdcategorie)
+    if (f.sub_diensten && f.sub_diensten.length > 0) set('sub', f.sub_diensten)
+    if (typeof f.m2 === 'number' && f.m2 > 0) set('m2', f.m2)
+    if (f.voegzand_normaal !== null) set('voegzand_normaal_actief', f.voegzand_normaal)
+    if (f.voegzand_onkruidwerend !== null) {
+      set('voegzand_onkruidwerend_actief', f.voegzand_onkruidwerend)
+    }
+    if (f.planten_afschermen !== null) set('planten_afschermen_actief', f.planten_afschermen)
+    if (f.groene_aanslag !== null) set('groene_aanslag', f.groene_aanslag ? 'ja' : 'nee')
+    if (f.wensen) set('notitie', f.wensen)
+  }
+
   return (
     <>
-      <ExistingClientSearch
-        pickedLeadId={data.existing_lead_id}
-        pickedNaam={data.naam}
-        onPick={handlePickExisting}
-        onClear={handleClearExisting}
-      />
+      {!data.existing_lead_id ? (
+        <div className={styles.topToolsGrid}>
+          <ExistingClientSearch
+            pickedLeadId={data.existing_lead_id}
+            pickedNaam={data.naam}
+            onPick={handlePickExisting}
+            onClear={handleClearExisting}
+          />
+          <AiPasteInput onExtracted={handleAiExtracted} />
+        </div>
+      ) : (
+        <ExistingClientSearch
+          pickedLeadId={data.existing_lead_id}
+          pickedNaam={data.naam}
+          onPick={handlePickExisting}
+          onClear={handleClearExisting}
+        />
+      )}
 
       {!data.existing_lead_id && (
         <div className={styles.orDivider}>
