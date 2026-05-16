@@ -59,36 +59,59 @@ export function StepOfferte({
             value={data.extra_arbeid_omschrijving}
             onChange={(e) => set('extra_arbeid_omschrijving', e.target.value)}
           />
-          <input
-            className={`${styles.input} ${styles.numericInput}`}
-            type="number"
-            placeholder="Minuten"
-            value={data.extra_arbeid_minuten}
-            onChange={(e) => set('extra_arbeid_minuten', Number(e.target.value))}
-          />
-          <input
-            className={`${styles.input} ${styles.numericInput}`}
-            type="number"
-            placeholder="# pers."
-            value={data.extra_arbeid_personen}
-            onChange={(e) => set('extra_arbeid_personen', Number(e.target.value))}
-          />
+          <div className={styles.numericField}>
+            <input
+              className={`${styles.input} ${styles.numericInput}`}
+              type="number"
+              min={0}
+              placeholder="0"
+              value={data.extra_arbeid_minuten}
+              onChange={(e) => set('extra_arbeid_minuten', Number(e.target.value))}
+            />
+            <span className={styles.numericFieldHint}>minuten</span>
+          </div>
+          <div className={styles.numericField}>
+            <input
+              className={`${styles.input} ${styles.numericInput}`}
+              type="number"
+              min={0}
+              placeholder="0"
+              value={data.extra_arbeid_personen}
+              onChange={(e) => set('extra_arbeid_personen', Number(e.target.value))}
+            />
+            <span className={styles.numericFieldHint}>personen</span>
+          </div>
         </div>
       </div>
 
-      {/* Korting */}
+      {/* Korting — slider + handmatig invulbare % (tot 40%) */}
       <div>
         <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>Korting</div>
         <div className={styles.kortingRow}>
           <input
             type="range"
-            min="0"
-            max="20"
+            min={0}
+            max={40}
             value={data.korting_percentage}
             onChange={(e) => set('korting_percentage', Number(e.target.value))}
             className={styles.kortingRange}
           />
-          <span className={styles.kortingPct}>{data.korting_percentage}%</span>
+          <div className={styles.kortingPctInputWrap}>
+            <input
+              type="number"
+              min={0}
+              max={40}
+              value={data.korting_percentage}
+              onChange={(e) => {
+                const raw = Number(e.target.value)
+                const clamped = Math.max(0, Math.min(40, Number.isFinite(raw) ? raw : 0))
+                set('korting_percentage', clamped)
+              }}
+              className={styles.kortingPctInput}
+              aria-label="Korting percentage"
+            />
+            <span className={styles.kortingPctSuffix}>%</span>
+          </div>
           <input
             className={styles.input}
             placeholder="Toelichting (bv. Kennismakingskorting)"

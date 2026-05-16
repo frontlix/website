@@ -608,6 +608,20 @@
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 8px;
+  align-items: start;
+}
+
+/* Numerieke veld met label-hint eronder ("minuten" / "personen"). */
+.numericField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.numericFieldHint {
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-align: center;
+  letter-spacing: 0.02em;
 }
 
 .kortingRow {
@@ -618,11 +632,47 @@
 .kortingRange {
   flex: 1;
 }
-.kortingPct {
-  width: 50px;
+
+/* Handmatige %-input naast de slider — gekoppeld aan dezelfde waarde. */
+.kortingPctInputWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.kortingPctInput {
+  appearance: none;
+  width: 58px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 18px 6px 8px;
+  font-size: 13px;
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  /* Browser-spinner verbergen — % is duidelijk genoeg + slider doet het stappen */
+  -moz-appearance: textfield;
+}
+.kortingPctInput::-webkit-outer-spin-button,
+.kortingPctInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.kortingPctInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+.kortingPctSuffix {
+  position: absolute;
+  right: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  pointer-events: none;
 }
 
 .totalsBox {
