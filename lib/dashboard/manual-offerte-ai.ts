@@ -154,10 +154,10 @@ const SCHEMA = {
         'invegen=reiniging+voegzand. preventieve_onkruid=eenmalige onkruidbehandeling. beschermlaag=impregneer-coating. onderhoud=terugkerende beurten.',
     },
     m2: { type: ['number', 'null'], description: 'Oppervlakte in m². Som van alle stukken indien meerdere genoemd.' },
-    voegzand_normaal: { type: ['boolean', 'null'], description: 'true als klant standaard voegzand wil. Bij twijfel: false; alleen true bij expliciete vermelding.' },
+    voegzand_normaal: { type: ['boolean', 'null'], description: 'ALLEEN true als klant LETTERLIJK woorden gebruikt als "normaal voegzand", "standaard voegzand", "kwarts", "zilverzand". Het woord "invegen" of "voegzand" zónder type-aanduiding is ONVOLDOENDE — dan null. Bij twijfel: null.' },
     voegzand_normaal_zakken: { type: ['number', 'null'], description: 'Aantal zakken normaal voegzand — alleen als concreet getal genoemd.' },
     voegzand_normaal_prijs: { type: ['number', 'null'], description: 'Prijs per zak normaal voegzand in euro\'s — alleen als concreet bedrag genoemd. Komma → punt (3,10 → 3.10).' },
-    voegzand_onkruidwerend: { type: ['boolean', 'null'], description: 'true als klant onkruidwerend voegzand wil' },
+    voegzand_onkruidwerend: { type: ['boolean', 'null'], description: 'ALLEEN true als klant LETTERLIJK woorden gebruikt als "onkruidwerend", "onkruidwerend voegzand", "polymeer", "polymeer voegzand". Anders null.' },
     voegzand_onkruidwerend_zakken: { type: ['number', 'null'], description: 'Aantal zakken onkruidwerend voegzand — alleen als concreet getal genoemd.' },
     voegzand_onkruidwerend_prijs: { type: ['number', 'null'], description: 'Prijs per zak onkruidwerend voegzand in euro\'s — alleen als concreet bedrag genoemd.' },
     kleur_naturel: { type: ['boolean', 'null'], description: 'true als klant naturel/zandkleur voegzand wil. Mag tegelijk met antraciet (mix).' },
@@ -219,14 +219,23 @@ Belangrijk:
 - sub_diensten: kies meerdere als de klant meerdere wensen noemt.
 - wensen: alles wat geen ander veld past — kleurvoorkeur, urgentie, opmerkingen — kort samengevat.
 
-Voegzand & kleur — let goed op het onderscheid tussen WERKZAAMHEID en MATERIAAL:
-- "invegen" / "voegen invegen" → dit is een sub-dienst (werkzaamheid). Zet sub_diensten:["invegen"], maar laat voegzand_normaal en voegzand_onkruidwerend BEIDE null tenzij klant expliciet zegt welk type zand.
-- "normaal voegzand" / "standaard voegzand" / "kwarts" / "zilverzand" → voegzand_normaal=true.
-- "onkruidwerend" / "onkruidwerend voegzand" / "polymeer" / "polymeer voegzand" → voegzand_onkruidwerend=true.
-- Alleen "voegzand" zonder type-vermelding → beide null laten (user kiest in de wizard).
-- Klant mag beide types kiezen (mix bij vermelding van beide). Aantal zakken / prijs alleen als concreet genoemd.
-- Kleur "naturel" / "zand" / "lichtgrijs" → kleur_naturel=true. "antraciet" / "donker" / "zwart" → kleur_antraciet=true. Mag beide tegelijk.
-- Bedragen met komma → punt (3,10 → 3.10).
+VOEGZAND — KRITIEK ONDERSCHEID:
+- "invegen" is een WERKZAAMHEID (sub-dienst) — NIET een keuze voor type voegzand.
+- voegzand_normaal en voegzand_onkruidwerend zijn MATERIAAL-keuzes. Vink ze ALLEEN aan als de klant LETTERLIJK het type noemt.
+- voegzand_normaal=true ALLEEN bij woorden: "normaal voegzand", "standaard voegzand", "kwarts", "zilverzand".
+- voegzand_onkruidwerend=true ALLEEN bij woorden: "onkruidwerend", "polymeer".
+- Klant noemt alleen "invegen" of "voegzand" zonder type → BEIDE booleans null. NIET aanvinken om "veilig" te zijn.
+- Klant noemt alleen één type → alleen die ene true, de andere null/false. NOOIT beide aanvinken als er maar één genoemd wordt.
+
+VOORBEELD (volg dit precies):
+Input: "120m2 oprit. invegen. onkruidwerend 7 zakken @ 3,10"
+Output: m2=120, sub_diensten=["invegen"], voegzand_normaal=null, voegzand_onkruidwerend=true, voegzand_onkruidwerend_zakken=7, voegzand_onkruidwerend_prijs=3.10
+→ voegzand_normaal blijft null omdat "invegen" alleen niet "normaal voegzand" betekent.
+
+KLEUR:
+- "naturel" / "zand" / "lichtgrijs" → kleur_naturel=true. "antraciet" / "donker" / "zwart" → kleur_antraciet=true. Mag beide tegelijk als de klant beide noemt.
+
+BEDRAGEN: komma → punt (3,10 → 3.10).
 
 Onderhoud-interval:
 - Alleen relevant als sub_diensten "onderhoud" bevat. Anders altijd null.
