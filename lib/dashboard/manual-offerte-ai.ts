@@ -45,9 +45,25 @@ export type ExtractedFields = {
   planten_afschermen_rollen: number | null
   planten_afschermen_prijs: number | null
   groene_aanslag: boolean | null
+  korstmos: boolean | null
   // Onderhoud-frequentie — alleen als 'onderhoud' in sub_diensten zit
   // én klant een interval noemt. Restrict tot de 4 toegestane waardes.
   onderhoud_weken: 4 | 8 | 12 | 16 | null
+  // Extra arbeid — alleen als klant aangeeft dat er extra werk nodig
+  // is bovenop de standaard regels (bv. "verwijderen oude plantenbak",
+  // "lossen + opruimen rondom"). Minuten + personen geven we apart
+  // door zodat de offerte ze als regel "Extra arbeid" kan optellen.
+  extra_arbeid_minuten: number | null
+  extra_arbeid_personen: number | null
+  extra_arbeid_omschrijving: string | null
+  // Korting — als klant erom vraagt of jij 'm aanbiedt in de tekst.
+  // Percentage tussen 0-100. Omschrijving is de reden ("klant via
+  // Henk", "buurtgenoot van bestaande klant", etc.).
+  korting_percentage: number | null
+  korting_omschrijving: string | null
+  // Verzendingskanaal — als klant aangeeft hoe ze de offerte willen
+  // ontvangen. Default in de wizard is 'wa' (WhatsApp).
+  kanaal: 'wa' | 'mail' | 'both' | 'manual' | null
   wensen: string | null
 }
 
@@ -92,7 +108,14 @@ const SCHEMA = {
     'planten_afschermen_rollen',
     'planten_afschermen_prijs',
     'groene_aanslag',
+    'korstmos',
     'onderhoud_weken',
+    'extra_arbeid_minuten',
+    'extra_arbeid_personen',
+    'extra_arbeid_omschrijving',
+    'korting_percentage',
+    'korting_omschrijving',
+    'kanaal',
     'wensen',
   ],
   properties: {
@@ -143,11 +166,40 @@ const SCHEMA = {
     planten_afschermen_rollen: { type: ['number', 'null'], description: 'Aantal rollen afschermfolie — alleen als concreet genoemd.' },
     planten_afschermen_prijs: { type: ['number', 'null'], description: 'Prijs per rol in euro\'s — alleen als concreet bedrag genoemd.' },
     groene_aanslag: { type: ['boolean', 'null'], description: 'true als klant groene aanslag/mos noemt' },
+    korstmos: { type: ['boolean', 'null'], description: 'true als klant korstmos (gele/witte aanslag op tegels) noemt — geeft een toeslag op de offerte' },
     onderhoud_weken: {
       type: ['integer', 'null'],
       enum: [4, 8, 12, 16, null],
       description:
         'Onderhoud-interval in weken — alleen als sub_diensten "onderhoud" bevat én klant een frequentie noemt. Map ongeveer: maandelijks=4, 2-maandelijks=8, kwartaal=12, 4-maandelijks=16.',
+    },
+    extra_arbeid_minuten: {
+      type: ['number', 'null'],
+      description:
+        'Extra arbeid in minuten — alleen als klant expliciet aangeeft dat er handwerk nodig is bovenop de standaard regels ("oude plantenbak weg", "rondom opruimen", "afval afvoeren"). Schat conservatief.',
+    },
+    extra_arbeid_personen: {
+      type: ['number', 'null'],
+      description: 'Aantal personen voor de extra arbeid — meestal 1, soms 2 bij zwaar werk. Alleen invullen als extra_arbeid_minuten ook gevuld is.',
+    },
+    extra_arbeid_omschrijving: {
+      type: ['string', 'null'],
+      description: 'Korte omschrijving van de extra arbeid — wat moet er extra gebeuren. Alleen invullen als extra_arbeid_minuten gevuld is.',
+    },
+    korting_percentage: {
+      type: ['number', 'null'],
+      description:
+        'Korting in procenten (0-100, getal zonder %). Alleen invullen als de klant of de tekst expliciet om korting vraagt of een actie noemt ("buurtgenoot", "via [naam] gehoord", "kortingsactie"). Bij twijfel null.',
+    },
+    korting_omschrijving: {
+      type: ['string', 'null'],
+      description: 'Reden van de korting (bv. "via Henk", "actie maart", "klant van X"). Alleen als korting_percentage gevuld is.',
+    },
+    kanaal: {
+      type: ['string', 'null'],
+      enum: ['wa', 'mail', 'both', 'manual', null],
+      description:
+        'Hoe wil de klant de offerte ontvangen? wa=WhatsApp, mail=alleen e-mail, both=beide, manual=alleen PDF (geen verzending). Alleen invullen als de klant een voorkeur uitspreekt; bij twijfel null (default in de wizard is WhatsApp).',
     },
     wensen: {
       type: ['string', 'null'],
@@ -177,6 +229,22 @@ Voegzand & kleur:
 Onderhoud-interval:
 - Alleen relevant als sub_diensten "onderhoud" bevat. Anders altijd null.
 - "maandelijks" / "elke maand" → 4. "om de maand" / "2-maandelijks" → 8. "kwartaal" / "elke 3 maanden" → 12. "3 keer per jaar" / "elke 4 maanden" → 16.
+
+Extra arbeid:
+- Alleen invullen als klant aangeeft dat er handwerk bovenop de standaard regels nodig is (afval afvoeren, oude planten verwijderen, plantenbak weg, etc.).
+- Schat tijd conservatief in minuten. Default 1 persoon, 2 als het zwaar werk is.
+- Bij geen vermelding → alle drie velden null.
+
+Korting:
+- Alleen vullen bij expliciet kortings-signaal: "buurtkorting", "actie", "via [naam]", "kortingsactie", concreet percentage genoemd.
+- Bij twijfel null. Liever niets dan een verzonnen korting.
+
+Verzendingskanaal:
+- "stuur via WhatsApp" → wa. "wil per mail" → mail. "beide" / "WhatsApp en mail" → both. "alleen PDF" / "ik download zelf" → manual.
+- Bij geen voorkeur → null (wizard default = WhatsApp).
+
+Korstmos:
+- "korstmos" / "gele aanslag" / "witte vlekken op tegels" → true. Wordt als toeslag op de offerte gerekend.
 
 Factuur-adres:
 - Het normale adres is het werk-adres (waar de klus uitgevoerd wordt).

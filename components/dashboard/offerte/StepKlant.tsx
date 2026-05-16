@@ -267,9 +267,38 @@ export function StepKlant({
     }
 
     if (f.groene_aanslag !== null) set('groene_aanslag', f.groene_aanslag ? 'ja' : 'nee')
+    if (f.korstmos !== null) set('korstmos', f.korstmos ? 'ja' : 'nee')
 
     if (f.onderhoud_weken === 4 || f.onderhoud_weken === 8 || f.onderhoud_weken === 12 || f.onderhoud_weken === 16) {
       set('onderhoud_weken', f.onderhoud_weken)
+    }
+
+    // Extra arbeid — alleen overschrijven als de AI een complete set
+    // teruggaf (minuten + tenminste een omschrijving). Half-leeg laten
+    // we de wizard-defaults staan.
+    if (typeof f.extra_arbeid_minuten === 'number' && f.extra_arbeid_minuten > 0) {
+      set('extra_arbeid_minuten', f.extra_arbeid_minuten)
+      if (typeof f.extra_arbeid_personen === 'number' && f.extra_arbeid_personen > 0) {
+        set('extra_arbeid_personen', f.extra_arbeid_personen)
+      } else {
+        set('extra_arbeid_personen', 1)
+      }
+      if (f.extra_arbeid_omschrijving) set('extra_arbeid_omschrijving', f.extra_arbeid_omschrijving)
+    }
+
+    // Korting — alleen overschrijven bij geldig percentage. 0% = "geen
+    // korting" en is niet anders dan default; daar laten we 'm met rust.
+    if (
+      typeof f.korting_percentage === 'number' &&
+      f.korting_percentage > 0 &&
+      f.korting_percentage <= 100
+    ) {
+      set('korting_percentage', f.korting_percentage)
+      if (f.korting_omschrijving) set('korting_omschrijving', f.korting_omschrijving)
+    }
+
+    if (f.kanaal === 'wa' || f.kanaal === 'mail' || f.kanaal === 'both' || f.kanaal === 'manual') {
+      set('kanaal', f.kanaal)
     }
 
     if (f.wensen) set('notitie', f.wensen)
