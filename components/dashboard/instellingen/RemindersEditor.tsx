@@ -6,13 +6,19 @@ import {
   AlertCircle,
   Check,
   CheckCircle2,
+  ChevronDown,
   Clock,
+  Eye,
   RotateCcw,
   Send,
   Sparkles,
+  Trash2,
   XCircle,
 } from 'lucide-react'
-import { requestTemplateChange } from '@/lib/dashboard/template-actions'
+import {
+  cancelTemplateAanvraag,
+  requestTemplateChange,
+} from '@/lib/dashboard/template-actions'
 import { updateReminderDays } from '@/lib/dashboard/reminder-actions'
 import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import styles from './RemindersEditor.module.css'
@@ -360,21 +366,88 @@ function ReminderCard({
 
 /* ── Aanvraag-historie row ───────────────────────────── */
 function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
+  const router = useRouter()
+  const [expanded, setExpanded] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
   const tone = statusTone(aanvraag.status)
+  const canCancel = aanvraag.status === 'pending'
+
+  const onCancel = () => {
+    if (!window.confirm('Weet je zeker dat je deze aanvraag wil annuleren?')) {
+      return
+    }
+    setCancelError(null)
+    startTransition(async () => {
+      const res = await cancelTemplateAanvraag(aanvraag.id)
+      if (res.ok) {
+        router.refresh()
+      } else {
+        setCancelError(res.error)
+      }
+    })
+  }
+
   return (
-    <div className={styles.aanvraagRow}>
-      <div className={styles.aanvraagDate}>
-        {new Date(aanvraag.aangemaakt_op).toLocaleString('nl-NL', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </div>
-      <span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>
-        {statusIcon(aanvraag.status)}
-        {statusLabel(aanvraag.status)}
-      </span>
+    <div className={styles.aanvraagBlock}>
+      <button
+        type="button"
+        className={styles.aanvraagHead}
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        <div className={styles.aanvraagDate}>
+          {new Date(aanvraag.aangemaakt_op).toLocaleString('nl-NL', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </div>
+        <span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>
+          {statusIcon(aanvraag.status)}
+          {statusLabel(aanvraag.status)}
+        </span>
+        <span className={styles.aanvraagToggle}>
+          <Eye size={11} />
+          {expanded ? 'Sluiten' : 'Inzien'}
+          <ChevronDown
+            size={11}
+            className={expanded ? styles.chevronOpen : styles.chevron}
+          />
+        </span>
+      </button>
+
+      {expanded && (
+        <div className={styles.aanvraagBody}>
+          <pre className={styles.aanvraagText}>
+            {aanvraag.voorgestelde_tekst}
+          </pre>
+          <div className={styles.aanvraagActions}>
+            {cancelError && (
+              <span className={styles.error}>
+                <AlertCircle size={11} /> {cancelError}
+              </span>
+            )}
+            {canCancel && (
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={onCancel}
+                disabled={isPending}
+              >
+                <Trash2 size={11} />
+                {isPending ? 'Bezig…' : 'Annuleren'}
+              </button>
+            )}
+            {!canCancel && (
+              <span className={styles.cancelHint}>
+                Alleen aanvragen &quot;in behandeling&quot; kun je annuleren.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

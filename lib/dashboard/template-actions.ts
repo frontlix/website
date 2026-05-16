@@ -85,3 +85,45 @@ export async function requestTemplateChange(
   revalidatePath('/instellingen')
   return { ok: true }
 }
+
+/**
+ * Owner annuleert een eigen template-aanvraag. Alleen toegestaan wanneer
+ * de aanvraag nog `pending` is — zodra Frontlix 'm doorzet naar Meta
+ * (`forwarded`) of een eindstatus heeft, is annuleren niet meer zinvol.
+ *
+ * Implementatie: DELETE de rij. We hadden ook een status='cancelled'
+ * kunnen toevoegen, maar dat vereist een enum-uitbreiding (CHECK-
+ * constraint migratie); voor een geannuleerde-vóór-doorzet-aanvraag
+ * heeft een audit-rij weinig waarde.
+ */
+export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> {
+  if (!id) return { ok: false, error: 'Ongeldige id.' }
+
+  const supabase = await getDashboardSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  const { data: row } = await supabase
+    .from('template_aanvragen')
+    .select('status')
+    .eq('id', id)
+    .maybeSingle()
+  if (!row) return { ok: false, error: 'Aanvraag niet gevonden.' }
+  if (row.status !== 'pending') {
+    return {
+      ok: false,
+      error: 'Alleen aanvragen "in behandeling" kun je annuleren.',
+    }
+  }
+
+  const { error } = await supabase.from('template_aanvragen').delete().eq('id', id)
+  if (error) {
+    console.error('[cancelTemplateAanvraag] failed:', error)
+    return { ok: false, error: 'Annuleren mislukt — geen rechten?' }
+  }
+
+  revalidatePath('/instellingen')
+  return { ok: true }
+}
