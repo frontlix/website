@@ -1,3 +1,4 @@
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import Literal, Optional
@@ -14,8 +15,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str
 
-    # Supabase
-    supabase_url: str
+    # Supabase — accept either SUPABASE_URL or the Next.js convention
+    # NEXT_PUBLIC_SUPABASE_URL so the same root .env feeds both sides.
+    supabase_url: str = Field(validation_alias=AliasChoices("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"))
     supabase_service_role_key: str
 
     # Google Calendar
@@ -47,7 +49,13 @@ class Settings(BaseSettings):
     # Web-chat fallback (Pakket 4b) — false = detect-only, no mail sent
     web_chat_fallback_enabled: bool = False
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    # Look at lead-automation/.env (local override) first, fall back to the
+    # website-root .env so the same secrets file works on Mac dev + VPS deploy.
+    model_config = {
+        "env_file": ("../.env", ".env"),
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 @lru_cache
