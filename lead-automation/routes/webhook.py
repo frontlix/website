@@ -6,8 +6,10 @@ POST /webhook — Process inbound WhatsApp messages
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 import time
+import traceback
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Awaitable, Callable
@@ -952,8 +954,50 @@ async def _run_scheduling_agent(lead: dict, phone: str):
 
 # ── Approval trigger ─────────────────────────────────────────────────────
 
+async def _alert_owner_email_failure(lead: dict, error: Exception) -> None:
+    """Notify the business owner via WhatsApp + structured log when an offerte
+    mail fails. Silent failure of this notifier is acceptable (it's a safety net
+    on top of the python logger) — the log will still surface in journalctl.
+    """
+    branche_label = "?"
+    try:
+        config = get_branche(lead.get("demo_type") or "")
+        if config:
+            branche_label = config.label
+    except Exception:
+        pass
+
+    naam = lead.get("naam") or "onbekend"
+    email = lead.get("email") or "onbekend"
+    short_err = str(error)[:140]
+
+    logging.error(
+        "[approval] email FAILED lead=%s naam=%s email=%s branche=%s err=%s",
+        lead.get("id"), naam, email, branche_label, short_err,
+        exc_info=error,
+    )
+
+    owner_phone = (get_settings().owner_whatsapp_phone or "").strip()
+    if not owner_phone:
+        return
+    msg = (
+        f"[ALERT] Offerte-mail naar {email} faalde voor lead {naam} ({branche_label}).\n"
+        f"Fout: {short_err}\n"
+        f"Lead-id: {lead.get('id')}"
+    )
+    try:
+        await send_text(owner_phone, msg)
+    except Exception as e:
+        logging.error("[approval] owner-alert WA send failed: %s", e)
+
+
 async def _trigger_approval(lead_id: str, sender: Sender | None = None):
     """Calculate pricing, generate approval token, send approval email.
+
+    The customer's WhatsApp confirmation is sent AFTER the email attempt so its
+    wording reflects the actual outcome (mail-sent vs. mail-failed-and-collega-
+    neemt-contact-op). On failure we ALSO alert the owner via WhatsApp so leads
+    don't silently disappear.
 
     `sender` is optional — if provided (e.g. web-chat path) the confirmation
     message uses it; otherwise it falls back to WhatsApp via lead.telefoon."""
@@ -1000,15 +1044,9 @@ async def _trigger_approval(lead_id: str, sender: Sender | None = None):
         "updated_at": _now_iso(),
     }).eq("id", lead_id).execute()
 
-    # Outbound confirmation — use the injected sender if present (web-chat),
-    # otherwise fall back to WhatsApp via the lead's phone number.
-    confirmation = "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de offerte. Zodra die is goedgekeurd stuur ik je hier de PDF."
-    if sender is not None:
-        await sender(confirmation)
-    else:
-        await send_text(lead["telefoon"], confirmation)
-
-    # Send approval email with PDF link
+    # Attempt the offerte mail FIRST so the customer-facing confirmation can
+    # honestly reflect mail-sent vs. mail-failed.
+    email_sent = False
     try:
         from services.mail import send_approval_email
 
@@ -1034,5 +1072,25 @@ async def _trigger_approval(lead_id: str, sender: Sender | None = None):
             photo_urls=photo_urls,
             pdf_url=pdf_url,
         )
+        email_sent = True
     except Exception as e:
-        print(f"[approval] email failed: {e}")
+        await _alert_owner_email_failure(lead, e)
+
+    # Outbound confirmation — wording depends on whether the mail actually went out.
+    voornaam = (lead.get("naam") or "").split()[0] if lead.get("naam") else ""
+    if email_sent:
+        confirmation = (
+            "Top, ik heb alles wat ik nodig heb! Je krijgt zo een mailtje met de "
+            "offerte. Zodra die is goedgekeurd stuur ik je hier de PDF."
+        )
+    else:
+        confirmation = (
+            f"Top{(' ' + voornaam) if voornaam else ''}, ik heb alles. "
+            "Er gaat iets mis met de mail-verzending, een collega neemt zo "
+            "contact met je op."
+        )
+
+    if sender is not None:
+        await sender(confirmation)
+    else:
+        await send_text(lead["telefoon"], confirmation)

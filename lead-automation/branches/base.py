@@ -60,6 +60,11 @@ def get_effective_missing_fields(config: BrancheConfig, collected_data: dict, br
     # regardless of flat-roof direction. Use startswith so "plat", "Plat", "plat dak" all match.
     if branche_id == "zonnepanelen" and (collected_data.get("daktype") or "").strip().lower().startswith("plat"):
         missing = [f for f in missing if f != "orientatie"]
+    # Dakdekker: when the customer chose 'isoleren' as type_werk, asking "wil je isolatie er
+    # meteen bij" is redundant — the job itself IS isolating. Pricing uses the isoleren-rate
+    # (€90/m²) which already covers it, so we also don't need the separate isolatie-pakket line.
+    if branche_id == "dakdekker" and (collected_data.get("type_werk") or "").strip().lower() == "isoleren":
+        missing = [f for f in missing if f != "isolatie"]
     return missing
 
 

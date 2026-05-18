@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     # Web-chat fallback (Pakket 4b) — false = detect-only, no mail sent
     web_chat_fallback_enabled: bool = False
 
+    # WhatsApp number of the business owner — receives ALERT messages when an
+    # offerte-mail fails to send, so leads don't silently disappear. Leave empty
+    # to disable owner-alerts (failures are still logged via the python logger).
+    # Format: international with country code, no +, e.g. "31638272245".
+    owner_whatsapp_phone: Optional[str] = None
+
     # Look at lead-automation/.env (local override) first, fall back to the
     # website-root .env so the same secrets file works on Mac dev + VPS deploy.
     model_config = {
