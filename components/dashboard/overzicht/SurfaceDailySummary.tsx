@@ -53,7 +53,9 @@ export function SurfaceDailySummary({
         <p className={styles.text}>{body}</p>
 
         <div className={styles.actions}>
-          <Link href="/dashboard/statistieken" className={styles.cta}>
+          {/* `scroll: false` zodat Next.js niet naar boven scrollt — drawer
+              opent in-place via searchParam state. */}
+          <Link href="?dagrapport=1" scroll={false} className={styles.cta}>
             Bekijk dagrapport
             <ArrowRight size={14} />
           </Link>

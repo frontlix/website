@@ -27,7 +27,10 @@ import { AreaChart } from '@/components/dashboard/ui/AreaChart'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { Trechter } from '@/components/dashboard/overzicht/Trechter'
-import { OwnerActies } from '@/components/dashboard/overzicht/OwnerActies'
+import { EerstDitDoen } from '@/components/dashboard/overzicht/EerstDitDoen'
+import { deriveActions, countByTone } from '@/lib/dashboard/eerst-dit-doen'
+import { DagrapportDrawer } from '@/components/dashboard/overzicht/DagrapportDrawer'
+import { getDagrapport } from '@/lib/dashboard/dagrapport-queries'
 import {
   LiveActivityFeed,
   type ActivityItem,
@@ -54,7 +57,12 @@ const RANGE_DAYS: Record<TrendRange, number> = { '7d': 7, '28d': 28, '90d': 90 }
 export default async function OverzichtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trend?: string; kpi?: string; focus?: string }>
+  searchParams: Promise<{
+    trend?: string
+    kpi?: string
+    focus?: string
+    dagrapport?: string
+  }>
 }) {
   const { user } = await requireApprovedUser()
   const supabase = await getDashboardSupabase()
@@ -67,6 +75,7 @@ export default async function OverzichtPage({
   const trendDays = RANGE_DAYS[trendRange]
   const activeKpi: KpiKey = parseKpiKey(sp.kpi)
   const focusMode = sp.focus === 'live'
+  const dagrapportOpen = sp.dagrapport === '1'
 
   const now = new Date()
   const week = periodToRange('deze-week', now)
@@ -287,14 +296,25 @@ export default async function OverzichtPage({
     },
   ].map((r) => ({ ...r, pct: Math.round((r.count / totalWeek) * 100) }))
 
-  // Owner-acties — leads in 'onderhandelen' fase (= wacht op owner-besluit)
-  const ownerActieLeads = allLeads
-    .filter((l) => l.gesprek_fase === 'onderhandelen')
-    .slice(0, 10)
+  // "Eerst dit doen" — gederiveerde prioriteits-acties uit de leads-lijst.
+  // Max 5 zodat het lijstje overzichtelijk blijft; rest moet de owner via
+  // de leads-tab benaderen.
+  const eerstDitDoenActies = deriveActions(allLeads, 5)
+  const eerstDitDoenCounts = countByTone(eerstDitDoenActies)
+
+  // Owner-acties trend-stat = aantal leads in 'onderhandelen' fase.
+  // Niet hetzelfde als eerstDitDoenActies (die is breder gederiveerd).
+  const ownerActieCount = allLeads.filter(
+    (l) => l.gesprek_fase === 'onderhandelen',
+  ).length
 
   // Activity feed — gecombineerde stream over 4 event-types (new/wa/appt/quote).
   // V1 server-rendered op page load; realtime-subscriptie staat op de roadmap.
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
+
+  // Dagrapport-data alleen ophalen als de drawer open is — voorkomt extra
+  // queries op elke pageload. URL-param `?dagrapport=1` triggert het.
+  const dagrapportData = dagrapportOpen ? await getDagrapport(now) : null
 
   // ── Focus-modus: alleen Live activiteit in beeld ────────────────
   // Wordt geactiveerd via "?focus=live" (oog-knop rechtsboven). Geeft een
@@ -355,6 +375,16 @@ export default async function OverzichtPage({
         }}
       />
 
+      {/* "Eerst dit doen" — alleen renderen als er daadwerkelijk acties zijn.
+          Bij 0 acties verdwijnt de hele sectie zodat het dashboard niet
+          gepollueerd wordt door een leeg blok. */}
+      {eerstDitDoenActies.length > 0 && (
+        <EerstDitDoen
+          actions={eerstDitDoenActies}
+          counts={eerstDitDoenCounts}
+        />
+      )}
+
       <KpiModule
         metrics={kpiMetrics}
         active={activeKpi}
@@ -387,7 +417,7 @@ export default async function OverzichtPage({
               />
               <TrendStat
                 label="Owner-acties"
-                value={String(ownerActieLeads.length)}
+                value={String(ownerActieCount)}
                 sub="nog open"
               />
               <TrendStat
@@ -402,11 +432,9 @@ export default async function OverzichtPage({
             </div>
           </div>
 
-          {/* Sub-rij: trechter + owner-acties naast elkaar */}
-          <div className={styles.subRow}>
-            <Trechter rows={funnelRows} />
-            <OwnerActies leads={ownerActieLeads} />
-          </div>
+          {/* Trechter — staat nu alleen op deze rij; de actie-lijst is
+              verhuisd naar "Eerst dit doen" bovenaan. */}
+          <Trechter rows={funnelRows} />
         </div>
 
         {/* RECHTERKOLOM — live activity feed + komende afspraken */}
@@ -469,6 +497,11 @@ export default async function OverzichtPage({
           </div>
         </div>
       </div>
+
+      {/* Dagrapport-drawer — alleen gemount als ?dagrapport=1 in de URL
+          staat. Server-pre-fetched data wordt meegegeven, het paneel zelf
+          is een client-component voor de sluit-flow (router.replace). */}
+      {dagrapportData && <DagrapportDrawer data={dagrapportData} />}
     </>
   )
 }

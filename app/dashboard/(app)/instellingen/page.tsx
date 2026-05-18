@@ -14,6 +14,7 @@ import { TagsManager } from '@/components/dashboard/instellingen/TagsManager'
 import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
 import { OpeningTemplateEditor } from '@/components/dashboard/instellingen/OpeningTemplateEditor'
+import { RemindersEditor } from '@/components/dashboard/instellingen/RemindersEditor'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
@@ -110,7 +111,9 @@ export default async function InstellingenPage({
       : Promise.resolve({ data: [] }),
     section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
     section === 'tags' ? getTagsWithCounts() : Promise.resolve([] as TagWithCount[]),
-    section === 'opening' ? getRecentTemplateAanvragen(10) : Promise.resolve([] as TemplateAanvraag[]),
+    section === 'opening' || section === 'reminders'
+      ? getRecentTemplateAanvragen(20)
+      : Promise.resolve([] as TemplateAanvraag[]),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
@@ -147,7 +150,12 @@ export default async function InstellingenPage({
               aanvragen={templateAanvragen}
             />
           )}
-          {section === 'reminders' && <RemindersSection tenant={tenant} />}
+          {section === 'reminders' && (
+            <RemindersSection
+              tenant={tenant}
+              aanvragen={templateAanvragen}
+            />
+          )}
           {section === 'notificaties' && <NotificatiesSection />}
           {section === 'team' && <TeamSection members={team} />}
           {section === 'account' && <AccountSection email={user?.email ?? ''} />}
@@ -312,50 +320,27 @@ function OpeningSection({
 }
 
 /* ── REMINDERS ────────────────────────────────────────── */
-function RemindersSection({ tenant }: { tenant: TenantSettings | null }) {
-  const reminders = [
-    {
-      num: 1,
-      label: 'Eerste herinnering',
-      sub: 'Vriendelijk, zonder druk',
-      days: tenant?.reminder_dag_1 ?? 2,
-    },
-    {
-      num: 2,
-      label: 'Tweede herinnering',
-      sub: 'Vraagt expliciet of klant nog interesse heeft',
-      days: tenant?.reminder_dag_2 ?? 5,
-    },
-    {
-      num: 3,
-      label: 'Derde herinnering',
-      sub: 'Laatste poging, met optie tot afmelden',
-      days: tenant?.reminder_dag_3 ?? 8,
-    },
-  ]
+function RemindersSection({
+  tenant,
+  aanvragen,
+}: {
+  tenant: TenantSettings | null
+  aanvragen: TemplateAanvraag[]
+}) {
   return (
     <SectionCard
       title="Reminders"
       sub="Surface stuurt deze berichten automatisch wanneer een klant niet reageert op de offerte"
+      readOnly={false}
     >
-      <div className={styles.remindersList}>
-        {reminders.map((r) => (
-          <div key={r.num} className={styles.reminderCard}>
-            <div className={styles.reminderHead}>
-              <div className={styles.reminderNum}>{r.num}</div>
-              <div>
-                <div className={styles.reminderLabel}>{r.label}</div>
-                <div className={styles.reminderSub}>{r.sub}</div>
-              </div>
-              <div className={styles.reminderDays}>
-                <span>Na </span>
-                <strong>{r.days}</strong>
-                <span> dagen</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <RemindersEditor
+        initialDays={{
+          1: tenant?.reminder_dag_1 ?? 2,
+          2: tenant?.reminder_dag_2 ?? 5,
+          3: tenant?.reminder_dag_3 ?? 8,
+        }}
+        aanvragen={aanvragen}
+      />
     </SectionCard>
   )
 }

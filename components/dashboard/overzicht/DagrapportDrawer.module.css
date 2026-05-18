@@ -1,0 +1,295 @@
+/* "Dagrapport" — slide-out drawer rechts.
+   Overlay vult viewport, panel slidet vanuit rechterkant met spring-easing. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  /* fade-in zonder dat de eerste paint flikkert */
+  animation: fadeIn 180ms ease-out;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(540px, 100vw);
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  /* slide-in van rechts; korte, vrolijke easing zonder over-bounce */
+  animation: slideIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font: 700 17px/1.2 var(--font-heading);
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.headerSub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 3px;
+  text-transform: capitalize;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.closeBtn:hover {
+  background: var(--card-hover-bg);
+  color: var(--fg);
+}
+
+/* ── Scroll-body ────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Section header (boven elke groep stats) */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* ── KPI-grid (4 vakjes) ───────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.kpiCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kpiLabel {
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.kpiValue {
+  font: 800 26px/1 var(--font-heading);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin-top: 4px;
+}
+.kpiDelta {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.deltaUp {
+  color: #10b981;
+}
+.deltaDown {
+  color: #ef4444;
+}
+.deltaFlat {
+  color: var(--fg-muted);
+}
+
+/* ── Bronnen-lijst ──────────────────────────────────────── */
+.bronnenList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bronRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.bronNaam {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  text-transform: capitalize;
+}
+.bronCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--fg-muted);
+  font-style: italic;
+  padding: 16px 12px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* ── Sparkline (onder elk KPI) ─────────────────────────── */
+.sparkWrap {
+  margin-top: 8px;
+  height: 22px;
+  width: 100%;
+  display: block;
+}
+.sparkPath {
+  fill: none;
+  stroke: var(--primary, #1A56FF);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sparkFill {
+  fill: var(--primary, #1A56FF);
+  fill-opacity: 0.08;
+}
+.sparkDot {
+  fill: var(--primary, #1A56FF);
+}
+
+/* ── Surface-activiteit (boven KPI's) ──────────────────── */
+.surfaceCard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.surfaceStat {
+  background: linear-gradient(180deg, rgba(26, 86, 255, 0.04), rgba(0, 207, 255, 0.04));
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+.surfaceLabel {
+  font-size: 10px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.surfaceValue {
+  font: 800 22px/1 var(--font-heading);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.surfaceHint {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* ── Uur-strip (24 bars onderaan) ──────────────────────── */
+.uurStrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 56px;
+  padding: 8px 10px 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.uurBar {
+  flex: 1;
+  min-width: 0;
+  background: var(--border);
+  border-radius: 2px;
+  /* CSS-var gevuld vanuit inline style; geeft de hoogte als fractie */
+  height: max(2px, calc(var(--uur-h, 0) * 100%));
+  transition: background 0.15s;
+  position: relative;
+}
+.uurBarActive {
+  background: var(--primary, #1A56FF);
+}
+.uurBarPast {
+  background: linear-gradient(180deg, #1A56FF, #00CFFF);
+}
+.uurBarNow {
+  background: linear-gradient(180deg, #1A56FF, #00CFFF);
+  box-shadow: 0 0 0 2px rgba(26, 86, 255, 0.2);
+}
+.uurAxis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+  padding: 0 4px;
+  letter-spacing: 0.04em;
+}

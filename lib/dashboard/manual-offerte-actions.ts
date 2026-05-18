@@ -62,62 +62,170 @@ export async function createManualLeadEnOfferte(
   if (totals.total <= 0) return { ok: false, error: 'Totaalbedrag moet > 0 zijn.' }
 
   const admin = getDashboardAdmin()
-  const leadId = generateLeadId()
+  const isReuse = Boolean(data.existing_lead_id)
+  const leadId = data.existing_lead_id ?? generateLeadId()
 
-  // ── Kleur voegzand (string voor de leads-kolom) ───────────────────
+  // ── Kleur voegzand: zowel de string (legacy + bot) als de losse
+  // booleans (nieuwere queries). Bij geen kleur = beide false + string null.
   const kleuren: string[] = []
   if (data.kleur_naturel) kleuren.push('naturel')
   if (data.kleur_antraciet) kleuren.push('antraciet')
   const zandKleur = kleuren.length > 0 ? kleuren.join('+') : null
 
+  // Voegzand-type voor de leads.voegzand_type kolom: 'normaal',
+  // 'onkruidwerend', of 'beide'. Null als geen van beide actief.
+  const voegzandTypes: string[] = []
+  if (data.voegzand_normaal_actief) voegzandTypes.push('normaal')
+  if (data.voegzand_onkruidwerend_actief) voegzandTypes.push('onkruidwerend')
+  const voegzandType =
+    voegzandTypes.length === 0
+      ? null
+      : voegzandTypes.length === 1
+        ? voegzandTypes[0]
+        : 'beide'
+
+  // m² per sub-dienst — bot/PDF gebruiken deze voor regel-uitsplitsing.
+  // Alleen vullen als die sub_dienst gekozen is.
+  const m2Num = Number(data.m2) || 0
+  const invegenM2 = data.sub.includes('invegen') ? m2Num : null
+  const beschermlaagM2 = data.sub.includes('beschermlaag') ? m2Num : null
+
+  // m² per voegzand-type — als beide types actief, verdeel naar rato
+  // van het aantal zakken (mirror van computeRules-logica).
+  let voegzandNormaalM2: number | null = null
+  let voegzandOnkruidwerendM2: number | null = null
+  if (data.voegzand_normaal_actief && data.voegzand_onkruidwerend_actief) {
+    const totZakken =
+      Number(data.voegzand_normaal_zakken || 0) +
+      Number(data.voegzand_onkruidwerend_zakken || 0)
+    if (totZakken > 0) {
+      voegzandNormaalM2 = Math.round(m2Num * (Number(data.voegzand_normaal_zakken || 0) / totZakken))
+      voegzandOnkruidwerendM2 = m2Num - voegzandNormaalM2
+    }
+  } else if (data.voegzand_normaal_actief) {
+    voegzandNormaalM2 = m2Num
+  } else if (data.voegzand_onkruidwerend_actief) {
+    voegzandOnkruidwerendM2 = m2Num
+  }
+
   const totaalIncl = Math.round((totals.total + totals.btw) * 100) / 100
 
-  // ── 1) Lead aanmaken ──────────────────────────────────────────────
-  const { error: leadErr } = await admin.from('leads').insert({
-    lead_id: leadId,
+  // Velden die we voor zowel INSERT als UPDATE delen. `lead_id` zit
+  // alleen in de INSERT-payload (de UPDATE matcht 'm in WHERE).
+  const leadFields = {
     naam: data.naam.trim(),
     bedrijfsnaam: trimOrNull(data.bedrijf),
-    email: data.email.trim() || `${leadId}@handmatig.frontlix.nl`,  // niet-leeg vereist
+    email: data.email.trim() || `${leadId}@handmatig.frontlix.nl`,
     telefoon: data.telefoon.trim(),
     postcode: data.postcode.trim(),
     huisnummer: data.huisnummer.trim(),
     straat: trimOrNull(data.straat),
     plaats: trimOrNull(data.plaats),
+    // ── Factuur-adres: null als gelijk aan werk-adres, anders gevuld.
+    // Bij UPDATE belangrijk dat we 'm expliciet null zetten als de
+    // user 'm later weer naar "gelijk" vinkt.
+    factuur_postcode: data.factuur_zelfde ? null : trimOrNull(data.factuur_postcode),
+    factuur_huisnummer: data.factuur_zelfde ? null : trimOrNull(data.factuur_huisnummer),
+    factuur_straat: data.factuur_zelfde ? null : trimOrNull(data.factuur_straat),
+    factuur_plaats: data.factuur_zelfde ? null : trimOrNull(data.factuur_plaats),
     hoofdcategorie: data.hoofdcategorie,
     sub_diensten: data.sub,
-    m2: Number(data.m2) || null,
+    m2: m2Num || null,
+    invegen_m2: invegenM2,
+    beschermlaag_m2: beschermlaagM2,
+    // ── Voegzand: legacy totaal + per-type zakken/prijs/m².
     zand_kleur: zandKleur,
+    zand_kleur_naturel: data.kleur_naturel,
+    zand_kleur_antraciet: data.kleur_antraciet,
+    voegzand_type: voegzandType,
+    voegzand_zakken:
+      Number(data.voegzand_normaal_zakken || 0) +
+      Number(data.voegzand_onkruidwerend_zakken || 0),
+    voegzand_normaal_zakken: data.voegzand_normaal_actief ? Number(data.voegzand_normaal_zakken || 0) : null,
+    voegzand_normaal_prijs_per_zak: data.voegzand_normaal_actief ? Number(data.voegzand_normaal_prijs || 0) || null : null,
+    voegzand_normaal_m2: voegzandNormaalM2,
+    voegzand_onkruidwerend_zakken: data.voegzand_onkruidwerend_actief ? Number(data.voegzand_onkruidwerend_zakken || 0) : null,
+    voegzand_onkruidwerend_prijs_per_zak: data.voegzand_onkruidwerend_actief ? Number(data.voegzand_onkruidwerend_prijs || 0) || null : null,
+    voegzand_onkruidwerend_m2: voegzandOnkruidwerendM2,
     planten_afschermen: data.planten_afschermen_actief ? 'ja' : 'nee',
     groene_aanslag: data.groene_aanslag,
-    fotos_ontvangen: false,
-    fotos_geweigerd: false,
-    status: 'handmatig',
-    gesprek_fase: 'offerte_besproken',
-    offerte_verstuurd: data.kanaal !== 'manual',
-    offerte_verstuurd_op: data.kanaal !== 'manual' ? new Date().toISOString() : null,
+    korstmos: data.korstmos,
     afstand_km: Number(data.afstand_km) || null,
     totaal_prijs: totaalIncl,
     extra_arbeid_minuten: Number(data.extra_arbeid_minuten) || 0,
     extra_arbeid_personen: Number(data.extra_arbeid_personen) || 0,
-    voegzand_zakken:
-      Number(data.voegzand_normaal_zakken || 0) +
-      Number(data.voegzand_onkruidwerend_zakken || 0),
+    extra_arbeid_omschrijving: trimOrNull(data.extra_arbeid_omschrijving),
     korting_percentage: Number(data.korting_percentage) || 0,
-    dashboard_status: 'open',
-    dashboard_archived: false,
-    bron: 'dashboard_handmatig',
-  })
+    korting_omschrijving: trimOrNull(data.korting_omschrijving),
+    offerte_verstuurd: data.kanaal !== 'manual',
+    offerte_verstuurd_op: data.kanaal !== 'manual' ? new Date().toISOString() : null,
+  }
 
-  if (leadErr) {
-    return { ok: false, error: `Lead opslaan mislukt: ${leadErr.message}` }
+  // ── 1) Lead INSERT (nieuwe klant) of UPDATE (bestaande klant) ─────
+  if (isReuse) {
+    // Bevestig dat de lead bestaat (race-conditie: tussen search en
+    // submit kan 'ie verwijderd zijn).
+    const { data: existing, error: existsErr } = await admin
+      .from('leads')
+      .select('lead_id')
+      .eq('lead_id', leadId)
+      .maybeSingle()
+    if (existsErr || !existing) {
+      return { ok: false, error: 'Bestaande lead niet meer gevonden — probeer opnieuw zonder koppeling.' }
+    }
+
+    // UPDATE: status/dashboard_status/bron raken we niet aan — dat is
+    // de geschiedenis van de oorspronkelijke lead. Gesprek_fase wordt
+    // wel teruggezet naar 'offerte_besproken' want dat is wat een
+    // nieuwe handmatige offerte feitelijk doet.
+    const { error: leadErr } = await admin
+      .from('leads')
+      .update({
+        ...leadFields,
+        gesprek_fase: 'offerte_besproken',
+      })
+      .eq('lead_id', leadId)
+
+    if (leadErr) {
+      return { ok: false, error: `Lead bijwerken mislukt: ${leadErr.message}` }
+    }
+  } else {
+    const { error: leadErr } = await admin.from('leads').insert({
+      lead_id: leadId,
+      ...leadFields,
+      fotos_ontvangen: false,
+      fotos_geweigerd: false,
+      status: 'handmatig',
+      gesprek_fase: 'offerte_besproken',
+      dashboard_status: 'open',
+      dashboard_archived: false,
+      bron: 'dashboard_handmatig',
+    })
+
+    if (leadErr) {
+      return { ok: false, error: `Lead opslaan mislukt: ${leadErr.message}` }
+    }
   }
 
   // ── 2) Offerte aanmaken ───────────────────────────────────────────
+  // Bij reuse: pak max(versie)+1, anders versie 1.
+  let nextVersie = 1
+  if (isReuse) {
+    const { data: lastOff } = await admin
+      .from('offertes')
+      .select('versie')
+      .eq('lead_id', leadId)
+      .order('versie', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    nextVersie = ((lastOff?.versie as number | undefined) ?? 0) + 1
+  }
+
   const { data: offerte, error: offerteErr } = await admin
     .from('offertes')
     .insert({
       lead_id: leadId,
-      versie: 1,
+      versie: nextVersie,
       pdf_path: '',
       pdf_url: '',
       totaal_incl: totaalIncl,
@@ -127,12 +235,30 @@ export async function createManualLeadEnOfferte(
     .single()
 
   if (offerteErr || !offerte) {
-    // Rollback lead — anders blijft 'ie als wees in de pipeline staan
-    await admin.from('leads').delete().eq('lead_id', leadId)
+    // Rollback alleen bij nieuwe lead — een bestaande mogen we niet weggooien.
+    if (!isReuse) {
+      await admin.from('leads').delete().eq('lead_id', leadId)
+    }
     return { ok: false, error: `Offerte opslaan mislukt: ${offerteErr?.message ?? 'onbekend'}` }
   }
 
   // ── 3) Prijsregels ────────────────────────────────────────────────
+  // Bij reuse plakken we de nieuwe regels erbij — oude regels van
+  // vorige offertes blijven staan (geen offerte_id-kolom om op te
+  // splitsen, zie schema-comment in CLAUDE.md). Volgorde start bij
+  // (huidige max + 1) zodat ze in de UI achteraan komen.
+  let volgordeOffset = 0
+  if (isReuse) {
+    const { data: lastVol } = await admin
+      .from('prijsregels')
+      .select('volgorde')
+      .eq('lead_id', leadId)
+      .order('volgorde', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    volgordeOffset = (lastVol?.volgorde as number | undefined) ?? 0
+  }
+
   const { error: regelsErr } = await admin.from('prijsregels').insert(
     rules.map((r, idx) => ({
       lead_id: leadId,
@@ -141,13 +267,15 @@ export async function createManualLeadEnOfferte(
       eenheid: r.eenheid,
       stukprijs: r.prijs,
       totaal: Math.round(r.totaal * 100) / 100,
-      volgorde: idx + 1,
+      volgorde: volgordeOffset + idx + 1,
     }))
   )
 
   if (regelsErr) {
     await admin.from('offertes').delete().eq('id', offerte.id)
-    await admin.from('leads').delete().eq('lead_id', leadId)
+    if (!isReuse) {
+      await admin.from('leads').delete().eq('lead_id', leadId)
+    }
     return { ok: false, error: `Prijsregels opslaan mislukt: ${regelsErr.message}` }
   }
 

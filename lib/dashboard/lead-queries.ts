@@ -40,6 +40,13 @@ export type LeadListItem = Pick<
   | 'aangemaakt'
   | 'bijgewerkt'
   | 'kanaal'
+  // ── action-signalen voor "Eerst dit doen" — afgeleid op page-level ──
+  | 'pending_eigenaar_review'
+  | 'klus_geblokkeerd'
+  | 'offerte_pending_sinds'
+  | 'offerte_verstuurd'
+  | 'offerte_verstuurd_op'
+  | 'akkoord_op'
 >
 
 const LIST_COLUMNS = [
@@ -66,6 +73,12 @@ const LIST_COLUMNS = [
   'aangemaakt',
   'bijgewerkt',
   'kanaal',
+  'pending_eigenaar_review',
+  'klus_geblokkeerd',
+  'offerte_pending_sinds',
+  'offerte_verstuurd',
+  'offerte_verstuurd_op',
+  'akkoord_op',
 ].join(', ')
 
 /**

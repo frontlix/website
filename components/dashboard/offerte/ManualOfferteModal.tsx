@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useTransition } from 'react'
+import { useState, useMemo, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   X,
@@ -19,7 +19,7 @@ import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-action
 import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
-import { StepKlant } from './StepKlant'
+import { StepKlant, isValidEmail } from './StepKlant'
 import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
@@ -125,9 +125,22 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     return () => clearTimeout(t)
   }, [data.factuur_zelfde, data.factuur_postcode, data.factuur_huisnummer])
 
+  // Wordt op `true` gezet door StepKlant net vóór een AI-fill. Het
+  // auto-zakken-effect skipt dan één run, zodat een door de AI
+  // geëxtraheerd zakken-aantal (bv. "7 zakken onkruidwerend") niet
+  // direct overschreven wordt door de m²-suggestie.
+  const aiJustFilledZakken = useRef(false)
+  const suppressNextZakkenAuto = () => {
+    aiJustFilledZakken.current = true
+  }
+
   // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
   // (voegzand_m2_per_zak), met 5 als laatste vangnet.
   useEffect(() => {
+    if (aiJustFilledZakken.current) {
+      aiJustFilledZakken.current = false
+      return
+    }
     const dekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5
     const suggested = Math.ceil((Number(data.m2) || 0) / dekking)
     setData((prev) => {
@@ -152,13 +165,14 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
 
   const valid: Record<1 | 2 | 3, boolean> = {
-    // Telefoon + e-mail zijn beide verplicht (alleen aanwezigheid — een
-    // ongeldig-maar-bewust-gebruikt nummer/adres blokkeren we niet, dat
-    // is alleen een soft warning onder het veld in StepKlant).
+    // Naam + telefoon (aanwezigheid) + e-mail (format-geldig). E-mail
+    // is harder dan telefoon omdat we 'm voor de PDF-verzending nodig
+    // hebben — een typo verspilt een offerte. Telefoon blijft soft
+    // (vaste lijn / buitenlands nummer mag).
     1:
       Boolean(data.naam.trim()) &&
       Boolean(data.telefoon.trim()) &&
-      Boolean(data.email.trim()),
+      isValidEmail(data.email),
     2: data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }
@@ -235,7 +249,13 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         {/* Body */}
         <div className={styles.body}>
           <div className={styles.bodyStack}>
-            {step === 1 && <StepKlant data={data} set={set} />}
+            {step === 1 && (
+              <StepKlant
+                data={data}
+                set={set}
+                onBeforeAiFill={suppressNextZakkenAuto}
+              />
+            )}
             {step === 2 && <StepWerk data={data} set={set} />}
             {step === 3 && <StepOfferte data={data} set={set} rules={rules} totals={totals} />}
             {step === 4 && <StepVersturen data={data} set={set} rules={rules} totals={totals} />}
