@@ -5,9 +5,13 @@ Generates a professional invoice-style PDF and uploads to Supabase storage.
 """
 from __future__ import annotations
 
+import base64
 import time
+from datetime import datetime
+from functools import lru_cache
 from html import escape
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from jinja2 import Template
 
@@ -16,6 +20,36 @@ from branches import get_branche, get_pricing
 from models.branches import PricingResult
 
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
+ASSETS_DIR = Path(__file__).parent.parent / "assets"
+LOGO_PATH = ASSETS_DIR / "frontlix-logo.png"
+
+
+@lru_cache(maxsize=1)
+def _logo_data_uri() -> str:
+    """Inline the Frontlix logo as base64 so the PDF is portable (no file://
+    or external URL needed at render time)."""
+    try:
+        encoded = base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
+        return f"data:image/png;base64,{encoded}"
+    except Exception as e:
+        print(f"[pdf] logo load failed (continuing without): {e}")
+        return ""
+
+
+def _offerte_meta() -> dict[str, str]:
+    """Reference number + human-readable date for the offerte header."""
+    now = datetime.now(ZoneInfo("Europe/Amsterdam"))
+    ref = f"OFF-{now.strftime('%Y%m%d-%H%M%S')}"
+    NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni",
+                 "juli", "augustus", "september", "oktober", "november", "december"]
+    geldig_tot = now.replace(hour=23, minute=59, second=59).timestamp()
+    # Add ~30 days
+    geldig_dt = datetime.fromtimestamp(geldig_tot + 30 * 86400, tz=ZoneInfo("Europe/Amsterdam"))
+    return {
+        "ref": ref,
+        "datum_str": f"{now.day} {NL_MONTHS[now.month]} {now.year}",
+        "geldig_tot_str": f"{geldig_dt.day} {NL_MONTHS[geldig_dt.month]} {geldig_dt.year}",
+    }
 
 
 def _build_intake_summary(branche_id: str, collected_data: dict) -> str:
@@ -79,6 +113,7 @@ async def generate_quote_pdf(
     template_path = TEMPLATE_DIR / "quote.html"
     template = Template(template_path.read_text(encoding="utf-8"))
 
+    meta = _offerte_meta()
     html_content = template.render(
         company=config.company,
         klant_naam=escape(klant_naam),
@@ -89,6 +124,10 @@ async def generate_quote_pdf(
         aanbod_beschrijving=config.aanbod_beschrijving,
         pricing=pricing,
         korting_notitie=korting_notitie or "",
+        logo_data_uri=_logo_data_uri(),
+        ref=meta["ref"],
+        datum_str=meta["datum_str"],
+        geldig_tot_str=meta["geldig_tot_str"],
         escape=escape,
     )
 

@@ -3,119 +3,448 @@
 <head>
 <meta charset="utf-8">
 <style>
-  @page { size: A4; margin: 2cm; }
-  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #1A1A1A; font-size: 10pt; line-height: 1.5; }
-  h1 { color: #1A1A1A; font-size: 18pt; margin-bottom: 4px; }
-  h2 { color: #1A1A1A; font-size: 13pt; margin-top: 28px; margin-bottom: 8px; border-bottom: 2px solid #1A1A1A; padding-bottom: 4px; }
-  .header { display: flex; justify-content: space-between; margin-bottom: 32px; }
-  .company { text-align: right; color: #555; font-size: 9pt; line-height: 1.6; }
-  .company strong { color: #1A1A1A; font-size: 10pt; }
-  .meta-table { width: 100%; margin: 16px 0; }
-  .meta-table td { padding: 3px 0; vertical-align: top; }
-  .meta-table .label { color: #555; width: 140px; }
-  .intro { margin: 20px 0; color: #333; }
-  .price-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-  .price-table th { text-align: left; padding: 8px 12px 8px 0; border-bottom: 2px solid #1A1A1A; color: #1A1A1A; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }
-  .price-table td { padding: 6px 12px 6px 0; border-bottom: 1px solid #eee; }
-  .price-table .amount { text-align: right; padding-right: 0; }
-  .price-table .subtotal td { border-top: 2px solid #ddd; padding-top: 10px; font-weight: 600; }
-  .price-table .btw td { color: #555; }
-  .price-table .total td { border-top: 2px solid #1A1A1A; padding-top: 10px; font-weight: 700; font-size: 13pt; }
-  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; color: #777; font-size: 8pt; }
-  .footer-table { width: 100%; }
-  .footer-table td { vertical-align: top; padding-right: 24px; }
+  /* ── Frontlix brand tokens ─────────────────────────────────────────── */
+  /* Source: styles/tokens.css. Kept here so WeasyPrint is self-contained. */
+  :root {
+    --c-bg:        #FFFFFF;
+    --c-surface:   #F9FAFB;
+    --c-surface-2: #F3F4F6;
+    --c-primary:   #1A56FF;
+    --c-accent:    #00CFFF;
+    --c-text:      #0F1729;
+    --c-text-mute: #475569;
+    --c-text-soft: #94A3B8;
+    --c-border:    #E5E7EB;
+    --c-border-2:  #F0F2F5;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;  /* full-bleed for the gradient top-bar; inner padding via .page */
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
+    color: var(--c-text);
+    font-size: 10pt;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Top gradient bar — Frontlix signature accent */
+  .top-bar {
+    height: 6px;
+    background: linear-gradient(90deg, #1A56FF 0%, #00CFFF 100%);
+  }
+
+  .page {
+    padding: 28px 44px 44px 44px;
+  }
+
+  /* ── Header ───────────────────────────────────────────────────────── */
+  .header {
+    display: table;
+    width: 100%;
+    margin-bottom: 28px;
+  }
+  .header-left, .header-right {
+    display: table-cell;
+    vertical-align: top;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .logo {
+    height: 44px;
+    display: block;
+  }
+  .powered {
+    margin-top: 4px;
+    font-size: 8pt;
+    color: var(--c-text-soft);
+    letter-spacing: 0.3px;
+  }
+  .company-block {
+    font-size: 9pt;
+    line-height: 1.6;
+    color: var(--c-text-mute);
+  }
+  .company-block .name {
+    color: var(--c-text);
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: -0.1px;
+  }
+
+  /* ── Title / meta ────────────────────────────────────────────────── */
+  .title-row {
+    display: table;
+    width: 100%;
+    margin: 18px 0 24px 0;
+    padding: 18px 22px;
+    background: var(--c-surface);
+    border-radius: 10px;
+    border-left: 4px solid var(--c-primary);
+  }
+  .title-row .title-cell, .title-row .meta-cell {
+    display: table-cell;
+    vertical-align: middle;
+  }
+  .title-row .meta-cell {
+    text-align: right;
+    font-size: 9pt;
+    color: var(--c-text-mute);
+  }
+  .title-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    font-size: 8.5pt;
+    color: var(--c-primary);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .title-main {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.6px;
+    color: var(--c-text);
+    margin: 0;
+  }
+  .meta-cell .meta-line {
+    margin: 2px 0;
+  }
+  .meta-cell .meta-line strong {
+    color: var(--c-text);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  /* ── Klantgegevens-kaart ─────────────────────────────────────────── */
+  .klant-card {
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    background: #FFFFFF;
+  }
+  .klant-card .eyebrow {
+    text-transform: uppercase;
+    font-size: 7.5pt;
+    letter-spacing: 1.4px;
+    color: var(--c-text-soft);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .klant-card .field {
+    display: table;
+    width: 100%;
+    padding: 4px 0;
+  }
+  .klant-card .field .k, .klant-card .field .v {
+    display: table-cell;
+    vertical-align: top;
+  }
+  .klant-card .field .k {
+    width: 110px;
+    color: var(--c-text-mute);
+    font-size: 9pt;
+  }
+  .klant-card .field .v {
+    color: var(--c-text);
+    font-weight: 500;
+  }
+
+  /* ── Section heading ─────────────────────────────────────────────── */
+  h2.section {
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--c-text-soft);
+    font-weight: 700;
+    margin: 28px 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .intro-text {
+    margin: 0 0 14px 0;
+    color: var(--c-text-mute);
+    font-size: 10pt;
+    line-height: 1.6;
+  }
+
+  /* ── Pricing table ───────────────────────────────────────────────── */
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 0 0;
+    font-size: 9.5pt;
+  }
+  .price-table thead th {
+    background: var(--c-primary);
+    color: #FFFFFF;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .price-table thead th:first-child { border-radius: 8px 0 0 0; }
+  .price-table thead th:last-child  { border-radius: 0 8px 0 0; text-align: right; }
+  .price-table thead th.num         { text-align: right; }
+  .price-table tbody td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--c-border-2);
+    color: var(--c-text);
+  }
+  .price-table tbody tr:nth-child(even) td {
+    background: var(--c-surface);
+  }
+  .price-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-text-mute);
+  }
+  .price-table td.amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-text);
+    font-weight: 600;
+  }
+  .price-table td.label { font-weight: 500; }
+
+  .totals {
+    margin-top: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+  }
+  .totals .row {
+    display: table;
+    width: 100%;
+    padding: 9px 18px;
+    font-size: 9.5pt;
+  }
+  .totals .row.subtotal { background: var(--c-surface); }
+  .totals .row.btw      { background: var(--c-surface); border-top: 1px solid var(--c-border-2); }
+  .totals .row.grand {
+    background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
+    color: #FFFFFF;
+    border-top: 1px solid transparent;
+    padding: 14px 18px;
+    font-size: 12pt;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .totals .row .l, .totals .row .r {
+    display: table-cell;
+    vertical-align: middle;
+  }
+  .totals .row .l { color: var(--c-text-mute); font-weight: 500; }
+  .totals .row.grand .l { color: rgba(255,255,255,0.85); font-weight: 600; }
+  .totals .row .r { text-align: right; font-variant-numeric: tabular-nums; color: var(--c-text); font-weight: 700; }
+  .totals .row.grand .r { color: #FFFFFF; }
+
+  /* ── Korting-callout ─────────────────────────────────────────────── */
+  .korting-note {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 10px;
+    font-size: 9pt;
+    color: #1E3A8A;
+  }
+  .korting-note strong { color: var(--c-primary); }
+
+  /* ── Voorwaarden / fine print ────────────────────────────────────── */
+  .conditions {
+    margin-top: 28px;
+    padding: 16px 20px;
+    background: var(--c-surface);
+    border-radius: 10px;
+    border: 1px solid var(--c-border-2);
+    font-size: 8.5pt;
+    color: var(--c-text-mute);
+    line-height: 1.6;
+  }
+  .conditions strong { color: var(--c-text); }
+
+  /* ── Footer ──────────────────────────────────────────────────────── */
+  .footer {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 2px solid var(--c-text);
+    font-size: 8pt;
+    color: var(--c-text-mute);
+    line-height: 1.5;
+  }
+  .footer table { width: 100%; }
+  .footer td { vertical-align: top; padding-right: 20px; }
+  .footer .col-label {
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--c-text-soft);
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 7.5pt;
+    display: block;
+  }
+  .footer .val { color: var(--c-text); font-weight: 500; }
+  .powered-footer {
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 1px solid var(--c-border-2);
+    font-size: 7.5pt;
+    color: var(--c-text-soft);
+    text-align: right;
+    letter-spacing: 0.3px;
+  }
+  .powered-footer .brand {
+    background: linear-gradient(90deg, #1A56FF, #00CFFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1>Offerte</h1>
-    <p style="color:#555; margin:0">{{ branche_label }}</p>
+<div class="top-bar"></div>
+
+<div class="page">
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-left">
+      {% if logo_data_uri %}
+      <img src="{{ logo_data_uri }}" class="logo" alt="Frontlix">
+      {% endif %}
+      <div class="powered">Offerte gegenereerd door Frontlix AI</div>
+    </div>
+    <div class="header-right">
+      <div class="company-block">
+        <span class="name">{{ company.name }}</span><br>
+        {% for line in company.address_lines %}{{ line }}<br>{% endfor %}
+        T &nbsp;{{ company.phone }}<br>
+        E &nbsp;{{ company.email }}
+      </div>
+    </div>
   </div>
-  <div class="company">
-    <strong>{{ company.name }}</strong><br>
-    {% for line in company.address_lines %}{{ line }}<br>{% endfor %}
-    {{ company.phone }}<br>
-    {{ company.email }}
+
+  <!-- ── TITEL + META ───────────────────────────────────────────────── -->
+  <div class="title-row">
+    <div class="title-cell">
+      <div class="title-eyebrow">Offerte &middot; {{ branche_label }}</div>
+      <h1 class="title-main">Voorstel voor {{ klant_naam }}</h1>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-line">Referentie<strong>{{ ref }}</strong></div>
+      <div class="meta-line">Datum<strong>{{ datum_str }}</strong></div>
+      <div class="meta-line">Geldig tot<strong>{{ geldig_tot_str }}</strong></div>
+    </div>
   </div>
-</div>
 
-<table class="meta-table">
-  <tr><td class="label">Klant</td><td>{{ klant_naam }}</td></tr>
-  <tr><td class="label">E-mail</td><td>{{ klant_email }}</td></tr>
-</table>
+  <!-- ── KLANT ──────────────────────────────────────────────────────── -->
+  <div class="klant-card">
+    <div class="eyebrow">Klantgegevens</div>
+    <div class="field"><span class="k">Naam</span><span class="v">{{ klant_naam }}</span></div>
+    <div class="field"><span class="k">E-mail</span><span class="v">{{ klant_email }}</span></div>
+  </div>
 
-<h2>Introductie</h2>
-<p class="intro">{{ intro_offerte }}</p>
-{% if intake_summary %}
-<p class="intro">{{ intake_summary }}</p>
-{% endif %}
+  <!-- ── INTRO ──────────────────────────────────────────────────────── -->
+  <h2 class="section">Introductie</h2>
+  <p class="intro-text">{{ intro_offerte }}</p>
+  {% if intake_summary %}
+  <p class="intro-text">{{ intake_summary }}</p>
+  {% endif %}
 
-<h2>Ons aanbod</h2>
-<p class="intro">{{ aanbod_beschrijving }}</p>
+  <!-- ── AANBOD ─────────────────────────────────────────────────────── -->
+  <h2 class="section">Ons aanbod</h2>
+  <p class="intro-text">{{ aanbod_beschrijving }}</p>
 
-<h2>Prijsoverzicht</h2>
-<table class="price-table">
-  <thead>
-    <tr>
-      <th>Omschrijving</th>
-      <th>Aantal</th>
-      <th>Eenheid</th>
-      <th class="amount">Per eenheid</th>
-      <th class="amount">Totaal</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for line in pricing.lines %}
-    <tr>
-      <td>{{ line.label }}</td>
-      <td>{{ "%.0f"|format(line.quantity) if line.quantity else "-" }}</td>
-      <td>{{ line.unit or "-" }}</td>
-      <td class="amount">{{ "€%.2f"|format(line.unit_price) if line.unit_price else "-" }}</td>
-      <td class="amount">€{{ "%.2f"|format(line.total) }}</td>
-    </tr>
-    {% endfor %}
-    <tr class="subtotal">
-      <td colspan="4">Subtotaal excl. BTW</td>
-      <td class="amount">€{{ "%.2f"|format(pricing.subtotaal_excl_btw) }}</td>
-    </tr>
-    <tr class="btw">
-      <td colspan="4">BTW 21%</td>
-      <td class="amount">€{{ "%.2f"|format(pricing.btw_bedrag) }}</td>
-    </tr>
-    <tr class="total">
-      <td colspan="4">Totaal incl. BTW</td>
-      <td class="amount">€{{ "%.2f"|format(pricing.totaal_incl_btw) }}</td>
-    </tr>
-  </tbody>
-</table>
-
-{% if korting_notitie %}
-<div style="margin-top:16px;padding:12px 16px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:6px;font-size:9pt;color:#9A3412">
-  <strong>Opmerking bij korting:</strong> {{ korting_notitie }}
-</div>
-{% endif %}
-
-<div class="footer">
-  <table class="footer-table">
-    <tr>
-      <td>
-        <strong>{{ company.name }}</strong><br>
-        KVK: {{ company.kvk }}<br>
-        BTW: {{ company.btw }}
-      </td>
-      <td>
-        IBAN: {{ company.iban }}<br>
-        {{ company.website }}
-      </td>
-      <td>
-        Contactpersoon: {{ company.contact_person }}<br>
-        {{ company.email }}<br>
-        {{ company.phone }}
-      </td>
-    </tr>
+  <!-- ── PRIJSOVERZICHT ─────────────────────────────────────────────── -->
+  <h2 class="section">Prijsoverzicht</h2>
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th>Omschrijving</th>
+        <th class="num">Aantal</th>
+        <th class="num">Eenheid</th>
+        <th class="num">Per eenheid</th>
+        <th class="num">Totaal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in pricing.lines %}
+      <tr>
+        <td class="label">{{ line.label }}</td>
+        <td class="num">{{ "%.0f"|format(line.quantity) if line.quantity else "&mdash;" | safe }}</td>
+        <td class="num">{{ line.unit or "&mdash;" | safe }}</td>
+        <td class="num">{{ "€ %.2f"|format(line.unit_price) if line.unit_price else "&mdash;" | safe }}</td>
+        <td class="amount">€ {{ "%.2f"|format(line.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
   </table>
+
+  <div class="totals">
+    <div class="row subtotal">
+      <span class="l">Subtotaal excl. BTW</span>
+      <span class="r">€ {{ "%.2f"|format(pricing.subtotaal_excl_btw) }}</span>
+    </div>
+    <div class="row btw">
+      <span class="l">BTW 21%</span>
+      <span class="r">€ {{ "%.2f"|format(pricing.btw_bedrag) }}</span>
+    </div>
+    <div class="row grand">
+      <span class="l">Totaal incl. BTW</span>
+      <span class="r">€ {{ "%.2f"|format(pricing.totaal_incl_btw) }}</span>
+    </div>
+  </div>
+
+  {% if korting_notitie %}
+  <div class="korting-note">
+    <strong>Opmerking bij korting:</strong> {{ korting_notitie }}
+  </div>
+  {% endif %}
+
+  <!-- ── VOORWAARDEN ────────────────────────────────────────────────── -->
+  <div class="conditions">
+    <strong>Voorwaarden &amp; geldigheid.</strong>
+    Deze offerte is geldig tot {{ geldig_tot_str }} en betreft een vrijblijvende prijsindicatie op basis van de door u verstrekte informatie. Definitieve afstemming volgt tijdens de afspraak ter plaatse. Genoemde bedragen zijn exclusief eventuele onvoorziene werkzaamheden en gelden onder voorbehoud van toegankelijkheid van het werkadres.
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+  <div class="footer">
+    <table>
+      <tr>
+        <td style="width:38%">
+          <span class="col-label">{{ company.name }}</span>
+          <span class="val">KVK {{ company.kvk }}<br>BTW {{ company.btw }}</span>
+        </td>
+        <td style="width:32%">
+          <span class="col-label">Betaling</span>
+          <span class="val">IBAN {{ company.iban }}<br>{{ company.website }}</span>
+        </td>
+        <td>
+          <span class="col-label">Contact</span>
+          <span class="val">{{ company.contact_person }}<br>{{ company.email }}<br>{{ company.phone }}</span>
+        </td>
+      </tr>
+    </table>
+    <div class="powered-footer">
+      <span class="brand">Frontlix</span> &middot; AI-gegenereerde offertes &middot; frontlix.com
+    </div>
+  </div>
+
 </div>
 
 </body>
