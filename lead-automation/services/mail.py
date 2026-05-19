@@ -192,14 +192,15 @@ async def send_approval_email(
               </td></tr>
 
               <!-- Buttons (side-by-side, met icons; nested table = max compatibility) -->
-              <tr><td style="padding:24px 40px 12px 40px" align="center">
+              <!-- white-space:nowrap voorkomt dat icon + tekst over 2 regels splitsen op smalle mobile-clients -->
+              <tr><td style="padding:24px 24px 12px 24px" align="center">
                 <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
                   <tr>
-                    <td style="padding:0 8px">
-                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#22C55E;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#10003;&nbsp; Goedkeuren</a>
+                    <td style="padding:0 6px">
+                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#22C55E;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:12px;letter-spacing:-0.1px;white-space:nowrap;mso-padding-alt:0">&#10003;&nbsp;Goedkeuren</a>
                     </td>
-                    <td style="padding:0 8px">
-                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F59E0B;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#9998;&nbsp; Wijzigen</a>
+                    <td style="padding:0 6px">
+                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F59E0B;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:12px;letter-spacing:-0.1px;white-space:nowrap;mso-padding-alt:0">&#9998;&nbsp;Wijzigen</a>
                     </td>
                   </tr>
                 </table>

@@ -373,6 +373,31 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
       text-align: center; margin-top: 28px;
       font-size: 11.5px; color: var(--c-text-soft); letter-spacing: 0.3px;
     }}
+
+    /* ── Mobile (<= 600px) ─────────────────────────────────── */
+    @media (max-width: 600px) {{
+      body {{ padding: 14px 10px 32px 10px; }}
+      .header {{
+        flex-direction: column; align-items: flex-start;
+        padding: 16px 18px; gap: 14px;
+      }}
+      .header-logo {{ height: 34px; }}
+      .header-title h1 {{ font-size: 17px; }}
+      .header-title h1 .muted {{ font-size: 13px; display: block; margin-top: 2px; }}
+      .header-meta {{ gap: 22px; width: 100%; flex-wrap: wrap; }}
+      .header-meta .v {{ font-size: 12px; }}
+      .card {{ padding: 18px 18px; margin-bottom: 14px; }}
+      .card-title {{ font-size: 14.5px; margin-bottom: 14px; padding-bottom: 10px; }}
+      .field input, .field select, .field textarea {{ font-size: 14px; padding: 10px 12px; }}
+      .price-table {{ font-size: 11.5px; }}
+      .price-table thead th {{ padding: 7px 8px; font-size: 9.5px; letter-spacing: 0.6px; }}
+      .price-table tbody td {{ padding: 7px 8px; }}
+      .price-table td.num, .price-table td.amount {{ white-space: nowrap; }}
+      .totals .row {{ padding: 7px 12px; font-size: 12.5px; }}
+      .totals .row.grand {{ font-size: 14.5px; padding: 12px 12px; }}
+      .btn {{ font-size: 14px; padding: 13px 18px; border-radius: 12px; }}
+      .actions {{ gap: 8px; }}
+    }}
   </style>
 </head>
 <body>
