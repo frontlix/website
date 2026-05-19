@@ -68,9 +68,11 @@ function calcPricing(a) {
 
 
 def _euro(n: float) -> str:
+    """Format als '€ 1.234,56'. Tussen € en bedrag een non-breaking space (\\u00A0)
+    zodat het teken nooit los van het bedrag op een nieuwe regel komt."""
     sign = "-" if n < 0 else ""
     n = abs(n)
-    return f"{sign}€ {n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"{sign}€ {n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _error_page(title: str, message: str) -> str:
@@ -322,14 +324,15 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     }}
     .price-table thead th:first-child {{ border-radius: 8px 0 0 0; }}
     .price-table thead th:last-child  {{ border-radius: 0 8px 0 0; text-align: right; }}
-    .price-table thead th.num {{ text-align: right; }}
+    .price-table thead th.num {{ text-align: right; white-space: nowrap; }}
     .price-table tbody td {{
       padding: 9px 12px; border-bottom: 1px solid var(--c-border-2);
       color: var(--c-text);
     }}
     .price-table tbody tr:nth-child(even) td {{ background: var(--c-surface); }}
-    .price-table td.num {{ text-align: right; font-variant-numeric: tabular-nums; color: var(--c-text-mute); }}
-    .price-table td.amount {{ text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }}
+    /* nowrap zorgt dat '€ 12.000,00' nooit splitst tussen € en bedrag */
+    .price-table td.num {{ text-align: right; font-variant-numeric: tabular-nums; color: var(--c-text-mute); white-space: nowrap; }}
+    .price-table td.amount {{ text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }}
     .price-table td.lbl {{ font-weight: 500; }}
 
     .totals {{
@@ -521,7 +524,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     n = Math.abs(n);
     var parts = n.toFixed(2).split('.');
     var whole = parts[0].replace(/\\B(?=(\\d{{3}})+(?!\\d))/g, '.');
-    return sign + '€ ' + whole + ',' + parts[1];
+    return sign + '€ ' + whole + ',' + parts[1];
   }}
 
   function recalc() {{
