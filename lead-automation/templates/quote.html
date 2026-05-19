@@ -277,27 +277,22 @@
   }
   .conditions strong { color: var(--c-text); }
 
-  /* ── Footer ──────────────────────────────────────────────────────── */
+  /* ── Footer (single-line fineprint) ─────────────────────────────── */
+  /* Compact: alleen wettelijke vermeldingen die NIET al in de header staan
+     (KVK, BTW, IBAN, website). Contactpersoon/telefoon/e-mail staan al
+     rechts boven — dubbel zou ruimte verspillen. */
   .footer {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 2px solid var(--c-text);
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--c-border);
     font-size: 7.5pt;
     color: var(--c-text-mute);
     line-height: 1.5;
+    text-align: center;
   }
-  .footer table { width: 100%; }
-  .footer td { vertical-align: top; padding-right: 20px; }
-  .footer .col-label {
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--c-text-soft);
-    font-weight: 700;
-    margin-bottom: 4px;
-    font-size: 7.5pt;
-    display: block;
-  }
-  .footer .val { color: var(--c-text); font-weight: 500; }
+  .footer .sep { color: var(--c-text-soft); margin: 0 8px; }
+  .footer .lbl { color: var(--c-text-soft); margin-right: 3px; letter-spacing: 0.3px; }
+  .footer .val { color: var(--c-text); font-weight: 600; }
   /* WeasyPrint ignores -webkit-background-clip:text — render as solid 2-color split */
   .brand-front { color: #1A56FF; font-weight: 700; }
   .brand-lix   { color: #00CFFF; font-weight: 700; }
@@ -415,24 +410,15 @@
     Deze offerte is geldig tot {{ geldig_tot_str }} en betreft een vrijblijvende prijsindicatie op basis van de door u verstrekte informatie. Definitieve afstemming volgt tijdens de afspraak ter plaatse. Genoemde bedragen zijn exclusief eventuele onvoorziene werkzaamheden en gelden onder voorbehoud van toegankelijkheid van het werkadres.
   </div>
 
-  <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+  <!-- ── FOOTER (compact fineprint, single row) ─────────────────────── -->
   <div class="footer">
-    <table>
-      <tr>
-        <td style="width:38%">
-          <span class="col-label">{{ company.name }}</span>
-          <span class="val">KVK {{ company.kvk }}<br>BTW {{ company.btw }}</span>
-        </td>
-        <td style="width:32%">
-          <span class="col-label">Betaling</span>
-          <span class="val">IBAN {{ company.iban }}<br>{{ company.website }}</span>
-        </td>
-        <td>
-          <span class="col-label">Contact</span>
-          <span class="val">{{ company.contact_person }}<br>{{ company.email }}<br>{{ company.phone }}</span>
-        </td>
-      </tr>
-    </table>
+    <span class="lbl">KVK</span><span class="val">{{ company.kvk }}</span>
+    <span class="sep">&middot;</span>
+    <span class="lbl">BTW</span><span class="val">{{ company.btw }}</span>
+    <span class="sep">&middot;</span>
+    <span class="lbl">IBAN</span><span class="val">{{ company.iban }}</span>
+    <span class="sep">&middot;</span>
+    <span class="val">{{ company.website }}</span>
   </div>
 
 </div>
