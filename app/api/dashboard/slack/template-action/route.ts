@@ -19,6 +19,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { verifySlackRequest } from '@/lib/dashboard/slack/verify'
 import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
 
@@ -123,6 +124,7 @@ async function approveAanvraag(aanvraagId: string, payload: SlackPayload): Promi
     return NextResponse.json({ ok: true })
   }
 
+  revalidatePath('/dashboard/instellingen')
   await replaceMessage(payload, `:white_check_mark: *Goedgekeurd* door <@${payload.user.id}>`)
   return NextResponse.json({ ok: true })
 }
@@ -231,6 +233,7 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
         errors: { notitie_block: `DB-fout: ${error.message}` },
       })
     }
+    revalidatePath('/dashboard/instellingen')
     await postBackToSlack(
       meta.responseUrl,
       `:x: *Afgekeurd* door <@${payload.user.id}>\n> ${escapeSlack(notitie)}`,
@@ -250,6 +253,7 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
         errors: { notitie_block: `DB-fout: ${error.message}` },
       })
     }
+    revalidatePath('/dashboard/instellingen')
     if (notitie) {
       await postBackToSlack(
         meta.responseUrl,

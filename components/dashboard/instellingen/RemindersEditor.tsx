@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Clock,
   Eye,
+  MessageSquare,
   RotateCcw,
   Send,
   Sparkles,
@@ -377,6 +378,10 @@ function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
   const [isPending, startTransition] = useTransition()
   const tone = statusTone(aanvraag.status)
   const canCancel = aanvraag.status === 'pending'
+  // Notitie van Frontlix-support — tonen zodra gevuld, buiten de
+  // expand-toggle om: user wil feedback van Frontlix direct zien
+  // zonder eerst "Inzien" te hoeven klikken.
+  const heeftNotitie = aanvraag.notitie && aanvraag.notitie.trim().length > 0
 
   const onCancel = () => {
     if (!window.confirm('Weet je zeker dat je deze aanvraag wil annuleren?')) {
@@ -422,6 +427,16 @@ function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
           />
         </span>
       </button>
+
+      {heeftNotitie && (
+        <div className={`${styles.aanvraagNotitie} ${styles[`notitie_${tone}`]}`}>
+          <MessageSquare size={11} className={styles.aanvraagNotitieIcon} />
+          <div className={styles.aanvraagNotitieText}>
+            <span className={styles.aanvraagNotitieLabel}>Notitie van Frontlix</span>
+            {aanvraag.notitie}
+          </div>
+        </div>
+      )}
 
       {expanded && (
         <div className={styles.aanvraagBody}>
