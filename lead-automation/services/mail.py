@@ -181,12 +181,21 @@ async def send_approval_email(
                 </table>
               </td></tr>
 
-              <!-- Buttons (stacked for mobile compatibility) -->
-              <tr><td style="padding:28px 40px 8px 40px" align="center">
-                <a href="{escape(approve_url)}" style="display:block;background-color:#16a34a;color:#ffffff;font-family:{font};font-size:15px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:10px;text-align:center">Goedkeuren &amp; versturen</a>
+              <!-- Buttons (side-by-side, met icons; nested table = max compatibility) -->
+              <tr><td style="padding:24px 40px 12px 40px" align="center">
+                <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
+                  <tr>
+                    <td style="padding:0 8px">
+                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#22C55E;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#10003;&nbsp; Goedkeuren</a>
+                    </td>
+                    <td style="padding:0 8px">
+                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F59E0B;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#9998;&nbsp; Wijzigen</a>
+                    </td>
+                  </tr>
+                </table>
               </td></tr>
-              <tr><td style="padding:0 40px 32px 40px" align="center">
-                <a href="{escape(edit_url)}" style="display:block;background-color:#F97316;color:#ffffff;font-family:{font};font-size:15px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:10px;text-align:center">Wijzigen</a>
+              <tr><td style="padding:4px 40px 32px 40px" align="center">
+                <p style="margin:0;font-family:{font};font-size:12px;color:#8A94A6;text-align:center;line-height:1.5">Bij goedkeuring wordt de offerte automatisch naar de klant verzonden via WhatsApp en e-mail.</p>
               </td></tr>
 
             </table>
