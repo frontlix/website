@@ -57,26 +57,76 @@ export async function requestTemplateChange(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
-  const { error } = await supabase.from('template_aanvragen').insert({
-    template_naam: templateNaam,
-    voorgestelde_tekst: tekst,
-    aanvrager_user_id: user.id,
-    aanvrager_email: user.email ?? '',
-  })
-  if (error) return { ok: false, error: error.message }
+  // INSERT met .select('id') zodat we 'm in de Slack-buttons kunnen
+  // meegeven — de interactivity-endpoint heeft de id nodig om de juiste
+  // rij te updaten bij approve/reject/note.
+  const { data: inserted, error } = await supabase
+    .from('template_aanvragen')
+    .insert({
+      template_naam: templateNaam,
+      voorgestelde_tekst: tekst,
+      aanvrager_user_id: user.id,
+      aanvrager_email: user.email ?? '',
+    })
+    .select('id')
+    .single()
+  if (error || !inserted) {
+    return { ok: false, error: error?.message ?? 'Aanvraag opslaan mislukt' }
+  }
+  const aanvraagId = (inserted as { id: string }).id
 
-  // Slack-melding op best-effort basis. Géén throw bij failure — de aanvraag
-  // is veilig opgeslagen in de DB en Frontlix-support pikt 'm daar op.
+  // Slack-melding met interactieve knoppen (Block Kit). Best-effort:
+  // bij netwerkfout faalt de hele actie niet — de aanvraag staat
+  // veilig in de DB en is via /instellingen + Studio nog beheersbaar.
   const webhookUrl = process.env.SLACK_TEMPLATE_REQUEST_WEBHOOK_URL
   if (webhookUrl) {
-    const payload = {
-      text: `:envelope_with_arrow: *Template-aanvraag* — \`${templateNaam}\`\n*Door:* ${user.email}\n\n*Voorgestelde tekst:*\n\`\`\`${tekst}\`\`\``,
-    }
+    const headerText = `:envelope_with_arrow: *Template-aanvraag* — \`${templateNaam}\``
+    const metaText = `*Door:* ${user.email}`
+    // ``` blokken zijn Slack-mrkdwn. Triple-backticks in de input
+    // zelf escapen we naar spaces om de codeblok niet te breken.
+    const veiligeTekst = tekst.replace(/```/g, '` ` `')
+    const blocks = [
+      { type: 'section', text: { type: 'mrkdwn', text: headerText } },
+      { type: 'context', elements: [{ type: 'mrkdwn', text: metaText }] },
+      { type: 'section', text: { type: 'mrkdwn', text: '*Voorgestelde tekst:*' } },
+      { type: 'section', text: { type: 'mrkdwn', text: '```' + veiligeTekst + '```' } },
+      {
+        type: 'actions',
+        block_id: `tpl_actions_${aanvraagId}`,
+        elements: [
+          {
+            type: 'button',
+            action_id: 'approve',
+            text: { type: 'plain_text', text: '✅ Goedkeuren', emoji: true },
+            style: 'primary',
+            value: `approve:${aanvraagId}`,
+          },
+          {
+            type: 'button',
+            action_id: 'reject',
+            text: { type: 'plain_text', text: '❌ Afkeuren', emoji: true },
+            style: 'danger',
+            value: `reject:${aanvraagId}`,
+          },
+          {
+            type: 'button',
+            action_id: 'note',
+            text: { type: 'plain_text', text: '💬 Notitie toevoegen', emoji: true },
+            value: `note:${aanvraagId}`,
+          },
+        ],
+      },
+    ]
     try {
       await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          // text is een fallback voor notificaties/screen-readers; blocks
+          // is wat zichtbaar wordt in de Slack-UI.
+          text: `Template-aanvraag: ${templateNaam} door ${user.email}`,
+          blocks,
+        }),
       })
     } catch {
       // Stille fout — niet falen op netwerkproblemen met Slack.
