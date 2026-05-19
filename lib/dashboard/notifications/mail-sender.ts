@@ -13,12 +13,19 @@ import type { NotificationMail } from './mail-templates'
 
 let _transporter: nodemailer.Transporter | null = null
 
+/**
+ * Notification-mail gaat via poort 587 (STARTTLS) ipv 465 (implicit TLS).
+ * Hostinger 465 gaf herhaaldelijk ETIMEDOUT op de TLS-handshake — 587 is
+ * stabieler en wordt door alle moderne SMTP-providers ondersteund.
+ * `requireTLS: true` zorgt dat de connectie sowieso encrypted wordt.
+ */
 function getMailTransporter(): nodemailer.Transporter {
   if (!_transporter) {
     _transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST || 'smtp.hostinger.com',
-      port: Number(process.env.MAIL_PORT) || 465,
-      secure: true,
+      port: Number(process.env.MAIL_PORT_NOTIF) || 587,
+      secure: false,
+      requireTLS: true,
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS,
