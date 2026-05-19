@@ -4,6 +4,7 @@ import {
   buildNotificationMail,
 } from '@/lib/dashboard/notifications/mail-templates'
 import { sendNotificationMail } from '@/lib/dashboard/notifications/mail-sender'
+import { sendPushToUser } from '@/lib/dashboard/notifications/push-sender'
 import type { NotificationEventType, NotificationKanaal } from '@/lib/dashboard/notifications/types'
 
 /**
@@ -70,10 +71,12 @@ export async function POST(req: NextRequest) {
         await deliverEmail(notif as NotificationRowSlice)
         break
       case 'push':
+        await deliverPush(notif as NotificationRowSlice)
+        break
       case 'whatsapp':
-        // Placeholders — implementatie volgt in fase 3 / 4. We faalden
-        // hier niet (200) zodat de trigger niet hoeft te retryen.
-        return NextResponse.json({ ok: true, skipped: true, reason: 'kanaal nog niet live' })
+        // Placeholder — komt in fase 4. 200 terug zodat de trigger niet
+        // hoeft te retryen.
+        return NextResponse.json({ ok: true, skipped: true, reason: 'whatsapp nog niet live' })
       case 'in_app':
         // In-app gaat al via DB-insert (geen extra delivery nodig).
         return NextResponse.json({ ok: true, skipped: true, reason: 'in_app via db' })
@@ -120,4 +123,18 @@ async function deliverEmail(notif: NotificationRowSlice): Promise<void> {
   })
 
   await sendNotificationMail(userRes.user.email, mail)
+}
+
+async function deliverPush(notif: NotificationRowSlice): Promise<void> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.frontlix.com'
+  const url = notif.lead_id
+    ? `${siteUrl}/dashboard/leads/${notif.lead_id}`
+    : `${siteUrl}/dashboard`
+
+  await sendPushToUser(notif.user_id, {
+    titel: notif.titel,
+    body: notif.body,
+    url,
+    eventType: notif.event_type,
+  })
 }

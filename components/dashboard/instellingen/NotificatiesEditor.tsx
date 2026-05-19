@@ -5,6 +5,7 @@ import {
   togglePrefAction,
   setDailyDigestTijdAction,
 } from '@/lib/dashboard/notifications/prefs-actions'
+import { enablePush, disablePush } from '@/lib/dashboard/notifications/push-client'
 import {
   EVENT_TYPES_ORDERED,
   KANALEN_ORDERED,
@@ -30,7 +31,7 @@ import pageStyles from '@/app/dashboard/(app)/instellingen/page.module.css'
  *   de bezorg-laag implementeert, removen we deze gate per kanaal.
  */
 
-const LIVE_FASE = 2 // huidige fase — toggles voor kanalen met fase > LIVE_FASE disabled (fase 3=push, 4=whatsapp)
+const LIVE_FASE = 3 // huidige fase — toggles voor kanalen met fase > LIVE_FASE disabled (fase 4=whatsapp)
 
 export function NotificatiesEditor({
   initialPrefs,
@@ -61,6 +62,19 @@ export function NotificatiesEditor({
     setSavingKey(key)
 
     startTransition(async () => {
+      // Push heeft een extra stap: browser permission + subscribe.
+      // Doen we VOOR de pref-update, zodat een geweigerde permission
+      // niet leidt tot een "aan"-staande pref zonder werkende subscription.
+      if (kanaal === 'push') {
+        const pushResult = next ? await enablePush() : await disablePush()
+        if (!pushResult.ok) {
+          setPrefs((prev) => new Map(prev).set(key, current))
+          setSavingKey(null)
+          alert(pushNiceError(pushResult.reason))
+          return
+        }
+      }
+
       const result = await togglePrefAction(eventType, kanaal, next)
       setSavingKey(null)
       if (!result.ok) {
@@ -69,6 +83,22 @@ export function NotificatiesEditor({
         alert(result.error)
       }
     })
+  }
+
+  /** User-friendly foutmelding voor mislukte push-permission flow. */
+  function pushNiceError(reason: string | undefined): string {
+    switch (reason) {
+      case 'unsupported':
+        return 'Deze browser ondersteunt geen push-notificaties.'
+      case 'denied':
+        return 'Notificatie-permissie is geweigerd. Open de browser-instellingen om dit aan te zetten.'
+      case 'no-vapid':
+        return 'Push is server-side nog niet geconfigureerd (VAPID keys ontbreken).'
+      case 'save-failed':
+        return 'Subscription kon niet worden opgeslagen — probeer opnieuw.'
+      default:
+        return 'Push kon niet worden ingeschakeld — probeer opnieuw.'
+    }
   }
 
   return (

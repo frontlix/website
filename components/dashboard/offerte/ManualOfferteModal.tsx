@@ -286,6 +286,11 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
   const [bannersDismissed, setBannersDismissed] = useState(false)
   const [draftSavedFlash, setDraftSavedFlash] = useState(false)
+  // `true` zodra de user/AI iets in het formulier heeft aangeraakt.
+  // Voorkomt dat init-effects (zoals de pricing-fetch die voegzand-
+  // prijzen op live-waardes zet) de auto-save triggeren en zo de
+  // drafts-banner laten flashen bij modal-open.
+  const userHasEditedRef = useRef(false)
 
   // Mount: migrate V1 → V2 (1×) en load drafts-array
   useEffect(() => {
@@ -327,9 +332,12 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
 
   // Auto-save: schrijft current data naar een draft-entry (debounced).
   // Skip wanneer data nog default is — vermijdt lege "Onbekende klant"-
-  // drafts bij elke modal-open.
+  // drafts bij elke modal-open. Skip ook zolang user/AI niets heeft
+  // aangeraakt; pricing-init en dergelijke muteren `data` maar dat
+  // mag de drafts-banner niet wegklappen.
   useEffect(() => {
     if (typeof window === 'undefined') return
+    if (!userHasEditedRef.current) return
     if (isDefaultsData(data)) return
     const t = setTimeout(() => {
       try {
@@ -368,6 +376,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const hervatDraft = (id: string) => {
     const draft = drafts.find((d) => d.id === id)
     if (!draft) return
+    userHasEditedRef.current = true
     setData({ ...DEFAULTS, ...draft.data })
     setCurrentDraftId(id)
     setBannersDismissed(true)
@@ -395,8 +404,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const bannersVisible = !bannersDismissed && drafts.length > 0 && currentDraftId === null
   const currentDraft = currentDraftId ? drafts.find((d) => d.id === currentDraftId) ?? null : null
 
-  const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
+  const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) => {
+    userHasEditedRef.current = true
     setData((d) => ({ ...d, [k]: v }))
+  }
 
   const rules = useMemo(() => computeRules(data, pricing), [data, pricing])
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
