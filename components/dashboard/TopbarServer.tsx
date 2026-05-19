@@ -1,12 +1,21 @@
-import { getRecentNotifications } from '@/lib/dashboard/notification-queries'
+import {
+  getRecentNotifications,
+  getUnreadNotificationCount,
+} from '@/lib/dashboard/notification-queries'
 import { Topbar } from './Topbar'
 
 /**
- * Server-component wrapper voor Topbar: fetcht recente notificaties en
- * passet ze door zodat het bell-icoon dropdown-content kan tonen zonder
- * dat de client zelf RSC-data hoeft op te halen.
+ * Server-component wrapper voor Topbar: fetcht recente notificaties +
+ * ongelezen-count parallel zodat het bel-icoon direct het juiste badge-
+ * getal kan tonen zonder client-side RSC-roundtrip.
+ *
+ * `limit: 15` voor de dropdown — meer dan we tonen zou pixels kosten
+ * zonder mens-meerwaarde.
  */
 export async function TopbarServer() {
-  const notifications = await getRecentNotifications(10)
-  return <Topbar notifications={notifications} />
+  const [notifications, unreadCount] = await Promise.all([
+    getRecentNotifications(15),
+    getUnreadNotificationCount(),
+  ])
+  return <Topbar notifications={notifications} unreadCount={unreadCount} />
 }

@@ -1,64 +1,75 @@
 import { getDashboardSupabase } from './supabase-server'
 import type { NotifItem } from '@/components/dashboard/NotificationPanel'
+import {
+  EVENT_KIND,
+  type NotificationRow,
+} from './notifications/types'
 
 /**
- * Aggregeert de laatste paar activity-events tot een notifications-feed.
- * Voor v1: pakken we recente leads + recente WhatsApp-berichten. Reviews
- * en agenda-events kunnen erbij zodra de tabellen gevuld zijn.
+ * Bel-feed in de topbar.
+ *
+ * V2 (huidig): leest uit de `notifications`-tabel die door notify() wordt
+ * gevuld bij events. RLS filtert al op user_id = auth.uid().
+ *
+ * Mapped van NotificationRow naar NotifItem (UI-shape) hier zodat de
+ * client component (NotificationPanel) typed blijft op haar bestaande
+ * interface. Voorheen aggregeerden we hier rechtstreeks uit leads/berichten
+ * (V1, fake notificaties) — die logica is vervangen door echte event-driven
+ * notificaties (fase 1).
  */
 export async function getRecentNotifications(limit = 10): Promise<NotifItem[]> {
   const supabase = await getDashboardSupabase()
-  const since = new Date(Date.now() - 7 * 24 * 3600_000).toISOString()  // laatste 7 dagen
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
 
-  const [leadsRes, msgsRes] = await Promise.all([
-    supabase
-      .from('leads')
-      .select('lead_id, naam, aangemaakt, dashboard_status')
-      .gte('aangemaakt', since)
-      .order('aangemaakt', { ascending: false })
-      .limit(limit),
-    supabase
-      .from('berichten')
-      .select('id, lead_id, bericht, richting, timestamp')
-      .eq('richting', 'in')   // alleen klant-berichten
-      .gte('timestamp', since)
-      .order('timestamp', { ascending: false })
-      .limit(limit),
-  ])
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('id, event_type, lead_id, titel, body, aangemaakt_op, gelezen_op')
+    .eq('user_id', user.id)
+    .order('gelezen_op', { ascending: true, nullsFirst: true })
+    .order('aangemaakt_op', { ascending: false })
+    .limit(limit)
 
-  const leads = (leadsRes.data ?? []) as Array<{
-    lead_id: string
-    naam: string
-    aangemaakt: string
-    dashboard_status: string | null
-  }>
-  const msgs = (msgsRes.data ?? []) as Array<{
-    id: string
-    lead_id: string
-    bericht: string | null
-    timestamp: string
-  }>
+  if (error) {
+    console.error('[getRecentNotifications] failed:', error)
+    return []
+  }
 
-  const items: NotifItem[] = [
-    ...leads.map((l) => ({
-      id: `lead-${l.lead_id}`,
-      kind: 'lead' as const,
-      title: `Nieuwe lead: ${l.naam}`,
-      sub: 'Aanvraag binnen via Surface',
-      href: `/leads/${l.lead_id}`,
-      ts: l.aangemaakt,
-      unread: l.dashboard_status === null || l.dashboard_status === 'open',
-    })),
-    ...msgs.map((m) => ({
-      id: `wa-${m.id}`,
-      kind: 'wa' as const,
-      title: 'WhatsApp-bericht',
-      sub: (m.bericht ?? '').slice(0, 60) || 'Bericht ontvangen',
-      href: `/leads/${m.lead_id}`,
-      ts: m.timestamp,
-    })),
-  ]
+  const rows = (data as Pick<
+    NotificationRow,
+    'id' | 'event_type' | 'lead_id' | 'titel' | 'body' | 'aangemaakt_op' | 'gelezen_op'
+  >[] | null) ?? []
 
-  items.sort((a, b) => b.ts.localeCompare(a.ts))
-  return items.slice(0, limit)
+  return rows.map((r) => ({
+    id: r.id,
+    kind: EVENT_KIND[r.event_type],
+    title: r.titel,
+    sub: r.body,
+    // Fallback naar /dashboard als geen lead-context (bv. dagelijkse_samenvatting).
+    href: r.lead_id ? `/dashboard/leads/${r.lead_id}` : '/dashboard',
+    ts: r.aangemaakt_op,
+    unread: r.gelezen_op === null,
+  }))
+}
+
+/**
+ * Aantal ongelezen notificaties voor de huidige user — voor de badge
+ * in de bel-button. Aparte head-only count-query (geen rij-payload).
+ */
+export async function getUnreadNotificationCount(): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .is('gelezen_op', null)
+
+  if (error) {
+    console.error('[getUnreadNotificationCount] failed:', error)
+    return 0
+  }
+  return count ?? 0
 }

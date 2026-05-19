@@ -109,3 +109,21 @@ export interface NotificationRow {
   aangemaakt_op: string
   gelezen_op: string | null
 }
+
+/**
+ * Mapping van event-type naar de visuele `kind` in NotificationPanel.
+ * NotificationPanel ondersteunt 4 kinds (lead/wa/review/agenda) — we
+ * mappen onze 8 event-types daarop. Later kunnen we meer iconen toevoegen.
+ */
+export type NotifKind = 'lead' | 'wa' | 'review' | 'agenda'
+
+export const EVENT_KIND: Record<NotificationEventType, NotifKind> = {
+  nieuwe_lead: 'lead',
+  owner_review_nodig: 'wa',
+  klant_vraagt_korting: 'wa',
+  offerte_goedgekeurd: 'review',
+  offerte_afgewezen: 'review',
+  afspraak_ingepland: 'agenda',
+  nieuwe_review: 'review',
+  dagelijkse_samenvatting: 'lead',
+}

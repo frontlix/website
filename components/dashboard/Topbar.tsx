@@ -38,7 +38,13 @@ function getMeta(pathname: string): RouteMeta {
     : { title: 'Dashboard', sub: '' }
 }
 
-export function Topbar({ notifications = [] }: { notifications?: NotifItem[] }) {
+export function Topbar({
+  notifications = [],
+  unreadCount = 0,
+}: {
+  notifications?: NotifItem[]
+  unreadCount?: number
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -110,7 +116,7 @@ export function Topbar({ notifications = [] }: { notifications?: NotifItem[] }) 
           <span>Nieuwe offerte</span>
         </Link>
         <ThemeToggle />
-        <NotificationPanel items={notifications} />
+        <NotificationPanel items={notifications} unreadCount={unreadCount} />
       </div>
     </header>
   )
