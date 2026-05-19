@@ -54,9 +54,9 @@ hydrate_all()
 
 
 WELCOME_MESSAGES = {
-    "zonnepanelen": "Oké, zonnepanelen. Ik ben Sanne. Even wat korte vragen dan maak ik een offerte voor je.",
-    "dakdekker": "Oké, dakwerk. Ik ben Bram. Even wat vragen dan kan ik een offerte maken.",
-    "schoonmaak": "Oké, schoonmaak. Ik ben Lotte. Even een paar korte vragen dan heb ik genoeg voor een offerte.",
+    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen. Met wie heb ik trouwens het genoegen?",
+    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen. Met wie heb ik trouwens het genoegen?",
+    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel. Met wie heb ik trouwens het genoegen?",
 }
 
 MAX_TURNS = 20

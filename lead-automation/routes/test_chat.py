@@ -41,9 +41,9 @@ router = APIRouter()
 SESSIONS: dict[str, dict[str, Any]] = {}
 
 WELCOME_MESSAGES = {
-    "zonnepanelen": "Oké, zonnepanelen. Ik ben Sanne. Even wat korte vragen dan maak ik een offerte voor je.",
-    "dakdekker": "Oké, dakwerk. Ik ben Bram. Even wat vragen dan kan ik een offerte maken.",
-    "schoonmaak": "Oké, schoonmaak. Ik ben Lotte. Even een paar korte vragen dan heb ik genoeg voor een offerte.",
+    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen. Met wie heb ik trouwens het genoegen?",
+    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen. Met wie heb ik trouwens het genoegen?",
+    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel. Met wie heb ik trouwens het genoegen?",
 }
 
 # Mirrors routes/webhook.py:_WORKAROUND_FIELDS — fields with a practical tip get
@@ -78,7 +78,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("zonnepanelen"),
                 _h_assistant(WELCOME_MESSAGES["zonnepanelen"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Mark"),
                 _h_assistant("Hoi Mark! Weet je ongeveer hoeveel stroom je per jaar verbruikt? Staat op je jaarnota in kWh."),
                 _h_user("geen idee"),
@@ -94,7 +94,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("zonnepanelen"),
                 _h_assistant(WELCOME_MESSAGES["zonnepanelen"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Lisa"),
                 _h_assistant("Hoi Lisa! Weet je ongeveer hoeveel stroom je per jaar verbruikt? Staat op je jaarnota in kWh."),
                 _h_user("ongeveer 4000 kWh"),
@@ -110,7 +110,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("zonnepanelen"),
                 _h_assistant(WELCOME_MESSAGES["zonnepanelen"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Jeroen"),
                 _h_assistant("Hoi Jeroen! Weet je ongeveer hoeveel stroom je per jaar verbruikt?"),
                 _h_user("3500 kWh"),
@@ -154,7 +154,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("zonnepanelen"),
                 _h_assistant(WELCOME_MESSAGES["zonnepanelen"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Mark"),
                 _h_assistant("Hoi Mark! Weet je ongeveer hoeveel stroom je per jaar verbruikt? Staat op je jaarnota in kWh."),
                 _h_user("lekker weer he vandaag"),
@@ -170,7 +170,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("dakdekker"),
                 _h_assistant(WELCOME_MESSAGES["dakdekker"]),
-                _h_assistant("Hoe heet je?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Peter"),
                 _h_assistant("Oké Peter. Nieuw dak, reparatie, of isolatie?"),
                 _h_user("reparatie"),
@@ -192,7 +192,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("dakdekker"),
                 _h_assistant(WELCOME_MESSAGES["dakdekker"]),
-                _h_assistant("Hoe heet je?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Sara"),
                 _h_assistant("Oké Sara. Nieuw dak, reparatie, of isolatie?"),
                 _h_user("vervangen"),
@@ -208,7 +208,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("dakdekker"),
                 _h_assistant(WELCOME_MESSAGES["dakdekker"]),
-                _h_assistant("Hoe heet je?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Tom"),
                 _h_assistant("Oké Tom. Nieuw dak, reparatie, of isolatie?"),
                 _h_user("repareren"),
@@ -248,7 +248,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("dakdekker"),
                 _h_assistant(WELCOME_MESSAGES["dakdekker"]),
-                _h_assistant("Hoe heet je?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Peter"),
                 _h_assistant("Oké Peter. Nieuw dak, reparatie, of isolatie?"),
                 _h_user("pff veel regen vandaag he"),
@@ -264,7 +264,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("schoonmaak"),
                 _h_assistant(WELCOME_MESSAGES["schoonmaak"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Sara"),
                 _h_assistant("Hoi Sara! Gaat het om een woning, kantoor, horeca of een winkel?"),
                 _h_user("kantoor"),
@@ -282,7 +282,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("schoonmaak"),
                 _h_assistant(WELCOME_MESSAGES["schoonmaak"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Lisa"),
                 _h_assistant("Hoi Lisa! Gaat het om een woning, kantoor, horeca of een winkel?"),
                 _h_user("horeca"),
@@ -298,7 +298,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("schoonmaak"),
                 _h_assistant(WELCOME_MESSAGES["schoonmaak"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Ruben"),
                 _h_assistant("Hoi Ruben! Gaat het om een woning, kantoor, horeca of een winkel?"),
                 _h_user("kantoor"),
@@ -336,7 +336,7 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             "history": [
                 _h_user("schoonmaak"),
                 _h_assistant(WELCOME_MESSAGES["schoonmaak"]),
-                _h_assistant("Met wie heb ik trouwens te maken?"),
+                _h_assistant("Met wie heb ik trouwens het genoegen?"),
                 _h_user("Sara"),
                 _h_assistant("Hoi Sara! Gaat het om een woning, kantoor, horeca of een winkel?"),
                 _h_user("lekker zonnetje he vandaag"),
