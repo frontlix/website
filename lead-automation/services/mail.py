@@ -71,11 +71,21 @@ async def send_approval_email(
 
     photos_html = ""
     if photo_urls:
-        thumbs = "".join(
-            f'<td style="padding:0 3px"><img src="{escape(url)}" width="72" height="72" style="display:block;border-radius:8px;object-fit:cover" /></td>'
+        # Stacked full-width photos, klikbaar (target=_blank opent originele
+        # bestand op Supabase storage). max-width=480px voor lange foto's,
+        # rounded + subtiele border voor de container-look uit foto 1.
+        blocks = "".join(
+            f'<a href="{escape(url)}" target="_blank" style="display:block;margin:0 0 12px 0;text-decoration:none">'
+            f'<img src="{escape(url)}" alt="Foto van klant" '
+            f'style="display:block;width:100%;max-width:480px;height:auto;border-radius:12px;border:1px solid #E5E7EB" />'
+            f'</a>'
             for url in photo_urls[:6]
         )
-        photos_html = f'<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0"><tr>{thumbs}</tr></table>'
+        photos_html = (
+            f'<p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;'
+            f'text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Foto\'s van de klant</p>'
+            f'{blocks}'
+        )
 
     logo_url = "https://frontlix.com/logo.png"
 
