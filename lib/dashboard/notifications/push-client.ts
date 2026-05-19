@@ -43,8 +43,10 @@ export async function enablePush(): Promise<PushEnableResult> {
     }
 
     // Service worker registreren (idempotent — returnt bestaande registration
-    // als 'ie al is).
-    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // als 'ie al is). Daarna WACHTEN tot 'ie actief is, anders gooit
+    // pushManager.subscribe() AbortError ("no active Service Worker").
+    await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    const reg = await navigator.serviceWorker.ready
 
     // Subscribe (of pak bestaande sub).
     let sub = await reg.pushManager.getSubscription()
