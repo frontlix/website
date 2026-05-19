@@ -38,8 +38,11 @@ export type ManualOfferteData = {
   factuur_huisnummer: string
   factuur_postcode: string
   factuur_plaats: string
-  // werk
-  hoofdcategorie: Hoofdcategorie
+  // werk — hoofdcategorie is een array zodat de owner zowel
+  // oprit/terras als onkruidbeheersing kan kiezen voor één klus.
+  // Lege array = nog niets gekozen (validatie in stap 2 blokkeert
+  // Volgende dan).
+  hoofdcategorie: Hoofdcategorie[]
   sub: SubDienst[]
   onderhoud_weken: 4 | 8 | 12 | 16
   m2: number
@@ -106,10 +109,11 @@ export const DEFAULTS: ManualOfferteData = {
   factuur_huisnummer: '',
   factuur_postcode: '',
   factuur_plaats: '',
-  hoofdcategorie: 'oprit_terras_terrein',
-  // Geen sub-dienst, voegzand-type of kleur standaard aan — user (of
-  // de AI-fill) moet expliciet kiezen. Validatie in stap 2 (sub.length
-  // > 0) blokkeert anders Volgende, dat is de bewuste guardrail.
+  // Geen hoofdcategorie, sub-dienst, voegzand-type of kleur standaard
+  // aan — user (of de AI-fill) moet expliciet kiezen. Validatie in
+  // stap 2 (sub.length > 0 én hoofdcategorie.length > 0) blokkeert
+  // anders Volgende, dat is de bewuste guardrail.
+  hoofdcategorie: [],
   sub: [],
   onderhoud_weken: 8,
   m2: 100,
@@ -154,7 +158,10 @@ export const SUB_OPTIES: ReadonlyArray<{
   { k: 'invegen',             l: 'Invegen',                        d: 'Reinigen + voegzand bijvullen', cat: 'oprit_terras_terrein' },
   { k: 'preventieve_onkruid', l: 'Preventieve onkruidbehandeling', d: 'Eenmalige behandeling, €1,10/m²', cat: 'both' },
   { k: 'beschermlaag',        l: 'Nieuwe beschermlaag toepassen',  d: 'Impregneer-coating, €1,60/m²',  cat: 'oprit_terras_terrein' },
-  { k: 'onderhoud',           l: 'Onderhoudsplan',                 d: 'Terugkerende beurten — 4 t/m 16 weken', cat: 'both' },
+  // Onderhoudsplan is een terugkerende onkruidbeheersings-flow; bij
+  // alleen oprit/terras (eenmalige klus) is dit niet relevant en zou
+  // de wizard 'm niet aanbieden.
+  { k: 'onderhoud',           l: 'Onderhoudsplan',                 d: 'Terugkerende beurten — 4 t/m 16 weken', cat: 'onkruidbeheersing' },
 ]
 
 export const ONDERHOUD_PRIJZEN: Record<4 | 8 | 12 | 16, number> = {

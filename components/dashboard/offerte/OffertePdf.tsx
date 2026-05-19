@@ -403,7 +403,13 @@ export function OffertePdfDocument({
     ? `${data.factuur_postcode || ''} ${data.factuur_plaats || ''}`.trim()
     : ''
 
-  const dienstLabel = CATEGORIE_LABEL[data.hoofdcategorie] || data.hoofdcategorie
+  // hoofdcategorie is een array; render alle gekozen labels gescheiden
+  // door " + ". Bij lege array fallback naar lege string (validatie zou
+  // dit moeten voorkomen).
+  const dienstLabel =
+    data.hoofdcategorie.length === 0
+      ? ''
+      : data.hoofdcategorie.map((c) => CATEGORIE_LABEL[c] ?? c).join(' + ')
   const subLabels = data.sub.map((s) => SUB_LABEL[s] ?? s).join(', ')
 
   return (

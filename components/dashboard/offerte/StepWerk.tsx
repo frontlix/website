@@ -28,6 +28,22 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
   const toggleSub = (key: SubDienst) => {
     set('sub', data.sub.includes(key) ? data.sub.filter((s) => s !== key) : [...data.sub, key])
   }
+  // Hoofdcategorie is een multi-select: oprit én onkruid mogen samen.
+  // Bij uitvinken van een categorie ruimen we ook de sub-diensten op
+  // die alleen onder die categorie vallen, zodat de selectie consistent
+  // blijft met wat de UI nog toont.
+  const toggleHoofd = (key: Hoofdcategorie) => {
+    const next = data.hoofdcategorie.includes(key)
+      ? data.hoofdcategorie.filter((c) => c !== key)
+      : [...data.hoofdcategorie, key]
+    set('hoofdcategorie', next)
+    // Cleanup sub-diensten die nu niet meer beschikbaar zijn
+    const allowedSubs = SUB_OPTIES.filter(
+      (s) => s.cat === 'both' || next.includes(s.cat as Hoofdcategorie),
+    ).map((s) => s.k)
+    const cleanedSub = data.sub.filter((s) => allowedSubs.includes(s))
+    if (cleanedSub.length !== data.sub.length) set('sub', cleanedSub)
+  }
   const hasInvegen = data.sub.includes('invegen')
 
   return (
@@ -39,24 +55,33 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
         </div>
       </div>
 
-      {/* Hoofdcategorie */}
+      {/* Hoofdcategorie — multi-select. Combinatie van oprit én
+          onkruid is toegestaan; de sub-diensten-filter eronder past
+          zich automatisch aan op de keuze. */}
       <div>
-        <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>Hoofddienst</div>
+        <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>
+          Hoofddienst{' '}
+          <span style={{ color: 'var(--fg-muted)', fontWeight: 400, textTransform: 'none' }}>
+            (meerdere mogelijk)
+          </span>
+        </div>
         <div className={styles.grid2}>
           {HOOFDCATS.map((h) => {
-            const active = data.hoofdcategorie === h.k
+            const active = data.hoofdcategorie.includes(h.k)
             return (
               <button
                 key={h.k}
                 type="button"
-                onClick={() => set('hoofdcategorie', h.k)}
-                className={`${styles.optCard} ${active ? styles.optCardActive : ''}`}
+                onClick={() => toggleHoofd(h.k)}
+                className={`${styles.checkCard} ${active ? styles.checkCardActive : ''}`}
               >
-                <div className={`${styles.optDot} ${active ? styles.optDotActive : ''}`} />
-                <div style={{ flex: 1 }}>
-                  <div className={`${styles.optLabel} ${active ? styles.optLabelActive : ''}`}>{h.l}</div>
-                  <div className={styles.optSub}>{h.d}</div>
+                <div className={styles.checkCardHead}>
+                  <strong className={`${styles.optLabel} ${active ? styles.optLabelActive : ''}`}>{h.l}</strong>
+                  <div className={`${styles.checkBox} ${active ? styles.checkBoxActive : ''}`}>
+                    {active && <Check size={11} strokeWidth={3} />}
+                  </div>
                 </div>
+                <div className={styles.optSub}>{h.d}</div>
               </button>
             )
           })}
@@ -72,7 +97,11 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           </span>
         </div>
         <div className={styles.grid2}>
-          {SUB_OPTIES.filter((d) => d.cat === 'both' || d.cat === data.hoofdcategorie).map((d) => {
+          {SUB_OPTIES.filter(
+            (d) =>
+              d.cat === 'both' ||
+              data.hoofdcategorie.includes(d.cat as Hoofdcategorie),
+          ).map((d) => {
             const active = data.sub.includes(d.k)
             return (
               <button

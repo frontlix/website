@@ -129,7 +129,16 @@ export async function createManualLeadEnOfferte(
     factuur_huisnummer: data.factuur_zelfde ? null : trimOrNull(data.factuur_huisnummer),
     factuur_straat: data.factuur_zelfde ? null : trimOrNull(data.factuur_straat),
     factuur_plaats: data.factuur_zelfde ? null : trimOrNull(data.factuur_plaats),
-    hoofdcategorie: data.hoofdcategorie,
+    // leads.hoofdcategorie is een single string-kolom; serialiseer
+    // de array: 0 keuzes → fallback 'oprit_terras_terrein' (validatie
+    // zou dit moeten voorkomen maar veilig is veilig), 1 keuze → die
+    // waarde, 2 keuzes → 'beide' (mirror van voegzand_type pattern).
+    hoofdcategorie:
+      data.hoofdcategorie.length === 0
+        ? 'oprit_terras_terrein'
+        : data.hoofdcategorie.length === 1
+          ? data.hoofdcategorie[0]
+          : 'beide',
     sub_diensten: data.sub,
     m2: m2Num || null,
     invegen_m2: invegenM2,

@@ -25,7 +25,9 @@ export type ExtractedFields = {
   factuur_huisnummer: string | null
   factuur_straat: string | null
   factuur_plaats: string | null
-  hoofdcategorie: 'oprit_terras_terrein' | 'onkruidbeheersing' | null
+  // Array zodat de owner zowel oprit/terras als onkruidbeheersing
+  // kan kiezen. Leeg = onbekend / niet vermeld.
+  hoofdcategorie: Array<'oprit_terras_terrein' | 'onkruidbeheersing'>
   sub_diensten: Array<'invegen' | 'preventieve_onkruid' | 'beschermlaag' | 'onderhoud'>
   m2: number | null
   // Voegzand — booleans schakelen het type aan in de wizard, aantal
@@ -139,10 +141,13 @@ const SCHEMA = {
     factuur_straat: { type: ['string', 'null'] },
     factuur_plaats: { type: ['string', 'null'] },
     hoofdcategorie: {
-      type: ['string', 'null'],
-      enum: ['oprit_terras_terrein', 'onkruidbeheersing', null],
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: ['oprit_terras_terrein', 'onkruidbeheersing'],
+      },
       description:
-        'oprit_terras_terrein: oprit/terras/bestrating reiniging+voegzand. onkruidbeheersing: alleen onkruidbestrijding.',
+        'Welke hoofddiensten — mag meerdere. oprit_terras_terrein: bestrating reinigen + voegzand. onkruidbeheersing: onkruidbestrijding / onderhoudsplan. Bij twijfel: lege array.',
     },
     sub_diensten: {
       type: 'array',

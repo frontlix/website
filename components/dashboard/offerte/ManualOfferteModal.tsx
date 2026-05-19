@@ -410,7 +410,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       Boolean(data.naam.trim()) &&
       Boolean(data.telefoon.trim()) &&
       isValidEmail(data.email),
-    2: data.sub.length > 0 && Number(data.m2) > 0,
+    2: data.hoofdcategorie.length > 0 && data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }
   const canNext = step <= 3 ? valid[step as 1 | 2 | 3] : true

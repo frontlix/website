@@ -233,7 +233,7 @@ export function StepKlant({
       if (f.factuur_plaats) set('factuur_plaats', f.factuur_plaats)
     }
 
-    if (f.hoofdcategorie) set('hoofdcategorie', f.hoofdcategorie)
+    if (f.hoofdcategorie && f.hoofdcategorie.length > 0) set('hoofdcategorie', f.hoofdcategorie)
     if (f.sub_diensten && f.sub_diensten.length > 0) set('sub', f.sub_diensten)
     if (typeof f.m2 === 'number' && f.m2 > 0) set('m2', f.m2)
 
