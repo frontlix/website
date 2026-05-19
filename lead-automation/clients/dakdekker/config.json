@@ -27,34 +27,34 @@
     {
       "key": "type_werk",
       "label": "type werkzaamheden",
-      "example_question": "Wat moet er gebeuren — dak vervangen, repareren of isoleren?",
+      "example_question": "Gaat het om een nieuw dak, een reparatie, of isolatie?",
       "type": "enum",
       "enum_values": ["vervangen", "repareren", "isoleren"]
     },
     {
       "key": "daktype",
       "label": "type dak",
-      "example_question": "Is het een plat of schuin dak?",
+      "example_question": "Is het een plat dak of een schuin dak?",
       "type": "enum",
       "enum_values": ["plat", "schuin"]
     },
     {
       "key": "huidig_dakmateriaal",
       "label": "huidig dakmateriaal",
-      "example_question": "Wat ligt er nu op het dak?",
+      "example_question": "Wat ligt er nu op het dak? Bitumen, EPDM, of iets anders zoals grind?",
       "type": "text"
     },
     {
       "key": "dakoppervlakte",
       "label": "dakoppervlakte in m²",
-      "example_question": "Hoe groot is het dakvlak in m²?",
+      "example_question": "Hoe groot is het dak ongeveer in m²? Een ruwe schatting is prima.",
       "type": "number",
       "unit": "m²"
     },
     {
       "key": "isolatie",
       "label": "isolatie gewenst",
-      "example_question": "Wil je het dak ook laten isoleren?",
+      "example_question": "Wil je het dak meteen mee laten isoleren, of liever niet?",
       "type": "enum",
       "enum_values": ["ja", "nee"]
     }

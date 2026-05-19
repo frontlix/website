@@ -27,7 +27,7 @@
     {
       "key": "jaarverbruik",
       "label": "jaarverbruik in kWh",
-      "example_question": "Hoeveel stroom verbruik je ongeveer per jaar in kWh?",
+      "example_question": "Weet je ongeveer hoeveel stroom je per jaar verbruikt? Dat staat in kWh op je jaarnota.",
       "type": "number",
       "unit": "kWh"
     },
@@ -41,35 +41,35 @@
     {
       "key": "dakmateriaal",
       "label": "dakmateriaal",
-      "example_question": "Wat voor dakmateriaal heb je?",
+      "example_question": "Wat ligt er nu op het dak? Dakpannen, riet, of leisteen?",
       "type": "enum",
       "enum_values": ["pannen", "riet", "leisteen", "dakbedekking"]
     },
     {
       "key": "dakoppervlakte",
       "label": "dakoppervlakte in m²",
-      "example_question": "Hoe groot is het dakvlak in m²?",
+      "example_question": "Hoe groot is het dakvlak ongeveer in m²? Een schatting is prima.",
       "type": "number",
       "unit": "m²"
     },
     {
       "key": "orientatie",
       "label": "oriëntatie van het dak",
-      "example_question": "Naar welke kant ligt het dak?",
+      "example_question": "Naar welke kant ligt het dak gericht? Noord, oost, zuid, of west?",
       "type": "enum",
       "enum_values": ["noord", "oost", "zuid", "west"]
     },
     {
       "key": "schaduw",
       "label": "mate van schaduw",
-      "example_question": "Is er schaduw op het dak?",
+      "example_question": "Valt er nog schaduw op het dak, bijvoorbeeld van bomen of een schoorsteen?",
       "type": "enum",
       "enum_values": ["geen", "licht", "veel"]
     },
     {
       "key": "aansluiting",
       "label": "type aansluiting",
-      "example_question": "Heb je een 1-fase of 3-fase aansluiting?",
+      "example_question": "Heb je een 1-fase of een 3-fase aansluiting? Weet je het niet zeker, dan kun je een foto van je meterkast sturen, dan kijk ik even mee.",
       "type": "enum",
       "enum_values": ["1-fase", "3-fase"]
     }
