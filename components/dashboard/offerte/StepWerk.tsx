@@ -1,6 +1,6 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { AlertTriangle, Check } from 'lucide-react'
 import {
   type ManualOfferteData,
   type SubDienst,
@@ -194,6 +194,8 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             onPrijs={(v) => set('voegzand_onkruidwerend_prijs', v)}
           />
 
+          <VoegzandMismatchWarning data={data} />
+
           {/* Kleur */}
           <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
             <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>Kleur voegzand</div>
@@ -289,6 +291,35 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
         </div>
       </button>
     </>
+  )
+}
+
+// ── VoegzandMismatchWarning ────────────────────────────────────────
+// Rode banner wanneer de som van per-type voegzand-m² niet overeenkomt
+// met de totale oppervlakte. Blokkeert "Volgende" niet — alleen visueel
+// signaal zodat de owner expliciet kiest of de mismatch klopt
+// (bijv. opzettelijk alleen 30 m² invegen op een 100 m² oprit).
+function VoegzandMismatchWarning({ data }: { data: ManualOfferteData }) {
+  const normaalActief = data.voegzand_normaal_actief
+  const onkruidwerendActief = data.voegzand_onkruidwerend_actief
+  if (!normaalActief && !onkruidwerendActief) return null
+
+  const totaalM2 = Number(data.m2) || 0
+  const voegzandTotaal =
+    (normaalActief ? Number(data.voegzand_normaal_m2) || 0 : 0) +
+    (onkruidwerendActief ? Number(data.voegzand_onkruidwerend_m2) || 0 : 0)
+
+  if (voegzandTotaal === totaalM2) return null
+
+  return (
+    <div className={styles.voegzandMismatch} role="alert">
+      <AlertTriangle size={14} className={styles.voegzandMismatchIcon} />
+      <div>
+        <strong>Let op:</strong> oppervlakte komt niet overeen.{' '}
+        Totaal voegzand: <strong>{voegzandTotaal} m²</strong>, opgegeven oppervlakte:{' '}
+        <strong>{totaalM2} m²</strong>.
+      </div>
+    </div>
   )
 }
 
