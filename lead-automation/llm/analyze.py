@@ -53,37 +53,57 @@ class AnalysisResult(BaseModel):
     answered_current_question: bool = False
 
 
-# Built once: a JSON schema the OpenAI structured-output endpoint can consume.
-# `additionalProperties: false` is required by OpenAI's strict mode for every object.
-_ANALYSIS_SCHEMA = {
-    "name": "AnalysisResult",
-    "strict": True,
-    "schema": {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["extracted", "intent", "answered_current_question"],
-        "properties": {
-            "extracted": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["naam", "email", "data"],
-                "properties": {
-                    "naam": {"type": ["string", "null"]},
-                    "email": {"type": ["string", "null"]},
-                    "data": {
-                        "type": "object",
-                        "additionalProperties": {"type": ["string", "null"]},
+# Per-branche JSON-schema (cached). OpenAI's strict-mode rejects open-ended
+# `additionalProperties: <schema>` maps — every key in `data` must be enumerated
+# explicitly in both `properties` AND `required`. We therefore build a schema
+# with each branche's exact field keys (values nullable so the LLM can leave
+# unanswered fields out by setting them null).
+_INTENT_VALUES = list(Intent.__args__)  # type: ignore[attr-defined]
+_SCHEMA_CACHE: dict[str, dict] = {}
+
+
+def _build_analysis_schema(branche_id: str) -> dict:
+    cached = _SCHEMA_CACHE.get(branche_id)
+    if cached is not None:
+        return cached
+
+    config = get_branche(branche_id)
+    field_keys: list[str] = sorted([f.key for f in config.fields]) if config else []
+    data_props = {k: {"type": ["string", "null"]} for k in field_keys}
+
+    schema = {
+        "name": "AnalysisResult",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["extracted", "intent", "answered_current_question"],
+            "properties": {
+                "extracted": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["naam", "email", "data"],
+                    "properties": {
+                        "naam": {"type": ["string", "null"]},
+                        "email": {"type": ["string", "null"]},
+                        "data": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": field_keys,
+                            "properties": data_props,
+                        },
                     },
                 },
+                "intent": {
+                    "type": "string",
+                    "enum": _INTENT_VALUES,
+                },
+                "answered_current_question": {"type": "boolean"},
             },
-            "intent": {
-                "type": "string",
-                "enum": list(Intent.__args__),  # type: ignore[attr-defined]
-            },
-            "answered_current_question": {"type": "boolean"},
         },
-    },
-}
+    }
+    _SCHEMA_CACHE[branche_id] = schema
+    return schema
 
 
 _SYSTEM_PROMPT = """## ROLE
@@ -123,10 +143,11 @@ The bot last asked about: **{current_question}**
 If the customer simultaneously gives an answer AND asks a question (e.g. "plat dak. wat kost het?"), pick the dominant intent — usually `direct_answer` if a concrete value is given.
 
 ## EXTRACTION RULES
-- Return ONLY fields that are NEW or CORRECTED versus KNOWN VALUES below.
-- Enums must match one of the listed enum_values exactly (case-insensitive). If the customer says something ambiguous, OMIT.
+- The output schema requires ALL branche-fields to be present in `extracted.data`. Set keys you have NO new value for to `null`. Only set a key to a concrete string when the customer just provided (or corrected) that value.
+- Same rule for `naam` and `email`: null = no change, string = new/corrected.
+- Enums must match one of the listed enum_values exactly (case-insensitive). If the customer says something ambiguous, set the key to null.
 - Numbers (m², kWh): strip units, return digits only as a string ("4000", "200").
-- If the customer says "weet niet" / "geen idee" on a field, OMIT that field (don't store "weet niet" as the value).
+- If the customer says "weet niet" / "geen idee" on a field, set that field to null (don't store "weet niet" as the value).
 
 ## KNOWN VALUES
 {known_values}
@@ -218,11 +239,12 @@ async def analyze_message(
     )
     chat_history = format_history(history)
 
+    schema = _build_analysis_schema(branche_id)
     try:
         response = get_openai().chat.completions.create(
             model="gpt-4o",
             temperature=0,
-            response_format={"type": "json_schema", "json_schema": _ANALYSIS_SCHEMA},
+            response_format={"type": "json_schema", "json_schema": schema},
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": chat_history},
