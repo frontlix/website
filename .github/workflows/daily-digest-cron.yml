@@ -1,0 +1,45 @@
+name: Daily digest cron
+
+# Pingt /api/cron/daily-digest om de 5 minuten. De API checkt zelf of het
+# tijd is voor de digest (tenant.daily_digest_tijd) en of 'ie al gedraaid
+# is vandaag — dus pings buiten het venster zijn no-ops.
+#
+# GitHub Actions minimum cron interval is 5 minuten (officieel). In de
+# praktijk kan er nog queue-delay bovenop komen; de tijd-check in de
+# endpoint is "tijd >= digest_tijd" zodat een paar minuten vertraging
+# de digest niet skipt.
+#
+# Vereiste GitHub Secret:
+#   CRON_SECRET — dezelfde waarde als de CRON_SECRET op de VPS .env.local
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:  # handmatige trigger-knop in de Actions-tab
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping daily-digest endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "❌ CRON_SECRET secret ontbreekt in repo settings"
+            exit 1
+          fi
+
+          # `-fsS` = stil tenzij error, fout-exit op HTTP 4xx/5xx.
+          # `-w` print de status code zodat de logs leesbaar zijn.
+          response=$(curl -fsS -X POST \
+            -H "x-cron-secret: $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP %{http_code}" \
+            https://app.frontlix.com/api/cron/daily-digest)
+
+          echo "Response:"
+          echo "$response"
