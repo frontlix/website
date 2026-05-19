@@ -145,16 +145,27 @@ async function fireBellNotification(
 ): Promise<void> {
   try {
     const naam = templateNaam ?? 'onbekend'
-    const isApprove = event === 'template_goedgekeurd'
-    await notify({
-      eventType: event,
-      titel: isApprove ? 'Template goedgekeurd' : 'Template afgewezen',
-      body: isApprove
-        ? `Je aanvraag voor \`${naam}\` is goedgekeurd door Frontlix.`
-        : `Je aanvraag voor \`${naam}\` is afgewezen — check de notitie in de instellingen.`,
-    })
+    let titel: string
+    let body: string
+    switch (event) {
+      case 'template_goedgekeurd':
+        titel = 'Template goedgekeurd'
+        body = `Je aanvraag voor \`${naam}\` is goedgekeurd door Frontlix.`
+        break
+      case 'template_afgewezen':
+        titel = 'Template afgewezen'
+        body = `Je aanvraag voor \`${naam}\` is afgewezen — check de notitie in de instellingen.`
+        break
+      case 'template_notitie':
+        titel = 'Notitie op template-aanvraag'
+        body = `Frontlix heeft een opmerking achtergelaten bij je aanvraag voor \`${naam}\`.`
+        break
+      default:
+        return
+    }
+    await notify({ eventType: event, titel, body })
   } catch (err) {
-    console.error('[slack-template-action] notify failed (migratie 039 gedraaid?):', err)
+    console.error('[slack-template-action] notify failed (migratie 039/040 gedraaid?):', err)
   }
 }
 
@@ -275,10 +286,12 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
   }
 
   if (view.callback_id === 'note_submit') {
-    const { error } = await admin
+    const { data: updated, error } = await admin
       .from('template_aanvragen')
       .update({ notitie: notitie || null, bijgewerkt_op: new Date().toISOString() })
       .eq('id', aanvraagId)
+      .select('template_naam')
+      .single()
     if (error) {
       return NextResponse.json({
         response_action: 'errors',
@@ -286,6 +299,12 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
       })
     }
     revalidatePath('/dashboard/instellingen')
+    // Bell-melding alleen als er ook echt een notitie staat (niet bij
+    // een leeggemaakte notitie — dat is geen actie waarvan owner
+    // notified hoeft te worden).
+    if (notitie) {
+      await fireBellNotification('template_notitie', updated?.template_naam as string | undefined)
+    }
     if (notitie) {
       await postBackToSlack(
         meta.responseUrl,

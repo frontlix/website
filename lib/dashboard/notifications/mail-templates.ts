@@ -48,6 +48,7 @@ const CTA_LABEL: Record<NotificationEventType, string> = {
   dagelijkse_samenvatting: 'Open dashboard',
   template_goedgekeurd: 'Open instellingen',
   template_afgewezen: 'Open instellingen',
+  template_notitie: 'Open instellingen',
 }
 
 /**
@@ -66,6 +67,7 @@ const EVENT_LABEL: Record<NotificationEventType, string> = {
   dagelijkse_samenvatting: 'Dagrapport',
   template_goedgekeurd: 'Template OK',
   template_afgewezen: 'Template afgewezen',
+  template_notitie: 'Template notitie',
 }
 
 export function buildNotificationMail(args: NotificationMailArgs): NotificationMail {

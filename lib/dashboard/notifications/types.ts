@@ -18,6 +18,7 @@ export type NotificationEventType =
   | 'dagelijkse_samenvatting'
   | 'template_goedgekeurd'
   | 'template_afgewezen'
+  | 'template_notitie'
 
 export type NotificationKanaal = 'in_app' | 'email' | 'push' | 'whatsapp'
 
@@ -32,6 +33,7 @@ export const EVENT_TYPES_ORDERED: NotificationEventType[] = [
   'nieuwe_review',
   'template_goedgekeurd',
   'template_afgewezen',
+  'template_notitie',
   'dagelijkse_samenvatting',
 ]
 
@@ -84,6 +86,10 @@ export const EVENT_LABELS: Record<NotificationEventType, { titel: string; sub: s
   template_afgewezen: {
     titel: 'Template afgewezen',
     sub: 'Frontlix heeft je aanvraag afgewezen — check de notitie',
+  },
+  template_notitie: {
+    titel: 'Notitie op template-aanvraag',
+    sub: 'Frontlix heeft een opmerking achtergelaten',
   },
 }
 
@@ -143,4 +149,5 @@ export const EVENT_KIND: Record<NotificationEventType, NotifKind> = {
   // bericht. Latere uitbreiding kan een eigen 'template' kind krijgen.
   template_goedgekeurd: 'wa',
   template_afgewezen: 'wa',
+  template_notitie: 'wa',
 }
