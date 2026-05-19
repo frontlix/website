@@ -65,7 +65,7 @@ export type ExtractedFields = {
   korting_omschrijving: string | null
   // Verzendingskanaal — als klant aangeeft hoe ze de offerte willen
   // ontvangen. Default in de wizard is 'wa' (WhatsApp).
-  kanaal: 'wa' | 'mail' | 'both' | 'manual' | null
+  kanaal: 'mail' | 'manual' | null
   wensen: string | null
 }
 
@@ -202,9 +202,9 @@ const SCHEMA = {
     },
     kanaal: {
       type: ['string', 'null'],
-      enum: ['wa', 'mail', 'both', 'manual', null],
+      enum: ['mail', 'manual', null],
       description:
-        'Hoe wil de klant de offerte ontvangen? wa=WhatsApp, mail=alleen e-mail, both=beide, manual=alleen PDF (geen verzending). Alleen invullen als de klant een voorkeur uitspreekt; bij twijfel null (default in de wizard is WhatsApp).',
+        'Hoe wil de klant de offerte ontvangen? mail=per e-mail met PDF, manual=alleen download (owner stuurt zelf door). Alleen invullen als de klant een voorkeur uitspreekt; bij twijfel null (default in de wizard is e-mail). WhatsApp is geen optie meer.',
     },
     wensen: {
       type: ['string', 'null'],
@@ -256,8 +256,9 @@ Korting:
 - Bij twijfel null. Liever niets dan een verzonnen korting.
 
 Verzendingskanaal:
-- "stuur via WhatsApp" → wa. "wil per mail" → mail. "beide" / "WhatsApp en mail" → both. "alleen PDF" / "ik download zelf" → manual.
-- Bij geen voorkeur → null (wizard default = WhatsApp).
+- "wil per mail" / "stuur per e-mail" → mail. "alleen PDF" / "ik download zelf" / "ik stuur het zelf" → manual.
+- "via WhatsApp" / "app me 'm" → mail (WhatsApp-verzending is op dit moment niet beschikbaar; e-mail is de geautomatiseerde fallback).
+- Bij geen voorkeur → null (wizard default = mail).
 
 Korstmos:
 - "korstmos" / "gele aanslag" / "witte vlekken op tegels" → true. Wordt als toeslag op de offerte gerekend.

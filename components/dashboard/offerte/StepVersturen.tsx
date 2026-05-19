@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, Mail, Send, FileText, Check, Square } from 'lucide-react'
+import { Mail, FileText, Check, Square } from 'lucide-react'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { formatEuro } from '@/lib/dashboard/format'
 import {
@@ -14,17 +14,19 @@ import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
 
+// WhatsApp + Beide bewust verwijderd: WhatsApp-verzending vereist
+// goedgekeurde Meta-templates met PDF-bijlage, en dat is op dit moment
+// nog niet ingericht. Klant kan kiezen tussen e-mail met bijlage of
+// zelf de PDF downloaden en doorsturen.
 const KANAAL_OPTIES: ReadonlyArray<{
   k: SendKanaal
   l: string
   sub: string
-  Icon: typeof MessageCircle
+  Icon: typeof Mail
   style?: 'primary' | 'alt'
 }> = [
-  { k: 'wa',     l: 'WhatsApp',         sub: '+ PDF bijlage',     Icon: MessageCircle, style: 'primary' },
-  { k: 'mail',   l: 'E-mail',           sub: 'met PDF bijlage',   Icon: Mail },
-  { k: 'both',   l: 'Beide',            sub: 'WhatsApp + e-mail', Icon: Send },
-  { k: 'manual', l: 'Alleen download',  sub: 'PDF zelf opsturen', Icon: FileText,      style: 'alt' },
+  { k: 'mail',   l: 'E-mail',           sub: 'met PDF bijlage',   Icon: Mail,     style: 'primary' },
+  { k: 'manual', l: 'Alleen download',  sub: 'PDF zelf opsturen', Icon: FileText, style: 'alt' },
 ]
 
 export function StepVersturen({
@@ -46,7 +48,7 @@ export function StepVersturen({
       <div>
         <div className={styles.sectionLabel}>Klaar om te versturen?</div>
         <div className={styles.sectionSub}>
-          Surface stuurt de PDF binnen 60 seconden via je gekozen kanaal en start een WhatsApp-conversatie zodat de klant kan reageren.
+          Surface stuurt de PDF binnen 60 seconden via je gekozen kanaal — kies e-mail met bijlage of download zelf en stuur &lsquo;m handmatig door.
         </div>
       </div>
 
@@ -121,7 +123,7 @@ export function StepVersturen({
           })}
         </div>
         <div className={styles.kanaalHint}>
-          <strong>&ldquo;Alleen download&rdquo;</strong> is handig als je de klant zelf wil contacteren (bijv. via persoonlijke e-mail of langs laten lopen). De PDF wordt naar je downloads-map opgeslagen, geen WhatsApp / mail verstuurd.
+          <strong>&ldquo;Alleen download&rdquo;</strong> is handig als je de klant zelf wil contacteren (bijv. via persoonlijke e-mail of langs laten lopen). De PDF wordt naar je downloads-map opgeslagen, geen mail verstuurd.
         </div>
       </div>
 

@@ -15,7 +15,10 @@ export type SubDienst =
   | 'beschermlaag'
   | 'onderhoud'
 
-export type SendKanaal = 'wa' | 'mail' | 'both' | 'manual'
+// 'wa' en 'both' verwijderd: WhatsApp-verzending vereist goedgekeurde
+// Meta-templates met PDF-bijlage; tot dat ingericht is kiest de owner
+// tussen e-mail (met PDF) of handmatige download.
+export type SendKanaal = 'mail' | 'manual'
 
 export type ManualOfferteData = {
   // koppeling — gevuld als de wizard via "zoek bestaande klant" een
@@ -139,7 +142,7 @@ export const DEFAULTS: ManualOfferteData = {
   korting_percentage: 0,
   korting_omschrijving: '',
   notitie: '',
-  kanaal: 'wa',
+  kanaal: 'mail',
 }
 
 export const DIENST_LABELS: Record<SubDienst, string> = {

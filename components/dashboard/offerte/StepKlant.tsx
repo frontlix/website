@@ -303,7 +303,7 @@ export function StepKlant({
       if (f.korting_omschrijving) set('korting_omschrijving', f.korting_omschrijving)
     }
 
-    if (f.kanaal === 'wa' || f.kanaal === 'mail' || f.kanaal === 'both' || f.kanaal === 'manual') {
+    if (f.kanaal === 'mail' || f.kanaal === 'manual') {
       set('kanaal', f.kanaal)
     }
 

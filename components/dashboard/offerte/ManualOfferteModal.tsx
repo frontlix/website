@@ -8,7 +8,7 @@ import {
   Edit3,
   Check,
   FileText,
-  MessageCircle,
+  Mail,
 } from 'lucide-react'
 import {
   DEFAULTS,
@@ -437,7 +437,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
 
   const isSendStep = step === 4
   const submitLabel = data.kanaal === 'manual' ? 'PDF aanmaken' : 'Offerte versturen'
-  const SubmitIcon = data.kanaal === 'manual' ? FileText : MessageCircle
+  const SubmitIcon = data.kanaal === 'manual' ? FileText : Mail
 
   // PDF-download — genereert client-side via @react-pdf/renderer en
   // triggert een browser-download. Geen server-roundtrip; geen lead
