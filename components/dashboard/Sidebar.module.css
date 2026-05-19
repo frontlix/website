@@ -85,6 +85,19 @@
   background: var(--card-hover-bg);
   color: var(--primary);
 }
+
+/* Disabled-variant — voor nav-items die nog niet live zijn (bv. Veldwerk).
+   Geen hover-effect en cursor not-allowed, zodat duidelijk is dat 't (nog)
+   niet werkt. Iets gedimmed maar nog leesbaar. */
+.navItemDisabled {
+  color: var(--fg-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.navItemDisabled:hover {
+  background: transparent;
+  color: var(--fg-muted);
+}
 .navItemActive::before {
   /* Accent-streep links van de actieve item — kleine gradient. */
   content: '';

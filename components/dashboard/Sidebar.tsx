@@ -23,6 +23,7 @@ type NavItem = {
   label: string
   Icon: typeof Home
   badge?: { value: string; tone?: 'live' | 'muted' }
+  disabled?: boolean
 }
 
 type Counts = {
@@ -66,7 +67,8 @@ function buildWorkspaceItems(counts: Counts): NavItem[] {
       href: '/veldwerk',
       label: 'Veldwerk',
       Icon: Phone,
-      badge: { value: 'PWA', tone: 'muted' },
+      badge: { value: 'Binnenkort', tone: 'muted' },
+      disabled: true,
     },
   ]
 }
@@ -160,8 +162,35 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   // (zodat /leads/[id] de Leads-link highlight). De root '/' krijgt geen
   // prefix-match anders zou hij overal actief zijn.
   const isActive =
-    pathname === item.href ||
-    (item.href !== '/' && pathname.startsWith(`${item.href}/`))
+    !item.disabled &&
+    (pathname === item.href ||
+      (item.href !== '/' && pathname.startsWith(`${item.href}/`)))
+
+  const badge = item.badge && (
+    <span
+      className={`${styles.navBadge} ${
+        item.badge.tone === 'muted' ? styles.navBadgeMuted : ''
+      } ${item.badge.tone === 'live' ? styles.navBadgeLive : ''}`}
+    >
+      {item.badge.value}
+    </span>
+  )
+
+  // Disabled-items renderen we als <span> zodat ze niet navigeerbaar zijn
+  // én geen browser-tooltip met een dode link tonen.
+  if (item.disabled) {
+    return (
+      <span
+        className={`${styles.navItem} ${styles.navItemDisabled}`}
+        aria-disabled="true"
+        title={`${item.label} — binnenkort beschikbaar`}
+      >
+        <Icon size={16} />
+        <span className={styles.navLabel}>{item.label}</span>
+        {badge}
+      </span>
+    )
+  }
 
   return (
     <Link
@@ -170,15 +199,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
     >
       <Icon size={16} />
       <span className={styles.navLabel}>{item.label}</span>
-      {item.badge && (
-        <span
-          className={`${styles.navBadge} ${
-            item.badge.tone === 'muted' ? styles.navBadgeMuted : ''
-          } ${item.badge.tone === 'live' ? styles.navBadgeLive : ''}`}
-        >
-          {item.badge.value}
-        </span>
-      )}
+      {badge}
     </Link>
   )
 }
