@@ -12,6 +12,7 @@ import time
 import traceback
 import uuid
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from typing import Any, Awaitable, Callable
 
 from fastapi import APIRouter, Request, Response
@@ -577,14 +578,15 @@ async def _handle_image(lead: dict, message: dict, phone: str):
     if len(photos) >= MAX_PHOTOS:
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
-        await send_text(phone, "Foto ontvangen, dank je. Dat is het maximum — ik heb genoeg om verder te gaan.")
+        await send_text(phone, "Foto ontvangen, dank je. Dat is het maximum, ik heb genoeg om verder te gaan.")
         wa_sender = _whatsapp_sender(phone)
         if lead.get("email"):
             await _trigger_approval(lead["id"], sender=wa_sender)
         else:
             refreshed = {**lead, "collected_data": collected}
             history = await _fetch_history(lead["id"])
-            await _send_next_question(refreshed, history, wa_sender)
+            synthetic = SimpleNamespace(intent="photos_arrived", answered_current_question=True)
+            await _send_next_question(refreshed, history, wa_sender, analysis=synthetic)
         return
 
     # Save + schedule auto-advance (no separate ack message — next question handles it)
@@ -623,7 +625,10 @@ async def _auto_advance_photo(lead_id: str, photo_timestamp: int):
         else:
             refreshed = {**fresh, "collected_data": collected}
             history = await _fetch_history(lead_id)
-            await _send_next_question(refreshed, history, wa_sender)
+            # Synthetic analysis so the reply LLM knows photos arrived and won't
+            # default to the "Geen foto's, geen probleem" example pattern.
+            synthetic = SimpleNamespace(intent="photos_arrived", answered_current_question=True)
+            await _send_next_question(refreshed, history, wa_sender, analysis=synthetic)
     except Exception as e:
         print(f"auto_advance_photo error: {e}")
 

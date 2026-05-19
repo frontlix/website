@@ -76,7 +76,7 @@ def get_photo_count(collected_data: dict) -> int:
 
 
 MAX_PHOTOS = 12
-PHOTO_WAIT_MS = 30_000
+PHOTO_WAIT_MS = 20_000
 
 
 def is_photo_step_done(collected_data: dict) -> bool:
