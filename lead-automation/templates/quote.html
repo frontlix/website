@@ -189,8 +189,8 @@
     background: var(--c-primary);
     color: #FFFFFF;
     text-align: left;
-    padding: 8px 11px;
-    font-size: 8.5pt;
+    padding: 7px 10px;
+    font-size: 8pt;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
@@ -199,9 +199,10 @@
   .price-table thead th:last-child  { border-radius: 0 8px 0 0; text-align: right; }
   .price-table thead th.num         { text-align: right; }
   .price-table tbody td {
-    padding: 8px 11px;
+    padding: 6px 10px;
     border-bottom: 1px solid var(--c-border-2);
     color: var(--c-text);
+    font-size: 9pt;
   }
   .price-table tbody tr:nth-child(even) td {
     background: var(--c-surface);
@@ -228,8 +229,8 @@
   .totals .row {
     display: table;
     width: 100%;
-    padding: 7px 16px;
-    font-size: 9.5pt;
+    padding: 6px 14px;
+    font-size: 9pt;
   }
   .totals .row.subtotal { background: var(--c-surface); }
   .totals .row.btw      { background: var(--c-surface); border-top: 1px solid var(--c-border-2); }
@@ -237,8 +238,8 @@
     background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
     color: #FFFFFF;
     border-top: 1px solid transparent;
-    padding: 11px 16px;
-    font-size: 11.5pt;
+    padding: 10px 14px;
+    font-size: 11pt;
     font-weight: 700;
     letter-spacing: -0.2px;
   }
@@ -301,10 +302,9 @@
   .brand-front { color: #1A56FF; font-weight: 700; }
   .brand-lix   { color: #00CFFF; font-weight: 700; }
 
-  /* Page-break behaviour — keep totals + conditions intact, let the footer
-     flow naturally (so it lands on p1 below conditions instead of being
-     pushed to a near-empty p2 by an over-strict avoid rule). */
-  .conditions, .totals { page-break-inside: avoid; }
+  /* Page-break behaviour — keep blocks intact. Footer-table mag NIET halverwege
+     splitsen (anders labels op p1, values op p2). */
+  .conditions, .totals, .footer { page-break-inside: avoid; }
   .price-table tr { page-break-inside: avoid; }
 </style>
 </head>
