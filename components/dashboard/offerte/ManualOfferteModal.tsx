@@ -467,6 +467,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
           rules={rules}
           totals={totals}
           offerteNummer={offerteNummer}
+          origin={typeof window !== 'undefined' ? window.location.origin : undefined}
         />,
       ).toBlob()
 
