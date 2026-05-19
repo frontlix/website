@@ -20,7 +20,13 @@
 
   @page {
     size: A4;
-    margin: 0;  /* full-bleed for the gradient top-bar; inner padding via .page */
+    /* Reserve bottom margin for the running footer — same idea as a footer
+       in a Word document. Top stays 0 so the gradient top-bar is full-bleed. */
+    margin: 0 0 26mm 0;
+    @bottom-center {
+      content: element(footer);
+      vertical-align: top;
+    }
   }
 
   * { box-sizing: border-box; }
@@ -42,7 +48,9 @@
   }
 
   .page {
-    padding: 22px 40px 28px 40px;
+    /* Bottom margin van @page reserveert al ruimte voor footer — hier alleen
+       de interne padding tot aan die margin. */
+    padding: 22px 40px 16px 40px;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */
@@ -277,13 +285,14 @@
   }
   .conditions strong { color: var(--c-text); }
 
-  /* ── Footer (single-line fineprint) ─────────────────────────────── */
-  /* Compact: alleen wettelijke vermeldingen die NIET al in de header staan
-     (KVK, BTW, IBAN, website). Contactpersoon/telefoon/e-mail staan al
-     rechts boven — dubbel zou ruimte verspillen. */
+  /* ── Footer (single-line fineprint, ALTIJD onderaan elke pagina) ─── */
+  /* `position: running(footer)` pakt het element uit de normal flow en
+     plaatst het in @page > @bottom-center. Daarmee plakt-ie aan de onder-
+     kant ongeacht hoeveel content er boven staat. Compact: alleen wettelijke
+     vermeldingen die NIET al in de header rechts staan. */
   .footer {
-    margin-top: 14px;
-    padding-top: 10px;
+    position: running(footer);
+    padding: 10px 40px 0 40px;
     border-top: 1px solid var(--c-border);
     font-size: 7.5pt;
     color: var(--c-text-mute);
@@ -293,13 +302,14 @@
   .footer .sep { color: var(--c-text-soft); margin: 0 8px; }
   .footer .lbl { color: var(--c-text-soft); margin-right: 3px; letter-spacing: 0.3px; }
   .footer .val { color: var(--c-text); font-weight: 600; }
-  /* WeasyPrint ignores -webkit-background-clip:text — render as solid 2-color split */
-  .brand-front { color: #1A56FF; font-weight: 700; }
+  /* Frontlix wordmark colors per brand guide (logo image) — dark "Front" + cyan "lix".
+     WeasyPrint ignores -webkit-background-clip:text, so we keep a solid 2-color split. */
+  .brand-front { color: #0F1729; font-weight: 700; }
   .brand-lix   { color: #00CFFF; font-weight: 700; }
 
-  /* Page-break behaviour — keep blocks intact. Footer-table mag NIET halverwege
-     splitsen (anders labels op p1, values op p2). */
-  .conditions, .totals, .footer { page-break-inside: avoid; }
+  /* Page-break behaviour — keep totals + conditions intact. .footer hoeft geen
+     avoid-rule meer want hij staat in de page-margin (running element). */
+  .conditions, .totals { page-break-inside: avoid; }
   .price-table tr { page-break-inside: avoid; }
 </style>
 </head>
@@ -346,17 +356,6 @@
     <div class="field"><span class="k">Naam</span><span class="v">{{ klant_naam }}</span></div>
     <div class="field"><span class="k">E-mail</span><span class="v">{{ klant_email }}</span></div>
   </div>
-
-  <!-- ── INTRO ──────────────────────────────────────────────────────── -->
-  <h2 class="section">Introductie</h2>
-  <p class="intro-text">{{ intro_offerte }}</p>
-  {% if intake_summary %}
-  <p class="intro-text">{{ intake_summary }}</p>
-  {% endif %}
-
-  <!-- ── AANBOD ─────────────────────────────────────────────────────── -->
-  <h2 class="section">Ons aanbod</h2>
-  <p class="intro-text">{{ aanbod_beschrijving }}</p>
 
   <!-- ── PRIJSOVERZICHT ─────────────────────────────────────────────── -->
   <h2 class="section">Prijsoverzicht</h2>

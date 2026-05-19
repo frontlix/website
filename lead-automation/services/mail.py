@@ -94,7 +94,7 @@ async def send_approval_email(
               <tr>
                 <td style="vertical-align:middle"><img src="{logo_url}" width="36" height="36" alt="Frontlix" style="display:block" /></td>
                 <td style="vertical-align:middle;padding-left:10px">
-                  <span style="font-family:{font};font-size:20px;font-weight:700;color:#1A1A1A;letter-spacing:-0.3px"><span style="color:#1A56FF">Front</span><span style="color:#00CFFF">lix</span></span>
+                  <span style="font-family:{font};font-size:20px;font-weight:700;color:#1A1A1A;letter-spacing:-0.3px"><span style="color:#0F1729">Front</span><span style="color:#00CFFF">lix</span></span>
                 </td>
               </tr>
             </table>
@@ -194,7 +194,7 @@ async def send_approval_email(
 
           <!-- Footer -->
           <tr><td style="padding:24px 0 0 0" align="center">
-            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9">Automatisch gegenereerd door <span style="color:#1A56FF;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span></p>
+            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9">Automatisch gegenereerd door <span style="color:#0F1729;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span></p>
           </td></tr>
 
         </table>
@@ -252,7 +252,7 @@ async def send_customer_quote_email(
               <tr>
                 <td style="vertical-align:middle"><img src="{logo_url}" width="36" height="36" alt="Frontlix" style="display:block" /></td>
                 <td style="vertical-align:middle;padding-left:10px">
-                  <span style="font-family:{font};font-size:20px;font-weight:700;letter-spacing:-0.3px"><span style="color:#1A56FF">Front</span><span style="color:#00CFFF">lix</span></span>
+                  <span style="font-family:{font};font-size:20px;font-weight:700;letter-spacing:-0.3px"><span style="color:#0F1729">Front</span><span style="color:#00CFFF">lix</span></span>
                 </td>
               </tr>
             </table>
@@ -283,7 +283,7 @@ async def send_customer_quote_email(
 
           <!-- Footer -->
           <tr><td style="padding:24px 0 0 0" align="center">
-            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9">Automatisch gegenereerd door <span style="color:#1A56FF;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span></p>
+            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9">Automatisch gegenereerd door <span style="color:#0F1729;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span></p>
           </td></tr>
 
         </table>
