@@ -13,7 +13,7 @@ from html import escape
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from jinja2 import Template
+from jinja2 import Environment
 
 from services.supabase import get_supabase
 from branches import get_branche, get_pricing
@@ -109,9 +109,36 @@ async def generate_quote_pdf(
 
     intake_summary = _build_intake_summary(branche_id, collected_data)
 
-    # Load and render HTML template
+    # Build a dedicated Jinja Environment so we can register NL number filters.
+    env = Environment(autoescape=False)
+
+    def _nl_currency(value) -> str:
+        """Format as Dutch currency: 1234.5 → '1.234,50'. Negatives keep sign."""
+        try:
+            n = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+        sign = "-" if n < 0 else ""
+        s = f"{abs(n):,.2f}"
+        # English locale → swap separators
+        s = s.replace(",", "§").replace(".", ",").replace("§", ".")
+        return f"{sign}{s}"
+
+    def _nl_int(value) -> str:
+        """Render whole-number quantity without decimals (60.0 → '60')."""
+        try:
+            n = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+        if n.is_integer():
+            return f"{int(n):,}".replace(",", ".")
+        return _nl_currency(n)
+
+    env.filters["nl_currency"] = _nl_currency
+    env.filters["nl_int"] = _nl_int
+
     template_path = TEMPLATE_DIR / "quote.html"
-    template = Template(template_path.read_text(encoding="utf-8"))
+    template = env.from_string(template_path.read_text(encoding="utf-8"))
 
     meta = _offerte_meta()
     html_content = template.render(

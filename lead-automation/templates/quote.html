@@ -306,13 +306,13 @@
     text-align: right;
     letter-spacing: 0.3px;
   }
-  .powered-footer .brand {
-    background: linear-gradient(90deg, #1A56FF, #00CFFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 700;
-  }
+  /* WeasyPrint ignores -webkit-background-clip:text — render as solid 2-color split */
+  .powered-footer .brand-front { color: #1A56FF; font-weight: 700; }
+  .powered-footer .brand-lix   { color: #00CFFF; font-weight: 700; }
+
+  /* Page-break behaviour — keep the closing blocks together */
+  .conditions, .footer, .totals { page-break-inside: avoid; }
+  .price-table tr { page-break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -386,10 +386,10 @@
       {% for line in pricing.lines %}
       <tr>
         <td class="label">{{ line.label }}</td>
-        <td class="num">{{ "%.0f"|format(line.quantity) if line.quantity else "&mdash;" | safe }}</td>
-        <td class="num">{{ line.unit or "&mdash;" | safe }}</td>
-        <td class="num">{{ "€ %.2f"|format(line.unit_price) if line.unit_price else "&mdash;" | safe }}</td>
-        <td class="amount">€ {{ "%.2f"|format(line.total) }}</td>
+        <td class="num">{% if line.quantity %}{{ line.quantity | nl_int }}{% else %}&mdash;{% endif %}</td>
+        <td class="num">{{ line.unit or "&mdash;" }}</td>
+        <td class="num">{% if line.unit_price %}€&nbsp;{{ line.unit_price | nl_currency }}{% else %}&mdash;{% endif %}</td>
+        <td class="amount">€&nbsp;{{ line.total | nl_currency }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -398,15 +398,15 @@
   <div class="totals">
     <div class="row subtotal">
       <span class="l">Subtotaal excl. BTW</span>
-      <span class="r">€ {{ "%.2f"|format(pricing.subtotaal_excl_btw) }}</span>
+      <span class="r">€&nbsp;{{ pricing.subtotaal_excl_btw | nl_currency }}</span>
     </div>
     <div class="row btw">
       <span class="l">BTW 21%</span>
-      <span class="r">€ {{ "%.2f"|format(pricing.btw_bedrag) }}</span>
+      <span class="r">€&nbsp;{{ pricing.btw_bedrag | nl_currency }}</span>
     </div>
     <div class="row grand">
       <span class="l">Totaal incl. BTW</span>
-      <span class="r">€ {{ "%.2f"|format(pricing.totaal_incl_btw) }}</span>
+      <span class="r">€&nbsp;{{ pricing.totaal_incl_btw | nl_currency }}</span>
     </div>
   </div>
 
@@ -441,7 +441,7 @@
       </tr>
     </table>
     <div class="powered-footer">
-      <span class="brand">Frontlix</span> &middot; AI-gegenereerde offertes &middot; frontlix.com
+      <span class="brand-front">Front</span><span class="brand-lix">lix</span> &middot; AI-gegenereerde offertes &middot; frontlix.com
     </div>
   </div>
 
