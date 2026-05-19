@@ -32,6 +32,35 @@ const STEPS = [
   { n: 4, l: 'Versturen' },
 ] as const
 
+// localStorage-sleutel + debounce voor concept auto-save. Versie-suffix
+// zodat we 'm later kunnen invalideren als het data-schema breekt.
+const DRAFT_KEY = 'frontlix-handmatige-offerte-draft-v1'
+const DRAFT_DEBOUNCE_MS = 600
+
+/**
+ * Vergelijkt de huidige data met DEFAULTS via JSON-stringify. Goedkoop
+ * genoeg voor één state-object en vermijdt een dependency op deep-equal.
+ */
+function isDefaultsData(data: ManualOfferteData): boolean {
+  return JSON.stringify(data) === JSON.stringify(DEFAULTS)
+}
+
+/**
+ * Formatteert een ISO-datum als korte Nederlandse "16 mei, 11:08" string.
+ */
+function formatDraftSavedAt(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString('nl-NL', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return iso
+  }
+}
+
 export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
@@ -227,6 +256,91 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     pricing.voegzand_m2_per_zak,
   ])
 
+  // ── Concept auto-save ──────────────────────────────────────────────
+  // localStorage-key + debounce. Bij open: detecteer een bestaande draft
+  // → toon banner met "Hervatten" / "Negeren" knoppen. Auto-save zelf
+  // staat uit tot de user die keuze heeft gemaakt — voorkomt dat een net-
+  // geopende wizard de oude draft direct overschrijft met DEFAULTS.
+  const [draftMeta, setDraftMeta] = useState<{ savedAt: string } | null>(null)
+  const [draftBannerVisible, setDraftBannerVisible] = useState(false)
+  const [draftSavedFlash, setDraftSavedFlash] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as { data?: unknown; savedAt?: string }
+      if (parsed?.data && typeof parsed.savedAt === 'string') {
+        setDraftMeta({ savedAt: parsed.savedAt })
+        setDraftBannerVisible(true)
+      }
+    } catch {
+      // Corrupt draft → opruimen.
+      try {
+        window.localStorage.removeItem(DRAFT_KEY)
+      } catch {
+        // Niets te doen — localStorage is mogelijk gedisabled.
+      }
+    }
+  }, [])
+
+  // Auto-save data naar localStorage. Wacht tot de draft-banner is afgehandeld
+  // én tot er een non-default waarde is — anders schrijven we de DEFAULTS
+  // direct over een eerder concept.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (draftBannerVisible) return
+    if (isDefaultsData(data)) return
+    const t = setTimeout(() => {
+      try {
+        const payload = { data, savedAt: new Date().toISOString() }
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(payload))
+        setDraftMeta({ savedAt: payload.savedAt })
+        setDraftSavedFlash(true)
+      } catch {
+        // localStorage vol of disabled — geen feedback nodig.
+      }
+    }, DRAFT_DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [data, draftBannerVisible])
+
+  useEffect(() => {
+    if (!draftSavedFlash) return
+    const t = setTimeout(() => setDraftSavedFlash(false), 1400)
+    return () => clearTimeout(t)
+  }, [draftSavedFlash])
+
+  const hervatDraft = () => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY)
+      if (!raw) {
+        setDraftBannerVisible(false)
+        return
+      }
+      const parsed = JSON.parse(raw) as { data?: Partial<ManualOfferteData> }
+      if (parsed?.data) {
+        setData({ ...DEFAULTS, ...parsed.data })
+      }
+    } catch {
+      // Niets te herstellen.
+    }
+    setDraftBannerVisible(false)
+  }
+
+  const negeerDraft = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(DRAFT_KEY)
+      } catch {
+        // Stille fout.
+      }
+    }
+    setDraftMeta(null)
+    setDraftBannerVisible(false)
+  }
+
   const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
     setData((d) => ({ ...d, [k]: v }))
 
@@ -252,6 +366,15 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     startTransition(async () => {
       const result = await createManualLeadEnOfferte(data)
       if (result.ok) {
+        // Draft opruimen — offerte is succesvol aangemaakt, niets meer
+        // om te herstellen bij volgend bezoek.
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.removeItem(DRAFT_KEY)
+          } catch {
+            // Stille fout.
+          }
+        }
         // Voor "alleen download" sturen we de owner naar de net-aangemaakte lead;
         // andere kanalen idem (de feitelijke verzending loopt via de bot).
         router.push(`/leads/${result.leadId}?tab=offerte`)
@@ -276,7 +399,20 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             <div className={styles.titleBlock}>
               <div className={styles.titleIcon}><Edit3 size={16} /></div>
               <div>
-                <div className={styles.title}>Handmatige offerte opstellen</div>
+                <div className={styles.title}>
+                  Handmatige offerte opstellen
+                  {draftMeta && !draftBannerVisible && (
+                    <span className={styles.draftBadge}>
+                      {draftSavedFlash ? (
+                        <>
+                          <Check size={11} /> Opgeslagen
+                        </>
+                      ) : (
+                        <>Concept · auto-saved</>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <div className={styles.subtitle}>
                   Bv. voor een klant die je telefonisch hebt gesproken — Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
                 </div>
@@ -286,6 +422,35 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <X size={16} />
             </button>
           </div>
+
+          {draftBannerVisible && draftMeta && (
+            <div className={styles.draftBanner} role="status">
+              <div className={styles.draftBannerBody}>
+                <div className={styles.draftBannerTitle}>
+                  Concept bewaard
+                </div>
+                <div className={styles.draftBannerMeta}>
+                  opgeslagen {formatDraftSavedAt(draftMeta.savedAt)}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={hervatDraft}
+                className={styles.draftBannerResume}
+              >
+                Hervatten
+              </button>
+              <button
+                type="button"
+                onClick={negeerDraft}
+                className={styles.draftBannerDismiss}
+                aria-label="Concept negeren"
+                title="Concept negeren"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           {/* Stepper */}
           <div className={styles.stepper}>

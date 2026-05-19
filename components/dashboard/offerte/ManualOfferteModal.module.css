@@ -57,6 +57,83 @@
   font-weight: 700;
   font-size: 16px;
   letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* "Concept · auto-saved" pill naast de titel zodra een draft is bewaard. */
+.draftBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: none;
+}
+
+/* Hervat-banner — verschijnt bij modal-open als er een draft is. */
+.draftBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+}
+.draftBannerBody {
+  flex: 1;
+  min-width: 0;
+}
+.draftBannerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.draftBannerMeta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 1px;
+}
+.draftBannerResume {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.draftBannerResume:hover {
+  background: var(--surface-2);
+}
+.draftBannerDismiss {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.draftBannerDismiss:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .subtitle {
