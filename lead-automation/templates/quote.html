@@ -297,18 +297,9 @@
     display: block;
   }
   .footer .val { color: var(--c-text); font-weight: 500; }
-  .powered-footer {
-    margin-top: 10px;
-    padding-top: 7px;
-    border-top: 1px solid var(--c-border-2);
-    font-size: 7.5pt;
-    color: var(--c-text-soft);
-    text-align: right;
-    letter-spacing: 0.3px;
-  }
   /* WeasyPrint ignores -webkit-background-clip:text — render as solid 2-color split */
-  .powered-footer .brand-front { color: #1A56FF; font-weight: 700; }
-  .powered-footer .brand-lix   { color: #00CFFF; font-weight: 700; }
+  .brand-front { color: #1A56FF; font-weight: 700; }
+  .brand-lix   { color: #00CFFF; font-weight: 700; }
 
   /* Page-break behaviour — keep totals + conditions intact, let the footer
      flow naturally (so it lands on p1 below conditions instead of being
@@ -329,7 +320,7 @@
       {% if logo_data_uri %}
       <img src="{{ logo_data_uri }}" class="logo" alt="Frontlix">
       {% endif %}
-      <div class="powered">Offerte gegenereerd door Frontlix AI</div>
+      <div class="powered">Offerte gegenereerd door <span class="brand-front">Front</span><span class="brand-lix">lix</span> AI</div>
     </div>
     <div class="header-right">
       <div class="company-block">
@@ -442,9 +433,6 @@
         </td>
       </tr>
     </table>
-    <div class="powered-footer">
-      <span class="brand-front">Front</span><span class="brand-lix">lix</span> &middot; AI-gegenereerde offertes &middot; frontlix.com
-    </div>
   </div>
 
 </div>
