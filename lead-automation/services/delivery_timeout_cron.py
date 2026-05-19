@@ -23,7 +23,7 @@ async def _scan_once() -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=TIMEOUT_MINUTES)).isoformat()
     try:
         resp = (
-            sb.table("leads").select("id, telefoon, opening_template_sent_at, status, web_chat_token")
+            sb.table("leads").select("id, telefoon, opening_template_sent_at, status, web_chat_token, message_count")
             .lt("opening_template_sent_at", cutoff)
             .is_("web_chat_token", "null")
             .in_("status", ["awaiting_choice", "collecting"])
@@ -34,10 +34,15 @@ async def _scan_once() -> int:
         print(f"[delivery-timeout-cron] query failed: {e}")
         return 0
 
-    rows = resp.data or []
+    raw_rows = resp.data or []
+    # An engaged lead (message_count > 0) has clearly received the opening template
+    # AND replied, so WhatsApp delivery is working — never fallback on them, even
+    # if Meta's status webhook was missed. Filter them out here so we don't spam
+    # the "your WhatsApp isn't reaching you" mail once they finally drop their email.
+    rows = [r for r in raw_rows if (r.get("message_count") or 0) == 0]
     if not rows:
         return 0
-    print(f"[delivery-timeout-cron] {len(rows)} stale lead(s) detected")
+    print(f"[delivery-timeout-cron] {len(rows)} stale lead(s) detected (filtered {len(raw_rows) - len(rows)} engaged)")
     triggered = 0
     for lead in rows:
         try:

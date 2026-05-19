@@ -371,6 +371,32 @@ def _mark_skipped(collected_data: dict, field_key: str) -> None:
         raw.append(field_key)
 
 
+def _skip_remaining_missing(collected_data: dict, branche_id: str) -> list[str]:
+    """When the photo step is being closed out, any data fields still unfilled
+    are marked _skipped — the photo evidence is treated as 'good enough' to move
+    on. Without this the bot would loop back to ask the same field after the
+    customer already gave email. Returns the list of newly-skipped fields."""
+    config = get_branche(branche_id)
+    if not config:
+        return []
+    # Use the raw get_missing_fields (not effective) so we capture everything
+    # that's actually still null, then apply architectural skips manually here.
+    from branches.base import get_missing_fields
+    still_missing = get_missing_fields(config, collected_data)
+    architectural_skips = set()
+    if branche_id == "zonnepanelen" and (collected_data.get("daktype") or "").strip().lower().startswith("plat"):
+        architectural_skips.add("orientatie")
+    if branche_id == "dakdekker" and (collected_data.get("type_werk") or "").strip().lower() == "isoleren":
+        architectural_skips.add("isolatie")
+    newly_skipped = []
+    for field in still_missing:
+        if field in architectural_skips:
+            continue
+        _mark_skipped(collected_data, field)
+        newly_skipped.append(field)
+    return newly_skipped
+
+
 # ── Collecting handler ───────────────────────────────────────────────────
 
 async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
@@ -583,6 +609,11 @@ async def _handle_image(lead: dict, message: dict, phone: str):
 
     # Max photos reached → advance immediately
     if len(photos) >= MAX_PHOTOS:
+        # Trust the photos: any data fields still unfilled get auto-skipped so
+        # the bot doesn't loop back to ask them after email.
+        newly_skipped = _skip_remaining_missing(collected, lead.get("demo_type") or "")
+        if newly_skipped:
+            print(f"[photo-step] auto-skipped unfilled fields on max-photos: {newly_skipped}")
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
         await send_text(phone, "Foto ontvangen, dank je. Dat is het maximum, ik heb genoeg om verder te gaan.")
@@ -623,6 +654,11 @@ async def _auto_advance_photo(lead_id: str, photo_timestamp: int):
         if fresh.get("status") != "collecting":
             return
 
+        # Trust the photos: any data fields still unfilled get auto-skipped so
+        # the bot doesn't loop back to ask them after email.
+        newly_skipped = _skip_remaining_missing(collected, fresh.get("demo_type") or "")
+        if newly_skipped:
+            print(f"[photo-step] auto-skipped unfilled fields on auto-advance: {newly_skipped}")
         collected["_photo_step_done"] = True
         sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead_id).execute()
 

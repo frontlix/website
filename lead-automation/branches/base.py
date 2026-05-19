@@ -54,7 +54,9 @@ def get_missing_fields(config: BrancheConfig, collected_data: dict) -> list[str]
 
 def get_effective_missing_fields(config: BrancheConfig, collected_data: dict, branche_id: str | None = None) -> list[str]:
     """Like get_missing_fields, but applies architectural skips (e.g. orientatie is irrelevant
-    for flat roofs in the zonnepanelen branche — panels can be mounted in any direction)."""
+    for flat roofs in the zonnepanelen branche) AND user-driven skips recorded in
+    collected_data["_skipped"] (customer was unsure twice, or uploaded photos with fields
+    still unfilled, so we move on without re-asking)."""
     missing = get_missing_fields(config, collected_data)
     # Plat dak → orientatie is irrelevant. Panels are mounted on angled frames
     # regardless of flat-roof direction. Use startswith so "plat", "Plat", "plat dak" all match.
@@ -65,6 +67,12 @@ def get_effective_missing_fields(config: BrancheConfig, collected_data: dict, br
     # (€90/m²) which already covers it, so we also don't need the separate isolatie-pakket line.
     if branche_id == "dakdekker" and (collected_data.get("type_werk") or "").strip().lower() == "isoleren":
         missing = [f for f in missing if f != "isolatie"]
+    # User-driven skips: fields the customer was unsure about twice, OR fields auto-skipped
+    # when photos arrived with data still unfilled (photo evidence is "good enough" to move on).
+    skipped_raw = collected_data.get("_skipped")
+    if isinstance(skipped_raw, list) and skipped_raw:
+        skipped = {str(x) for x in skipped_raw}
+        missing = [f for f in missing if f not in skipped]
     return missing
 
 
