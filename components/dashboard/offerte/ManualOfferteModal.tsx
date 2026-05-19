@@ -41,6 +41,11 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // Pricing-snapshot uit pricing_rules. Initieel FALLBACK zodat de wizard
   // direct werkt; na fetch wordt deze vervangen door de live waardes.
   const [pricing, setPricing] = useState<ManualOffertePricing>(FALLBACK_PRICING)
+  // Geocoding-status per adres — `true` betekent: postcode + huisnummer
+  // ingevuld maar postcode.tech kon 'm niet vinden. UI toont dan een
+  // waarschuwing zodat de user weet dat 'ie 't handmatig moet aanvullen.
+  const [werkAdresNotFound, setWerkAdresNotFound] = useState(false)
+  const [factuurAdresNotFound, setFactuurAdresNotFound] = useState(false)
 
   // Lock scroll while modal open
   useEffect(() => {
@@ -86,10 +91,22 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const pc = data.postcode.trim()
     const hn = data.huisnummer.trim()
-    if (!pc || !hn) return
+    if (!pc || !hn) {
+      // Bij leegmaken/wijzigen wist de waarschuwing direct, anders blijft
+      // 'ie hangen na het corrigeren van een foute postcode.
+      setWerkAdresNotFound(false)
+      return
+    }
     const t = setTimeout(() => {
       getAutoAfstandKm(pc, hn).then((res) => {
-        if (!res.ok) return
+        if (!res.ok) {
+          // 'input' = postcode-regex matcht nog niet (user is aan't typen),
+          // niet behandelen als echte fout. 'geocode' = postcode.tech vond
+          // niks — dat is de mismatch die we willen flaggen.
+          setWerkAdresNotFound(res.reason === 'geocode')
+          return
+        }
+        setWerkAdresNotFound(false)
         setData((prev) => ({
           ...prev,
           afstand_km: res.km,
@@ -106,13 +123,23 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // straat + plaats vullen als ze leeg zijn. Triggert ook wanneer de
   // user 'factuur is gelijk aan werk' uitvinkt en daarna gaat typen.
   useEffect(() => {
-    if (data.factuur_zelfde) return
+    if (data.factuur_zelfde) {
+      setFactuurAdresNotFound(false)
+      return
+    }
     const pc = data.factuur_postcode.trim()
     const hn = data.factuur_huisnummer.trim()
-    if (!pc || !hn) return
+    if (!pc || !hn) {
+      setFactuurAdresNotFound(false)
+      return
+    }
     const t = setTimeout(() => {
       getAutoAfstandKm(pc, hn).then((res) => {
-        if (!res.ok) return
+        if (!res.ok) {
+          setFactuurAdresNotFound(res.reason === 'geocode')
+          return
+        }
+        setFactuurAdresNotFound(false)
         setData((prev) => ({
           ...prev,
           factuur_straat:
@@ -296,6 +323,8 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
                 data={data}
                 set={set}
                 onBeforeAiFill={suppressNextZakkenAuto}
+                werkAdresNotFound={werkAdresNotFound}
+                factuurAdresNotFound={factuurAdresNotFound}
               />
             )}
             {step === 2 && <StepWerk data={data} set={set} />}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { AlertTriangle, Check } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import { ExistingClientSearch } from './ExistingClientSearch'
 import type { ExistingClientMatch } from '@/lib/dashboard/manual-offerte-search'
@@ -151,6 +151,8 @@ export function StepKlant({
   data,
   set,
   onBeforeAiFill,
+  werkAdresNotFound = false,
+  factuurAdresNotFound = false,
 }: {
   data: ManualOfferteData
   set: SetFn
@@ -158,6 +160,10 @@ export function StepKlant({
   // ManualOfferteModal gebruikt 'm om een effect te suppressen dat
   // anders de net-ge-extracteerde zakken-aantallen overschrijft.
   onBeforeAiFill?: () => void
+  // True wanneer de postcode/huisnummer-combo niet gevonden is door
+  // postcode.tech — toont een rode waarschuwing onder het adres.
+  werkAdresNotFound?: boolean
+  factuurAdresNotFound?: boolean
 }) {
   // Pas waarschuwingen tonen als de user het veld heeft verlaten —
   // anders flikkert "geen geldig nummer" al bij de eerste toets.
@@ -440,6 +446,15 @@ export function StepKlant({
             />
           </Field>
         </div>
+        {werkAdresNotFound && (
+          <div className={styles.adresWarning} role="alert">
+            <AlertTriangle size={13} className={styles.adresWarningIcon} />
+            <span>
+              <strong>Postcode niet gevonden.</strong> Controleer postcode en
+              huisnummer, of vul Straat en Plaats handmatig in.
+            </span>
+          </div>
+        )}
         <div className={styles.grid21}>
           <Field label="Straat">
             <input
@@ -518,6 +533,15 @@ export function StepKlant({
                 />
               </Field>
             </div>
+            {factuurAdresNotFound && (
+              <div className={styles.adresWarning} role="alert">
+                <AlertTriangle size={13} className={styles.adresWarningIcon} />
+                <span>
+                  <strong>Factuur-postcode niet gevonden.</strong> Controleer
+                  postcode en huisnummer, of vul Straat en Plaats handmatig in.
+                </span>
+              </div>
+            )}
             <div className={styles.grid21}>
               <Field label="Straat">
                 <input
