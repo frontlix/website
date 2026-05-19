@@ -435,8 +435,15 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         // om te herstellen bij volgend bezoek. Alleen het current draft
         // verwijderen; andere drafts (van andere klanten) blijven staan.
         if (currentDraftId) verwijderDraft(currentDraftId)
-        // Voor "alleen download" sturen we de owner naar de net-aangemaakte lead;
-        // andere kanalen idem (de feitelijke verzending loopt via de bot).
+        // Als de mail-verzending zelf faalde (offerte staat wel in DB),
+        // tonen we de error en blijven we in de modal — user kan dan
+        // beslissen om opnieuw te proberen of naar de lead te navigeren.
+        if (result.mailError) {
+          setError(
+            `Offerte is opgeslagen, maar verzenden via e-mail mislukte: ${result.mailError}`,
+          )
+          return
+        }
         router.push(`/leads/${result.leadId}?tab=offerte`)
         router.refresh()
         onClose()

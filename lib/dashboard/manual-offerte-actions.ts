@@ -7,9 +7,12 @@ import { computeRules, computeTotals } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
 import { geocodeAddress } from './geocoding'
 import type { ManualOfferteData } from './manual-offerte-types'
+import { renderOffertePDFBuffer, loadLogoBase64, loadBadgeBase64 } from './offerte/pdf-renderer'
+import { buildOffertePDFData, type TenantBedrijf } from './offerte/pdf-template'
+import { sendOfferteMail } from './offerte/mail-sender'
 
 export type ManualOfferteResult =
-  | { ok: true; leadId: string; offerteId: string; total: number }
+  | { ok: true; leadId: string; offerteId: string; total: number; mailError?: string | null }
   | { ok: false; error: string }
 
 /**
@@ -304,6 +307,67 @@ export async function createManualLeadEnOfferte(
   // of een handmatige backfill-run vult 'm alsnog.
   void geocodeAndStore(admin, leadId, data.postcode.trim(), data.huisnummer.trim())
 
+  // ── 6) Mail-verzending (alleen bij kanaal=mail) ───────────────────
+  // Rendert PDF via puppeteer + schoon-straatje-template, stuurt 'm
+  // als bijlage via nodemailer. Faalt niet hard: bij fout markeren we
+  // offerte_verstuurd terug naar false en rapporteren in het result —
+  // de offerte zelf blijft staan zodat user 'm via dashboard alsnog
+  // kan re-sturen.
+  let mailError: string | null = null
+  if (data.kanaal === 'mail' && data.email.trim()) {
+    try {
+      const { data: tenantRows } = await admin
+        .from('tenant_settings')
+        .select('bedrijfsnaam, adres, postcode, plaats, eigenaar_email, offerte_geldigheid_dagen')
+        .limit(1)
+        .maybeSingle()
+      const bedrijf: TenantBedrijf = {
+        bedrijfsnaam: tenantRows?.bedrijfsnaam ?? 'Schoon Straatje',
+        adres: tenantRows?.adres ?? null,
+        postcode: tenantRows?.postcode ?? null,
+        plaats: tenantRows?.plaats ?? null,
+        offerte_geldigheid_dagen: Number(tenantRows?.offerte_geldigheid_dagen) || 21,
+      }
+
+      const pdfData = buildOffertePDFData({
+        data,
+        rules,
+        totals,
+        offertenummer: `${leadId}-v${nextVersie}`,
+        bedrijf,
+        logoBase64: loadLogoBase64(),
+        badgeBase64: loadBadgeBase64(),
+      })
+      const pdfBuffer = await renderOffertePDFBuffer(pdfData)
+
+      const mailRes = await sendOfferteMail({
+        toEmail: data.email.trim(),
+        klantNaam: data.naam.trim(),
+        bedrijfsnaam: bedrijf.bedrijfsnaam,
+        offertenummer: `${leadId}-v${nextVersie}`,
+        totaalIncl,
+        notitie: data.notitie.trim() || null,
+        pdfBuffer,
+        replyTo: tenantRows?.eigenaar_email ?? null,
+      })
+      if (!mailRes.ok) {
+        mailError = mailRes.error
+        // offerte_verstuurd flip terug — de mail is NIET aangekomen.
+        await admin
+          .from('leads')
+          .update({ offerte_verstuurd: false, offerte_verstuurd_op: null })
+          .eq('lead_id', leadId)
+      }
+    } catch (err) {
+      mailError = err instanceof Error ? err.message : 'onbekende mail-fout'
+      console.error('[createManualLeadEnOfferte] mail flow failed:', err)
+      await admin
+        .from('leads')
+        .update({ offerte_verstuurd: false, offerte_verstuurd_op: null })
+        .eq('lead_id', leadId)
+    }
+  }
+
   revalidatePath('/leads')
   revalidatePath('/')
 
@@ -312,6 +376,7 @@ export async function createManualLeadEnOfferte(
     leadId,
     offerteId: offerte.id as string,
     total: totaalIncl,
+    mailError,
   }
 }
 

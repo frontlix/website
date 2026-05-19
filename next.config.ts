@@ -1,6 +1,13 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Puppeteer mag NIET door webpack worden gebundeld — chromium binary
+  // staat in node_modules en moet at-runtime gevonden worden. Zonder
+  // deze marker faalt de prod-build met "Critical dependency: the
+  // request of a dependency is an expression" of crasht puppeteer
+  // bij launch met missing chromium.
+  serverExternalPackages: ['puppeteer'],
+
   async headers() {
     return [
       {
