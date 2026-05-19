@@ -310,8 +310,10 @@
   .powered-footer .brand-front { color: #1A56FF; font-weight: 700; }
   .powered-footer .brand-lix   { color: #00CFFF; font-weight: 700; }
 
-  /* Page-break behaviour — keep the closing blocks together */
-  .conditions, .footer, .totals { page-break-inside: avoid; }
+  /* Page-break behaviour — keep totals + conditions intact, let the footer
+     flow naturally (so it lands on p1 below conditions instead of being
+     pushed to a near-empty p2 by an over-strict avoid rule). */
+  .conditions, .totals { page-break-inside: avoid; }
   .price-table tr { page-break-inside: avoid; }
 </style>
 </head>
