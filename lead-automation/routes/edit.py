@@ -244,7 +244,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     /* ── Two-column grid ───────────────────────────────────── */
     .grid {{
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+      grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
       gap: 22px;
       align-items: start;
     }}
@@ -342,13 +342,13 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     }}
     .totals .row {{
       display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 16px; font-size: 13.5px;
+      padding: 10px 20px; font-size: 13.5px; gap: 14px;
     }}
     .totals .row.subtotal {{ background: var(--c-surface); color: var(--c-text-mute); }}
     .totals .row.btw      {{ background: var(--c-surface); color: var(--c-text-mute); border-top: 1px solid var(--c-border-2); }}
     .totals .row.grand {{
       background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
-      color: #fff; padding: 14px 16px; font-size: 16px; font-weight: 700;
+      color: #fff; padding: 14px 22px; font-size: 16px; font-weight: 700;
       letter-spacing: -0.2px;
     }}
     .totals .row .v {{ font-variant-numeric: tabular-nums; font-weight: 700; color: var(--c-text); }}
@@ -474,7 +474,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
 
         <!-- ── RIGHT COLUMN: PRICING SIDEBAR ──────────────────── -->
         <div class="sidebar">
-          <div class="card" style="padding:20px 22px">
+          <div class="card" style="padding:22px 26px">
             <div class="card-eyebrow">Prijsopbouw</div>
             <div class="card-title" style="margin-bottom:12px">Live overzicht</div>
 
