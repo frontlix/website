@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, AlertCircle, RotateCcw, Send, Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
+import { Check, AlertCircle, RotateCcw, Send, Sparkles, Clock, CheckCircle2, XCircle, MessageSquare } from 'lucide-react'
 import { requestTemplateChange } from '@/lib/dashboard/template-actions'
 import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import styles from './OpeningTemplateEditor.module.css'
@@ -269,23 +269,38 @@ export function OpeningTemplateEditor({
 
 function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
   const tone = statusTone(aanvraag.status)
+  // Notitie wordt gevuld door Frontlix-support in Supabase Studio
+  // (bv. "Dit kan niet vanwege Meta-regels" bij rejected, of een
+  // hint bij approved). Tonen als 'ie er staat, ongeacht status.
+  const heeftNotitie = aanvraag.notitie && aanvraag.notitie.trim().length > 0
   return (
     <div className={styles.aanvraagRow}>
-      <div className={styles.aanvraagBody}>
-        <div className={styles.aanvraagNaam}>{aanvraag.template_naam}</div>
-        <div className={styles.aanvraagDate}>
-          {new Date(aanvraag.aangemaakt_op).toLocaleString('nl-NL', {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+      <div className={styles.aanvraagTop}>
+        <div className={styles.aanvraagBody}>
+          <div className={styles.aanvraagNaam}>{aanvraag.template_naam}</div>
+          <div className={styles.aanvraagDate}>
+            {new Date(aanvraag.aangemaakt_op).toLocaleString('nl-NL', {
+              day: 'numeric',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </div>
         </div>
+        <span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>
+          {statusIcon(aanvraag.status)}
+          {statusLabel(aanvraag.status)}
+        </span>
       </div>
-      <span className={`${styles.statusPill} ${styles[`status_${tone}`]}`}>
-        {statusIcon(aanvraag.status)}
-        {statusLabel(aanvraag.status)}
-      </span>
+      {heeftNotitie && (
+        <div className={`${styles.aanvraagNotitie} ${styles[`notitie_${tone}`]}`}>
+          <MessageSquare size={11} className={styles.aanvraagNotitieIcon} />
+          <div className={styles.aanvraagNotitieText}>
+            <span className={styles.aanvraagNotitieLabel}>Notitie van Frontlix</span>
+            {aanvraag.notitie}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
