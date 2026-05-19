@@ -67,22 +67,29 @@ export function NotificationPanel({
   }, [open])
 
   /**
-   * Klik op een notificatie: markeer als gelezen + navigeer.
-   * Optimistic: badge gaat direct omlaag, server-call vuurt async af.
-   * We voorkomen dat Link al z'n eigen navigatie doet door e.preventDefault
-   * en handmatig router.push — dat geeft ons controle over de volgorde.
+   * Klik op een notificatie: dropdown sluiten + (indien ongelezen) markeren
+   * als gelezen + navigeren.
+   *
+   * Voor zowel gelezen als ongelezen items doen we e.preventDefault +
+   * handmatig router.push — anders blijft de dropdown openstaan en voelt
+   * het alsof er niks gebeurt wanneer de href naar de huidige pagina wijst
+   * (Next.js skipt zo'n navigation soft).
    */
   const handleItemClick = (item: NotifItem) => (e: React.MouseEvent) => {
-    if (!item.unread) return // niets te doen, gewoon Link laten navigeren
-
     e.preventDefault()
-    setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, unread: false } : i)),
-    )
-    setUnreadCount((c) => Math.max(0, c - 1))
     setOpen(false)
+
+    if (item.unread) {
+      setItems((prev) =>
+        prev.map((i) => (i.id === item.id ? { ...i, unread: false } : i)),
+      )
+      setUnreadCount((c) => Math.max(0, c - 1))
+    }
+
     startTransition(async () => {
-      await markNotificationReadAction(item.id)
+      if (item.unread) {
+        await markNotificationReadAction(item.id)
+      }
       router.push(item.href)
     })
   }
