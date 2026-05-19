@@ -76,10 +76,19 @@
     color: var(--c-text-soft);
     letter-spacing: 0.3px;
   }
+  /* Afzender-kaart: zelfde container-stijl als klantgegevens; tekst links
+     uitgelijnd binnen de kaart zelf, kaart zelf staat rechts in de header. */
   .company-block {
+    display: inline-block;
+    text-align: left;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    background: #FFFFFF;
     font-size: 9pt;
     line-height: 1.6;
     color: var(--c-text-mute);
+    min-width: 220px;
   }
   .company-block .name {
     color: var(--c-text);
@@ -325,14 +334,14 @@
       {% if logo_data_uri %}
       <img src="{{ logo_data_uri }}" class="logo" alt="Frontlix">
       {% endif %}
-      <div class="powered">Offerte gegenereerd door <span class="brand-front">Front</span><span class="brand-lix">lix</span> AI</div>
+      <div class="powered">Offerte gegenereerd door <span class="brand-front">Front</span><span class="brand-lix">lix</span></div>
     </div>
     <div class="header-right">
       <div class="company-block">
         <span class="name">{{ company.name }}</span><br>
         {% for line in company.address_lines %}{{ line }}<br>{% endfor %}
-        T &nbsp;{{ company.phone }}<br>
-        E &nbsp;{{ company.email }}
+        {{ company.phone }}<br>
+        {{ company.email }}
       </div>
     </div>
   </div>
