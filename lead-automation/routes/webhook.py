@@ -51,10 +51,15 @@ router = APIRouter()
 RATE_LIMIT_MAX = 30
 
 WELCOME_MESSAGES = {
-    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen. Met wie heb ik trouwens het genoegen?",
-    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen. Met wie heb ik trouwens het genoegen?",
-    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel. Met wie heb ik trouwens het genoegen?",
+    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen.",
+    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen.",
+    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel.",
 }
+
+# Sent as a second message right after the welcome intro, so the opening feels like
+# two natural beats instead of one robot wall-of-text. Same wording for all branches.
+NAAM_QUESTION = "Met wie heb ik het genoegen?"
+WELCOME_PAUSE_SEC = 1.0
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -245,16 +250,18 @@ async def _activate_branche(lead: dict, branche_id: str, phone: str):
         "updated_at": _now_iso(),
     }).eq("id", lead["id"]).execute()
 
-    # Welcome message
+    # Welcome message in two beats: warm intro + name question.
+    # The name question is the same for every branche so we don't have to involve
+    # the reply LLM here — the opening is fully deterministic.
     welcome = WELCOME_MESSAGES.get(branche_id, "")
     if welcome:
         await send_text(phone, welcome)
         await _save_message(lead["id"], "assistant", welcome)
-
-    # First question
-    updated = {**lead, "demo_type": branche_id, "status": "collecting"}
-    history = await _fetch_history(lead["id"])
-    await _send_next_question(updated, history, _whatsapp_sender(phone))
+        await asyncio.sleep(WELCOME_PAUSE_SEC)
+        await send_text(phone, NAAM_QUESTION)
+        await _save_message(lead["id"], "assistant", NAAM_QUESTION)
+    # Naam vraag staat al in de welcome, dus geen _send_next_question hier — anders
+    # zou de LLM nog een derde opener-bericht genereren.
 
 
 async def _handle_button_reply(lead: dict, message: dict, phone: str):

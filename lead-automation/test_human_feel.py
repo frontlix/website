@@ -54,10 +54,12 @@ hydrate_all()
 
 
 WELCOME_MESSAGES = {
-    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen. Met wie heb ik trouwens het genoegen?",
-    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen. Met wie heb ik trouwens het genoegen?",
-    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel. Met wie heb ik trouwens het genoegen?",
+    "zonnepanelen": "Top, zonnepanelen dus. Ik ben Sanne, ik help je bij het samenstellen van een passende offerte. Ik stel je zo een paar korte vragen.",
+    "dakdekker": "Top, dakwerk dus. Ik ben Bram, dakdekker met 20 jaar ervaring. Ik stel je zo wat korte vragen, dan kan ik een offerte voor je opstellen.",
+    "schoonmaak": "Hoi! Schoonmaak dus, daar help ik je graag bij. Ik ben Lotte. Ik stel je zo een paar korte vragen, dan stuur ik je een passend voorstel.",
 }
+
+NAAM_QUESTION = "Met wie heb ik het genoegen?"
 
 MAX_TURNS = 20
 
@@ -208,14 +210,13 @@ async def simulate(scenario: Scenario) -> dict:
     }
     history.append(ConversationMessage(role="user", content=opener_map[scenario.branche]))
 
-    # Welcome (hardcoded in production)
+    # Welcome (hardcoded in production) — sent in two beats: warm intro + name question.
     welcome = WELCOME_MESSAGES[scenario.branche]
     history.append(ConversationMessage(role="assistant", content=welcome))
+    history.append(ConversationMessage(role="assistant", content=NAAM_QUESTION))
 
-    # First question
-    reply = await generate_reply(scenario.branche, history, identity, data, collected_data)
-    if not reply.strip().upper().startswith("[WAIT]"):
-        history.append(ConversationMessage(role="assistant", content=reply))
+    # No initial reply call — the name question is already in the welcome, the
+    # customer's next message is expected to be their name.
 
     for turn in range(MAX_TURNS):
         # Customer
