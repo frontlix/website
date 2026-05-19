@@ -23,6 +23,7 @@ import { StepKlant, isValidEmail } from './StepKlant'
 import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
+import { OffertePdfDocument } from './OffertePdf'
 import styles from './ManualOfferteModal.module.css'
 
 const STEPS = [
@@ -390,6 +391,59 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const submitLabel = data.kanaal === 'manual' ? 'PDF aanmaken' : 'Offerte versturen'
   const SubmitIcon = data.kanaal === 'manual' ? FileText : MessageCircle
 
+  // PDF-download — genereert client-side via @react-pdf/renderer en
+  // triggert een browser-download. Geen server-roundtrip; geen lead
+  // wordt aangemaakt. Voor "echt versturen" gebruikt de owner de
+  // submit-knop.
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const downloadPdf = async () => {
+    if (pdfBusy) return
+    setPdfBusy(true)
+    try {
+      const { pdf } = await import('@react-pdf/renderer')
+      // Tijdelijk offerte-nummer — placeholder tot de DB er één aanmaakt.
+      // Format: OFF-YYYYMMDD-HHMM
+      const now = new Date()
+      const stamp =
+        now.getFullYear().toString() +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        String(now.getDate()).padStart(2, '0') +
+        '-' +
+        String(now.getHours()).padStart(2, '0') +
+        String(now.getMinutes()).padStart(2, '0')
+      const offerteNummer = `OFF-${stamp}`
+
+      const blob = await pdf(
+        <OffertePdfDocument
+          data={data}
+          rules={rules}
+          totals={totals}
+          offerteNummer={offerteNummer}
+        />,
+      ).toBlob()
+
+      const naamSlug = (data.naam || 'klant')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+      const fileName = `offerte-${naamSlug}-${stamp}.pdf`
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('[ManualOfferteModal] PDF generation failed:', e)
+      setError('PDF genereren mislukt — check console voor details.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.shell} onClick={(e) => e.stopPropagation()}>
@@ -507,9 +561,15 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 className={styles.btnSecondary}
-                onClick={() => alert('PDF-generator wordt later gekoppeld aan de bot — voor nu kun je de offerte alvast opslaan via "Offerte versturen".')}
+                onClick={downloadPdf}
+                disabled={pdfBusy || rules.length === 0}
+                title={
+                  rules.length === 0
+                    ? 'Vul eerst klant- en werk-gegevens in'
+                    : 'Download de offerte als PDF'
+                }
               >
-                <FileText size={13} /> Download PDF
+                <FileText size={13} /> {pdfBusy ? 'PDF maken…' : 'Download PDF'}
               </button>
             )}
             {step > 1 && (
