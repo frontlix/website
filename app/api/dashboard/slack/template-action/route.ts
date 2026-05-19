@@ -22,6 +22,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { verifySlackRequest } from '@/lib/dashboard/slack/verify'
 import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
+import { notify } from '@/lib/dashboard/notifications/notify'
+import type { NotificationEventType } from '@/lib/dashboard/notifications/types'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -114,10 +116,12 @@ async function handleBlockAction(payload: SlackPayload): Promise<NextResponse> {
 
 async function approveAanvraag(aanvraagId: string, payload: SlackPayload): Promise<NextResponse> {
   const admin = getDashboardAdmin()
-  const { error } = await admin
+  const { data: updated, error } = await admin
     .from('template_aanvragen')
     .update({ status: 'approved', bijgewerkt_op: new Date().toISOString() })
     .eq('id', aanvraagId)
+    .select('template_naam')
+    .single()
 
   if (error) {
     await postBackToSlack(payload.response_url, `❌ Kon niet goedkeuren: ${error.message}`)
@@ -125,8 +129,33 @@ async function approveAanvraag(aanvraagId: string, payload: SlackPayload): Promi
   }
 
   revalidatePath('/dashboard/instellingen')
+  await fireBellNotification('template_goedgekeurd', updated?.template_naam as string | undefined)
   await replaceMessage(payload, `:white_check_mark: *Goedgekeurd* door <@${payload.user.id}>`)
   return NextResponse.json({ ok: true })
+}
+
+/**
+ * Schrijft de bell-notificatie voor approved/rejected. notify() faalt
+ * stil als event_type nog niet in de DB-enum zit (migratie 039 nog
+ * niet gedraaid) — try/catch zorgt dat de Slack-action zelf niet faalt.
+ */
+async function fireBellNotification(
+  event: NotificationEventType,
+  templateNaam: string | undefined,
+): Promise<void> {
+  try {
+    const naam = templateNaam ?? 'onbekend'
+    const isApprove = event === 'template_goedgekeurd'
+    await notify({
+      eventType: event,
+      titel: isApprove ? 'Template goedgekeurd' : 'Template afgewezen',
+      body: isApprove
+        ? `Je aanvraag voor \`${naam}\` is goedgekeurd door Frontlix.`
+        : `Je aanvraag voor \`${naam}\` is afgewezen — check de notitie in de instellingen.`,
+    })
+  } catch (err) {
+    console.error('[slack-template-action] notify failed (migratie 039 gedraaid?):', err)
+  }
 }
 
 async function openNotitieModal(
@@ -223,10 +252,12 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
         errors: { notitie_block: 'Notitie is verplicht bij afkeuren.' },
       })
     }
-    const { error } = await admin
+    const { data: updated, error } = await admin
       .from('template_aanvragen')
       .update({ status: 'rejected', notitie, bijgewerkt_op: new Date().toISOString() })
       .eq('id', aanvraagId)
+      .select('template_naam')
+      .single()
     if (error) {
       return NextResponse.json({
         response_action: 'errors',
@@ -234,6 +265,7 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
       })
     }
     revalidatePath('/dashboard/instellingen')
+    await fireBellNotification('template_afgewezen', updated?.template_naam as string | undefined)
     await postBackToSlack(
       meta.responseUrl,
       `:x: *Afgekeurd* door <@${payload.user.id}>\n> ${escapeSlack(notitie)}`,
