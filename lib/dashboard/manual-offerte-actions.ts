@@ -90,22 +90,23 @@ export async function createManualLeadEnOfferte(
   const invegenM2 = data.sub.includes('invegen') ? m2Num : null
   const beschermlaagM2 = data.sub.includes('beschermlaag') ? m2Num : null
 
-  // m² per voegzand-type — als beide types actief, verdeel naar rato
-  // van het aantal zakken (mirror van computeRules-logica).
+  // m² per voegzand-type — de user kiest dit nu expliciet in StepWerk.
+  // Hier alleen sanitizen (Number + null voor niet-actieve types) en als
+  // safety-net terugvallen op totale m² als alleen 1 type actief is maar
+  // het m²-veld 0 staat (oude drafts vóór de m²-input bestond).
+  const normaalM2Raw = Number(data.voegzand_normaal_m2 || 0)
+  const onkruidwerendM2Raw = Number(data.voegzand_onkruidwerend_m2 || 0)
   let voegzandNormaalM2: number | null = null
   let voegzandOnkruidwerendM2: number | null = null
-  if (data.voegzand_normaal_actief && data.voegzand_onkruidwerend_actief) {
-    const totZakken =
-      Number(data.voegzand_normaal_zakken || 0) +
-      Number(data.voegzand_onkruidwerend_zakken || 0)
-    if (totZakken > 0) {
-      voegzandNormaalM2 = Math.round(m2Num * (Number(data.voegzand_normaal_zakken || 0) / totZakken))
-      voegzandOnkruidwerendM2 = m2Num - voegzandNormaalM2
-    }
-  } else if (data.voegzand_normaal_actief) {
-    voegzandNormaalM2 = m2Num
-  } else if (data.voegzand_onkruidwerend_actief) {
-    voegzandOnkruidwerendM2 = m2Num
+  if (data.voegzand_normaal_actief) {
+    voegzandNormaalM2 = normaalM2Raw > 0
+      ? normaalM2Raw
+      : data.voegzand_onkruidwerend_actief ? 0 : m2Num
+  }
+  if (data.voegzand_onkruidwerend_actief) {
+    voegzandOnkruidwerendM2 = onkruidwerendM2Raw > 0
+      ? onkruidwerendM2Raw
+      : data.voegzand_normaal_actief ? 0 : m2Num
   }
 
   const totaalIncl = Math.round((totals.total + totals.btw) * 100) / 100

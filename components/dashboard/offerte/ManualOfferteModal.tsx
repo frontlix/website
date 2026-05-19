@@ -134,29 +134,71 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     aiJustFilledZakken.current = true
   }
 
-  // Auto-suggest zakken o.b.v. m². Dekkingsfactor komt uit pricing
-  // (voegzand_m2_per_zak), met 5 als laatste vangnet.
+  // Auto-defaults voor per-type voegzand-m² zodra toggle of total-m² wijzigt:
+  //  - alleen normaal actief    → normaal_m2 = total m², onkruidwerend_m2 = 0
+  //  - alleen onkruidwerend     → onkruidwerend_m2 = total m², normaal_m2 = 0
+  //  - beide actief             → 50/50 split (handmatig aanpasbaar in StepWerk)
+  //  - geen van beide           → beide 0
+  // Net als bij zakken-auto-suggest: user-edits worden bij volgende dependency-
+  // wijziging overschreven (acceptable trade-off, zelfde pattern als zakken).
+  useEffect(() => {
+    setData((prev) => {
+      const total = Number(prev.m2) || 0
+      const onlyNormaal = prev.voegzand_normaal_actief && !prev.voegzand_onkruidwerend_actief
+      const onlyOnkruidwerend = !prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief
+      const both = prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief
+      if (onlyNormaal) {
+        return { ...prev, voegzand_normaal_m2: total, voegzand_onkruidwerend_m2: 0 }
+      }
+      if (onlyOnkruidwerend) {
+        return { ...prev, voegzand_normaal_m2: 0, voegzand_onkruidwerend_m2: total }
+      }
+      if (both) {
+        const half = Math.round(total / 2)
+        return {
+          ...prev,
+          voegzand_normaal_m2: half,
+          voegzand_onkruidwerend_m2: total - half,
+        }
+      }
+      return { ...prev, voegzand_normaal_m2: 0, voegzand_onkruidwerend_m2: 0 }
+    })
+  }, [data.m2, data.voegzand_normaal_actief, data.voegzand_onkruidwerend_actief])
+
+  // Auto-suggest zakken op basis van per-type m² ÷ dekking-factor. Vangnet
+  // is 5 m²/zak. AI-fill skip-vlag voorkomt dat een geëxtraheerd zakken-
+  // aantal direct wordt overschreven.
   useEffect(() => {
     if (aiJustFilledZakken.current) {
       aiJustFilledZakken.current = false
       return
     }
     const dekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5
-    const suggested = Math.ceil((Number(data.m2) || 0) / dekking)
     setData((prev) => {
-      if (prev.voegzand_normaal_actief && !prev.voegzand_onkruidwerend_actief) {
-        return { ...prev, voegzand_normaal_zakken: suggested, voegzand_onkruidwerend_zakken: 0 }
+      const next = { ...prev }
+      if (prev.voegzand_normaal_actief) {
+        next.voegzand_normaal_zakken = Math.ceil(
+          (Number(prev.voegzand_normaal_m2) || 0) / dekking,
+        )
+      } else {
+        next.voegzand_normaal_zakken = 0
       }
-      if (!prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief) {
-        return { ...prev, voegzand_normaal_zakken: 0, voegzand_onkruidwerend_zakken: suggested }
+      if (prev.voegzand_onkruidwerend_actief) {
+        next.voegzand_onkruidwerend_zakken = Math.ceil(
+          (Number(prev.voegzand_onkruidwerend_m2) || 0) / dekking,
+        )
+      } else {
+        next.voegzand_onkruidwerend_zakken = 0
       }
-      if (prev.voegzand_normaal_actief && prev.voegzand_onkruidwerend_actief) {
-        const half = Math.ceil(suggested / 2)
-        return { ...prev, voegzand_normaal_zakken: half, voegzand_onkruidwerend_zakken: suggested - half }
-      }
-      return prev
+      return next
     })
-  }, [data.m2, data.voegzand_normaal_actief, data.voegzand_onkruidwerend_actief, pricing.voegzand_m2_per_zak])
+  }, [
+    data.voegzand_normaal_m2,
+    data.voegzand_onkruidwerend_m2,
+    data.voegzand_normaal_actief,
+    data.voegzand_onkruidwerend_actief,
+    pricing.voegzand_m2_per_zak,
+  ])
 
   const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
     setData((d) => ({ ...d, [k]: v }))

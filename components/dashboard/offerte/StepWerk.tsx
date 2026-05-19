@@ -170,10 +170,12 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             label="Normaal voegzand"
             sub="Standaard kwarts/zilver, voor algemeen voegwerk"
             actief={data.voegzand_normaal_actief}
+            m2={data.voegzand_normaal_m2}
             zakken={data.voegzand_normaal_zakken}
             prijs={data.voegzand_normaal_prijs}
             defaultPrijs={2.9}
             onToggle={(v) => set('voegzand_normaal_actief', v)}
+            onM2={(v) => set('voegzand_normaal_m2', v)}
             onZakken={(v) => set('voegzand_normaal_zakken', v)}
             onPrijs={(v) => set('voegzand_normaal_prijs', v)}
           />
@@ -182,10 +184,12 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             label="Onkruidwerend voegzand"
             sub="Polymeer-gebonden, voorkomt onkruidgroei tussen voegen"
             actief={data.voegzand_onkruidwerend_actief}
+            m2={data.voegzand_onkruidwerend_m2}
             zakken={data.voegzand_onkruidwerend_zakken}
             prijs={data.voegzand_onkruidwerend_prijs}
             defaultPrijs={20.9}
             onToggle={(v) => set('voegzand_onkruidwerend_actief', v)}
+            onM2={(v) => set('voegzand_onkruidwerend_m2', v)}
             onZakken={(v) => set('voegzand_onkruidwerend_zakken', v)}
             onPrijs={(v) => set('voegzand_onkruidwerend_prijs', v)}
           />
@@ -290,16 +294,18 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
 
 // ── ZandTypeRow ────────────────────────────────────────────────────
 function ZandTypeRow({
-  label, sub, actief, zakken, prijs, defaultPrijs,
-  onToggle, onZakken, onPrijs,
+  label, sub, actief, m2, zakken, prijs, defaultPrijs,
+  onToggle, onM2, onZakken, onPrijs,
 }: {
   label: string
   sub: string
   actief: boolean
+  m2: number
   zakken: number
   prijs: number
   defaultPrijs: number
   onToggle: (v: boolean) => void
+  onM2: (v: number) => void
   onZakken: (v: number) => void
   onPrijs: (v: number) => void
 }) {
@@ -315,7 +321,7 @@ function ZandTypeRow({
         </div>
         {actief && Number(zakken) > 0 && (
           <div className={styles.zandSummary}>
-            {zakken} zak × €{Number(prijs).toFixed(2)} ={' '}
+            {m2} m² · {zakken} zak × €{Number(prijs).toFixed(2)} ={' '}
             <span className={styles.zandSummaryAmount}>€{(Number(zakken) * Number(prijs)).toFixed(2)}</span>
           </div>
         )}
@@ -323,6 +329,19 @@ function ZandTypeRow({
 
       {actief && (
         <div className={styles.zandDetail}>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>Oppervlakte (m²)</label>
+            <input
+              className={`${styles.input} ${styles.numericInput}`}
+              type="number"
+              min="0"
+              value={m2}
+              onChange={(e) => onM2(Number(e.target.value))}
+            />
+            <div className={styles.standaardHint}>
+              Zakken volgen automatisch uit deze m²
+            </div>
+          </div>
           <div className={styles.field}>
             <label className={styles.fieldLabel}>Aantal zakken</label>
             <input

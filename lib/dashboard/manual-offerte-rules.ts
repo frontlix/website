@@ -46,17 +46,12 @@ export function computeRules(
       totaal: m2 * reinPr,
     })
 
-    // Arbeid invegen — verdeel naar rato van het aantal zakken per type.
+    // Arbeid invegen — gebruikt nu de expliciete per-type m² uit data.
+    // Eerder kwam de verdeling uit de zakken-ratio; nu controleert de owner
+    // de m²-toewijzing rechtstreeks in StepWerk (defaults: alleen-actief =
+    // volle m², beide actief = 50/50).
     if (data.voegzand_normaal_actief) {
-      const ratio = data.voegzand_onkruidwerend_actief
-        ? Number(data.voegzand_normaal_zakken) /
-          Math.max(
-            1,
-            Number(data.voegzand_normaal_zakken) +
-              Number(data.voegzand_onkruidwerend_zakken)
-          )
-        : 1
-      const am2 = m2 * ratio
+      const am2 = Number(data.voegzand_normaal_m2) || 0
       const arbPr = pricing.arbeid_invegen_normaal_per_m2
       if (am2 > 0) {
         r.push({
@@ -69,15 +64,7 @@ export function computeRules(
       }
     }
     if (data.voegzand_onkruidwerend_actief) {
-      const ratio = data.voegzand_normaal_actief
-        ? Number(data.voegzand_onkruidwerend_zakken) /
-          Math.max(
-            1,
-            Number(data.voegzand_normaal_zakken) +
-              Number(data.voegzand_onkruidwerend_zakken)
-          )
-        : 1
-      const am2 = m2 * ratio
+      const am2 = Number(data.voegzand_onkruidwerend_m2) || 0
       const arbPr = pricing.arbeid_invegen_onkruidwerend_per_m2
       if (am2 > 0) {
         r.push({

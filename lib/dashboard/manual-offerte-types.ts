@@ -45,9 +45,11 @@ export type ManualOfferteData = {
   m2: number
   // voegzand
   voegzand_normaal_actief: boolean
+  voegzand_normaal_m2: number
   voegzand_normaal_zakken: number
   voegzand_normaal_prijs: number
   voegzand_onkruidwerend_actief: boolean
+  voegzand_onkruidwerend_m2: number
   voegzand_onkruidwerend_zakken: number
   voegzand_onkruidwerend_prijs: number
   // kleur
@@ -112,9 +114,11 @@ export const DEFAULTS: ManualOfferteData = {
   onderhoud_weken: 8,
   m2: 100,
   voegzand_normaal_actief: false,
+  voegzand_normaal_m2: 0,
   voegzand_normaal_zakken: 20,
   voegzand_normaal_prijs: 2.9,
   voegzand_onkruidwerend_actief: false,
+  voegzand_onkruidwerend_m2: 0,
   voegzand_onkruidwerend_zakken: 0,
   voegzand_onkruidwerend_prijs: 20.9,
   kleur_naturel: false,
