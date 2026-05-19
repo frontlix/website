@@ -25,7 +25,7 @@ from services.web_chat_fallback import (
     FALLBACK_ERROR_CODES,
     trigger_web_chat_fallback,
 )
-from llm import detect_branche, analyze_message, generate_reply
+from llm import detect_branche, analyze_message, generate_reply, classify_post_quote_intent
 from llm.reply import _determine_next_tag
 from branches import (
     get_branche, get_effective_missing_fields, get_pricing,
@@ -667,20 +667,85 @@ async def _send_next_question(
 
 # ── Scheduling handlers ─────────────────────────────────────────────────
 
+def _appointment_meta(lead: dict) -> tuple[str, str, int, str, str]:
+    """(appointment_label, label_short, duration_min, purpose, branche_label).
+    Neutral defaults when branche-config can't be resolved."""
+    config = get_branche(lead.get("demo_type") or "") if lead.get("demo_type") else None
+    if not config:
+        return ("afspraak", "afspraak", 60, "", "demo")
+    return (
+        config.appointment_label,
+        config.appointment_label_short,
+        config.appointment_duration_min,
+        config.appointment_purpose,
+        config.label,
+    )
+
+
+def _schedule_fallback_url(lead: dict) -> str | None:
+    """URL the customer can use when the scheduling-agent / Calendar fails —
+    points to the same /schedule?token=… page which already exists for the
+    klant-quote email. Returns None when token or service_url isn't set."""
+    token = lead.get("approval_token")
+    if not token:
+        return None
+    base = (get_settings().service_url or "").rstrip("/")
+    if not base:
+        return None
+    return f"{base}/schedule?token={token}"
+
+
 async def _handle_start_scheduling(lead: dict, text_body: str, phone: str):
-    """Klant antwoordt na ontvangst offerte — start de scheduling agent."""
-    positive = bool(re.search(r"\b(ja|jazeker|graag|prima|ok|oké|okee|akkoord|klinkt goed|doe maar|yes)\b", text_body, re.IGNORECASE))
-    if not positive:
-        await send_text(phone, 'Geen probleem! Wil je later toch nog een gesprek inplannen? Stuur dan "ja" en dan stel ik wat tijden voor.')
+    """Klant antwoordt na ontvangst offerte. We classificeren de intent met
+    een lichtgewicht LLM-call ipv brittle regex op woorden.
+    """
+    history = await _fetch_history(lead["id"])
+    appointment_label, appointment_short, duration, purpose, _branche_label = _appointment_meta(lead)
+    intent = await classify_post_quote_intent(history)
+    print(f"[post-quote] intent={intent} lead={lead['id']}")
+
+    if intent in ("quote_accepted",):
+        get_supabase().table("leads").update({
+            "status": "scheduling",
+            "updated_at": _now_iso(),
+        }).eq("id", lead["id"]).execute()
+        lead["status"] = "scheduling"
+        await _run_scheduling_agent(lead, phone)
         return
 
-    get_supabase().table("leads").update({
-        "status": "scheduling",
-        "updated_at": _now_iso(),
-    }).eq("id", lead["id"]).execute()
+    if intent == "quote_declines":
+        await send_text(
+            phone,
+            "Geen probleem, dank voor je tijd! Mocht je later van gedachten veranderen, stuur dan gerust een berichtje.",
+        )
+        return
 
-    lead["status"] = "scheduling"
-    await _run_scheduling_agent(lead, phone)
+    if intent == "process_question":
+        # Use the branche-purpose as a direct, honest answer + open the door.
+        msg = purpose or f"Het gaat om een {appointment_label} ter plaatse."
+        await send_text(phone, f"{msg} Wil je dat we daarvoor een moment inplannen?")
+        return
+
+    if intent == "is_bot_question":
+        await send_text(
+            phone,
+            "Klopt, ik ben Frontlix's slimme assistent. Mocht je een moment willen inplannen voor de "
+            f"{appointment_short}, laat het weten.",
+        )
+        return
+
+    if intent == "quote_question":
+        # Don't pretend to answer specific pricing questions — hand off to the owner,
+        # but offer to schedule so the conversation doesn't dead-end.
+        await send_text(
+            phone,
+            "Goede vraag, daar kijkt een collega graag persoonlijk naar. Wil je een "
+            f"{appointment_short} inplannen om alles door te lopen?",
+        )
+        return
+
+    # off_topic / acknowledgement / ambiguous → ask explicitly without the old "stuur ja"
+    await send_text(phone, f"Wil je een {appointment_short} inplannen?")
 
 
 async def _handle_scheduling(lead: dict, text_body: str, phone: str):
@@ -708,7 +773,7 @@ SCHEDULING_TOOLS = [
         "type": "function",
         "function": {
             "name": "boek_afspraak",
-            "description": "Boek een kennismakingsgesprek van 30 minuten op een specifieke datum en tijd. Gebruik dit ALLEEN als de klant akkoord gaat met een tijdstip.",
+            "description": "Boek een afspraak op een specifieke datum en tijd. Gebruik dit ALLEEN als de klant akkoord gaat met een tijdstip. De duur en het soort afspraak staan in de system-prompt context.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -728,26 +793,40 @@ SCHEDULING_TOOLS = [
 ]
 
 
-def _get_scheduling_system_prompt(agent_name: str) -> str:
-    return f"""Je bent {agent_name}, een medewerker van Frontlix. De klant heeft een offerte ontvangen en wil een gratis kennismakingsgesprek van 30 minuten inplannen.
+def _get_scheduling_system_prompt(
+    agent_name: str,
+    appointment_label: str,
+    appointment_short: str,
+    duration: int,
+    purpose: str,
+) -> str:
+    purpose_line = f"\nDoel van de {appointment_short}: {purpose}" if purpose else ""
+    return f"""Je bent {agent_name}, een medewerker van Frontlix. De klant heeft een offerte ontvangen en wil een {appointment_label} inplannen.
+
+## CONTEXT (gebruik deze cijfers in je antwoorden, niet andere)
+Soort afspraak: {appointment_label}
+Korte naam: {appointment_short}
+Duur: {duration} minuten{purpose_line}
 
 ## REGELS
 - Voer een natuurlijk, warm gesprek over het inplannen
 - Gebruik de tool `check_beschikbaarheid` om te zien welke tijdslots vrij zijn
 - Gebruik de tool `boek_afspraak` zodra de klant een moment bevestigt
-- Het gesprek duurt 30 minuten
+- Verwijs naar de afspraak met "{appointment_short}" of "{appointment_label}" — NOOIT als "kennismakingsgesprek" tenzij dat letterlijk in de korte naam staat
+- Noem de duur als de klant ernaar vraagt ({duration} minuten); verzin geen andere getallen
 - Max 2-3 zinnen per bericht, informeel Nederlands
 - Geen streepjes (-) of gedachtestrepen (—) gebruiken
 - NOOIT emoji's gebruiken. Geen smileys, geen duimpjes, geen enkele emoji
 - Als de klant vaag is ("volgende week", "ergens dinsdag") → check de agenda en stel 2-3 passende tijden voor
 - Als de klant een tijd noemt die niet beschikbaar is → leg vriendelijk uit en stel een alternatief voor
+- Als de klant vraagt WAAROM/WAARVOOR de afspraak is → leg het kort uit met de "Doel"-zin hierboven, dan vraag wanneer het uitkomt
 - Als de klant twijfelt of geen afspraak wil → respecteer dat, geen druk uitoefenen
 
-## VOORBEELDEN
+## VOORBEELDEN (vervang "kennismakingsgesprek" altijd door "{appointment_short}")
 Klant: "wanneer kan ik?" → Gebruik check_beschikbaarheid, stel 2-3 tijden voor
 Klant: "dinsdag past me goed" → Check of de eerstvolgende dinsdag vrij is, stel tijden voor
 Klant: "liever volgende week" → Check beschikbaarheid, stel opties voor die week voor
-Klant: "doe maar woensdag 16 april om 14:00" → Gebruik boek_afspraak met 2026-04-16 en 14:00"""
+Klant: "doe maar woensdag om 14:00" → Gebruik boek_afspraak met de eerstvolgende woensdag in YYYY-MM-DD en 14:00"""
 
 
 async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) -> str:
@@ -803,21 +882,20 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
 
         collected = dict(lead.get("collected_data") or {})
         naam = lead.get("naam") or "klant"
-        config = get_branche(lead.get("demo_type")) if lead.get("demo_type") else None
-        branche_label = config.label if config else "demo"
+        appointment_label, appointment_short, duration, _purpose, branche_label = _appointment_meta(lead)
 
         try:
             parts = datum.split("-")
             time_parts = tijd.split(":")
             local_start = datetime(int(parts[0]), int(parts[1]), int(parts[2]),
                                    int(time_parts[0]), int(time_parts[1]), tzinfo=tz)
-            local_end = local_start + timedelta(minutes=30)
+            local_end = local_start + timedelta(minutes=duration)
             start_utc = local_start.astimezone(timezone.utc)
             end_utc = local_end.astimezone(timezone.utc)
 
-            summary = f"Frontlix kennismakingsgesprek met {naam} ({branche_label})"
+            summary = f"Frontlix {appointment_label} met {naam} ({branche_label})"
             description = (
-                f"Kennismakingsgesprek van 30 minuten.\n\n"
+                f"{appointment_label.capitalize()} van {duration} minuten.\n\n"
                 f"Klant: {naam}\n"
                 f"Email: {lead.get('email')}\n"
                 f"Telefoon: +{lead['telefoon']}\n"
@@ -835,6 +913,7 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
             # Update lead status
             collected["_appointment_at"] = f"{datum}T{tijd}"
             collected["_google_event_id"] = event_id
+            collected["_appointment_duration_min"] = duration
             get_supabase().table("leads").update({
                 "status": "appointment_booked",
                 "collected_data": collected,
@@ -845,7 +924,7 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
             NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
             dag = NL_WEEKDAYS[local_start.weekday()]
             maand = NL_MONTHS[local_start.month]
-            return f"Afspraak geboekt op {dag} {local_start.day} {maand} om {tijd}. Google Calendar uitnodiging is verstuurd naar {lead.get('email')}."
+            return f"{appointment_label.capitalize()} geboekt op {dag} {local_start.day} {maand} om {tijd} ({duration} min). Google Calendar uitnodiging is verstuurd naar {lead.get('email')}."
 
         except Exception as e:
             return f"Fout bij het boeken: {e}"
@@ -854,7 +933,7 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
 
 
 async def _run_scheduling_agent(lead: dict, phone: str):
-    """AI agent met function calling voor het inplannen van een kennismakingsgesprek."""
+    """AI agent met function calling voor het inplannen van de branche-afspraak."""
     from services.openai_client import get_openai
     import json
 
@@ -862,10 +941,12 @@ async def _run_scheduling_agent(lead: dict, phone: str):
         naam = lead.get("naam") or "daar"
         config = get_branche(lead.get("demo_type")) if lead.get("demo_type") else None
         agent_name = config.agent_name if config else "een collega"
-        branche_label = config.label if config else "demo"
+        appointment_label, appointment_short, duration, purpose, branche_label = _appointment_meta(lead)
         history = await _fetch_history(lead["id"])
 
-        system_prompt = _get_scheduling_system_prompt(agent_name)
+        system_prompt = _get_scheduling_system_prompt(
+            agent_name, appointment_label, appointment_short, duration, purpose,
+        )
         system_prompt += f"\n\nKlant: {naam}\nBranche: {branche_label}\nVandaag: {datetime.now(timezone.utc).strftime('%A %d %B %Y')}"
 
         # Bouw messages array
@@ -943,13 +1024,39 @@ async def _run_scheduling_agent(lead: dict, phone: str):
             break
 
     except Exception as e:
-        import traceback
-        print(f"[scheduling-agent] ERROR:")
-        traceback.print_exc()
+        logging.error("[scheduling-agent] error for lead %s: %s",
+                      lead.get("id"), e, exc_info=e)
+        # Owner-alert + klikbare /schedule fallback ipv doodlopende "agenda niet bereikbaar"
+        appointment_label, appointment_short, _duration, _purpose, branche_label = _appointment_meta(lead)
+        fallback_url = _schedule_fallback_url(lead)
+        owner_phone = (get_settings().owner_whatsapp_phone or "").strip()
+        if owner_phone:
+            try:
+                await send_text(
+                    owner_phone,
+                    f"[ALERT] Scheduling-agent faalde voor lead {lead.get('naam')} ({lead.get('telefoon')}, {branche_label}). Fout: {e}",
+                )
+            except Exception:
+                pass
+        if fallback_url:
+            msg = (
+                f"Even gemakkelijker, kies hier een moment voor je {appointment_short}: "
+                f"{fallback_url}"
+            )
+        else:
+            msg = (
+                "Onze agenda is even niet bereikbaar. Een collega neemt zo contact "
+                "met je op om de afspraak in te plannen."
+            )
+        await send_text(phone, msg)
+        await _save_message(lead["id"], "assistant", msg)
+        return
 
-    # Als de loop eindigt zonder antwoord — fallback
-    await send_text(phone, "Wanneer zou je een kennismakingsgesprek willen plannen?")
-    await _save_message(lead["id"], "assistant", "Wanneer zou je een kennismakingsgesprek willen plannen?")
+    # Als de loop eindigt zonder antwoord — fallback (gebruik branche-copy)
+    appointment_label, appointment_short, _duration, _purpose, _branche_label = _appointment_meta(lead)
+    fallback_msg = f"Wanneer komt het je uit voor de {appointment_short}?"
+    await send_text(phone, fallback_msg)
+    await _save_message(lead["id"], "assistant", fallback_msg)
 
 
 # ── Approval trigger ─────────────────────────────────────────────────────

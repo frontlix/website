@@ -19,6 +19,10 @@
   "actie_kort": "Schoonmaak inplannen",
   "actie_lang": "de eerste schoonmaak",
   "plaatsing_duur_min": 120,
+  "appointment_label": "kennismaking ter plaatse",
+  "appointment_label_short": "kennismaking",
+  "appointment_duration_min": 45,
+  "appointment_purpose": "We komen langs om de ruimte te bekijken en de scope vast te stellen. Daarna plannen we de eerste schoonmaak in.",
   "fields": [
     {
       "key": "type_pand",

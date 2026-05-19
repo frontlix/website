@@ -1,15 +1,11 @@
 """Google Calendar integration — free slots and event creation.
 
 Availability rules (Frontlix private calendar):
-  Monday    13:00 - 20:00
-  Tuesday   09:00 - 20:00
-  Wednesday 09:00 - 20:00
-  Thursday  13:00 - 20:00
-  Friday    13:00 - 20:00
-  Saturday  09:00 - 20:00
-  Sunday    09:00 - 20:00
+  7 days/week, 07:00 - 18:00 local (Europe/Amsterdam).
 
-Slot duration: 30 minutes.
+Slot granularity (the user-visible 'every 30 min' grid): 30 min.
+Real appointment duration is set per branche via `appointment_duration_min`
+and used when creating the actual event.
 """
 from __future__ import annotations
 
@@ -27,13 +23,13 @@ TZ = ZoneInfo(TIMEZONE)
 
 # day-of-week (0=mon ... 6=sun) → start/end hour in local time
 AVAILABILITY: dict[int, tuple[int, int] | None] = {
-    0: (13, 20),  # mon
-    1: (9, 20),   # tue
-    2: (9, 20),   # wed
-    3: (13, 20),  # thu
-    4: (13, 20),  # fri
-    5: (9, 20),   # sat
-    6: (9, 20),   # sun
+    0: (7, 18),  # mon
+    1: (7, 18),  # tue
+    2: (7, 18),  # wed
+    3: (7, 18),  # thu
+    4: (7, 18),  # fri
+    5: (7, 18),  # sat
+    6: (7, 18),  # sun
 }
 
 
@@ -52,22 +48,28 @@ def _get_calendar_service():
 async def get_free_slots(
     range_start: datetime,
     range_end: datetime,
-    max_slots: int = 20,
+    max_slots: int = 500,
 ) -> list[dict]:
-    """Get free slots within the given range respecting availability rules.
+    """Get free slots within the given range respecting AVAILABILITY.
 
+    Raises on Google Calendar API errors so callers can decide on fallback.
     Returns list of dicts with: start_utc, end_utc, label, iso
     """
     service = _get_calendar_service()
     calendar_id = get_settings().google_calendar_id or "primary"
 
-    # Query Google Calendar for busy times
-    fb = service.freebusy().query(body={
-        "timeMin": range_start.isoformat(),
-        "timeMax": range_end.isoformat(),
-        "timeZone": TIMEZONE,
-        "items": [{"id": calendar_id}],
-    }).execute()
+    # Fail-loud: if Google's freebusy endpoint is down or our refresh token
+    # is expired, surface that to the caller instead of silently degrading.
+    try:
+        fb = service.freebusy().query(body={
+            "timeMin": range_start.isoformat(),
+            "timeMax": range_end.isoformat(),
+            "timeZone": TIMEZONE,
+            "items": [{"id": calendar_id}],
+        }).execute()
+    except Exception as e:
+        print(f"[calendar] freebusy query failed (calendar_id={calendar_id}): {e}")
+        raise
 
     busy_ranges = []
     for b in (fb.get("calendars", {}).get(calendar_id, {}).get("busy") or []):
@@ -76,13 +78,9 @@ async def get_free_slots(
             datetime.fromisoformat(b["end"]),
         ))
 
-    # Generate candidate slots, then simulate 30% occupancy
-    import hashlib
-    OCCUPANCY_RATE = 0.30  # 30% of slots appear as "busy"
-
-    slots = []
+    slots: list[dict] = []
     now = datetime.now(timezone.utc)
-    earliest = now + timedelta(hours=1)
+    earliest = now + timedelta(hours=1)  # nothing in the next hour
 
     # Iterate day by day in NL timezone
     cursor_local = range_start.astimezone(TZ).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -105,19 +103,12 @@ async def get_free_slots(
                     if start_utc < range_start or end_utc > range_end:
                         continue
 
-                    # Check for conflicts with busy times
+                    # Conflict-check against real busy ranges only — no synthetic occupancy
                     conflict = any(start_utc < b_end and end_utc > b_start for b_start, b_end in busy_ranges)
                     if conflict:
                         continue
 
                     label = start_utc.astimezone(TZ).strftime("%a %-d %b %H:%M")
-
-                    # Deterministic pseudo-random filter: hash the slot time to decide
-                    # if it should appear "busy" (simulates 30% occupancy)
-                    slot_hash = int(hashlib.md5(start_utc.isoformat().encode()).hexdigest(), 16)
-                    if (slot_hash % 100) < (OCCUPANCY_RATE * 100):
-                        continue
-
                     slots.append({
                         "start_utc": start_utc.isoformat(),
                         "end_utc": end_utc.isoformat(),

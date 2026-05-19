@@ -88,6 +88,10 @@ def load_from_db(branche_id: str) -> BrancheConfig:
         "actie_kort": row["actie_kort"],
         "actie_lang": row["actie_lang"],
         "plaatsing_duur_min": row["plaatsing_duur_min"],
+        "appointment_label": row.get("appointment_label") or "afspraak",
+        "appointment_label_short": row.get("appointment_label_short") or "afspraak",
+        "appointment_duration_min": row.get("appointment_duration_min") or 60,
+        "appointment_purpose": row.get("appointment_purpose") or "",
         "fields": fields_payload,
     }
     try:

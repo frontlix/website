@@ -19,6 +19,10 @@
   "actie_kort": "Plaatsing inplannen",
   "actie_lang": "de plaatsing van de zonnepanelen",
   "plaatsing_duur_min": 480,
+  "appointment_label": "schouwing voor de installatie",
+  "appointment_label_short": "schouwing",
+  "appointment_duration_min": 60,
+  "appointment_purpose": "Onze monteur komt het dak en de meterkast checken. Daarna leggen we de exacte plaatsing vast en plannen we de installatie in.",
   "fields": [
     {
       "key": "jaarverbruik",

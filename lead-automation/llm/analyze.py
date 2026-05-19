@@ -36,6 +36,8 @@ Intent = Literal[
     "gibberish",           # message is nonsense / random typing
     "is_bot_question",     # customer asks "ben jij een bot/AI?"
     "acknowledgement",     # "ok", "ja", "thanks" — no new info, no question
+    "quote_accepted",      # post-quote: customer accepts the offerte / wants the appointment
+    "quote_declines",      # post-quote: customer declines / not interested
     "not_recognized",      # fallback / ambiguous — treat like gibberish
 ]
 
@@ -297,3 +299,85 @@ async def analyze_message(
 
     result.extracted = cleaned
     return result
+
+
+# ── Post-quote classifier ────────────────────────────────────────────────────
+# Used by the webhook AFTER the offerte is sent: the customer's reply needs a
+# different intent-vocabulary (do they accept? want a meeting? have a question
+# about the quote?). Lightweight — no field extraction, just classification.
+
+PostQuoteIntent = Literal[
+    "quote_accepted",       # accepts the offerte / wants to proceed
+    "quote_declines",       # not interested / explicit no
+    "quote_question",       # asks a question about the quote itself (price, scope, ...)
+    "process_question",     # asks about WHAT the appointment is for / how it works
+    "is_bot_question",      # asks if they're talking to a bot
+    "off_topic",            # unrelated chat
+    "acknowledgement",      # bare "ok"/"hmm" without commitment either way
+    "ambiguous",            # cannot tell — ask explicitly
+]
+
+_POST_QUOTE_SCHEMA = {
+    "name": "PostQuoteAnalysis",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["intent"],
+        "properties": {
+            "intent": {
+                "type": "string",
+                "enum": list(PostQuoteIntent.__args__),  # type: ignore[attr-defined]
+            },
+        },
+    },
+}
+
+_POST_QUOTE_PROMPT = """## ROLE
+You analyze the LAST customer message in a Dutch WhatsApp conversation that just received an offerte. Your job: pick exactly ONE intent.
+
+## INTENTS
+- quote_accepted   : customer agrees / wants to proceed / "ik ga akkoord", "akkoort", "doe maar", "ja graag", "dat wil ik wel", "dat is goed", "perfect", "afspraak inplannen"
+- quote_declines   : explicit no / not interested / "nee bedankt", "te duur", "laat maar", "ik zie er vanaf"
+- quote_question   : a question about the quote itself — price, scope, materials, levertijd
+- process_question : asks WHAT the appointment is for, how the process works, "waarvoor is dat?", "wat gaan jullie doen?"
+- is_bot_question  : "ben je een bot", "ben jij AI"
+- off_topic        : unrelated chat / small talk
+- acknowledgement  : a bare "ok", "hmm", "thanks" with no clear yes/no
+- ambiguous        : cannot classify confidently
+
+Bias rules:
+- ANY positive verb + offerte/afspraak/voorstel → quote_accepted. ("ik ga akkoord", "ik wil graag", "is goed").
+- "ik ga akkoord met de offerte" → quote_accepted (NOT acknowledgement).
+- "dat wil ik dus wel" / "dat wil ik graag" → quote_accepted.
+- "ja" alone after the bot proposed scheduling → quote_accepted.
+- "morgen om 2" / specific time → quote_accepted (they're already past acceptance).
+
+## OUTPUT
+Return ONLY valid JSON: {"intent": "<one of the values>"}.
+"""
+
+
+async def classify_post_quote_intent(history: list[ConversationMessage]) -> PostQuoteIntent:
+    """Single LLM call to classify the customer's intent AFTER the offerte was sent.
+    Returns 'ambiguous' on parse/API errors so the caller can ask explicitly."""
+    chat_history = format_history(history)
+    try:
+        response = get_openai().chat.completions.create(
+            model="gpt-4o",
+            temperature=0,
+            response_format={"type": "json_schema", "json_schema": _POST_QUOTE_SCHEMA},
+            messages=[
+                {"role": "system", "content": _POST_QUOTE_PROMPT},
+                {"role": "user", "content": chat_history},
+            ],
+        )
+        text = response.choices[0].message.content or "{}"
+        raw = json.loads(text)
+        intent = raw.get("intent")
+        if isinstance(intent, str) and intent in PostQuoteIntent.__args__:  # type: ignore[attr-defined]
+            return intent  # type: ignore[return-value]
+        return "ambiguous"
+    except Exception as e:
+        print(f"[post-quote] classifier failed, returning ambiguous: {e}")
+        return "ambiguous"

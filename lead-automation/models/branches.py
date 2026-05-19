@@ -54,5 +54,12 @@ class BrancheConfig(BaseModel):
     actie_lang: str
     plaatsing_duur_min: int
 
+    # Post-quote appointment metadata. Optional with defaults so pd_* / existing
+    # configs without these keys still validate (extend-only contract).
+    appointment_label: str = "afspraak"             # e.g. "opname voor het dakwerk"
+    appointment_label_short: str = "afspraak"       # e.g. "opname"
+    appointment_duration_min: int = 60
+    appointment_purpose: str = ""                   # 1-2 sentence explainer
+
     class Config:
         arbitrary_types_allowed = True

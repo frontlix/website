@@ -38,6 +38,10 @@ def _upsert_settings(sb, cfg: dict) -> None:
         "actie_kort": cfg["actie_kort"],
         "actie_lang": cfg["actie_lang"],
         "plaatsing_duur_min": cfg["plaatsing_duur_min"],
+        "appointment_label": cfg.get("appointment_label", "afspraak"),
+        "appointment_label_short": cfg.get("appointment_label_short", "afspraak"),
+        "appointment_duration_min": cfg.get("appointment_duration_min", 60),
+        "appointment_purpose": cfg.get("appointment_purpose", ""),
     }
     sb.table("branche_settings").upsert(row, on_conflict="id").execute()
 

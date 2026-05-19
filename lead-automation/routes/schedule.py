@@ -1,11 +1,16 @@
 """Schedule pagina voor Frontlix lead-automation.
 
-Kalender weergave met beschikbare 30-min tijdslots.
-Klant kiest datum + tijd → Google Calendar event wordt aangemaakt.
+Kalender weergave met beschikbare 30-min tijdslots. Klant kiest datum + tijd
+en de werkelijke afspraak-duur (per branche) wordt in Google Calendar geboekt.
+
+Copy/duur per branche komt uit BrancheConfig.appointment_*. Bij Google-API
+fouten gaat de pagina niet stilletjes naar "geen slots" — we tonen een
+duidelijke error met WhatsApp-fallback en alerten intern.
 """
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 from html import escape
 from zoneinfo import ZoneInfo
@@ -13,6 +18,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
+from config import get_settings
 from services.supabase import get_supabase
 from services.google_calendar import get_free_slots, create_event, TIMEZONE
 from branches import get_branche
@@ -21,21 +27,45 @@ router = APIRouter()
 
 TZ = ZoneInfo(TIMEZONE)
 
+NL_MONTHS_FULL = ["", "januari", "februari", "maart", "april", "mei", "juni",
+                  "juli", "augustus", "september", "oktober", "november", "december"]
+NL_WEEKDAYS_FULL = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _error_page(title: str, message: str) -> str:
+def _owner_wa_link(message: str) -> str:
+    """Build a wa.me deep-link to the business-owner number, falling back to
+    a plain mailto when the owner phone isn't configured."""
+    owner = (get_settings().owner_whatsapp_phone or "").strip()
+    if owner:
+        # wa.me wants pure digits; URL-encode the prefill message
+        from urllib.parse import quote
+        return f"https://wa.me/{owner}?text={quote(message)}"
+    return "mailto:info@frontlix.com"
+
+
+def _error_page(title: str, message: str, fallback_label: str | None = None,
+                fallback_url: str | None = None) -> str:
+    cta = ""
+    if fallback_label and fallback_url:
+        cta = (
+            f'<a href="{escape(fallback_url)}" '
+            f'style="display:inline-block;margin-top:20px;background:#1A56FF;color:#fff;'
+            f'text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600">'
+            f'{escape(fallback_label)}</a>'
+        )
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{escape(title)} — Frontlix</title>
     <style>body{{font-family:-apple-system,sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}}
     h1{{font-size:22px;font-weight:700;margin-bottom:12px;color:#1A56FF}}p{{font-size:15px;color:#555;line-height:1.6}}</style>
-    </head><body><div class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p></div></body></html>"""
+    </head><body><div class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p>{cta}</div></body></html>"""
 
 
-def _success_page(naam: str, datum_str: str) -> str:
+def _success_page(naam: str, datum_str: str, appointment_label: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Afspraak ingepland — Frontlix</title>
     <style>
@@ -47,9 +77,9 @@ def _success_page(naam: str, datum_str: str) -> str:
       .slot{{background:#EEF2FF;color:#1A56FF;font-weight:700;padding:12px 24px;border-radius:10px;display:inline-block;margin:16px 0;font-size:16px}}
     </style></head><body><div class="card">
       <div class="icon">&#10003;</div>
-      <h1>Afspraak ingepland!</h1>
+      <h1>{escape(appointment_label.capitalize())} ingepland!</h1>
       <div class="slot">{escape(datum_str)}</div>
-      <p>Hoi {escape(naam)}, je afspraak staat in de agenda. Je ontvangt een Google Calendar uitnodiging per mail.</p>
+      <p>Hoi {escape(naam)}, je {escape(appointment_label)} staat in de agenda. Je ontvangt een Google Calendar uitnodiging per mail.</p>
     </div></body></html>"""
 
 
@@ -57,22 +87,38 @@ def _fetch_lead(token: str) -> dict | None:
     try:
         resp = get_supabase().table("leads").select("*").eq("approval_token", token).limit(1).execute()
         return (resp.data or [None])[0]
-    except Exception:
+    except Exception as e:
+        logging.error("[schedule] fetch lead failed: %s", e)
         return None
+
+
+def _alert_owner(subject: str, body: str) -> None:
+    """Best-effort WhatsApp alert to the business owner. Silent failure is fine —
+    structured log carries the full detail."""
+    owner = (get_settings().owner_whatsapp_phone or "").strip()
+    if not owner:
+        return
+    try:
+        # Lazy import: avoid pulling httpx/whatsapp deps when only rendering pages.
+        import asyncio
+        from services.whatsapp import send_text
+        asyncio.create_task(send_text(owner, f"[ALERT] {subject}\n{body}"))
+    except Exception as e:
+        logging.error("[schedule] owner alert failed: %s", e)
 
 
 async def _get_free_slots_grouped(days_ahead: int = 14) -> dict[str, list[str]]:
     """Haal beschikbare 30-min slots op, gegroepeerd per dag.
 
     Returns dict van 'YYYY-MM-DD' → lijst van 'HH:MM' strings.
+    Raises on Google-API errors (caller catches + renders fallback page).
     """
     now = datetime.now(timezone.utc)
     range_end = now + timedelta(days=days_ahead)
 
-    try:
-        slots = await get_free_slots(now, range_end, 500)
-    except Exception:
-        slots = []
+    # Bubble up Google-API errors — schedule_page distinguishes "no slots" vs
+    # "API down" so the customer doesn't see an empty calendar and give up.
+    slots = await get_free_slots(now, range_end, 500)
 
     days: dict[str, list[str]] = {}
     for slot in slots:
@@ -84,6 +130,21 @@ async def _get_free_slots_grouped(days_ahead: int = 14) -> dict[str, list[str]]:
         days[date_key].append(time_str)
 
     return days
+
+
+def _branche_metadata(lead: dict) -> tuple[str, str, int, str, str]:
+    """Return (appointment_label, label_short, duration_min, purpose, branche_label).
+    Falls back to neutral defaults when demo_type is missing/unknown."""
+    config = get_branche(lead.get("demo_type")) if lead.get("demo_type") else None
+    if not config:
+        return ("afspraak", "afspraak", 60, "", "demo")
+    return (
+        config.appointment_label,
+        config.appointment_label_short,
+        config.appointment_duration_min,
+        config.appointment_purpose,
+        config.label,
+    )
 
 
 @router.get("/schedule")
@@ -101,9 +162,44 @@ async def schedule_page(request: Request):
 
     naam = lead.get("naam") or "daar"
     safe_token = escape(token)
+    appointment_label, appointment_short, duration, purpose, _ = _branche_metadata(lead)
 
-    # Haal beschikbare slots op (2 weken vooruit)
-    slots_by_day = await _get_free_slots_grouped(14)
+    # Haal beschikbare slots op (2 weken vooruit). Google-failure → fallback page.
+    try:
+        slots_by_day = await _get_free_slots_grouped(14)
+    except Exception as e:
+        logging.error("[schedule] Google Calendar slots failed for lead %s: %s",
+                      lead.get("id"), e, exc_info=e)
+        _alert_owner(
+            "Google Calendar agenda-fetch faalde",
+            f"Lead {lead.get('naam')} ({lead.get('telefoon')}) kon geen slots zien. Token: {token}. Fout: {e}",
+        )
+        wa_msg = (
+            f"Hoi! Ik wilde een {appointment_short} inplannen via de link, maar de "
+            f"agenda is op dit moment niet bereikbaar. Mijn naam is {naam}."
+        )
+        return HTMLResponse(
+            _error_page(
+                "Agenda tijdelijk niet bereikbaar",
+                "Onze agenda is even niet bereikbaar. Stuur ons een berichtje, dan plannen we het persoonlijk in.",
+                fallback_label="Stuur ons een berichtje",
+                fallback_url=_owner_wa_link(wa_msg),
+            ),
+            status_code=503,
+        )
+
+    if not slots_by_day:
+        # Lege agenda binnen 14 dagen — niet hetzelfde als API-down, andere copy.
+        return HTMLResponse(
+            _error_page(
+                "Geen vrije momenten",
+                "Er zijn op dit moment geen vrije momenten in de komende 2 weken. Neem even contact op, dan vinden we samen een goed moment.",
+                fallback_label="Stuur ons een berichtje",
+                fallback_url=_owner_wa_link(f"Hoi! Geen vrije momenten zichtbaar voor een {appointment_short}, kunnen jullie iets later voorstellen?"),
+            ),
+            status_code=200,
+        )
+
     slots_json = json.dumps(slots_by_day)
 
     today = datetime.now(TZ).date()
@@ -113,6 +209,15 @@ async def schedule_page(request: Request):
     max_date = today + timedelta(days=14)
     max_month = max_date.month - 1  # JS is 0-indexed
     max_year = max_date.year
+
+    header_subtitle = f"{appointment_short.capitalize()} inplannen"
+    intro_html = (
+        f"Hoi <strong>{escape(naam)}</strong>, kies een datum en tijd voor de "
+        f"{escape(appointment_label)}. ({duration} minuten"
+        + (f" — {escape(purpose)}" if purpose else "")
+        + ")"
+    )
+    confirm_info_text = f"{appointment_short.capitalize()} van {duration} minuten"
 
     html = f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Afspraak inplannen — Frontlix</title>
@@ -127,7 +232,6 @@ async def schedule_page(request: Request):
       .intro {{ font-size: 15px; color: #4B5563; line-height: 1.6; margin-bottom: 28px; }}
       .intro strong {{ color: #111; }}
 
-      /* Maand navigatie */
       .month-nav {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }}
       .month-nav-label {{ font-size: 18px; font-weight: 800; color: #111; text-transform: capitalize; }}
       .month-nav-btn {{ background: none; border: 2px solid #E5E7EB; color: #111; width: 40px; height: 40px; border-radius: 10px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }}
@@ -135,7 +239,6 @@ async def schedule_page(request: Request):
       .month-nav-btn:disabled {{ opacity: 0.3; cursor: not-allowed; }}
       .month-nav-btn:disabled:hover {{ background: none; color: #111; border-color: #E5E7EB; }}
 
-      /* Kalender */
       .cal-table {{ width: 100%; border-collapse: collapse; }}
       .cal-table th {{ font-size: 12px; font-weight: 600; color: #9CA3AF; padding: 8px 0; text-align: center; text-transform: uppercase; }}
       .cal-table td {{ text-align: center; padding: 0; height: 48px; width: 14.28%; font-size: 15px; font-weight: 500; }}
@@ -149,7 +252,6 @@ async def schedule_page(request: Request):
       .cal-table td.today {{ position: relative; }}
       .cal-table td.today::after {{ content: ''; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: #00CFFF; border-radius: 50%; }}
 
-      /* Tijdslots */
       .time-picker {{ display: none; margin-top: 24px; }}
       .time-picker.visible {{ display: block; }}
       .time-picker-label {{ font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; }}
@@ -158,7 +260,6 @@ async def schedule_page(request: Request):
       .time-slot:hover {{ border-color: #1A56FF; color: #1A56FF; }}
       .time-slot.selected {{ background: #1A56FF; color: #fff; border-color: #1A56FF; }}
 
-      /* Bevestiging */
       .confirm-box {{ display: none; margin-top: 28px; padding: 24px; background: #F9FAFB; border-radius: 12px; text-align: center; }}
       .confirm-box.visible {{ display: block; }}
       .confirm-date {{ font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; }}
@@ -171,22 +272,19 @@ async def schedule_page(request: Request):
     <div class="container">
       <div class="header">
         <h1>Frontlix</h1>
-        <p>Kennismakingsgesprek inplannen</p>
+        <p>{escape(header_subtitle)}</p>
       </div>
       <div class="card">
-        <p class="intro">Hoi <strong>{escape(naam)}</strong>, kies een datum en tijd voor je gratis kennismakingsgesprek van 30 minuten.</p>
+        <p class="intro">{intro_html}</p>
 
-        <!-- Maand navigatie -->
         <div class="month-nav">
           <button class="month-nav-btn" id="prevMonth" disabled>&#8249;</button>
           <span class="month-nav-label" id="monthLabel"></span>
           <button class="month-nav-btn" id="nextMonth">&#8250;</button>
         </div>
 
-        <!-- Kalender -->
         <div id="calendarContainer"></div>
 
-        <!-- Tijdslot kiezer -->
         <div class="time-picker" id="timePicker">
           <div class="time-picker-label" id="timePickerLabel">Kies een tijd:</div>
           <div class="time-grid" id="timeGrid"></div>
@@ -194,7 +292,7 @@ async def schedule_page(request: Request):
 
         <div class="confirm-box" id="confirmBox">
           <div class="confirm-date" id="confirmDate"></div>
-          <div class="confirm-info">Kennismakingsgesprek van 30 minuten</div>
+          <div class="confirm-info">{escape(confirm_info_text)}</div>
           <form method="POST" action="/schedule">
             <input type="hidden" name="token" value="{safe_token}" />
             <input type="hidden" name="selected_date" id="selectedDateInput" value="" />
@@ -284,7 +382,6 @@ async def schedule_page(request: Request):
       html += '</tr></tbody></table>';
       document.getElementById('calendarContainer').innerHTML = html;
 
-      // Event listeners voor beschikbare dagen
       document.querySelectorAll('.day-cell.available').forEach(function(td) {{
         td.addEventListener('click', function() {{
           selectedDate = this.getAttribute('data-date');
@@ -306,7 +403,6 @@ async def schedule_page(request: Request):
         return;
       }}
 
-      // Dag naam voor label
       var parts = dateStr.split('-');
       var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
       var dayName = NL_WEEKDAYS_FULL[d.getDay()];
@@ -321,7 +417,6 @@ async def schedule_page(request: Request):
       grid.innerHTML = html;
       picker.classList.add('visible');
 
-      // Event listeners voor tijdslots
       document.querySelectorAll('.time-slot').forEach(function(el) {{
         el.addEventListener('click', function() {{
           selectedTime = this.getAttribute('data-time');
@@ -330,7 +425,6 @@ async def schedule_page(request: Request):
         }});
       }});
 
-      // Verberg bevestiging als geen tijd gekozen
       if (!selectedTime) {{
         document.getElementById('confirmBox').classList.remove('visible');
       }}
@@ -394,39 +488,56 @@ async def schedule_submit(request: Request):
     if lead.get("status") == "appointment_booked":
         return HTMLResponse(_error_page("Al ingepland", "Je afspraak staat al in de agenda!"))
 
-    # Parse datum + tijd → 30-min slot
+    appointment_label, appointment_short, duration, _purpose, branche_label = _branche_metadata(lead)
+
+    # Parse datum + tijd → duur uit branche-config (niet hardcoded 30 min!)
     try:
         date_parts = selected_date.split("-")
         time_parts = selected_time.split(":")
         local_start = datetime(int(date_parts[0]), int(date_parts[1]), int(date_parts[2]),
                                int(time_parts[0]), int(time_parts[1]), tzinfo=TZ)
-        local_end = local_start + timedelta(minutes=30)
+        local_end = local_start + timedelta(minutes=duration)
         start_utc = local_start.astimezone(timezone.utc)
         end_utc = local_end.astimezone(timezone.utc)
     except (ValueError, IndexError):
         return HTMLResponse(_error_page("Ongeldige datum", "Deze datum kon niet worden verwerkt."), status_code=400)
 
     naam = lead.get("naam") or "klant"
-    config = get_branche(lead.get("demo_type")) if lead.get("demo_type") else None
-    branche_label = config.label if config else "demo"
 
     # Google Calendar event aanmaken
     try:
         event_id = await create_event(
             start_utc=start_utc,
             end_utc=end_utc,
-            summary=f"Frontlix kennismakingsgesprek met {naam} ({branche_label})",
-            description=f"Kennismakingsgesprek van 30 minuten.\n\nKlant: {naam}\nEmail: {lead.get('email')}\nTelefoon: +{lead['telefoon']}\nBranche: {branche_label}",
+            summary=f"Frontlix {appointment_label} met {naam} ({branche_label})",
+            description=(
+                f"{appointment_label.capitalize()} van {duration} minuten.\n\n"
+                f"Klant: {naam}\nEmail: {lead.get('email')}\n"
+                f"Telefoon: +{lead['telefoon']}\nBranche: {branche_label}"
+            ),
             attendee_email=lead.get("email"),
         )
     except Exception as e:
-        print(f"[schedule] Google Calendar create event failed: {e}")
-        return HTMLResponse(_error_page("Inplannen mislukt", "Er ging iets mis. Probeer het opnieuw of neem contact op."), status_code=500)
+        logging.error("[schedule] Google Calendar create event failed for lead %s: %s",
+                      lead.get("id"), e, exc_info=e)
+        _alert_owner(
+            "Google Calendar event-create faalde",
+            f"Lead {lead.get('naam')} ({lead.get('telefoon')}) probeerde {selected_date} {selected_time} te boeken. Token: {token}. Fout: {e}",
+        )
+        return HTMLResponse(_error_page(
+            "Inplannen mislukt",
+            "Er ging iets mis bij het opslaan in de agenda. Probeer het over een paar minuten opnieuw of stuur ons een berichtje.",
+            fallback_label="Stuur ons een berichtje",
+            fallback_url=_owner_wa_link(
+                f"Hoi! Ik wilde een {appointment_short} boeken op {selected_date} {selected_time} maar het ging mis."
+            ),
+        ), status_code=500)
 
     # Update lead
     collected = dict(lead.get("collected_data") or {})
     collected["_appointment_at"] = f"{selected_date}T{selected_time}"
     collected["_google_event_id"] = event_id
+    collected["_appointment_duration_min"] = duration
     get_supabase().table("leads").update({
         "status": "appointment_booked",
         "collected_data": collected,
@@ -437,30 +548,23 @@ async def schedule_submit(request: Request):
     get_supabase().table("conversations").insert({
         "lead_id": lead["id"],
         "role": "assistant",
-        "content": f"(afspraak ingepland: {selected_date} om {selected_time}, 30 min)",
+        "content": f"(afspraak ingepland: {selected_date} om {selected_time}, {duration} min — {appointment_label})",
         "message_type": "text",
     }).execute()
 
     # WhatsApp bevestiging
     try:
         from services.whatsapp import send_text
-        NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni",
-                     "juli", "augustus", "september", "oktober", "november", "december"]
-        NL_WEEKDAYS = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
-        dag_naam = NL_WEEKDAYS[local_start.weekday()]
-        datum_str = f"{dag_naam} {local_start.day} {NL_MONTHS[local_start.month]} om {selected_time}"
+        dag_naam = NL_WEEKDAYS_FULL[local_start.weekday()]
+        datum_str = f"{dag_naam} {local_start.day} {NL_MONTHS_FULL[local_start.month]} om {selected_time}"
         voornaam = naam.split()[0]
         await send_text(
             lead["telefoon"],
-            f"Top {voornaam}! Je kennismakingsgesprek staat in de agenda voor {datum_str}. Je krijgt een Google Calendar uitnodiging in je mail. Tot dan!",
+            f"Top {voornaam}! Je {appointment_label} staat in de agenda voor {datum_str}. Je krijgt een Google Calendar uitnodiging in je mail. Tot dan!",
         )
     except Exception as e:
-        print(f"[schedule] WhatsApp confirmation failed: {e}")
+        logging.error("[schedule] WhatsApp confirmation failed: %s", e)
 
     # Success pagina
-    NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni",
-                 "juli", "augustus", "september", "oktober", "november", "december"]
-    NL_WEEKDAYS = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
-    datum_label = f"{NL_WEEKDAYS[local_start.weekday()].capitalize()} {local_start.day} {NL_MONTHS[local_start.month]} {local_start.year} om {selected_time}"
-
-    return HTMLResponse(_success_page(naam, datum_label))
+    datum_label = f"{NL_WEEKDAYS_FULL[local_start.weekday()].capitalize()} {local_start.day} {NL_MONTHS_FULL[local_start.month]} {local_start.year} om {selected_time}"
+    return HTMLResponse(_success_page(naam, datum_label, appointment_label))

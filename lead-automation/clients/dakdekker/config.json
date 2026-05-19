@@ -19,6 +19,10 @@
   "actie_kort": "Dakwerk inplannen",
   "actie_lang": "het dakwerk",
   "plaatsing_duur_min": 480,
+  "appointment_label": "opname voor het dakwerk",
+  "appointment_label_short": "opname",
+  "appointment_duration_min": 60,
+  "appointment_purpose": "Onze dakdekker komt het dak bekijken, materiaal vaststellen en opmeten. Daarna stemmen we de offerte definitief af en plannen we het werk in.",
   "fields": [
     {
       "key": "type_werk",
