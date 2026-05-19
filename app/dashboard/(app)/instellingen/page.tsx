@@ -369,6 +369,7 @@ function NotificatiesSection({
     <SectionCard
       title="Notificatie-voorkeuren"
       sub="Per type event kies je welke kanalen je gebruikt"
+      readOnly={false}
     >
       <NotificatiesEditor initialPrefs={prefs} initialDigestTijd={digestTijd} />
     </SectionCard>

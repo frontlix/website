@@ -82,7 +82,10 @@
   border-radius: 8px;
   background: var(--bg);
   color: var(--fg);
-  width: 86px;
+  /* Breed genoeg voor HH:MM + browser-native klok-icoon (Chrome/Safari rendert
+     dat icoon binnen het input-vak, niet erbuiten). 120px is veilig voor alle
+     belangrijke browsers. */
+  width: 120px;
   text-align: center;
 }
 .digestInput:focus {
