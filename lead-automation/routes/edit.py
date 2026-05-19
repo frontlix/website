@@ -13,6 +13,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from services.supabase import get_supabase
+from services.pdf import _logo_data_uri  # reuse base64-embedded Frontlix logo
 from branches import get_branche, get_pricing
 from config import get_settings
 
@@ -67,15 +68,17 @@ function calcPricing(a) {
 
 
 def _euro(n: float) -> str:
-    return f"\u20AC {n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    sign = "-" if n < 0 else ""
+    n = abs(n)
+    return f"{sign}€ {n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _error_page(title: str, message: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{escape(title)} - Frontlix</title>
-    <style>body{{font-family:sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
+    <style>body{{font-family:-apple-system,sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}}
-    h1{{font-size:22px;font-weight:700;margin-bottom:12px}}p{{font-size:15px;color:#555;line-height:1.6}}a{{color:#1A56FF;text-decoration:none}}</style>
+    h1{{font-size:22px;font-weight:700;margin-bottom:12px;color:#0F1729}}p{{font-size:15px;color:#475569;line-height:1.6}}a{{color:#1A56FF;text-decoration:none}}</style>
     </head><body><div class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p>
     <p style="margin-top:24px"><a href="https://frontlix.com">Terug naar Frontlix</a></p></div></body></html>"""
 
@@ -91,7 +94,7 @@ def _fetch_lead(token: str) -> dict | None:
 def _render_edit_form(lead: dict, config, flag: str | None = None, previous_total: float | None = None) -> str:
     collected = dict(lead.get("collected_data") or {})
 
-    # Build field inputs
+    # Build field inputs (rendered in 2-col grid)
     field_inputs = []
     for f in config.fields:
         current = str(collected.get(f.key) or "")
@@ -124,25 +127,34 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     pricing = get_pricing(config.id, pricing_answers)
 
     price_rows = "".join(
-        f'<tr><td>{escape(l.label)}</td><td>{l.quantity:.0f} {escape(l.unit or "")}</td>'
-        f'<td style="text-align:right">{_euro(l.unit_price or 0)}</td>'
-        f'<td style="text-align:right">{_euro(l.total)}</td></tr>'
+        f'<tr><td class="lbl">{escape(l.label)}</td>'
+        f'<td class="num">{l.quantity:.0f}{(" " + escape(l.unit)) if l.unit else ""}</td>'
+        f'<td class="num">{_euro(l.unit_price or 0)}</td>'
+        f'<td class="amount">{_euro(l.total)}</td></tr>'
         for l in pricing.lines
     )
 
     # Recalculated banner
     banner = ""
     if flag == "recalculated":
-        diff = ""
         if previous_total is not None and abs(previous_total - pricing.totaal_incl_btw) > 0.005:
-            diff = f" De prijs is bijgewerkt van <strong>{_euro(previous_total)}</strong> naar <strong>{_euro(pricing.totaal_incl_btw)}</strong>."
+            diff = f"De prijs is bijgewerkt van <strong>{_euro(previous_total)}</strong> naar <strong>{_euro(pricing.totaal_incl_btw)}</strong>."
         else:
-            diff = " De prijs is ongewijzigd gebleven."
-        banner = f'<div class="banner">✓ Wijzigingen opgeslagen.{diff}</div>'
+            diff = "De prijs is ongewijzigd gebleven."
+        banner = (
+            '<div class="banner">'
+            '<span class="banner-icon">&#10003;</span>'
+            f'<span class="banner-text"><strong>Wijzigingen opgeslagen.</strong> {diff}</span>'
+            '</div>'
+        )
 
     safe_name = escape(lead.get("naam") or "")
     safe_email = escape(lead.get("email") or "")
     safe_token = escape(lead.get("approval_token") or "")
+    ref = (safe_token[:8] or "—").upper()
+    today = datetime.now().strftime("%d-%m-%Y")
+    logo = _logo_data_uri()
+    branche_label_lc = config.label.lower()
 
     return f"""<!DOCTYPE html>
 <html lang="nl">
@@ -151,104 +163,340 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offerte wijzigen — {escape(config.label)}</title>
   <style>
+    :root {{
+      --c-bg:        #F0F2F5;
+      --c-surface:   #F9FAFB;
+      --c-surface-2: #F3F4F6;
+      --c-primary:   #1A56FF;
+      --c-accent:    #00CFFF;
+      --c-text:      #0F1729;
+      --c-text-mute: #475569;
+      --c-text-soft: #94A3B8;
+      --c-border:    #E5E7EB;
+      --c-border-2:  #F0F2F5;
+      --c-success:   #22C55E;
+      --c-warn:      #F59E0B;
+    }}
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: #F0F2F5; color: #1A1A1A; padding: 40px 20px; line-height: 1.5; }}
-    .container {{ max-width: 720px; margin: 0 auto; }}
-    .header {{ background: linear-gradient(135deg, #1A56FF, #00CFFF); color: white; padding: 32px 40px; border-radius: 16px 16px 0 0; text-align: center; }}
-    .header h1 {{ font-size: 22px; font-weight: 700; }}
-    .header p {{ font-size: 14px; opacity: 0.9; margin-top: 6px; }}
-    .card {{ background: white; padding: 32px 40px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }}
-    .banner {{ background: #DCFCE7; color: #166534; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; margin-bottom: 24px; border: 1px solid #BBF7D0; }}
-    h2 {{ font-size: 16px; font-weight: 700; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #F0F2F5; }}
-    h2:first-of-type {{ margin-top: 0; }}
-    .field {{ margin-bottom: 14px; }}
-    .field label {{ display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }}
-    .field input, .field select {{ width: 100%; padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 15px; font-family: inherit; color: #1A1A1A; background: #FAFBFC; }}
-    .field input:focus, .field select:focus {{ outline: none; border-color: #1A56FF; background: white; }}
-    table.pricing {{ width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }}
-    table.pricing thead th {{ text-align: left; padding: 8px 10px; background: #F5F7FA; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #555; font-weight: 700; }}
-    table.pricing thead th:nth-child(2), table.pricing thead th:nth-child(3), table.pricing thead th:nth-child(4) {{ text-align: right; }}
-    table.pricing tbody td {{ padding: 10px; border-bottom: 1px solid #F0F2F5; }}
-    .totals {{ margin-top: 16px; padding: 16px 20px; background: #F5F7FA; border-radius: 12px; }}
-    .totals .row {{ display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; color: #555; }}
-    .totals .row.grand {{ margin-top: 8px; padding-top: 12px; border-top: 2px solid #E5E7EB; font-size: 18px; font-weight: 700; color: #1A1A1A; }}
-    .actions {{ display: flex; gap: 12px; margin-top: 32px; }}
-    .actions button {{ flex: 1; padding: 16px 24px; font-size: 15px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; font-family: inherit; }}
-    .btn-approve {{ background: #16a34a; color: white; }}
-    .btn-approve:hover {{ background: #15803d; }}
-    .footer {{ text-align: center; margin-top: 24px; font-size: 12px; color: #888; }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      padding: 24px 16px 60px 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }}
+    .container {{ max-width: 1080px; margin: 0 auto; }}
+
+    /* ── Header card ──────────────────────────────────────── */
+    .top-bar {{
+      height: 6px;
+      background: linear-gradient(90deg, #1A56FF 0%, #00CFFF 100%);
+      border-radius: 14px 14px 0 0;
+    }}
+    .header {{
+      background: #FFFFFF;
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }}
+    .header-left {{ display: flex; align-items: center; gap: 16px; min-width: 0; }}
+    .header-logo {{ height: 40px; width: auto; display: block; flex-shrink: 0; }}
+    .header-title .eyebrow {{
+      text-transform: uppercase; letter-spacing: 1.4px; font-size: 10.5px;
+      font-weight: 700; color: var(--c-primary); margin-bottom: 4px;
+    }}
+    .header-title h1 {{
+      font-size: 20px; font-weight: 800; color: var(--c-text); letter-spacing: -0.4px;
+    }}
+    .header-title h1 .muted {{ color: var(--c-text-mute); font-weight: 600; font-size: 16px; }}
+    .header-meta {{
+      display: flex; gap: 28px; font-size: 12.5px; color: var(--c-text-mute);
+    }}
+    .header-meta .k {{ text-transform: uppercase; letter-spacing: 0.8px; font-size: 10px; color: var(--c-text-soft); font-weight: 700; margin-bottom: 2px; }}
+    .header-meta .v {{ color: var(--c-text); font-weight: 600; font-size: 13px; }}
+
+    .brand-front {{ color: #0F1729; font-weight: 700; }}
+    .brand-lix   {{ color: #00CFFF; font-weight: 700; }}
+
+    /* ── Banner ───────────────────────────────────────────── */
+    .banner {{
+      background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46;
+      padding: 14px 18px; border-radius: 12px; font-size: 14px;
+      margin-bottom: 22px; display: flex; align-items: flex-start; gap: 12px;
+    }}
+    .banner-icon {{
+      background: var(--c-success); color: #fff; width: 22px; height: 22px;
+      border-radius: 50%; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }}
+    .banner-text strong {{ color: var(--c-text); }}
+
+    /* ── Two-column grid ───────────────────────────────────── */
+    .grid {{
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+      gap: 22px;
+      align-items: start;
+    }}
+    @media (max-width: 900px) {{
+      .grid {{ grid-template-columns: 1fr; }}
+      .sidebar {{ position: static !important; }}
+    }}
+
+    /* ── Card ──────────────────────────────────────────────── */
+    .card {{
+      background: #FFFFFF;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      padding: 22px 26px;
+      margin-bottom: 18px;
+    }}
+    .card-eyebrow {{
+      text-transform: uppercase; letter-spacing: 1.4px;
+      font-size: 10.5px; font-weight: 700; color: var(--c-text-soft);
+      margin-bottom: 4px;
+    }}
+    .card-title {{
+      font-size: 15.5px; font-weight: 800; color: var(--c-text);
+      letter-spacing: -0.2px; margin-bottom: 18px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--c-border-2);
+    }}
+
+    /* ── Form fields ──────────────────────────────────────── */
+    .field-grid {{
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px;
+    }}
+    .field-grid .field.span-2 {{ grid-column: 1 / -1; }}
+    @media (max-width: 600px) {{ .field-grid {{ grid-template-columns: 1fr; }} }}
+
+    .field {{ margin-bottom: 0; }}
+    .field label {{
+      display: block; font-size: 10.5px; font-weight: 700;
+      color: var(--c-text-soft); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }}
+    .field input, .field select, .field textarea {{
+      width: 100%; padding: 11px 13px; border: 1px solid var(--c-border);
+      border-radius: 9px; font-size: 14.5px; font-family: inherit;
+      color: var(--c-text); background: var(--c-surface);
+      transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }}
+    .field input:focus, .field select:focus, .field textarea:focus {{
+      outline: none; border-color: var(--c-primary); background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+    }}
+    .field select {{
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+      background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+    }}
+    .field textarea {{ resize: vertical; min-height: 70px; }}
+
+    /* Korting card — subtle amber tint */
+    .card.korting {{
+      background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%);
+      border: 1px solid #FDE68A;
+    }}
+    .card.korting .card-title {{ color: #92400E; border-bottom-color: #FDE68A; }}
+    .card.korting .card-eyebrow {{ color: var(--c-warn); }}
+
+    /* ── Sidebar (sticky pricing) ───────────────────────────── */
+    .sidebar {{ position: sticky; top: 18px; }}
+    .price-table {{
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }}
+    .price-table thead th {{
+      background: var(--c-primary); color: #fff;
+      text-align: left; padding: 9px 12px; font-size: 10.5px;
+      text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;
+    }}
+    .price-table thead th:first-child {{ border-radius: 8px 0 0 0; }}
+    .price-table thead th:last-child  {{ border-radius: 0 8px 0 0; text-align: right; }}
+    .price-table thead th.num {{ text-align: right; }}
+    .price-table tbody td {{
+      padding: 9px 12px; border-bottom: 1px solid var(--c-border-2);
+      color: var(--c-text);
+    }}
+    .price-table tbody tr:nth-child(even) td {{ background: var(--c-surface); }}
+    .price-table td.num {{ text-align: right; font-variant-numeric: tabular-nums; color: var(--c-text-mute); }}
+    .price-table td.amount {{ text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }}
+    .price-table td.lbl {{ font-weight: 500; }}
+
+    .totals {{
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--c-border);
+      margin-bottom: 18px;
+    }}
+    .totals .row {{
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 16px; font-size: 13.5px;
+    }}
+    .totals .row.subtotal {{ background: var(--c-surface); color: var(--c-text-mute); }}
+    .totals .row.btw      {{ background: var(--c-surface); color: var(--c-text-mute); border-top: 1px solid var(--c-border-2); }}
+    .totals .row.grand {{
+      background: linear-gradient(135deg, #1A56FF 0%, #00CFFF 100%);
+      color: #fff; padding: 14px 16px; font-size: 16px; font-weight: 700;
+      letter-spacing: -0.2px;
+    }}
+    .totals .row .v {{ font-variant-numeric: tabular-nums; font-weight: 700; color: var(--c-text); }}
+    .totals .row.grand .v {{ color: #fff; }}
+
+    .actions {{ display: flex; flex-direction: column; gap: 10px; }}
+    .btn {{
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 14px 22px; font-size: 15px; font-weight: 700;
+      border-radius: 14px; border: none; cursor: pointer; font-family: inherit;
+      letter-spacing: -0.1px; text-decoration: none;
+      transition: filter 120ms ease, transform 60ms ease;
+    }}
+    .btn:active {{ transform: translateY(1px); }}
+    .btn-primary {{ background: var(--c-success); color: #fff; }}
+    .btn-primary:hover {{ filter: brightness(1.05); }}
+    .btn .ico {{ font-size: 16px; }}
+
+    .helper {{
+      text-align: center; margin-top: 12px; font-size: 11.5px;
+      color: var(--c-text-soft); line-height: 1.55;
+    }}
+
+    .powered {{
+      text-align: center; margin-top: 28px;
+      font-size: 11.5px; color: var(--c-text-soft); letter-spacing: 0.3px;
+    }}
   </style>
 </head>
 <body>
   <div class="container">
+
+    <!-- ── HEADER ───────────────────────────────────────────── -->
+    <div class="top-bar"></div>
     <div class="header">
-      <h1>Offerte wijzigen</h1>
-      <p>{escape(config.label)} — {escape(lead.get('naam') or 'klant')}</p>
+      <div class="header-left">
+        {f'<img src="{logo}" alt="Frontlix" class="header-logo">' if logo else ''}
+        <div class="header-title">
+          <div class="eyebrow">Offerte wijzigen &middot; {escape(config.label)}</div>
+          <h1>{escape(lead.get('naam') or 'Klant')} <span class="muted">— offerte aanpassen</span></h1>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div><div class="k">Referentie</div><div class="v">{ref}</div></div>
+        <div><div class="k">Datum</div><div class="v">{today}</div></div>
+      </div>
     </div>
-    <div class="card">
-      {banner}
 
-      <form method="POST" action="/edit">
-        <input type="hidden" name="token" value="{safe_token}" />
+    {banner}
 
-        <h2>Klantgegevens</h2>
-        <div class="field">
-          <label for="naam">Naam</label>
-          <input type="text" id="naam" name="naam" value="{safe_name}" />
-        </div>
-        <div class="field">
-          <label for="email">E-mailadres</label>
-          <input type="email" id="email" name="email" value="{safe_email}" />
-        </div>
+    <form method="POST" action="/edit">
+      <input type="hidden" name="token" value="{safe_token}" />
 
-        <h2>Aanvraag details</h2>
-        {field_inputs_html}
+      <div class="grid">
 
-        <h2>Korting</h2>
-        <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:20px">
-          <div class="field">
-            <label for="korting_percentage">Korting percentage (%)</label>
-            <input type="number" id="korting_percentage" name="korting_percentage" min="0" max="100" step="1" value="{escape(str(collected.get('_korting_percentage') or ''))}" placeholder="bijv. 10" />
+        <!-- ── LEFT COLUMN: FORM ──────────────────────────────── -->
+        <div>
+
+          <div class="card">
+            <div class="card-eyebrow">Klantgegevens</div>
+            <div class="card-title">Naam &amp; contact</div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="naam">Naam</label>
+                <input type="text" id="naam" name="naam" value="{safe_name}" />
+              </div>
+              <div class="field">
+                <label for="email">E-mailadres</label>
+                <input type="email" id="email" name="email" value="{safe_email}" />
+              </div>
+            </div>
           </div>
-          <div class="field" style="margin-bottom:0">
-            <label for="korting_notitie">Notitie bij korting (zichtbaar op offerte)</label>
-            <textarea id="korting_notitie" name="korting_notitie" rows="2" style="width:100%;padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:15px;font-family:inherit;color:#1A1A1A;background:#FAFBFC;resize:vertical">{escape(str(collected.get('_korting_notitie') or ''))}</textarea>
+
+          <div class="card">
+            <div class="card-eyebrow">Aanvraag</div>
+            <div class="card-title">Details {escape(branche_label_lc)}</div>
+            <div class="field-grid">
+              {field_inputs_html}
+            </div>
+          </div>
+
+          <div class="card korting">
+            <div class="card-eyebrow">Optioneel</div>
+            <div class="card-title">Korting toepassen</div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="korting_percentage">Percentage (%)</label>
+                <input type="number" id="korting_percentage" name="korting_percentage" min="0" max="100" step="1" value="{escape(str(collected.get('_korting_percentage') or ''))}" placeholder="bijv. 10" />
+              </div>
+              <div class="field span-2">
+                <label for="korting_notitie">Notitie bij korting (zichtbaar op offerte)</label>
+                <textarea id="korting_notitie" name="korting_notitie" rows="2" placeholder="Bijv. introductiekorting nieuwe klant">{escape(str(collected.get('_korting_notitie') or ''))}</textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT COLUMN: PRICING SIDEBAR ──────────────────── -->
+        <div class="sidebar">
+          <div class="card" style="padding:20px 22px">
+            <div class="card-eyebrow">Prijsopbouw</div>
+            <div class="card-title" style="margin-bottom:12px">Live overzicht</div>
+
+            <table class="price-table">
+              <thead>
+                <tr>
+                  <th>Omschrijving</th>
+                  <th class="num">Aantal</th>
+                  <th class="num">Per stuk</th>
+                  <th class="num">Totaal</th>
+                </tr>
+              </thead>
+              <tbody>{price_rows}</tbody>
+            </table>
+
+            <div class="totals">
+              <div class="row subtotal"><span>Subtotaal excl. BTW</span><span class="v">{_euro(pricing.subtotaal_excl_btw)}</span></div>
+              <div class="row btw"><span>BTW (21%)</span><span class="v">{_euro(pricing.btw_bedrag)}</span></div>
+              <div class="row grand"><span>Totaal incl. BTW</span><span class="v">{_euro(pricing.totaal_incl_btw)}</span></div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" name="action" value="approve" class="btn btn-primary">
+                <span class="ico">&#10003;</span> Goedkeuren &amp; versturen
+              </button>
+            </div>
+
+            <p class="helper">
+              Wijzigingen worden direct opgeslagen.<br>
+              Bij goedkeuren wordt de PDF automatisch naar de klant verzonden.
+            </p>
           </div>
         </div>
 
-        <h2>Huidige prijsopbouw</h2>
-        <table class="pricing">
-          <thead><tr><th>Omschrijving</th><th>Aantal</th><th>Per stuk</th><th>Totaal</th></tr></thead>
-          <tbody>{price_rows}</tbody>
-        </table>
+      </div>
+    </form>
 
-        <div class="totals">
-          <div class="row"><span>Subtotaal excl. BTW</span><span>{_euro(pricing.subtotaal_excl_btw)}</span></div>
-          <div class="row"><span>BTW (21%)</span><span>{_euro(pricing.btw_bedrag)}</span></div>
-          <div class="row grand"><span>Totaal incl. BTW</span><span>{_euro(pricing.totaal_incl_btw)}</span></div>
-        </div>
+    <p class="powered">Beheerd via <span class="brand-front">Front</span><span class="brand-lix">lix</span> &middot; frontlix.com</p>
 
-        <div class="actions">
-          <button type="submit" name="action" value="approve" class="btn-approve">Goedkeuren</button>
-        </div>
-      </form>
-
-      <p class="footer">Wijzigingen worden direct opgeslagen. Bij goedkeuren wordt de PDF automatisch naar de klant verzonden.</p>
-    </div>
   </div>
 
   <script>
   {_get_pricing_js(config.id)}
 
   function euro(n) {{
+    var sign = n < 0 ? '-' : '';
+    n = Math.abs(n);
     var parts = n.toFixed(2).split('.');
     var whole = parts[0].replace(/\\B(?=(\\d{{3}})+(?!\\d))/g, '.');
-    return '\u20AC ' + whole + ',' + parts[1];
-  }}
-
-  function getVal(key) {{
-    const el = document.getElementById('field_' + key);
-    return el ? el.value.trim() : '';
+    return sign + '€ ' + whole + ',' + parts[1];
   }}
 
   function recalc() {{
@@ -269,23 +517,22 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
       result.totaal = Math.round((result.subtotaal + result.btw) * 100) / 100;
     }}
 
-    // Update table
-    const tbody = document.querySelector('table.pricing tbody');
+    // Update pricing table
+    const tbody = document.querySelector('table.price-table tbody');
     tbody.innerHTML = result.lines.map(l =>
-      '<tr><td>' + l.label + '</td>' +
-      '<td>' + (l.quantity || 0).toFixed(0) + ' ' + (l.unit || '') + '</td>' +
-      '<td style="text-align:right">' + euro(l.unitPrice || 0) + '</td>' +
-      '<td style="text-align:right">' + euro(l.total) + '</td></tr>'
+      '<tr><td class="lbl">' + l.label + '</td>' +
+      '<td class="num">' + (l.quantity || 0).toFixed(0) + (l.unit ? ' ' + l.unit : '') + '</td>' +
+      '<td class="num">' + euro(l.unitPrice || 0) + '</td>' +
+      '<td class="amount">' + euro(l.total) + '</td></tr>'
     ).join('');
 
     // Update totals
-    const rows = document.querySelectorAll('.totals .row span:last-child');
-    rows[0].textContent = euro(result.subtotaal);
-    rows[1].textContent = euro(result.btw);
-    rows[2].textContent = euro(result.totaal);
+    const vals = document.querySelectorAll('.totals .row .v');
+    vals[0].textContent = euro(result.subtotaal);
+    vals[1].textContent = euro(result.btw);
+    vals[2].textContent = euro(result.totaal);
   }}
 
-  // Listen to all form changes
   document.querySelectorAll('[id^="field_"]').forEach(el => {{
     el.addEventListener('input', recalc);
     el.addEventListener('change', recalc);
