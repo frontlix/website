@@ -15,9 +15,12 @@ import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshB
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
 import { OpeningTemplateEditor } from '@/components/dashboard/instellingen/OpeningTemplateEditor'
 import { RemindersEditor } from '@/components/dashboard/instellingen/RemindersEditor'
+import { NotificatiesEditor } from '@/components/dashboard/instellingen/NotificatiesEditor'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
+import { getAllPrefs } from '@/lib/dashboard/notifications/queries'
+import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -41,6 +44,7 @@ type TenantSettings = {
   base_label: string | null
   base_lat: number | null
   base_lng: number | null
+  daily_digest_tijd: string | null
 }
 
 type PricingRule = {
@@ -83,11 +87,11 @@ export default async function InstellingenPage({
   const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
-  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw, aanvragenRaw] = await Promise.all([
+  const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw, aanvragenRaw, notifPrefs] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select(
-        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link, base_huisnummer, base_label, base_lat, base_lng',
+        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link, base_huisnummer, base_label, base_lat, base_lng, daily_digest_tijd',
       )
       .limit(1)
       .maybeSingle(),
@@ -114,6 +118,9 @@ export default async function InstellingenPage({
     section === 'opening' || section === 'reminders'
       ? getRecentTemplateAanvragen(20)
       : Promise.resolve([] as TemplateAanvraag[]),
+    section === 'notificaties'
+      ? getAllPrefs()
+      : Promise.resolve([] as NotificationPreferenceRow[]),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
@@ -156,7 +163,12 @@ export default async function InstellingenPage({
               aanvragen={templateAanvragen}
             />
           )}
-          {section === 'notificaties' && <NotificatiesSection />}
+          {section === 'notificaties' && (
+            <NotificatiesSection
+              prefs={notifPrefs}
+              digestTijd={tenant?.daily_digest_tijd ?? '08:00'}
+            />
+          )}
           {section === 'team' && <TeamSection members={team} />}
           {section === 'account' && <AccountSection email={user?.email ?? ''} />}
           {section === 'avg' && <AvgSection />}
@@ -346,50 +358,19 @@ function RemindersSection({
 }
 
 /* ── NOTIFICATIES ────────────────────────────────────── */
-function NotificatiesSection() {
-  const events = [
-    { label: 'Nieuwe lead binnen',       sub: 'iemand vult het formulier in' },
-    { label: 'Owner-review nodig',       sub: 'Surface wacht op jouw goedkeuring' },
-    { label: 'Klant vraagt korting',     sub: 'Onderhandelingsmoment' },
-    { label: 'Offerte goedgekeurd',      sub: 'Klant gaat akkoord' },
-    { label: 'Offerte afgewezen',        sub: 'Klant haakt af' },
-    { label: 'Afspraak ingepland',       sub: 'Klant kiest een datum' },
-    { label: 'Nieuwe review ontvangen',  sub: 'Klant scoort de klus' },
-    { label: 'Dagelijkse samenvatting',  sub: 'Elke ochtend 08:00 — wat ging er gisteren' },
-  ]
-  const channels = ['In-app', 'E-mail', 'Push', 'SMS']
+function NotificatiesSection({
+  prefs,
+  digestTijd,
+}: {
+  prefs: NotificationPreferenceRow[]
+  digestTijd: string
+}) {
   return (
     <SectionCard
       title="Notificatie-voorkeuren"
       sub="Per type event kies je welke kanalen je gebruikt"
     >
-      <div className={styles.notifTable}>
-        <div className={styles.notifHead}>
-          <div>Event</div>
-          {channels.map((c) => (
-            <div key={c} className={styles.notifCol}>
-              {c}
-            </div>
-          ))}
-        </div>
-        {events.map((e) => (
-          <div key={e.label} className={styles.notifRow}>
-            <div>
-              <div className={styles.notifLabel}>{e.label}</div>
-              <div className={styles.notifSub}>{e.sub}</div>
-            </div>
-            {channels.map((c) => (
-              <div key={c} className={styles.notifCol}>
-                <Toggle disabled />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className={styles.placeholderBox} style={{ marginTop: 14 }}>
-        Toggles werken zodra de notification-preferences-tabel beschikbaar
-        is. Voor nu krijgt elke event-type een in-app notificatie.
-      </div>
+      <NotificatiesEditor initialPrefs={prefs} initialDigestTijd={digestTijd} />
     </SectionCard>
   )
 }
@@ -475,11 +456,4 @@ function ReadOnlyField({
   )
 }
 
-function Toggle({ disabled = false }: { disabled?: boolean }) {
-  return (
-    <span className={`${styles.toggle} ${disabled ? styles.toggleDisabled : ''}`}>
-      <span className={styles.toggleKnob} />
-    </span>
-  )
-}
 
