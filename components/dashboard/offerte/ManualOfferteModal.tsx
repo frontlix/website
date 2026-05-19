@@ -33,10 +33,28 @@ const STEPS = [
   { n: 4, l: 'Versturen' },
 ] as const
 
-// localStorage-sleutel + debounce voor concept auto-save. Versie-suffix
-// zodat we 'm later kunnen invalideren als het data-schema breekt.
-const DRAFT_KEY = 'frontlix-handmatige-offerte-draft-v1'
+// localStorage-sleutels — V1 was één draft, V2 is een array zodat meerdere
+// concepten naast elkaar kunnen leven. Migratie van V1 → V2 gebeurt
+// éénmalig bij modal-open.
+const DRAFT_KEY_V1 = 'frontlix-handmatige-offerte-draft-v1'
+const DRAFTS_KEY_V2 = 'frontlix-handmatige-offerte-drafts-v2'
 const DRAFT_DEBOUNCE_MS = 600
+const MAX_DRAFTS = 10
+
+type DraftEntry = {
+  id: string
+  savedAt: string
+  klantNaam: string
+  data: ManualOfferteData
+}
+
+function makeDraftId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function deriveKlantNaam(data: ManualOfferteData): string {
+  return data.naam.trim() || 'Onbekende klant'
+}
 
 /**
  * Vergelijkt de huidige data met DEFAULTS via JSON-stringify. Goedkoop
@@ -257,54 +275,89 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     pricing.voegzand_m2_per_zak,
   ])
 
-  // ── Concept auto-save ──────────────────────────────────────────────
-  // localStorage-key + debounce. Bij open: detecteer een bestaande draft
-  // → toon banner met "Hervatten" / "Negeren" knoppen. Auto-save zelf
-  // staat uit tot de user die keuze heeft gemaakt — voorkomt dat een net-
-  // geopende wizard de oude draft direct overschrijft met DEFAULTS.
-  const [draftMeta, setDraftMeta] = useState<{ savedAt: string } | null>(null)
-  const [draftBannerVisible, setDraftBannerVisible] = useState(false)
+  // ── Multi-draft auto-save ──────────────────────────────────────────
+  // Concepten leven als array in localStorage. Bij modal-open: laad alle
+  // drafts en toon ze als banners (sorted oudste-eerst). Auto-save schrijft
+  // naar het draft met `currentDraftId`; bestaat die nog niet, dan maakt
+  // de eerste save 'm aan zodat de UI nooit "leeg" raakt.
+  //
+  // Migratie: één keer V1 (single draft) → V2 (array) op modal-open.
+  const [drafts, setDrafts] = useState<DraftEntry[]>([])
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
+  const [bannersDismissed, setBannersDismissed] = useState(false)
   const [draftSavedFlash, setDraftSavedFlash] = useState(false)
 
+  // Mount: migrate V1 → V2 (1×) en load drafts-array
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
-      const raw = window.localStorage.getItem(DRAFT_KEY)
+      const v1 = window.localStorage.getItem(DRAFT_KEY_V1)
+      if (v1) {
+        try {
+          const parsedV1 = JSON.parse(v1) as { data?: ManualOfferteData; savedAt?: string }
+          if (parsedV1?.data && typeof parsedV1.savedAt === 'string') {
+            const migrated: DraftEntry = {
+              id: makeDraftId(),
+              savedAt: parsedV1.savedAt,
+              klantNaam: deriveKlantNaam(parsedV1.data),
+              data: parsedV1.data,
+            }
+            // Schrijf migrated naar V2 (prepend), houdt MAX_DRAFTS aan.
+            const existingV2 = window.localStorage.getItem(DRAFTS_KEY_V2)
+            const v2List: DraftEntry[] = existingV2 ? JSON.parse(existingV2) : []
+            const merged = [migrated, ...v2List].slice(0, MAX_DRAFTS)
+            window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(merged))
+          }
+        } catch {
+          // V1-payload corrupt — gewoon negeren bij migratie.
+        }
+        window.localStorage.removeItem(DRAFT_KEY_V1)
+      }
+
+      const raw = window.localStorage.getItem(DRAFTS_KEY_V2)
       if (!raw) return
-      const parsed = JSON.parse(raw) as { data?: unknown; savedAt?: string }
-      if (parsed?.data && typeof parsed.savedAt === 'string') {
-        setDraftMeta({ savedAt: parsed.savedAt })
-        setDraftBannerVisible(true)
+      const list = JSON.parse(raw) as DraftEntry[]
+      if (Array.isArray(list)) {
+        setDrafts(list.slice(0, MAX_DRAFTS))
       }
-    } catch {
-      // Corrupt draft → opruimen.
-      try {
-        window.localStorage.removeItem(DRAFT_KEY)
-      } catch {
-        // Niets te doen — localStorage is mogelijk gedisabled.
-      }
+    } catch (e) {
+      console.error('[ManualOfferteModal] draft load failed:', e)
     }
   }, [])
 
-  // Auto-save data naar localStorage. Wacht tot de draft-banner is afgehandeld
-  // én tot er een non-default waarde is — anders schrijven we de DEFAULTS
-  // direct over een eerder concept.
+  // Auto-save: schrijft current data naar een draft-entry (debounced).
+  // Skip wanneer data nog default is — vermijdt lege "Onbekende klant"-
+  // drafts bij elke modal-open.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (draftBannerVisible) return
     if (isDefaultsData(data)) return
     const t = setTimeout(() => {
       try {
-        const payload = { data, savedAt: new Date().toISOString() }
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(payload))
-        setDraftMeta({ savedAt: payload.savedAt })
+        const id = currentDraftId ?? makeDraftId()
+        const entry: DraftEntry = {
+          id,
+          savedAt: new Date().toISOString(),
+          klantNaam: deriveKlantNaam(data),
+          data,
+        }
+        setDrafts((prev) => {
+          const existingIdx = prev.findIndex((d) => d.id === id)
+          const next =
+            existingIdx >= 0
+              ? prev.map((d, i) => (i === existingIdx ? entry : d))
+              : [entry, ...prev]
+          const trimmed = next.slice(0, MAX_DRAFTS)
+          window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(trimmed))
+          return trimmed
+        })
+        if (!currentDraftId) setCurrentDraftId(id)
         setDraftSavedFlash(true)
       } catch {
-        // localStorage vol of disabled — geen feedback nodig.
+        // localStorage vol of disabled — silently fail.
       }
     }, DRAFT_DEBOUNCE_MS)
     return () => clearTimeout(t)
-  }, [data, draftBannerVisible])
+  }, [data, currentDraftId])
 
   useEffect(() => {
     if (!draftSavedFlash) return
@@ -312,35 +365,35 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     return () => clearTimeout(t)
   }, [draftSavedFlash])
 
-  const hervatDraft = () => {
-    if (typeof window === 'undefined') return
-    try {
-      const raw = window.localStorage.getItem(DRAFT_KEY)
-      if (!raw) {
-        setDraftBannerVisible(false)
-        return
-      }
-      const parsed = JSON.parse(raw) as { data?: Partial<ManualOfferteData> }
-      if (parsed?.data) {
-        setData({ ...DEFAULTS, ...parsed.data })
-      }
-    } catch {
-      // Niets te herstellen.
-    }
-    setDraftBannerVisible(false)
+  const hervatDraft = (id: string) => {
+    const draft = drafts.find((d) => d.id === id)
+    if (!draft) return
+    setData({ ...DEFAULTS, ...draft.data })
+    setCurrentDraftId(id)
+    setBannersDismissed(true)
   }
 
-  const negeerDraft = () => {
-    if (typeof window !== 'undefined') {
+  const verwijderDraft = (id: string) => {
+    setDrafts((prev) => {
+      const next = prev.filter((d) => d.id !== id)
       try {
-        window.localStorage.removeItem(DRAFT_KEY)
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(next))
+        }
       } catch {
-        // Stille fout.
+        // Niets te doen — localStorage is mogelijk niet beschikbaar.
       }
-    }
-    setDraftMeta(null)
-    setDraftBannerVisible(false)
+      return next
+    })
+    // Als de user dit draft nét aan't bewerken was, reset id zodat de
+    // volgende auto-save een nieuw draft begint.
+    if (currentDraftId === id) setCurrentDraftId(null)
   }
+
+  // Banners verbergen we zodra de user iets begint te typen (currentDraftId
+  // krijgt dan een waarde) of expliciet op een banner heeft geklikt.
+  const bannersVisible = !bannersDismissed && drafts.length > 0 && currentDraftId === null
+  const currentDraft = currentDraftId ? drafts.find((d) => d.id === currentDraftId) ?? null : null
 
   const set: <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void = (k, v) =>
     setData((d) => ({ ...d, [k]: v }))
@@ -368,14 +421,9 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       const result = await createManualLeadEnOfferte(data)
       if (result.ok) {
         // Draft opruimen — offerte is succesvol aangemaakt, niets meer
-        // om te herstellen bij volgend bezoek.
-        if (typeof window !== 'undefined') {
-          try {
-            window.localStorage.removeItem(DRAFT_KEY)
-          } catch {
-            // Stille fout.
-          }
-        }
+        // om te herstellen bij volgend bezoek. Alleen het current draft
+        // verwijderen; andere drafts (van andere klanten) blijven staan.
+        if (currentDraftId) verwijderDraft(currentDraftId)
         // Voor "alleen download" sturen we de owner naar de net-aangemaakte lead;
         // andere kanalen idem (de feitelijke verzending loopt via de bot).
         router.push(`/leads/${result.leadId}?tab=offerte`)
@@ -455,7 +503,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <div>
                 <div className={styles.title}>
                   Handmatige offerte opstellen
-                  {draftMeta && !draftBannerVisible && (
+                  {currentDraft && (
                     <span className={styles.draftBadge}>
                       {draftSavedFlash ? (
                         <>
@@ -477,32 +525,48 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
 
-          {draftBannerVisible && draftMeta && (
-            <div className={styles.draftBanner} role="status">
-              <div className={styles.draftBannerBody}>
-                <div className={styles.draftBannerTitle}>
-                  Concept bewaard
-                </div>
-                <div className={styles.draftBannerMeta}>
-                  opgeslagen {formatDraftSavedAt(draftMeta.savedAt)}
-                </div>
+          {bannersVisible && (
+            <div className={styles.draftBannerList}>
+              <div className={styles.draftBannerListHead}>
+                <span>
+                  {drafts.length === 1
+                    ? '1 concept bewaard'
+                    : `${drafts.length} concepten bewaard`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setBannersDismissed(true)}
+                  className={styles.draftBannerHideAll}
+                >
+                  Verbergen
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={hervatDraft}
-                className={styles.draftBannerResume}
-              >
-                Hervatten
-              </button>
-              <button
-                type="button"
-                onClick={negeerDraft}
-                className={styles.draftBannerDismiss}
-                aria-label="Concept negeren"
-                title="Concept negeren"
-              >
-                <X size={14} />
-              </button>
+              {drafts.map((d) => (
+                <div key={d.id} className={styles.draftBanner} role="status">
+                  <div className={styles.draftBannerBody}>
+                    <div className={styles.draftBannerTitle}>{d.klantNaam}</div>
+                    <div className={styles.draftBannerMeta}>
+                      opgeslagen {formatDraftSavedAt(d.savedAt)}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => hervatDraft(d.id)}
+                    className={styles.draftBannerResume}
+                  >
+                    Hervatten
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => verwijderDraft(d.id)}
+                    className={styles.draftBannerDismiss}
+                    aria-label={`Concept van ${d.klantNaam} verwijderen`}
+                    title="Concept verwijderen"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
