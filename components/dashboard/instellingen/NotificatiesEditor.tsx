@@ -30,7 +30,7 @@ import pageStyles from '@/app/dashboard/(app)/instellingen/page.module.css'
  *   de bezorg-laag implementeert, removen we deze gate per kanaal.
  */
 
-const LIVE_FASE = 1 // huidige fase — toggles voor kanalen met fase > 1 disabled
+const LIVE_FASE = 2 // huidige fase — toggles voor kanalen met fase > LIVE_FASE disabled (fase 3=push, 4=whatsapp)
 
 export function NotificatiesEditor({
   initialPrefs,
