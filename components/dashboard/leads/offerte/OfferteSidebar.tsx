@@ -63,6 +63,7 @@ export function OfferteSidebar({
     <aside className={styles.sidebar}>
       <TotalenKaart
         totalen={totalen}
+        kortingPct={kortingPct}
         geldigTot={geldigTot}
         onPdfClick={onPdfClick}
         onSendClick={onSendClick}

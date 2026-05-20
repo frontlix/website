@@ -7,6 +7,8 @@ import styles from './TotalenKaart.module.css'
 
 type Props = {
   totalen: Totalen
+  /** Huidig kortingspercentage (0-100). Bij > 0 wordt de korting-regel getoond. */
+  kortingPct?: number
   /** ISO date string. `null` als er nog geen geldigheidsdatum bekend is. */
   geldigTot: string | null
   onPdfClick?: () => void
@@ -18,11 +20,13 @@ type Props = {
 
 export function TotalenKaart({
   totalen,
+  kortingPct = 0,
   geldigTot,
   onPdfClick,
   onSendClick,
   versturenDisabled = false,
 }: Props) {
+  const heeftKorting = kortingPct > 0 && totalen.kortingBedrag > 0
   return (
     <div className={styles.card}>
       <div className={styles.rows}>
@@ -30,6 +34,12 @@ export function TotalenKaart({
           <span className={styles.rowLabel}>Subtotaal</span>
           <span className={styles.rowValue}>{formatEuro(totalen.subtotaalExcl)}</span>
         </div>
+        {heeftKorting && (
+          <div className={`${styles.row} ${styles.rowDiscount}`}>
+            <span className={styles.rowLabel}>Korting ({kortingPct}%)</span>
+            <span className={styles.rowValue}>− {formatEuro(totalen.kortingBedrag)}</span>
+          </div>
+        )}
         <div className={`${styles.row} ${styles.rowStrong}`}>
           <span className={styles.rowLabel}>Excl BTW</span>
           <span className={styles.rowValue}>{formatEuro(totalen.naKortingExcl)}</span>
@@ -57,7 +67,7 @@ export function TotalenKaart({
           onClick={onPdfClick}
         >
           <Eye size={14} aria-hidden="true" />
-          <span>Bekijk PDF</span>
+          <span>PDF</span>
         </button>
         <button
           type="button"
