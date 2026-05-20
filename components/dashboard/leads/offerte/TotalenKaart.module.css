@@ -75,21 +75,23 @@
 }
 
 .heroLabel {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-white);
+  white-space: nowrap;
 }
 
 .heroSub {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
 }
 
 .heroAmount {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--color-white);
@@ -143,10 +145,12 @@
   color: var(--fg);
 }
 
-/* Versturen-knop: gradient achtergrond. `border` apart definiëren want
-   we hebben de basis-class samengevoegd zonder `border`. */
+/* Versturen-knop: gradient achtergrond. `background-clip: padding-box`
+   voorkomt dat de gradient onder de transparante border doorschemert
+   (waardoor de randen visueel "lichter" leken dan de fill). */
 .btnPrimary {
   background: var(--gradient);
+  background-clip: padding-box;
   border: 1px solid transparent;
   color: var(--color-white);
 }
