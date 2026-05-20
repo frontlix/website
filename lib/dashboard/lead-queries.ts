@@ -125,8 +125,7 @@ export async function getLeadsList(
     if (tagFilteredIds.length === 0) return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select(LIST_COLUMNS)
     .eq('dashboard_archived', options.archived === true)

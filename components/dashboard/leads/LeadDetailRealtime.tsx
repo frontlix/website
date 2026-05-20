@@ -23,15 +23,18 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let channel: any = null
 
+    // Debug-logs alleen in dev — productie blijft stil.
+    const DEBUG = process.env.NODE_ENV !== 'production'
+
     // Filter doen we in de callback i.p.v. via postgres_changes filter-string;
     // die bleek onbetrouwbaar voor TEXT-IDs met hyphens (lead_id heeft die).
     // Werkt voor zowel INSERT (berichten/fotos) als UPDATE (leads) — beide
     // payloads hebben `new.lead_id`.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onChange = (payload: any) => {
-      console.log('[realtime] event RAW', JSON.stringify(payload).slice(0, 300))
+      if (DEBUG) console.log('[realtime] event RAW', JSON.stringify(payload).slice(0, 300))
       if (payload?.new?.lead_id === leadId) {
-        console.log('[realtime] match → router.refresh()')
+        if (DEBUG) console.log('[realtime] match → router.refresh()')
         router.refresh()
       }
     }
@@ -44,11 +47,11 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
     void (async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!active) return
-      console.log('[realtime] session?', !!session?.access_token, 'user:', session?.user?.id)
+      if (DEBUG) console.log('[realtime] session?', !!session?.access_token, 'user:', session?.user?.id)
       if (session?.access_token) {
         supabase.realtime.setAuth(session.access_token)
-        console.log('[realtime] setAuth done')
-      } else {
+        if (DEBUG) console.log('[realtime] setAuth done')
+      } else if (DEBUG) {
         console.warn('[realtime] NO session/token → RLS zal alle events filteren')
       }
 
@@ -74,7 +77,7 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .subscribe((status: any) => {
-          console.log('[realtime] subscribe status', status)
+          if (DEBUG) console.log('[realtime] subscribe status', status)
           if (active) setConnected(status === 'SUBSCRIBED')
         })
     })()

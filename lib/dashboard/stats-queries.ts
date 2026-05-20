@@ -9,8 +9,7 @@ import type { StatsPeriod } from './period'
  */
 export async function countLeads(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
   if (period.from) {
@@ -33,8 +32,7 @@ export async function countLeads(period: StatsPeriod): Promise<number> {
  */
 export async function countOffertesVerstuurd(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .not('offerte_verstuurd_op', 'is', null)
@@ -80,8 +78,7 @@ export async function countOpenOffertes(): Promise<number> {
  */
 export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .not('akkoord_op', 'is', null)
@@ -105,8 +102,7 @@ export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
  */
 export async function countConverted(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null')
@@ -129,8 +125,7 @@ export async function countConverted(period: StatsPeriod): Promise<number> {
  */
 export async function avgOfferteWaarde(period: StatsPeriod): Promise<number | null> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase.from('leads').select('totaal_prijs')
+  let query = supabase.from('leads').select('totaal_prijs')
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -159,8 +154,7 @@ export async function avgReactietijdMs(period: StatsPeriod): Promise<number | nu
   const supabase = await getDashboardSupabase()
 
   // 1) Haal leads in periode
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let leadsQuery: any = supabase.from('leads').select('lead_id, aangemaakt')
+  let leadsQuery = supabase.from('leads').select('lead_id, aangemaakt')
   if (period.from) {
     leadsQuery = leadsQuery.gte('aangemaakt', period.from)
   }
@@ -221,8 +215,7 @@ export async function statusVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ status: string | null; count: number }>> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase.from('leads').select('dashboard_status')
+  let query = supabase.from('leads').select('dashboard_status')
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -248,8 +241,7 @@ export async function categorieVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ categorie: string; count: number }>> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase.from('leads').select('hoofdcategorie')
+  let query = supabase.from('leads').select('hoofdcategorie')
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -286,8 +278,7 @@ export async function leadsPerDag(
   ))
   const startISO = start.toISOString().slice(0, 10)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: any = supabase
+  const query = supabase
     .from('leads')
     .select('aangemaakt')
     .gte('aangemaakt', startISO)
@@ -326,8 +317,7 @@ export async function topTags(
   limit: number = 10
 ): Promise<Array<{ naam: string; count: number }>> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('lead_tags')
     .select('tags!inner(naam), leads!inner(aangemaakt)')
   if (period.from) {

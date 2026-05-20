@@ -89,8 +89,7 @@ function dayWindow(date: Date): StatsPeriod {
 
 async function countLeadsAdmin(period: StatsPeriod): Promise<number> {
   const admin = getDashboardAdmin()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = admin.from('leads').select('*', { count: 'exact', head: true })
+  let q = admin.from('leads').select('*', { count: 'exact', head: true })
   if (period.from) q = q.gte('aangemaakt', period.from)
   if (period.to) q = q.lt('aangemaakt', period.to)
   const { count, error } = await q
@@ -100,8 +99,7 @@ async function countLeadsAdmin(period: StatsPeriod): Promise<number> {
 
 async function countOffertesAdmin(period: StatsPeriod): Promise<number> {
   const admin = getDashboardAdmin()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = admin
+  let q = admin
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .not('offerte_verstuurd_op', 'is', null)
@@ -114,8 +112,7 @@ async function countOffertesAdmin(period: StatsPeriod): Promise<number> {
 
 async function countAkkoordAdmin(period: StatsPeriod): Promise<number> {
   const admin = getDashboardAdmin()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = admin
+  let q = admin
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .not('akkoord_op', 'is', null)
@@ -128,8 +125,7 @@ async function countAkkoordAdmin(period: StatsPeriod): Promise<number> {
 
 async function sumOmzetAdmin(period: StatsPeriod): Promise<number> {
   const admin = getDashboardAdmin()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let q: any = admin
+  let q = admin
     .from('leads')
     .select('totaal_prijs')
     .not('akkoord_op', 'is', null)

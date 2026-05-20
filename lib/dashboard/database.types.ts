@@ -571,30 +571,36 @@ export type Database = {
         Row: {
           aangemaakt_op: string | null
           id: string
+          is_concept: boolean
           korting_pct: number | null
           lead_id: string
           pdf_path: string
           pdf_url: string
+          regels_snapshot: Json | null
           totaal_incl: number
           versie: number
         }
         Insert: {
           aangemaakt_op?: string | null
           id?: string
+          is_concept?: boolean
           korting_pct?: number | null
           lead_id: string
           pdf_path: string
           pdf_url: string
+          regels_snapshot?: Json | null
           totaal_incl: number
           versie: number
         }
         Update: {
           aangemaakt_op?: string | null
           id?: string
+          is_concept?: boolean
           korting_pct?: number | null
           lead_id?: string
           pdf_path?: string
           pdf_url?: string
+          regels_snapshot?: Json | null
           totaal_incl?: number
           versie?: number
         }

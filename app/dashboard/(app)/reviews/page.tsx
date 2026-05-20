@@ -152,11 +152,23 @@ export default async function ReviewsPage({
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" className="dash-btn dash-btn-secondary" disabled>
+          <button
+            type="button"
+            className="dash-btn dash-btn-secondary"
+            disabled
+            title="Exporteer rapport — binnenkort beschikbaar"
+            aria-label="Exporteer rapport — binnenkort beschikbaar"
+          >
             <FileText size={13} />
             Exporteer rapport
           </button>
-          <button type="button" className="dash-btn dash-btn-primary" disabled>
+          <button
+            type="button"
+            className="dash-btn dash-btn-primary"
+            disabled
+            title="Stuur reviewverzoek — binnenkort beschikbaar"
+            aria-label="Stuur reviewverzoek — binnenkort beschikbaar"
+          >
             <Send size={13} />
             Stuur reviewverzoek
           </button>
