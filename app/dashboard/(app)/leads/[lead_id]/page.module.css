@@ -1,10 +1,11 @@
-/* LeadDetail — split-view: tabs (2fr) + WhatsApp (1fr).
-   Chat-kolom mag krimpen tot 320px zodat de Offerte-tab met sticky
-   sidebar genoeg breedte heeft op desktop. */
+/* LeadDetail — split-view: tabs (2.6fr) + WhatsApp (1fr).
+   Chat-kolom mag krimpen tot 280px zodat de Offerte-tab met sticky
+   sidebar genoeg breedte heeft op desktop. WhatsApp-bubbels blijven
+   leesbaar op deze breedte. */
 
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 2.6fr) minmax(280px, 1fr);
   gap: 20px;
   align-items: start;
 }
