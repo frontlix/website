@@ -44,7 +44,7 @@
 .columnHeader {
   display: grid;
   /* Omschrijving · Aantal · Eenheid · Prijs/eenh · Totaal · Actie */
-  grid-template-columns: minmax(0, 1fr) 80px 90px 110px 110px 36px;
+  grid-template-columns: minmax(0, 1fr) 64px 64px 88px 92px 32px;
   gap: var(--space-2);
   align-items: center;
   padding: 6px var(--space-5);
@@ -57,6 +57,15 @@
   background: var(--card-bg);
 }
 
+/* Truncate column-header labels die niet op breedte passen, ipv ze
+   over elkaar te laten lopen. Aantal/Eenheid blijven smal — als de
+   labels niet helemaal passen is dat ok (de cellen tonen de data). */
+.columnHeader > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .colNumeric {
   text-align: right;
 }
@@ -64,7 +73,7 @@
 /* ─── Regel-rij ─── */
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 80px 90px 110px 110px 36px;
+  grid-template-columns: minmax(0, 1fr) 64px 64px 88px 92px 32px;
   gap: var(--space-2);
   align-items: center;
   padding: var(--space-2) var(--space-5);
