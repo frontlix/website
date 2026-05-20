@@ -14,7 +14,7 @@
  * Component is volledig presentational — alle state komt via props.
  */
 
-import { Sparkles, ExternalLink, Eye } from 'lucide-react'
+import { Sparkles, ExternalLink, Eye, Undo2 } from 'lucide-react'
 import { formatDateNL } from '@/lib/dashboard/format'
 import styles from './OfferteHeader.module.css'
 
@@ -35,6 +35,16 @@ export type OfferteHeaderProps = {
   verzondenPdfUrl?: string | null
   /** Callback voor "Preview huidige versie". Fase 1: meestal stub. */
   onPreviewClick?: () => void
+  /**
+   * Callback voor "Terug naar verzonden versie".
+   * Alleen relevant als `canRevert === true`; anders wordt de knop verborgen.
+   */
+  onRevertClick?: () => void
+  /**
+   * Toont de "Terug naar verzonden versie"-knop alleen wanneer er
+   * tegelijk een concept én een verzonden versie bestaat.
+   */
+  canRevert?: boolean
 }
 
 export function OfferteHeader({
@@ -46,6 +56,8 @@ export function OfferteHeader({
   lastSavedAt: _lastSavedAt,
   verzondenPdfUrl,
   onPreviewClick,
+  onRevertClick,
+  canRevert = false,
 }: OfferteHeaderProps) {
   // Status-tekst links naast de versie-badge
   const statusText = verstuurd
@@ -74,6 +86,22 @@ export function OfferteHeader({
 
       <div className={styles.right}>
         {saveLabel ? <span className={styles.saveIndicator}>{saveLabel}</span> : null}
+
+        {/*
+         * "Terug naar verzonden versie" — alleen zichtbaar als er
+         * tegelijk een concept én een verzonden versie bestaat. Klik
+         * triggert in parent een confirm + revertConcept() server-action.
+         */}
+        {canRevert ? (
+          <button
+            type="button"
+            className={styles.outlineBtn}
+            onClick={() => onRevertClick?.()}
+          >
+            <Undo2 size={14} aria-hidden="true" />
+            Terug naar verzonden versie
+          </button>
+        ) : null}
 
         {showVerzondenLink ? (
           <a

@@ -4,20 +4,31 @@
  * LeadOfferte — orchestrator van de Offerte-tab in lead-detail.
  *
  * Combineert:
- *  - OfferteHeader (versie-badge, save-state, PDF-knoppen)
+ *  - OfferteHeader (versie-badge, save-state, PDF-knoppen, revert-knop)
  *  - LeadContextChips (readonly chips uit lead-velden)
  *  - OfferteRegelsTable (inline-bewerkbare regels — auto + handmatig)
  *  - OfferteSidebar (totalen + korting + verzendopties)
  *
- * Fase 1: lokale state, geen DB-persist. Sidebar-aanpassingen muteren
- * UI-state maar worden nog niet teruggeschreven. Fase 2 voegt
- * debounced auto-save toe.
+ * Fase 2a: debounced auto-save naar concept-rij + revert naar verzonden versie.
+ *  - Elke wijziging in regels / korting-pct / korting-omschrijving start een
+ *    600ms-debounce. Bij timeout firet `saveDraft()` server-action.
+ *  - SaveState propageert naar OfferteHeader (`saving` / `saved` / `idle`).
+ *  - Revert-knop verschijnt alleen als er TEGELIJK een concept én een
+ *    verzonden versie bestaat — opent confirm-dialog, dan `revertConcept()`.
+ *
+ * Auto-save schrijft naar de concept-rij; verzonden versies blijven immutable.
+ * "Versturen" promoveert het concept naar verzonden (Fase 2.5, nog stub).
  */
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import { berekenTotalen } from '@/lib/dashboard/btw-calc'
+import {
+  saveDraft,
+  revertConcept,
+  type DraftRegelInput,
+} from '@/lib/dashboard/offerte-draft-actions'
 import { LeadContextChips } from './LeadContextChips'
 import { OfferteHeader } from './OfferteHeader'
 import OfferteRegelsTable, { type RegelEdit } from './OfferteRegelsTable'
@@ -48,8 +59,36 @@ function addDays(basis: string | null, dagen: number): string {
   return d.toISOString()
 }
 
+/**
+ * Map UI-state (RegelEdit) → server-payload (DraftRegelInput).
+ * String-velden worden geparsed; lege aantal/eenheid → null.
+ */
+function toServerRegels(regels: RegelEdit[]): DraftRegelInput[] {
+  return regels.map((r, idx) => {
+    const aantalNum = parseDecimal(r.aantal)
+    const aantal = r.aantal.trim() === '' ? null : aantalNum
+    const eenheid = r.eenheid.trim() === '' ? null : r.eenheid.trim()
+    return {
+      id: r.id,
+      bron: r.bron,
+      omschrijving: r.omschrijving,
+      aantal,
+      eenheid,
+      stukprijs: parseDecimal(r.stukprijs),
+      volgorde: idx + 1,
+    }
+  })
+}
+
+/** Stabiele hash voor change-detection — vermijd dubbele saves bij irrelevante re-renders. */
+function regelsFingerprint(regels: RegelEdit[]): string {
+  return JSON.stringify(
+    regels.map((r) => [r.bron, r.omschrijving, r.aantal, r.eenheid, r.stukprijs]),
+  )
+}
+
 export function LeadOfferte({
-  leadId: _leadId,
+  leadId,
   offertes,
   prijsregels,
   lead,
@@ -57,10 +96,19 @@ export function LeadOfferte({
 }: Props) {
   const router = useRouter()
 
-  // Huidige offerte = laatste versie (offertes komt DESC binnen)
-  const huidige: Offerte | undefined = offertes[0]
+  // ─── Concept-state ─────────────────────────────────────────
+  // Huidige offerte = concept als die bestaat, anders laatste verzonden.
+  // `offertes` komt DESC binnen — concept (versie max+1) komt boven verzonden.
+  const concept = useMemo(() => offertes.find((o) => o.is_concept), [offertes])
+  const laatsteVerzonden = useMemo(
+    () => offertes.find((o) => !o.is_concept),
+    [offertes],
+  )
+  const huidige: Offerte | undefined = concept ?? laatsteVerzonden ?? offertes[0]
   const verstuurd = Boolean(lead.offerte_verstuurd)
   const versie = huidige?.versie ?? 1
+  // Revert kan alleen als concept én verzonden tegelijk bestaan.
+  const canRevert = Boolean(concept && laatsteVerzonden)
 
   // ─── Lokale UI-state ───────────────────────────────────────
   const [regels, setRegels] = useState<RegelEdit[]>([])
@@ -76,6 +124,104 @@ export function LeadOfferte({
     metVoorwaarden: true,
     metFotos: fotosCount > 0,
   })
+
+  // ─── Save-state propagatie naar header ─────────────────────
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
+
+  // ─── Debounce-machinerie ───────────────────────────────────
+  // We slaan op:
+  //  - Een ref naar de skip-first-render flag (init-state is geen wijziging).
+  //  - Een ref naar de actieve debounce-timer.
+  //  - Een ref naar de "saved → idle" reset-timer (2s na success).
+  //  - Een ref naar de laatste fingerprint die we hebben verstuurd —
+  //    zo skippen we identiek werk (bv. onChange firet zonder echte diff).
+  const isFirstRenderRef = useRef(true)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const idleResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastFingerprintRef = useRef<string | null>(null)
+
+  /** Voert de daadwerkelijke server-call uit; manages saveState. */
+  const flushDraft = useCallback(
+    async (
+      payloadRegels: RegelEdit[],
+      payloadPct: number,
+      payloadOmschr: string,
+    ) => {
+      setSaveState('saving')
+      // Cancel een eventuele idle-reset die nog liep van een eerdere save.
+      if (idleResetTimerRef.current) {
+        clearTimeout(idleResetTimerRef.current)
+        idleResetTimerRef.current = null
+      }
+
+      const res = await saveDraft(leadId, {
+        regels: toServerRegels(payloadRegels),
+        kortingPct: payloadPct,
+        kortingOmschrijving: payloadOmschr,
+      })
+
+      if (res.ok) {
+        setSaveState('saved')
+        setLastSavedAt(new Date().toISOString())
+        // Auto-reset naar idle na 2s zodat "Zojuist bewaard" niet blijft hangen.
+        idleResetTimerRef.current = setTimeout(() => {
+          setSaveState('idle')
+          idleResetTimerRef.current = null
+        }, 2000)
+      } else {
+        setSaveState('idle')
+        // Fingerprint resetten zodat een retry niet als "no-op" wordt gezien.
+        lastFingerprintRef.current = null
+        // eslint-disable-next-line no-alert
+        alert(`Opslaan mislukt: ${res.error}`)
+      }
+    },
+    [leadId],
+  )
+
+  // ─── Debounced auto-save effect ────────────────────────────
+  // 600ms na de laatste wijziging in regels / kortingPct / kortingOmschrijving
+  // pushen we de draft naar de server. De eerste render telt niet als
+  // wijziging (init-state).
+  useEffect(() => {
+    // Skip de eerste render — dat is gewoon initiële state-hydratie.
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false
+      lastFingerprintRef.current = regelsFingerprint(regels)
+      return
+    }
+
+    // Cancel een lopende timer — alleen de meest recente edit telt.
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const fp = regelsFingerprint(regels) + `|${kortingPct}|${kortingOmschrijving}`
+      // No-op als niets relevants is veranderd.
+      if (fp === lastFingerprintRef.current) return
+      lastFingerprintRef.current = fp
+      void flushDraft(regels, kortingPct, kortingOmschrijving)
+    }, 600)
+
+    // Cleanup bij unmount / volgende effect-run.
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+    }
+  }, [regels, kortingPct, kortingOmschrijving, flushDraft])
+
+  // Cleanup eventuele open timers bij unmount (defensief — React 18
+  // StrictMode-veilig zonder dubbele alerts).
+  useEffect(() => {
+    return () => {
+      if (idleResetTimerRef.current) clearTimeout(idleResetTimerRef.current)
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    }
+  }, [])
 
   // ─── Computed: totalen ──────────────────────────────────────
   const regelTotalen = useMemo(
@@ -104,11 +250,36 @@ export function LeadOfferte({
   }
 
   const handlePreviewClick = () => {
-    // Fase 1: stub. Fase 2 → server-action die concept-PDF genereert.
+    // Fase 2a: nog steeds stub. Fase 2.5/3 → server-action die concept-PDF genereert.
     alert(
       'Preview huidige versie wordt binnenkort gekoppeld.\n\nVoor nu: gebruik "Bekijk verzonden offerte" om de laatst verzonden PDF te zien.',
     )
   }
+
+  const handleRevertClick = useCallback(async () => {
+    // Bevestiging — revert is destructief voor de huidige concept-edits.
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(
+      'Wil je de wijzigingen ongedaan maken en terug naar de verzonden versie?',
+    )
+    if (!confirmed) return
+
+    // Cancel een lopende debounce — anders schrijft die ná de revert nog weg.
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+
+    const res = await revertConcept(leadId)
+    if (!res.ok) {
+      // eslint-disable-next-line no-alert
+      alert(`Terugdraaien mislukt: ${res.error}`)
+      return
+    }
+    // Verse server-data ophalen — regels, offertes en lead-velden zijn weer
+    // zoals bij de verzonden versie.
+    router.refresh()
+  }, [leadId, router])
 
   const handlePdfClick = () => {
     // Sidebar "Bekijk PDF" — opent huidige verstuurde PDF (zelfde als header-link)
@@ -120,11 +291,10 @@ export function LeadOfferte({
   }
 
   const handleSendClick = () => {
-    // Fase 1: stub. Fase 2 → server-action die concept → nieuwe versie commit
-    // + PDF genereert. Daarna in een latere stap koppelen we de bot-call voor
-    // de WhatsApp-flow (zie spec, sectie 2.5).
+    // Fase 2a: stub blijft. Fase 2.5 → server-action die concept → verzonden
+    // promoveert, PDF genereert en bot-call uitvoert (TODO).
     alert(
-      `Versie v${versie + 1} opgeslagen — WhatsApp-versturen wordt binnenkort gekoppeld.\n\n(Fase 1 stub — geen DB-write)`,
+      `Versie v${versie + 1} opgeslagen — WhatsApp-versturen wordt binnenkort gekoppeld.\n\n(Fase 2a stub — geen verzonden-promotie)`,
     )
   }
 
@@ -140,8 +310,12 @@ export function LeadOfferte({
         verstuurd={verstuurd}
         verstuurdOp={lead.offerte_verstuurd_op}
         hasAutoRegels={hasAutoRegels}
-        verzondenPdfUrl={huidige?.pdf_url ?? null}
+        saveState={saveState}
+        lastSavedAt={lastSavedAt}
+        verzondenPdfUrl={laatsteVerzonden?.pdf_url ?? huidige?.pdf_url ?? null}
         onPreviewClick={handlePreviewClick}
+        onRevertClick={handleRevertClick}
+        canRevert={canRevert}
       />
 
       <LeadContextChips lead={lead} onEditInfoClick={handleEditInfoClick} />

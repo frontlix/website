@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
 import type { DashboardStatus } from './database.types'
+import { regenerateAutoRegels } from './offerte-auto-regels'
 
 const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
   'open',
@@ -11,6 +12,32 @@ const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
   'no_show',
   'geen_interesse',
   'archief',
+])
+
+// Velden die — indien gewijzigd via de info-tab — de auto-berekende
+// offerte-regels moeten triggeren. Zit één van deze keys in de patch
+// dan roepen we na de UPDATE `regenerateAutoRegels()` aan zodat
+// prijsregels in sync blijven met de actuele lead-data. Strict gehouden
+// tot velden die `computeRules()` daadwerkelijk leest — adres-velden
+// veranderen de prijs niet en triggeren dus niets.
+const OFFERTE_TRIGGER_FIELDS: ReadonlySet<string> = new Set([
+  'm2',
+  'sub_diensten',
+  'voegzand_type',
+  'voegzand_zakken',
+  'voegzand_normaal_zakken',
+  'voegzand_onkruidwerend_zakken',
+  'zand_kleur',
+  'zand_kleur_antraciet',
+  'zand_kleur_naturel',
+  'korstmos',
+  'planten_afschermen',
+  'groene_aanslag',
+  'beschermlaag_m2',
+  'extra_arbeid_minuten',
+  'extra_arbeid_personen',
+  'korting_percentage',
+  'afstand_km',
 ])
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
@@ -140,6 +167,28 @@ export async function updateLeadFields(
 
   if (error) {
     return { ok: false, error: error.message }
+  }
+
+  // Fase 2.4: als deze patch een prijs-relevant veld raakt, herbereken
+  // de auto-prijsregels synchroon. Synchroon zodat de router.refresh()
+  // in de UI direct verse data ophaalt (geen race met realtime).
+  //
+  // Errors loggen we wel, maar we breken de info-tab edit niet — de
+  // lead-update zelf is succesvol en de owner kan altijd nog via de
+  // offerte-tab herberekenen. Voorkomt dat een offerte-bug een info-tab
+  // edit blokkeert.
+  const triggers = Object.keys(cleaned).some((k) => OFFERTE_TRIGGER_FIELDS.has(k))
+  if (triggers) {
+    try {
+      const result = await regenerateAutoRegels(leadId)
+      if (!result.ok) {
+        console.error(
+          `[updateLeadFields] regenerateAutoRegels failed for ${leadId}: ${result.error}`,
+        )
+      }
+    } catch (err) {
+      console.error(`[updateLeadFields] regenerateAutoRegels threw for ${leadId}:`, err)
+    }
   }
 
   revalidatePath(`/leads/${leadId}`)
