@@ -44,7 +44,7 @@
 .columnHeader {
   display: grid;
   /* Omschrijving · Aantal · Eenheid · Prijs/eenh · Totaal · Actie */
-  grid-template-columns: minmax(0, 1fr) 64px 64px 88px 92px 32px;
+  grid-template-columns: minmax(0, 1fr) 52px 50px 72px 88px 28px;
   gap: var(--space-2);
   align-items: center;
   padding: 6px var(--space-5);
@@ -73,7 +73,7 @@
 /* ─── Regel-rij ─── */
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 64px 64px 88px 92px 32px;
+  grid-template-columns: minmax(0, 1fr) 52px 50px 72px 88px 28px;
   gap: var(--space-2);
   align-items: center;
   padding: var(--space-2) var(--space-5);

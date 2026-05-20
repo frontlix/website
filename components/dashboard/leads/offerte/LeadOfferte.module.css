@@ -28,8 +28,9 @@
 
 @media (min-width: 1025px) {
   .body {
-    /* main flex, aside vaste breedte — matched het Canva-design */
-    grid-template-columns: minmax(0, 1fr) 340px;
+    /* main flex, aside iets smaller dan canva (300px ipv 340px) zodat de
+       regels-tabel meer breedte krijgt voor de omschrijving-kolom. */
+    grid-template-columns: minmax(0, 1fr) 300px;
     gap: var(--space-5);
     padding: var(--space-5);
   }
