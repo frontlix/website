@@ -158,7 +158,7 @@ async def send_approval_email(
 
               <!-- Klantgegevens -->
               <tr><td style="padding:24px 40px 0 40px">
-                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#B0B8C9">Klantgegevens</p>
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Klantgegevens</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
                     <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;width:42%;border-bottom:1px solid #F0F2F5;vertical-align:top">Naam</td>
@@ -183,7 +183,7 @@ async def send_approval_email(
 
               <!-- Prijsoverzicht -->
               <tr><td style="padding:24px 40px 0 40px">
-                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#B0B8C9">Prijsoverzicht</p>
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Prijsoverzicht</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   {price_lines_html}
                 </table>
