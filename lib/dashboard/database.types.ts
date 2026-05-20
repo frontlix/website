@@ -206,6 +206,27 @@ export type Database = {
           },
         ]
       }
+      kostprijzen_per_dienst: {
+        Row: {
+          bijgewerkt_op: string
+          kost_pct: number
+          label: string
+          rule_key: string
+        }
+        Insert: {
+          bijgewerkt_op?: string
+          kost_pct: number
+          label: string
+          rule_key: string
+        }
+        Update: {
+          bijgewerkt_op?: string
+          kost_pct?: number
+          label?: string
+          rule_key?: string
+        }
+        Relationships: []
+      }
       lead_notes: {
         Row: {
           aangemaakt_op: string
@@ -1283,4 +1304,5 @@ export type DashboardUserProfile = Database['public']['Tables']['dashboard_user_
 export type TenantSettings = Database['public']['Tables']['tenant_settings']['Row']
 export type PricingRule = Database['public']['Tables']['pricing_rules']['Row']
 export type ServiceOffering = Database['public']['Tables']['service_offerings']['Row']
+export type KostprijsPerDienst = Database['public']['Tables']['kostprijzen_per_dienst']['Row']
 

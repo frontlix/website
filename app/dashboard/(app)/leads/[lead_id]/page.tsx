@@ -25,7 +25,8 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ lead_id: string }>
 }) {
-  const { user } = await requireApprovedUser()
+  const { user, profile } = await requireApprovedUser()
+  const isOwner = profile.is_owner === true
   const { lead_id } = await params
   const [detail, allTags, leadTags] = await Promise.all([
     getLeadDetail(lead_id),
@@ -75,6 +76,7 @@ export default async function LeadDetailPage({
                   prijsregels={detail.prijsregels}
                   lead={lead}
                   fotosCount={detail.fotos.length}
+                  isOwner={isOwner}
                 />
                 <LeadAfspraak lead={lead} />
               </div>

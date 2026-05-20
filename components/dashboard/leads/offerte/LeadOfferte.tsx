@@ -29,6 +29,12 @@ import {
   revertConcept,
   type DraftRegelInput,
 } from '@/lib/dashboard/offerte-draft-actions'
+import {
+  getKostprijzen,
+  type Kostprijs,
+} from '@/lib/dashboard/kostprijzen-actions'
+import { berekenMarge } from '@/lib/dashboard/marge-calc'
+import { KostprijzenModal } from './KostprijzenModal'
 import { LeadContextChips } from './LeadContextChips'
 import { OfferteHeader } from './OfferteHeader'
 import OfferteRegelsTable, { type RegelEdit } from './OfferteRegelsTable'
@@ -43,6 +49,11 @@ type Props = {
   lead: Lead
   /** Aantal foto's bij deze lead — toont "Foto's meesturen (n)" in verzendopties. */
   fotosCount?: number
+  /**
+   * Toont owner-only UI (MargeKaart, Kostprijzen-modal). Default `false` —
+   * de page bepaalt dit op basis van `dashboard_user_profiles.is_owner`.
+   */
+  isOwner?: boolean
 }
 
 /** Parse decimaal-string (komma of punt) naar number; ongeldig → 0. */
@@ -93,6 +104,7 @@ export function LeadOfferte({
   prijsregels,
   lead,
   fotosCount = 0,
+  isOwner = false,
 }: Props) {
   const router = useRouter()
 
@@ -224,14 +236,48 @@ export function LeadOfferte({
   }, [])
 
   // ─── Computed: totalen ──────────────────────────────────────
+  // Voor totalen-berekening hebben we alleen de getallen nodig; voor het
+  // marge-zicht hebben we ook de omschrijving + bron nodig zodat
+  // berekenMarge() per regel het juiste rule_key kan kiezen.
   const regelTotalen = useMemo(
-    () => regels.map((r) => parseDecimal(r.aantal) * parseDecimal(r.stukprijs)),
+    () =>
+      regels.map((r) => ({
+        omschrijving: r.omschrijving,
+        totaal: parseDecimal(r.aantal) * parseDecimal(r.stukprijs),
+        bron: r.bron,
+      })),
     [regels],
   )
   const totalen = useMemo(
-    () => berekenTotalen(regelTotalen, kortingPct),
+    () => berekenTotalen(regelTotalen.map((r) => r.totaal), kortingPct),
     [regelTotalen, kortingPct],
   )
+
+  // ─── Owner-only: kostprijzen + marge ────────────────────────
+  const [kostprijzen, setKostprijzen] = useState<Kostprijs[]>([])
+  const [kostprijzenModalOpen, setKostprijzenModalOpen] = useState(false)
+  const [margeKaartZichtbaar, setMargeKaartZichtbaar] = useState(true)
+
+  // Laad kostprijzen één keer bij mount — alleen voor owners.
+  // getKostprijzen() retourneert Kostprijs[] direct (geen Result-wrapper);
+  // lege array bij fetch-fout is een veilige fallback (verbergt MargeKaart).
+  useEffect(() => {
+    if (!isOwner) return
+    let cancelled = false
+    void getKostprijzen().then((res) => {
+      if (cancelled) return
+      setKostprijzen(res)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isOwner])
+
+  // Marge-overview wordt live herberekend bij elke regel-/kostprijzen-wijziging.
+  const margeOverview = useMemo(() => {
+    if (!isOwner || !margeKaartZichtbaar || kostprijzen.length === 0) return undefined
+    return berekenMarge(regelTotalen, kostprijzen)
+  }, [isOwner, margeKaartZichtbaar, kostprijzen, regelTotalen])
 
   // Geldigheid: vanaf aangemaakt_op (of nu) + N dagen
   const geldigTot = useMemo(
@@ -338,9 +384,28 @@ export function LeadOfferte({
             onPdfClick={handlePdfClick}
             onSendClick={handleSendClick}
             versturenDisabled={!heeftRegels}
+            margeOverview={margeOverview}
+            onOpenKostprijzen={() => setKostprijzenModalOpen(true)}
+            onCloseMarge={() => setMargeKaartZichtbaar(false)}
           />
         </div>
       </div>
+
+      {/* Kostprijzen-modal: in LeadOfferte (niet OfferteSidebar) zodat de
+          modal ook over de regels-tabel ligt. Alleen geladen voor owners. */}
+      {isOwner ? (
+        <KostprijzenModal
+          open={kostprijzenModalOpen}
+          onClose={() => setKostprijzenModalOpen(false)}
+          initialKostprijzen={kostprijzen}
+          margeRegels={margeOverview?.regels ?? []}
+          onSaved={(nieuw) => {
+            setKostprijzen(nieuw)
+            // Zorg dat de kaart weer zichtbaar wordt als 'ie net verborgen was.
+            setMargeKaartZichtbaar(true)
+          }}
+        />
+      ) : null}
     </section>
   )
 }
