@@ -429,18 +429,22 @@ async def send_appointment_confirmation_email(
     start_utc: datetime,
     end_utc: datetime,
     tz: ZoneInfo,
+    approval_token: str,
 ) -> None:
-    """Stuur bevestigingsmail met Frontlix-gebrande layout, Google Calendar
-    deep-link knop + .ics attachment. Apple/Outlook tonen 'Toevoegen aan agenda'
-    knop op basis van de .ics — Google werkt via de deep-link knop in de body.
+    """Stuur bevestigingsmail met Frontlix-gebrande layout en TWEE gelijkwaardige
+    agenda-knoppen: Google Agenda (primary, blauwe vulling) → deep-link naar
+    calendar.google.com; Apple Agenda (secondary, witte vulling + blauwe rand) →
+    /calendar/{token}.ics endpoint dat het .ics-bestand on-the-fly serveert.
 
-    Design: 1 primaire knop (Google Calendar) + caption die naar de .ics-attachment
-    verwijst. Geen losse 'Apple'-knop met data: URL — die werkt niet betrouwbaar
-    in alle mail-clients en zou misleidend aanvoelen.
+    Geen .ics-attachment meer in de mail zelf — één canonical pad: knop →
+    endpoint → download. Voorkomt de 'Eén bijlage'-footer in Gmail en is
+    minder verwarrend voor de klant.
     """
     font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
     voornaam = naam.split()[0] if naam else "daar"
     logo_url = "https://frontlix.com/logo.png"
+    site_url = (get_settings().site_url or "").rstrip("/")
+    apple_calendar_url = f"{site_url}/calendar/{approval_token}.ics"
 
     # Localized labels
     local_start = start_utc.astimezone(tz)
@@ -464,13 +468,8 @@ async def send_appointment_confirmation_email(
         start_utc=start_utc,
         end_utc=end_utc,
     )
-    ics_bytes = build_ics(
-        uid=f"frontlix-{uuid.uuid4()}",
-        summary=cal_summary,
-        description=cal_description,
-        start_utc=start_utc,
-        end_utc=end_utc,
-    )
+    # Geen ics_bytes meer als attachment — Apple-knop linkt naar /calendar/{token}.ics
+    # endpoint dat het bestand on-the-fly serveert. Eén canonical pad voor de klant.
 
     html = f"""
     <!DOCTYPE html>
@@ -537,15 +536,24 @@ async def send_appointment_confirmation_email(
                 </table>
               </td></tr>
 
-              <!-- Sectie: Voeg toe aan agenda -->
-              <tr><td style="padding:28px 40px 8px 40px">
-                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Voeg toe aan je agenda</p>
+              <!-- Sectie: Voeg toe aan agenda (2 gelijkwaardige knoppen) -->
+              <tr><td style="padding:28px 40px 8px 40px" align="center">
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF;text-align:center">Voeg toe aan je agenda</p>
               </td></tr>
-              <tr><td style="padding:0 40px" align="center">
-                <a href="{escape(google_url)}" target="_blank" style="display:inline-block;background-color:#1A56FF;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 26px;border-radius:12px;letter-spacing:-0.1px;white-space:nowrap">Open in Google Agenda</a>
+              <tr><td style="padding:0 24px" align="center">
+                <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
+                  <tr>
+                    <td align="center" style="padding:4px 8px">
+                      <a href="{escape(google_url)}" target="_blank" style="display:inline-block;background:#1A56FF;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:10px;letter-spacing:0.3px;min-width:160px;text-align:center;white-space:nowrap">Google Agenda</a>
+                    </td>
+                    <td align="center" style="padding:4px 8px">
+                      <a href="{escape(apple_calendar_url)}" style="display:inline-block;background:#ffffff;color:#1A56FF;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 26px;border-radius:10px;letter-spacing:0.3px;border:2px solid #1A56FF;min-width:160px;text-align:center;white-space:nowrap">Apple Agenda</a>
+                    </td>
+                  </tr>
+                </table>
               </td></tr>
-              <tr><td style="padding:12px 40px 0 40px" align="center">
-                <p style="margin:0;font-family:{font};font-size:12px;color:#8A94A6;line-height:1.5">Voor Apple Agenda of Outlook: open de bijgesloten <strong>frontlix-afspraak.ics</strong> bijlage.</p>
+              <tr><td style="padding:14px 40px 0 40px" align="center">
+                <p style="margin:0;font-family:{font};font-size:12px;color:#9CA3AF;line-height:1.5;text-align:center">De Apple-knop werkt ook voor Outlook en andere agenda-apps.</p>
               </td></tr>
 
               <!-- Afsluiter -->
@@ -569,15 +577,9 @@ async def send_appointment_confirmation_email(
     </html>
     """
 
-    attachments = [{
-        "filename": "frontlix-afspraak.ics",
-        "data": ics_bytes,
-        "content_type": "text/calendar; charset=utf-8; method=PUBLISH",
-    }]
-
+    # Geen attachments: Apple Agenda knop linkt naar /calendar/{token}.ics endpoint.
     _send_email(
         to=to_email,
         subject=f"Bevestiging: {appointment_label_short} op {datum_label}",
         html_body=html,
-        attachments=attachments,
     )

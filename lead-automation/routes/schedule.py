@@ -567,6 +567,7 @@ async def schedule_submit(request: Request):
                 start_utc=start_utc,
                 end_utc=end_utc,
                 tz=TZ,
+                approval_token=lead.get("approval_token") or "",
             )
             mail_sent = True
         except Exception as e:

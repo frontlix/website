@@ -1000,6 +1000,7 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
                         start_utc=start_utc,
                         end_utc=end_utc,
                         tz=tz,
+                        approval_token=lead.get("approval_token") or "",
                     )
                     mail_sent = True
                 except Exception as e:
