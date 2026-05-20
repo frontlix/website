@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
-import type { DashboardStatus } from './database.types'
+import type { DashboardStatus, Database } from './database.types'
 import { regenerateAutoRegels } from './offerte-auto-regels'
+
+type LeadUpdate = Database['public']['Tables']['leads']['Update']
 
 const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
   'open',
@@ -162,7 +164,7 @@ export async function updateLeadFields(
   const supabase = await getDashboardSupabase()
   const { error } = await supabase
     .from('leads')
-    .update(cleaned)
+    .update(cleaned as LeadUpdate)
     .eq('lead_id', leadId)
 
   if (error) {

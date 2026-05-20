@@ -43,8 +43,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   const supabase = await getDashboardSupabase()
 
   // Stap 1 — laatste 500 berichten (genoeg voor ~100 actieve leads).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const msgQuery: any = supabase
+  const msgQuery = supabase
     .from('berichten')
     .select('lead_id, richting, bericht, type, timestamp')
     .order('timestamp', { ascending: false })
@@ -69,8 +68,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   if (leadIds.length === 0) return []
 
   // Stap 3 — enrich met lead-info (alleen niet-gearchiveerd)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const leadQuery: any = supabase
+  const leadQuery = supabase
     .from('leads')
     .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd, inbox_gelezen_op')
     .in('lead_id', leadIds)
@@ -135,8 +133,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
  */
 export async function getMessagesForLead(leadId: string): Promise<Bericht[]> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: any = supabase
+  const query = supabase
     .from('berichten')
     .select('*')
     .eq('lead_id', leadId)
@@ -180,16 +177,14 @@ export type InboxLeadContext = Pick<
  */
 export async function getInboxLeadContext(leadId: string): Promise<InboxLeadContext | null> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const leadQuery: any = supabase
+  const leadQuery = supabase
     .from('leads')
     .select(
       'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, aangemaakt, bot_gepauzeerd',
     )
     .eq('lead_id', leadId)
     .maybeSingle()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fotosQuery: any = supabase
+  const fotosQuery = supabase
     .from('fotos')
     .select('id', { count: 'exact', head: true })
     .eq('lead_id', leadId)

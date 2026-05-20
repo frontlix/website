@@ -141,7 +141,13 @@ export default async function LeadsPage({
             <FileText size={13} />
             Export
           </a>
-          <button type="button" className="dash-btn dash-btn-secondary" disabled>
+          <button
+            type="button"
+            className="dash-btn dash-btn-secondary"
+            disabled
+            title="Filters — binnenkort beschikbaar"
+            aria-label="Filters — binnenkort beschikbaar"
+          >
             <Filter size={13} />
             Filters
           </button>

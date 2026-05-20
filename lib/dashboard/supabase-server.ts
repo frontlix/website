@@ -1,5 +1,7 @@
+import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { Database } from './database.types'
 
 /**
  * Server-side Supabase client met session uit cookies.
@@ -7,11 +9,17 @@ import { cookies } from 'next/headers'
  *
  * Respecteert RLS — als je RLS wilt bypassen voor admin-werk, gebruik dan
  * getDashboardAdmin() uit supabase-admin.ts.
+ *
+ * Gewrapped in `cache()` zodat layout + page + lib-helpers binnen dezelfde
+ * request maar één client construeren (in plaats van per lib-call opnieuw).
+ *
+ * Generic `<Database>`: laat .from('leads').select(...) zelf de Row-types
+ * afleiden, zodat consumers geen `as any` meer nodig hebben.
  */
-export async function getDashboardSupabase() {
+export const getDashboardSupabase = cache(async () => {
   const cookieStore = await cookies()
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DASHBOARD!,
     {
@@ -32,4 +40,4 @@ export async function getDashboardSupabase() {
       },
     }
   )
-}
+})

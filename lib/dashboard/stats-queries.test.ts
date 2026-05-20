@@ -5,6 +5,7 @@ const { builder, mockFrom } = vi.hoisted(() => {
     select: ReturnType<typeof vi.fn>
     eq: ReturnType<typeof vi.fn>
     gte: ReturnType<typeof vi.fn>
+    lt: ReturnType<typeof vi.fn>
     lte: ReturnType<typeof vi.fn>
     in: ReturnType<typeof vi.fn>
     or: ReturnType<typeof vi.fn>
@@ -16,6 +17,7 @@ const { builder, mockFrom } = vi.hoisted(() => {
   builder.select = vi.fn(() => builder)
   builder.eq = vi.fn(() => builder)
   builder.gte = vi.fn(() => builder)
+  builder.lt = vi.fn(() => builder)
   builder.lte = vi.fn(() => builder)
   builder.in = vi.fn(() => builder)
   builder.or = vi.fn(() => builder)
@@ -49,6 +51,7 @@ function resetBuilder() {
   builder.select.mockClear()
   builder.eq.mockClear()
   builder.gte.mockClear()
+  builder.lt.mockClear()
   builder.lte.mockClear()
   builder.in.mockClear()
   builder.or.mockClear()
@@ -63,7 +66,8 @@ describe('countLeads', () => {
   beforeEach(resetBuilder)
 
   it('met from: filtert op aangemaakt >= from', async () => {
-    builder.gte.mockReturnValueOnce(Promise.resolve({ count: 42, error: null, data: null }))
+    // Terminal call met from+to is .lt() (na .gte()) — daar landt de Promise.
+    builder.lt.mockReturnValueOnce(Promise.resolve({ count: 42, error: null, data: null }))
 
     const result = await countLeads(PERIOD_MAY)
 
@@ -74,7 +78,8 @@ describe('countLeads', () => {
   })
 
   it('met from=null (all-time): geen gte filter', async () => {
-    builder.select.mockReturnValueOnce(Promise.resolve({ count: 200, error: null, data: null }))
+    // From=null → alleen .lt() wordt aangeroepen, dat is hier de terminal.
+    builder.lt.mockReturnValueOnce(Promise.resolve({ count: 200, error: null, data: null }))
 
     const result = await countLeads(PERIOD_ALL)
 
@@ -83,7 +88,7 @@ describe('countLeads', () => {
   })
 
   it('returnt 0 bij error', async () => {
-    builder.gte.mockReturnValueOnce(
+    builder.lt.mockReturnValueOnce(
       Promise.resolve({ count: null, error: { message: 'oops' }, data: null })
     )
     expect(await countLeads(PERIOD_MAY)).toBe(0)
@@ -94,7 +99,7 @@ describe('countConverted', () => {
   beforeEach(resetBuilder)
 
   it('filtert op niet-null akkoord_op OR afspraak_geboekt_op binnen periode', async () => {
-    builder.gte.mockReturnValueOnce(Promise.resolve({ count: 7, error: null, data: null }))
+    builder.lt.mockReturnValueOnce(Promise.resolve({ count: 7, error: null, data: null }))
 
     const result = await countConverted(PERIOD_MAY)
 
@@ -110,7 +115,7 @@ describe('avgOfferteWaarde', () => {
   beforeEach(resetBuilder)
 
   it('berekent gemiddelde van totaal_prijs over leads in periode', async () => {
-    builder.gte.mockReturnValueOnce(
+    builder.lt.mockReturnValueOnce(
       Promise.resolve({
         data: [
           { totaal_prijs: 100 },
@@ -126,7 +131,7 @@ describe('avgOfferteWaarde', () => {
   })
 
   it('negeert null totaal_prijs', async () => {
-    builder.gte.mockReturnValueOnce(
+    builder.lt.mockReturnValueOnce(
       Promise.resolve({
         data: [
           { totaal_prijs: 100 },
@@ -141,7 +146,7 @@ describe('avgOfferteWaarde', () => {
   })
 
   it('returnt null als geen rijen met prijs', async () => {
-    builder.gte.mockReturnValueOnce(Promise.resolve({ data: [], error: null }))
+    builder.lt.mockReturnValueOnce(Promise.resolve({ data: [], error: null }))
     expect(await avgOfferteWaarde(PERIOD_MAY)).toBeNull()
   })
 })
@@ -152,7 +157,8 @@ describe('avgReactietijdMs', () => {
   it('berekent gemiddelde tijd tussen lead.aangemaakt en eerste uitgaande bericht', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
-      gte: vi.fn(() =>
+      gte: vi.fn(() => leadsBuilder),
+      lt: vi.fn(() =>
         Promise.resolve({
           data: [
             { lead_id: 'L1', aangemaakt: '2026-05-01T10:00:00Z' },
@@ -189,7 +195,8 @@ describe('avgReactietijdMs', () => {
   it('negeert leads zonder uitgaande bericht', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
-      gte: vi.fn(() =>
+      gte: vi.fn(() => leadsBuilder),
+      lt: vi.fn(() =>
         Promise.resolve({
           data: [
             { lead_id: 'L1', aangemaakt: '2026-05-01T10:00:00Z' },
@@ -224,7 +231,8 @@ describe('avgReactietijdMs', () => {
   it('returnt null als geen leads matchen', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
-      gte: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      gte: vi.fn(() => leadsBuilder),
+      lt: vi.fn(() => Promise.resolve({ data: [], error: null })),
     }
     ;(mockFrom.mockImplementation as any)(() => leadsBuilder)
     expect(await avgReactietijdMs(PERIOD_MAY)).toBeNull()

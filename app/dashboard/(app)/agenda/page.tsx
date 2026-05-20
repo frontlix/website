@@ -79,7 +79,13 @@ async function WeekView({
           <Link href={`/agenda?week=${nextWeek}`} className="dash-btn dash-btn-secondary">
             →
           </Link>
-          <button type="button" className="dash-btn dash-btn-primary" disabled>
+          <button
+            type="button"
+            className="dash-btn dash-btn-primary"
+            disabled
+            title="Handmatige afspraak — binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
+            aria-label="Afspraak inplannen — binnenkort beschikbaar"
+          >
             <Plus size={13} />
             Afspraak
           </button>
@@ -191,7 +197,13 @@ async function RouteView({
           >
             →
           </Link>
-          <button type="button" className="dash-btn dash-btn-primary" disabled>
+          <button
+            type="button"
+            className="dash-btn dash-btn-primary"
+            disabled
+            title="Handmatige afspraak — binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
+            aria-label="Afspraak inplannen — binnenkort beschikbaar"
+          >
             <Plus size={13} />
             Afspraak
           </button>

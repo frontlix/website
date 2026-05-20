@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import {
@@ -17,11 +18,15 @@ import {
  *
  * Vervangt het inline auth-check patroon dat Plan 3 in
  * app/dashboard/(app)/layout.tsx gebruikte.
+ *
+ * Gewrapped in `cache()`: layout én page roepen dit allebei aan; binnen
+ * dezelfde request krijgen ze nu dezelfde { user, profile } zonder dubbele
+ * DB-roundtrips naar dashboard_user_profiles.
  */
-export async function requireApprovedUser(): Promise<{
+export const requireApprovedUser = cache(async (): Promise<{
   user: User
   profile: DashboardUserProfile
-}> {
+}> => {
   const user = await getCurrentUser()
   if (!user) {
     redirect('/login')
@@ -33,4 +38,4 @@ export async function requireApprovedUser(): Promise<{
   }
 
   return { user, profile }
-}
+})

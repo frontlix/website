@@ -75,8 +75,7 @@ function dayWindow(date: Date): StatsPeriod {
  */
 async function sumOmzetAkkoord(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query = supabase
     .from('leads')
     .select('totaal_prijs')
     .not('akkoord_op', 'is', null)
@@ -99,8 +98,7 @@ async function sumOmzetAkkoord(period: StatsPeriod): Promise<number> {
  */
 async function leadsPerBron(period: StatsPeriod): Promise<BronStat[]> {
   const supabase = await getDashboardSupabase()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase.from('leads').select('bron')
+  let query = supabase.from('leads').select('bron')
   if (period.from) query = query.gte('aangemaakt', period.from)
   if (period.to) query = query.lt('aangemaakt', period.to)
 

@@ -14,6 +14,19 @@ from config import get_settings
 from models.branches import PricingResult
 
 
+def _nl(n: float) -> str:
+    """Format number as Dutch currency string without € sign: 16335.00 → '16.335,00'.
+    Negatives keep their sign. Used voor alle bedragen in de mail templates."""
+    try:
+        v = float(n)
+    except (TypeError, ValueError):
+        return str(n)
+    sign = "-" if v < 0 else ""
+    s = f"{abs(v):,.2f}"
+    # English locale → swap separators (1,234.56 → 1.234,56)
+    return f"{sign}{s.replace(',', '§').replace('.', ',').replace('§', '.')}"
+
+
 def _send_email(to: str, subject: str, html_body: str, attachments: list[dict] | None = None):
     """Send an email via SMTP SSL. Attachments: [{"filename": "...", "data": bytes, "content_type": "..."}]"""
     s = get_settings()
@@ -53,38 +66,42 @@ async def send_approval_email(
     """Send approval email with quote details to Frontlix team."""
     font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
 
+    # Label/value rows: padding-right op de label-cel zorgt voor een duidelijke
+    # gap tussen kolommen (anders plakte 'isolatie gewenst' direct tegen 'ja' aan
+    # op mobiel waar kolommen smaller worden). vertical-align:top → multi-line
+    # labels lijnen netjes uit met hun value.
     fields_html = "".join(
         f'<tr>'
-        f'<td style="padding:10px 0;font-family:{font};font-size:13px;color:#7A8599;width:40%;border-bottom:1px solid #F0F2F5">{escape(f["label"])}</td>'
-        f'<td style="padding:10px 0;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5">{escape(f["value"])}</td>'
+        f'<td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;width:42%;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(f["label"])}</td>'
+        f'<td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(f["value"])}</td>'
         f'</tr>'
         for f in fields
     )
 
     price_lines_html = "".join(
         f'<tr>'
-        f'<td style="padding:9px 0;font-family:{font};font-size:14px;color:#555">{escape(line.label)}</td>'
-        f'<td style="padding:9px 0;text-align:right;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:600">&euro;{line.total:.2f}</td>'
+        f'<td style="padding:11px 14px 11px 0;font-family:{font};font-size:14px;color:#555;vertical-align:top">{escape(line.label)}</td>'
+        f'<td style="padding:11px 0;text-align:right;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:600;white-space:nowrap;vertical-align:top">&euro;&nbsp;{_nl(line.total)}</td>'
         f'</tr>'
         for line in pricing.lines
     )
 
     photos_html = ""
     if photo_urls:
-        # Stacked full-width photos, klikbaar (target=_blank opent originele
-        # bestand op Supabase storage). max-width=480px voor lange foto's,
-        # rounded + subtiele border voor de container-look uit foto 1.
+        # Compact thumbnails ~200x200, side-by-side via inline-block (wrappen
+        # automatisch op kleine mail-clients). Klikbaar: <a target=_blank>
+        # opent het originele Supabase-storage-bestand op full-size.
         blocks = "".join(
-            f'<a href="{escape(url)}" target="_blank" style="display:block;margin:0 0 12px 0;text-decoration:none">'
-            f'<img src="{escape(url)}" alt="Foto van klant" '
-            f'style="display:block;width:100%;max-width:480px;height:auto;border-radius:12px;border:1px solid #E5E7EB" />'
+            f'<a href="{escape(url)}" target="_blank" style="display:inline-block;margin:0 8px 8px 0;text-decoration:none">'
+            f'<img src="{escape(url)}" alt="Foto van klant" width="200" '
+            f'style="display:block;width:200px;height:auto;border-radius:12px;border:1px solid #E5E7EB" />'
             f'</a>'
             for url in photo_urls[:6]
         )
         photos_html = (
-            f'<p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;'
+            f'<p style="margin:0 0 12px 0;font-family:{font};font-size:11px;font-weight:700;'
             f'text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Foto\'s van de klant</p>'
-            f'{blocks}'
+            f'<div>{blocks}</div>'
         )
 
     logo_url = "https://frontlix.com/logo.png"
@@ -144,16 +161,16 @@ async def send_approval_email(
                 <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#B0B8C9">Klantgegevens</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td style="padding:10px 0;font-family:{font};font-size:13px;color:#7A8599;width:40%;border-bottom:1px solid #F0F2F5">Naam</td>
-                    <td style="padding:10px 0;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5">{escape(naam)}</td>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;width:42%;border-bottom:1px solid #F0F2F5;vertical-align:top">Naam</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(naam)}</td>
                   </tr>
                   <tr>
-                    <td style="padding:10px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5">Telefoon</td>
-                    <td style="padding:10px 0;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5">+{escape(telefoon)}</td>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Telefoon</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#1A1A1A;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">+{escape(telefoon)}</td>
                   </tr>
                   <tr>
-                    <td style="padding:10px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5">Email</td>
-                    <td style="padding:10px 0;font-family:{font};font-size:14px;color:#1A56FF;font-weight:500;border-bottom:1px solid #F0F2F5">{escape(email)}</td>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Email</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#1A56FF;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(email)}</td>
                   </tr>
                   {fields_html}
                 </table>
@@ -177,29 +194,30 @@ async def send_approval_email(
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8F9FC;border-radius:12px">
                   <tr>
                     <td style="padding:14px 20px 4px 20px;font-family:{font};font-size:13px;color:#7A8599">Subtotaal excl. BTW</td>
-                    <td style="padding:14px 20px 4px 20px;text-align:right;font-family:{font};font-size:13px;color:#555;font-weight:500">&euro;{pricing.subtotaal_excl_btw:.2f}</td>
+                    <td style="padding:14px 20px 4px 20px;text-align:right;font-family:{font};font-size:13px;color:#555;font-weight:500;white-space:nowrap">&euro;&nbsp;{_nl(pricing.subtotaal_excl_btw)}</td>
                   </tr>
                   <tr>
                     <td style="padding:4px 20px 14px 20px;font-family:{font};font-size:13px;color:#7A8599">BTW 21%</td>
-                    <td style="padding:4px 20px 14px 20px;text-align:right;font-family:{font};font-size:13px;color:#555">&euro;{pricing.btw_bedrag:.2f}</td>
+                    <td style="padding:4px 20px 14px 20px;text-align:right;font-family:{font};font-size:13px;color:#555;white-space:nowrap">&euro;&nbsp;{_nl(pricing.btw_bedrag)}</td>
                   </tr>
                   <tr><td colspan="2" style="padding:0 20px"><div style="height:1px;background-color:#E5E7EB"></div></td></tr>
                   <tr>
                     <td style="padding:16px 20px;font-family:{font};font-size:18px;font-weight:700;color:#1A1A1A">Totaal incl. BTW</td>
-                    <td style="padding:16px 20px;text-align:right;font-family:{font};font-size:18px;font-weight:700;color:#1A56FF">&euro;{pricing.totaal_incl_btw:.2f}</td>
+                    <td style="padding:16px 20px;text-align:right;font-family:{font};font-size:18px;font-weight:700;color:#1A56FF;white-space:nowrap">&euro;&nbsp;{_nl(pricing.totaal_incl_btw)}</td>
                   </tr>
                 </table>
               </td></tr>
 
               <!-- Buttons (side-by-side, met icons; nested table = max compatibility) -->
-              <tr><td style="padding:24px 40px 12px 40px" align="center">
+              <!-- white-space:nowrap voorkomt dat icon + tekst over 2 regels splitsen op smalle mobile-clients -->
+              <tr><td style="padding:24px 24px 12px 24px" align="center">
                 <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
                   <tr>
-                    <td style="padding:0 8px">
-                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#22C55E;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#10003;&nbsp; Goedkeuren</a>
+                    <td style="padding:0 6px">
+                      <a href="{escape(approve_url)}" style="display:inline-block;background-color:#22C55E;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:12px;letter-spacing:-0.1px;white-space:nowrap;mso-padding-alt:0">&#10003;&nbsp;Goedkeuren</a>
                     </td>
-                    <td style="padding:0 8px">
-                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F59E0B;color:#ffffff;font-family:{font};font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:14px;letter-spacing:-0.1px">&#9998;&nbsp; Wijzigen</a>
+                    <td style="padding:0 6px">
+                      <a href="{escape(edit_url)}" style="display:inline-block;background-color:#F59E0B;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:12px;letter-spacing:-0.1px;white-space:nowrap;mso-padding-alt:0">&#9998;&nbsp;Wijzigen</a>
                     </td>
                   </tr>
                 </table>

@@ -95,10 +95,22 @@ export default async function InboxPage({
             <div className={styles.colHeadTitle}>
               <span>Inbox</span>
               <div className={styles.colHeadActions}>
-                <button type="button" className={styles.iconBtn} aria-label="Filter" disabled>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  disabled
+                  title="Filter — binnenkort beschikbaar"
+                  aria-label="Filter — binnenkort beschikbaar"
+                >
                   <Filter size={14} />
                 </button>
-                <button type="button" className={styles.iconBtn} aria-label="Vernieuwen" disabled>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  disabled
+                  title="Vernieuwen — binnenkort beschikbaar (inbox refresht nu automatisch via realtime)"
+                  aria-label="Vernieuwen — binnenkort beschikbaar"
+                >
                   <RefreshCw size={14} />
                 </button>
               </div>
