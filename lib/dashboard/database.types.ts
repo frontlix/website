@@ -14,12 +14,31 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          bijgewerkt_op: string
+          key: string
+          value: string
+        }
+        Insert: {
+          bijgewerkt_op?: string
+          key: string
+          value: string
+        }
+        Update: {
+          bijgewerkt_op?: string
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       berichten: {
         Row: {
           bericht: string | null
           foto_analyse: string | null
           foto_url: string | null
           id: string
+          kanaal: string
           lead_id: string
           media_id: string | null
           richting: string
@@ -32,6 +51,7 @@ export type Database = {
           foto_analyse?: string | null
           foto_url?: string | null
           id?: string
+          kanaal?: string
           lead_id: string
           media_id?: string | null
           richting: string
@@ -44,6 +64,7 @@ export type Database = {
           foto_analyse?: string | null
           foto_url?: string | null
           id?: string
+          kanaal?: string
           lead_id?: string
           media_id?: string | null
           richting?: string
@@ -335,6 +356,7 @@ export type Database = {
           id: string
           inbox_gelezen_op: string | null
           invegen_m2: number | null
+          kanaal: string
           klus_geblokkeerd: boolean
           korstmos: string | null
           korting_omschrijving: string | null
@@ -351,6 +373,7 @@ export type Database = {
           offerte_pending_wijzigingen: Json | null
           offerte_verstuurd: boolean | null
           offerte_verstuurd_op: string | null
+          opening_wa_message_id: string | null
           pending_eigenaar_review: Json | null
           plaats: string | null
           planten: string | null
@@ -375,6 +398,13 @@ export type Database = {
           voegzand_onkruidwerend_zakken: number | null
           voegzand_type: string | null
           voegzand_zakken: number | null
+          web_chat_fallback_email_verzonden_op: string | null
+          web_chat_geopend_op: string | null
+          web_chat_reminder_verzonden_op: string | null
+          web_chat_token: string | null
+          web_chat_token_expires_at: string | null
+          web_chat_voltooid_op: string | null
+          whatsapp_bereikbaar: boolean | null
           wijzig_adres_concept: Json | null
           wijziging_concept: Json | null
           zand_kleur: string | null
@@ -427,6 +457,7 @@ export type Database = {
           id?: string
           inbox_gelezen_op?: string | null
           invegen_m2?: number | null
+          kanaal?: string
           klus_geblokkeerd?: boolean
           korstmos?: string | null
           korting_omschrijving?: string | null
@@ -443,6 +474,7 @@ export type Database = {
           offerte_pending_wijzigingen?: Json | null
           offerte_verstuurd?: boolean | null
           offerte_verstuurd_op?: string | null
+          opening_wa_message_id?: string | null
           pending_eigenaar_review?: Json | null
           plaats?: string | null
           planten?: string | null
@@ -467,6 +499,13 @@ export type Database = {
           voegzand_onkruidwerend_zakken?: number | null
           voegzand_type?: string | null
           voegzand_zakken?: number | null
+          web_chat_fallback_email_verzonden_op?: string | null
+          web_chat_geopend_op?: string | null
+          web_chat_reminder_verzonden_op?: string | null
+          web_chat_token?: string | null
+          web_chat_token_expires_at?: string | null
+          web_chat_voltooid_op?: string | null
+          whatsapp_bereikbaar?: boolean | null
           wijzig_adres_concept?: Json | null
           wijziging_concept?: Json | null
           zand_kleur?: string | null
@@ -519,6 +558,7 @@ export type Database = {
           id?: string
           inbox_gelezen_op?: string | null
           invegen_m2?: number | null
+          kanaal?: string
           klus_geblokkeerd?: boolean
           korstmos?: string | null
           korting_omschrijving?: string | null
@@ -535,6 +575,7 @@ export type Database = {
           offerte_pending_wijzigingen?: Json | null
           offerte_verstuurd?: boolean | null
           offerte_verstuurd_op?: string | null
+          opening_wa_message_id?: string | null
           pending_eigenaar_review?: Json | null
           plaats?: string | null
           planten?: string | null
@@ -559,6 +600,13 @@ export type Database = {
           voegzand_onkruidwerend_zakken?: number | null
           voegzand_type?: string | null
           voegzand_zakken?: number | null
+          web_chat_fallback_email_verzonden_op?: string | null
+          web_chat_geopend_op?: string | null
+          web_chat_reminder_verzonden_op?: string | null
+          web_chat_token?: string | null
+          web_chat_token_expires_at?: string | null
+          web_chat_voltooid_op?: string | null
+          whatsapp_bereikbaar?: boolean | null
           wijzig_adres_concept?: Json | null
           wijziging_concept?: Json | null
           zand_kleur?: string | null
@@ -566,6 +614,74 @@ export type Database = {
           zand_kleur_naturel?: boolean | null
         }
         Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          bijgewerkt_door: string | null
+          bijgewerkt_op: string
+          enabled: boolean
+          event_type: Database["public"]["Enums"]["notification_event_type"]
+          kanaal: Database["public"]["Enums"]["notification_kanaal"]
+        }
+        Insert: {
+          bijgewerkt_door?: string | null
+          bijgewerkt_op?: string
+          enabled?: boolean
+          event_type: Database["public"]["Enums"]["notification_event_type"]
+          kanaal: Database["public"]["Enums"]["notification_kanaal"]
+        }
+        Update: {
+          bijgewerkt_door?: string | null
+          bijgewerkt_op?: string
+          enabled?: boolean
+          event_type?: Database["public"]["Enums"]["notification_event_type"]
+          kanaal?: Database["public"]["Enums"]["notification_kanaal"]
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          aangemaakt_op: string
+          body: string
+          event_type: Database["public"]["Enums"]["notification_event_type"]
+          gelezen_op: string | null
+          id: string
+          lead_id: string | null
+          payload: Json
+          titel: string
+          user_id: string
+        }
+        Insert: {
+          aangemaakt_op?: string
+          body: string
+          event_type: Database["public"]["Enums"]["notification_event_type"]
+          gelezen_op?: string | null
+          id?: string
+          lead_id?: string | null
+          payload?: Json
+          titel: string
+          user_id: string
+        }
+        Update: {
+          aangemaakt_op?: string
+          body?: string
+          event_type?: Database["public"]["Enums"]["notification_event_type"]
+          gelezen_op?: string | null
+          id?: string
+          lead_id?: string | null
+          payload?: Json
+          titel?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["lead_id"]
+          },
+        ]
       }
       offertes: {
         Row: {
@@ -614,6 +730,35 @@ export type Database = {
           },
         ]
       }
+      pending_delivery_checks: {
+        Row: {
+          gepland_op: string
+          lead_id: string
+          verlopen_op: string
+          wa_message_id: string
+        }
+        Insert: {
+          gepland_op?: string
+          lead_id: string
+          verlopen_op: string
+          wa_message_id: string
+        }
+        Update: {
+          gepland_op?: string
+          lead_id?: string
+          verlopen_op?: string
+          wa_message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_delivery_checks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["lead_id"]
+          },
+        ]
+      }
       pricing_rules: {
         Row: {
           bijgewerkt_op: string
@@ -651,6 +796,7 @@ export type Database = {
         Row: {
           aangemaakt: string | null
           aantal: number | null
+          bron: string
           eenheid: string | null
           id: string
           lead_id: string
@@ -662,6 +808,7 @@ export type Database = {
         Insert: {
           aangemaakt?: string | null
           aantal?: number | null
+          bron?: string
           eenheid?: string | null
           id?: string
           lead_id: string
@@ -673,6 +820,7 @@ export type Database = {
         Update: {
           aangemaakt?: string | null
           aantal?: number | null
+          bron?: string
           eenheid?: string | null
           id?: string
           lead_id?: string
@@ -690,6 +838,39 @@ export type Database = {
             referencedColumns: ["lead_id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          aangemaakt_op: string
+          auth: string
+          endpoint: string
+          id: string
+          laatst_gebruikt_op: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          aangemaakt_op?: string
+          auth: string
+          endpoint: string
+          id?: string
+          laatst_gebruikt_op?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          aangemaakt_op?: string
+          auth?: string
+          endpoint?: string
+          id?: string
+          laatst_gebruikt_op?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       service_offerings: {
         Row: {
@@ -715,21 +896,60 @@ export type Database = {
       tags: {
         Row: {
           aangemaakt_op: string
+          icon: string | null
           id: string
           kleur: string | null
           naam: string
         }
         Insert: {
           aangemaakt_op?: string
+          icon?: string | null
           id?: string
           kleur?: string | null
           naam: string
         }
         Update: {
           aangemaakt_op?: string
+          icon?: string | null
           id?: string
           kleur?: string | null
           naam?: string
+        }
+        Relationships: []
+      }
+      template_aanvragen: {
+        Row: {
+          aangemaakt_op: string
+          aanvrager_email: string
+          aanvrager_user_id: string
+          bijgewerkt_op: string | null
+          id: string
+          notitie: string | null
+          status: string
+          template_naam: string
+          voorgestelde_tekst: string
+        }
+        Insert: {
+          aangemaakt_op?: string
+          aanvrager_email: string
+          aanvrager_user_id: string
+          bijgewerkt_op?: string | null
+          id?: string
+          notitie?: string | null
+          status?: string
+          template_naam: string
+          voorgestelde_tekst: string
+        }
+        Update: {
+          aangemaakt_op?: string
+          aanvrager_email?: string
+          aanvrager_user_id?: string
+          bijgewerkt_op?: string | null
+          id?: string
+          notitie?: string | null
+          status?: string
+          template_naam?: string
+          voorgestelde_tekst?: string
         }
         Relationships: []
       }
@@ -744,6 +964,8 @@ export type Database = {
           bijgewerkt_op: string
           calendar_link: string | null
           chatbot_naam: string
+          daily_digest_laatste_run_op: string | null
+          daily_digest_tijd: string
           eigenaar_email: string | null
           eigenaar_spoed_telefoon: string | null
           eigenaar_whatsapp: string | null
@@ -768,6 +990,8 @@ export type Database = {
           bijgewerkt_op?: string
           calendar_link?: string | null
           chatbot_naam: string
+          daily_digest_laatste_run_op?: string | null
+          daily_digest_tijd?: string
           eigenaar_email?: string | null
           eigenaar_spoed_telefoon?: string | null
           eigenaar_whatsapp?: string | null
@@ -792,6 +1016,8 @@ export type Database = {
           bijgewerkt_op?: string
           calendar_link?: string | null
           chatbot_naam?: string
+          daily_digest_laatste_run_op?: string | null
+          daily_digest_tijd?: string
           eigenaar_email?: string | null
           eigenaar_spoed_telefoon?: string | null
           eigenaar_whatsapp?: string | null
@@ -813,10 +1039,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_notification_for_all_users: {
+        Args: {
+          p_body: string
+          p_event_type: Database["public"]["Enums"]["notification_event_type"]
+          p_lead_id?: string
+          p_payload?: Json
+          p_titel: string
+        }
+        Returns: undefined
+      }
+      dispatch_notification_delivery: {
+        Args: {
+          p_kanaal: Database["public"]["Enums"]["notification_kanaal"]
+          p_notification_id: string
+        }
+        Returns: number
+      }
       is_approved_dashboard_user: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      notification_event_type:
+        | "nieuwe_lead"
+        | "owner_review_nodig"
+        | "klant_vraagt_korting"
+        | "offerte_goedgekeurd"
+        | "offerte_afgewezen"
+        | "afspraak_ingepland"
+        | "nieuwe_review"
+        | "dagelijkse_samenvatting"
+        | "template_goedgekeurd"
+        | "template_afgewezen"
+        | "template_notitie"
+      notification_kanaal: "in_app" | "email" | "push" | "whatsapp"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -943,10 +1198,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      notification_event_type: [
+        "nieuwe_lead",
+        "owner_review_nodig",
+        "klant_vraagt_korting",
+        "offerte_goedgekeurd",
+        "offerte_afgewezen",
+        "afspraak_ingepland",
+        "nieuwe_review",
+        "dagelijkse_samenvatting",
+        "template_goedgekeurd",
+        "template_afgewezen",
+        "template_notitie",
+      ],
+      notification_kanaal: ["in_app", "email", "push", "whatsapp"],
+    },
   },
 } as const
-
 // ============================================
 // Frontlix dashboard — app-level types
 // ============================================
@@ -1014,3 +1283,4 @@ export type DashboardUserProfile = Database['public']['Tables']['dashboard_user_
 export type TenantSettings = Database['public']['Tables']['tenant_settings']['Row']
 export type PricingRule = Database['public']['Tables']['pricing_rules']['Row']
 export type ServiceOffering = Database['public']['Tables']['service_offerings']['Row']
+
