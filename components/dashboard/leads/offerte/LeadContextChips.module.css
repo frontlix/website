@@ -1,0 +1,91 @@
+/* LeadContextChips — rij readonly chips met lead-data. */
+
+.container {
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Label-chip — uppercase 10px 700 in primary, subtiele primary-tint bg. */
+.labelChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(26, 86, 255, 0.08);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+/* Data-chip — label + waarde naast elkaar. */
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.chipLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.chipValue {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+/* Tekst-link rechts — duw via margin-left:auto naar einde rij. */
+.editLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 6px;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.editLink:hover {
+  text-decoration: underline;
+}
+
+.editLink:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Mobile: laat edit-link op nieuwe rij vallen zodat layout niet breekt. */
+@media (max-width: 640px) {
+  .container {
+    padding: var(--space-3) var(--space-4);
+  }
+  .editLink {
+    margin-left: 0;
+  }
+}

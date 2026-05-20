@@ -1,0 +1,36 @@
+/* LeadOfferte layout — verticale stack met header/chips bovenaan,
+   en daaronder een 2-koloms grid (main + aside) op desktop.
+   Op mobile (<=1024px) klapt aside onder main. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.main {
+  min-width: 0; /* voorkomt overflow door grid-children */
+}
+
+.aside {
+  min-width: 0;
+}
+
+@media (min-width: 1025px) {
+  .body {
+    /* main flex, aside vaste breedte — matched het Canva-design */
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-5);
+    padding: var(--space-5);
+  }
+}

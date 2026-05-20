@@ -10,7 +10,7 @@ import { LeadInfoTab } from '@/components/dashboard/lead-detail/LeadInfoTab'
 import { WhatsAppPane } from '@/components/dashboard/lead-detail/WhatsAppPane'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
 import { LeadTagsEditor } from '@/components/dashboard/leads/LeadTagsEditor'
-import { LeadOfferte } from '@/components/dashboard/leads/LeadOfferte'
+import { LeadOfferte } from '@/components/dashboard/leads/offerte/LeadOfferte'
 import { LeadAfspraak } from '@/components/dashboard/leads/LeadAfspraak'
 import { LeadNotes } from '@/components/dashboard/leads/LeadNotes'
 import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
@@ -74,6 +74,7 @@ export default async function LeadDetailPage({
                   offertes={detail.offertes}
                   prijsregels={detail.prijsregels}
                   lead={lead}
+                  fotosCount={detail.fotos.length}
                 />
                 <LeadAfspraak lead={lead} />
               </div>
