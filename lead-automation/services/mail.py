@@ -507,7 +507,17 @@ async def send_appointment_confirmation_email(
 
               <!-- Body -->
               <tr><td style="padding:18px 40px 8px 40px">
-                <p style="margin:0;font-family:{font};font-size:15px;color:#475569;line-height:1.6">Hoi {escape(voornaam)}, dank voor het vertrouwen in Frontlix. Hieronder vind je de details van je {escape(appointment_label_short)}.</p>
+                <p style="margin:0;font-family:{font};font-size:15px;color:#475569;line-height:1.6">Hoi {escape(voornaam)}, dank voor uw interesse in Frontlix. Hieronder vindt u de details van uw {escape(appointment_label_short)}.</p>
+              </td></tr>
+
+              <!-- Demo-notice — duidelijk maken dat dit een demonstratie is -->
+              <tr><td style="padding:14px 40px 4px 40px">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px">
+                  <tr><td style="padding:14px 18px">
+                    <p style="margin:0 0 4px 0;font-family:{font};font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Demonstratie</p>
+                    <p style="margin:0;font-family:{font};font-size:13px;color:#1E3A8A;line-height:1.55">Deze e-mail is een voorbeeld van de automatische bevestiging die Frontlix namens uw bedrijf naar klanten verstuurt zodra zij een afspraak inplannen. De onderstaande afspraakgegevens zijn fictief en uitsluitend ter illustratie van het proces.</p>
+                  </td></tr>
+                </table>
               </td></tr>
 
               <!-- Detail-tabel -->
