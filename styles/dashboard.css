@@ -520,3 +520,24 @@
 .dash-search-inline input::placeholder {
   color: var(--fg-muted);
 }
+
+/* ─────────────────────────────────────────────────────────
+   Mobile-utility classes — gebruiken in CSS Modules via
+   composes of in JSX className-combos. Houden we klein.
+   ───────────────────────────────────────────────────────── */
+.dash-tap {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+/* !important hier acceptabel: utility-classes moeten component-styles overrulen,
+   anders heeft `<button className={styles.foo + ' dash-hide-sm'}>` geen effect
+   wanneer `styles.foo` ook een display-waarde zet. */
+@media (max-width: 640px) {
+  .dash-hide-sm { display: none !important; }
+}
+.dash-show-sm {
+  display: none;
+}
+@media (max-width: 640px) {
+  .dash-show-sm { display: block; }
+}

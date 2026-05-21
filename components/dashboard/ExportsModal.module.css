@@ -166,3 +166,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  /* Format-kaarten en knoppen krijgen tap-min hoogte. */
+  /* Opmerking: de taak verwacht `.formatCard`, maar dit component gebruikt
+     `.formatBtn` (de werkelijke format-selector). `.formatCard` bestaat niet
+     in dit bestand — `.formatBtn` wordt hier gebruikt als correcte equivalent. */
+  .formatBtn,
+  .actions button {
+    min-height: var(--tap-min);
+  }
+}
