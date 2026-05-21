@@ -105,19 +105,25 @@
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .banner {
+    /* Icoon verbergen op mobile (zie .iconBadge onder) — banner wordt
+       dan een single-column layout zonder de losse icon-rij erboven. */
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 0;
     padding: 14px 16px;
   }
+  /* Icoon-badge weg op mobile — neemt een hele rij + gap in beslag,
+     terwijl de blauwe kicker-tekst al aangeeft dat dit de samenvatting
+     is. Banner wordt zo merkbaar minder hoog. */
   .iconBadge {
-    width: 34px;
-    height: 34px;
+    display: none;
   }
   .title {
     font-size: 16px;
+    margin-bottom: 4px;
   }
   .text {
     font-size: 13px;
+    margin-bottom: 10px;
   }
   .kickerText {
     /* op smal scherm de begroet-prefix verkorten, anders breekt 't */
