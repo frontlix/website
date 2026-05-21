@@ -297,10 +297,16 @@ export function LeadOfferte({
   }
 
   const handlePreviewClick = () => {
-    // Fase 2a: nog steeds stub. Fase 2.5/3 → server-action die concept-PDF genereert.
-    alert(
-      'Preview huidige versie wordt binnenkort gekoppeld.\n\nVoor nu: gebruik "Bekijk verzonden offerte" om de laatst verzonden PDF te zien.',
-    )
+    // "Preview huidige versie" toont de PDF van de laatst verzonden versie —
+    // zoals de klant 'm heeft ontvangen. Geen concept-rendering hier (daar is
+    // de sidebar "PDF"-knop voor).
+    const url = laatsteVerzonden?.pdf_url
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else {
+      // eslint-disable-next-line no-alert
+      alert('Nog geen verzonden offerte beschikbaar — verstuur deze concept-versie eerst.')
+    }
   }
 
   const handleRevertClick = useCallback(async () => {
@@ -329,12 +335,12 @@ export function LeadOfferte({
   }, [leadId, router])
 
   const handlePdfClick = () => {
-    // Sidebar "Bekijk PDF" — opent huidige verstuurde PDF (zelfde als header-link)
-    if (huidige?.pdf_url) {
-      window.open(huidige.pdf_url, '_blank', 'noopener,noreferrer')
-    } else {
-      alert('Nog geen verzonden PDF beschikbaar.')
-    }
+    // Sidebar "PDF" → toont de huidige (mogelijk aangepaste) versie als
+    // HTML-preview in een nieuw tabblad. Net als een PDF maar live —
+    // direct gebaseerd op de regels die nu in de DB staan voor deze lead.
+    // De pagina is print-vriendelijk; user kan via browser-print naar PDF.
+    const url = `/offerte-preview/${leadId}`
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   const handleSendClick = () => {
