@@ -73,6 +73,16 @@
   }
 }
 
+/* Responsieve show/hide helpers. Default: alleen op desktop zichtbaar;
+   .dash-show-mobile springt aan onder 640px. Gebruikt om dezelfde
+   section een andere knop te geven op telefoon (bv. Eye → 'Afspraken'). */
+.dash-hide-mobile { display: inline-flex; }
+.dash-show-mobile { display: none; }
+@media (max-width: 640px) {
+  .dash-hide-mobile { display: none !important; }
+  .dash-show-mobile { display: inline-flex !important; }
+}
+
 /* ── Card ──────────────────────────────────────────────── */
 .dash-card {
   background: var(--bg);

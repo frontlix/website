@@ -32,11 +32,12 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
       if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
+    // Restore naar lege string i.p.v. gecapteerde prev-value zodat een
+    // stack van overlays nooit body permanent gelocked achterlaat.
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      document.body.style.overflow = ''
     }
     // close is stable per render maar referentieel niet — daarom geen
     // dependency-array uitbreiden; effect runt alleen bij mount/unmount.

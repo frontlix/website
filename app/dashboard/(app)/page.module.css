@@ -140,6 +140,11 @@
     gap: 10px;
     padding: 10px;
   }
+  /* Anker-target voor 'Afspraken'-knop in de section-head — clearance
+     onder de sticky topbar (60px) zodat de live-feed-titel niet wegvalt. */
+  .liveFeedAnchor {
+    scroll-margin-top: 72px;
+  }
 }
 @media (max-width: 380px) {
   .trendStats {

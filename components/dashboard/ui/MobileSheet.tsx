@@ -47,15 +47,17 @@ export function MobileSheet({
     }
     document.addEventListener('keydown', onKey)
     // Body-scroll lock voorkomt dat de achtergrond scrolt terwijl
-    // de sheet openstaat. Restored on close.
-    const prevOverflow = document.body.style.overflow
+    // de sheet openstaat. We restoren naar lege string (i.p.v. de
+    // gecapteerde prev-value) zodat een stack van sheets nooit body
+    // permanent gelocked achterlaat — was de oorzaak van een "scroll
+    // loopt vast"-bug op iOS Safari.
     document.body.style.overflow = 'hidden'
     // Initial focus naar de sheet zodat keyboard-gebruikers direct
     // binnen de dialog landen (en Tab in de inhoud blijft).
     sheetRef.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      document.body.style.overflow = ''
     }
   }, [open, dismissible])
 

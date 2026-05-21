@@ -95,12 +95,13 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const [werkAdresNotFound, setWerkAdresNotFound] = useState(false)
   const [factuurAdresNotFound, setFactuurAdresNotFound] = useState(false)
 
-  // Lock scroll while modal open
+  // Lock scroll while modal open — restore naar lege string i.p.v.
+  // gecapteerde prev-value zodat overlay-stacking nooit een permanente
+  // body-lock achterlaat.
   useEffect(() => {
-    const original = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = original
+      document.body.style.overflow = ''
     }
   }, [])
 

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Plus, Eye } from 'lucide-react'
+import { FileText, Plus, Eye, Calendar } from 'lucide-react'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import {
@@ -216,15 +216,26 @@ export default async function OverzichtPage({
           </div>
         </div>
         <div className="dash-section-actions">
+          {/* Desktop: Eye-knop opent focus-modus (full-width live feed).
+              Op mobile vervangen door een ankerlink 'Afspraken' die direct
+              naar de live-feed scrollt — geen extra view-state. */}
           <Link
             href="/dashboard?focus=live"
-            className="dash-btn dash-btn-secondary"
+            className="dash-btn dash-btn-secondary dash-hide-mobile"
             scroll={false}
             title="Focus-modus: alleen Live activiteit"
             aria-label="Focus-modus openen"
           >
             <Eye size={14} />
           </Link>
+          <a
+            href="#live-feed"
+            className="dash-btn dash-btn-secondary dash-show-mobile"
+            aria-label="Spring naar live feed"
+          >
+            <Calendar size={14} />
+            Afspraken
+          </a>
           <a
             href="/api/dashboard/export/leads-csv"
             className="dash-btn dash-btn-secondary"
@@ -305,7 +316,12 @@ export default async function OverzichtPage({
 
         {/* RECHTERKOLOM — live activity feed + komende afspraken */}
         <div className={styles.colRight}>
-          <LiveActivityFeed items={activityItems} />
+          {/* id voor de mobile 'Afspraken'-anchor button in de section-head.
+              scroll-margin-top in CSS zorgt dat de sticky topbar 'm niet
+              afdekt na de jump. */}
+          <div id="live-feed" className={styles.liveFeedAnchor}>
+            <LiveActivityFeed items={activityItems} />
+          </div>
 
           <div className="dash-card">
             <div className="dash-card-head">
