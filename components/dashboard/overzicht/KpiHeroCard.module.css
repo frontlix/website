@@ -168,24 +168,72 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .card {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 16px;
-  }
-}
-
 @media (max-width: 860px) {
   .card {
     grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 18px;
+    gap: 14px;
+    padding: 16px;
   }
   .right {
     align-self: flex-start;
+    /* Donut links, doel-block rechts ervan — al `display: flex` standaard,
+       wel `width: 100%` zodat doel-info de rest van de breedte vult. */
+    width: 100%;
+    gap: 14px;
+  }
+  .doelBlock {
+    flex: 1;
+    min-width: 0;
   }
   .valueNumber {
     font-size: 36px;
+  }
+}
+
+/* Mobile (<640px): nog compacter — kleiner icoon, kleinere donut,
+   alles dichter op elkaar zodat de hero niet half het scherm vult. */
+@media (max-width: 640px) {
+  .card {
+    gap: 12px;
+    padding: 14px;
+  }
+  .left {
+    gap: 12px;
+    align-items: center;
+  }
+  .iconBadge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .body {
+    /* iconBadge ge-center'd op de label-rij — die wordt nu kleiner zodat
+       het label en value beide visueel naast/onder het icoon balanceren */
+    align-self: center;
+  }
+  .headRow {
+    margin-bottom: 2px;
+  }
+  .valueRow {
+    margin-bottom: 4px;
+  }
+  .valueNumber {
+    font-size: 30px;
+  }
+  .valueAffix {
+    font-size: 18px;
+  }
+  .valueAffixSuffix {
+    font-size: 14px;
+  }
+  /* Donut + doel-blok als horizontale rij — doel-info rechts naast donut */
+  .doelLabel {
+    font-size: 10px;
+  }
+  .doelValue {
+    font-size: 16px;
+  }
+  .nog {
+    font-size: 11px;
   }
 }
