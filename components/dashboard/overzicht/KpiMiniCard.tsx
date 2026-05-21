@@ -20,9 +20,14 @@ import styles from './KpiMiniCard.module.css'
 export function KpiMiniCard({
   metric,
   href,
+  isActive,
 }: {
   metric: KpiMetric | ExtraMetric
   href?: string
+  /** True als deze mini de hero-KPI is. Op desktop verbergt CSS 'm dan
+   *  (geen duplicaat met hero); op mobile blijft 'ie zichtbaar zodat
+   *  de 4-vakjes-overview compleet blijft. */
+  isActive?: boolean
 }) {
   const { prefix, number, suffix } = formatKpiValue(metric.value, metric.unit)
   const delta = computeDelta(metric as KpiMetric)
@@ -62,6 +67,7 @@ export function KpiMiniCard({
         className={`${styles.card} ${styles.clickable}`}
         scroll={false}
         data-kpi={metric.key}
+        data-active={isActive ? 'true' : undefined}
       >
         {content}
       </Link>

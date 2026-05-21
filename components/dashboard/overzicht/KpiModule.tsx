@@ -28,7 +28,10 @@ export function KpiModule({
   extraMetric?: ExtraMetric
 }) {
   const activeMetric = metrics[active]
-  const others = KPI_KEYS.filter((k) => k !== active).map((k) => metrics[k])
+  // Render alle 4 KPI's als mini-cards (niet alleen de niet-actieve).
+  // CSS verbergt op desktop de mini die als hero getoond wordt; op mobile
+  // blijft 'ie zichtbaar zodat de 4-vakjes-overview compleet is.
+  const allKpis = KPI_KEYS.map((k) => metrics[k])
 
   return (
     <div className={styles.module}>
@@ -38,8 +41,13 @@ export function KpiModule({
           <KpiTabs active={active} hrefBase={hrefBase} />
         </div>
         <div className={styles.miniGrid}>
-          {others.map((m) => (
-            <KpiMiniCard key={m.key} metric={m} href={`${hrefBase}?kpi=${m.key}`} />
+          {allKpis.map((m) => (
+            <KpiMiniCard
+              key={m.key}
+              metric={m}
+              href={`${hrefBase}?kpi=${m.key}`}
+              isActive={m.key === active}
+            />
           ))}
           {extraMetric && <KpiMiniCard key={extraMetric.key} metric={extraMetric} />}
         </div>

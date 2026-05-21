@@ -87,3 +87,24 @@
   color: #C33333;
 }
 
+/* Active mini is verborgen op default (= desktop) — die wordt al groot
+   getoond in de hero, dus duplicate geeft geen meerwaarde. Op mobile
+   tonen we hem juist wel (zie media query onder) zodat de 4 KPI-vakjes
+   altijd zichtbaar zijn. */
+.card[data-active="true"] {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* Toon active KPI ook als mini-card op telefoon — geeft een vaste
+     4-vakjes overview (Omzet, Leads, Conversie, Offertes open). */
+  .card[data-active="true"] {
+    display: flex;
+  }
+  /* Reactietijd-mini verbergen op telefoon — past bij de tab-hide in
+     KpiTabs (Reactietijd is minder relevant in mobile-context). */
+  .card[data-kpi="reactietijd"] {
+    display: none;
+  }
+}
+
