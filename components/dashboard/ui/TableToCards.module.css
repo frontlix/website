@@ -25,6 +25,16 @@
   cursor: pointer;
   transition: background 0.1s ease;
 }
+/* Focus-ring for keyboard-accessible rows */
+.row:focus-visible {
+  outline: 2px solid var(--color-primary, #1A56FF);
+  outline-offset: -2px;
+}
+
+/* Right-aligned cells (e.g. bedragen) — replaces inline style */
+.alignRight {
+  text-align: right;
+}
 .row:hover {
   background: var(--card-hover-bg);
 }

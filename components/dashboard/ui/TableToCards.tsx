@@ -42,6 +42,13 @@ export function TableToCards<T extends Record<string, unknown>>({
     return <>{emptyState}</>
   }
 
+  // Eenmalig berekend buiten alle loops — stabiel voor elke rij.
+  const primaries = columns.filter((c) => c.mobile === 'primary')
+  // Alles wat niet primary of hidden is, telt als secondary in de card-grid.
+  const secondaries = columns.filter(
+    (c) => c.mobile === 'secondary' || c.mobile === undefined,
+  )
+
   return (
     <>
       {/* Desktop: tabel — hidden-kolommen worden ook hier uitgesloten */}
@@ -54,7 +61,7 @@ export function TableToCards<T extends Record<string, unknown>>({
                 .map((col) => (
                   <th
                     key={col.key}
-                    style={col.align === 'right' ? { textAlign: 'right' } : undefined}
+                    className={col.align === 'right' ? styles.alignRight : undefined}
                   >
                     {col.label}
                   </th>
@@ -72,13 +79,26 @@ export function TableToCards<T extends Record<string, unknown>>({
                   key={key}
                   className={rowHref ? styles.row : undefined}
                   onClick={handleClick}
+                  // Keyboard-accessibility: Enter/Space activeren de navigatie.
+                  tabIndex={rowHref ? 0 : undefined}
+                  role={rowHref ? 'link' : undefined}
+                  onKeyDown={
+                    rowHref
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleClick?.()
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   {columns
                     .filter((col) => col.mobile !== 'hidden')
                     .map((col) => (
                       <td
                         key={col.key}
-                        style={col.align === 'right' ? { textAlign: 'right' } : undefined}
+                        className={col.align === 'right' ? styles.alignRight : undefined}
                       >
                         {col.render ? col.render(row) : String(row[col.key] ?? '')}
                       </td>
@@ -94,12 +114,6 @@ export function TableToCards<T extends Record<string, unknown>>({
       <div className={styles.cards}>
         {rows.map((row) => {
           const key = String(row[keyField])
-          const primaries = columns.filter((c) => c.mobile === 'primary')
-          // Alles wat niet primary of hidden is, telt als secondary in de card-grid.
-          const secondaries = columns.filter(
-            (c) => c.mobile === 'secondary' ||
-              (c.mobile === undefined),
-          )
           const inner = (
             <>
               {primaries.length > 0 && (
