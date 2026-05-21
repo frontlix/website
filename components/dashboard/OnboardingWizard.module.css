@@ -126,3 +126,15 @@
 .btnSecondary:hover {
   background: var(--card-hover-bg);
 }
+
+@media (max-width: 480px) {
+  .modal {
+    /* Padding aanzienlijk kleiner op smalle schermen — anders eet
+       3×28px aan zij-padding ~17% van de 320px viewport op. */
+    padding: 20px 16px;
+  }
+  /* Knoppen krijgen volle tap-min hoogte. */
+  .actions button {
+    min-height: var(--tap-min);
+  }
+}
