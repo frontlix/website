@@ -26,13 +26,6 @@ export function SurfaceDailySummary({
   chatbotName: string
   stats: SurfaceSummaryStats
 }) {
-  const now = new Date()
-  const tijd = now.toLocaleTimeString('nl-NL', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Europe/Amsterdam',
-  })
-
   const body = buildSummary(stats)
 
   return (
@@ -47,7 +40,6 @@ export function SurfaceDailySummary({
             {greeting.toUpperCase()}, {voornaam.toUpperCase()} ·{' '}
             {chatbotName.toUpperCase()} SAMENVATTING
           </span>
-          <span className={styles.kickerTime}>{tijd}</span>
         </div>
         <h3 className={styles.title}>Dag in cijfers</h3>
         <p className={styles.text}>{body}</p>
