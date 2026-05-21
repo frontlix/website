@@ -57,6 +57,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Dev-only pagina's (mobile-component sandboxes onder /_dev/) zijn in
+  // productie niet bereikbaar. In dev werken ze normaal door zodat we ze
+  // op real-device kunnen testen.
+  if (pathname.startsWith('/_dev/') && process.env.NODE_ENV === 'production') {
+    return new NextResponse(null, { status: 404 })
+  }
+
   // Als iemand expliciet /dashboard/... typed op de dashboard-host,
   // strippen we die prefix zodat de canonical URL altijd zonder is.
   if (pathname.startsWith('/dashboard')) {
