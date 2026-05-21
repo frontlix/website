@@ -215,7 +215,7 @@ export default async function OverzichtPage({
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="dash-section-actions">
           <Link
             href="/dashboard?focus=live"
             className="dash-btn dash-btn-secondary"
