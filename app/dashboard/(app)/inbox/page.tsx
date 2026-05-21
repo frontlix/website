@@ -1,4 +1,5 @@
-import { MessageCircle, Filter, RefreshCw } from 'lucide-react'
+import Link from 'next/link'
+import { MessageCircle, Filter, RefreshCw, ChevronLeft } from 'lucide-react'
 import {
   getActiveConversations,
   getMessagesForLead,
@@ -15,6 +16,7 @@ import {
 import { InboxSearch } from '@/components/dashboard/inbox/InboxSearch'
 import { InboxMarkRead } from '@/components/dashboard/inbox/InboxMarkRead'
 import { InboxRealtime } from '@/components/dashboard/inbox/InboxRealtime'
+import { MobileContextButton } from '@/components/dashboard/inbox/MobileContextButton'
 import { WhatsAppComposer } from '@/components/dashboard/inbox/WhatsAppComposer'
 import { LeadConversation } from '@/components/dashboard/leads/LeadConversation'
 import { LeadDetailRealtime } from '@/components/dashboard/leads/LeadDetailRealtime'
@@ -88,7 +90,7 @@ export default async function InboxPage({
       {/* Live-subscription: refresht inbox-lijst zodra een nieuw bericht binnenkomt */}
       <InboxRealtime />
 
-      <div className={styles.grid}>
+      <div className={styles.grid} data-pane={selectedLeadId ? 'detail' : 'list'}>
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
           <div className={styles.colHead}>
@@ -134,6 +136,10 @@ export default async function InboxPage({
 
               <div className={styles.threadHead}>
                 <div className={styles.threadHeadLeft}>
+                  {/* Terug naar lijst — alleen zichtbaar op mobile (<800px) */}
+                  <Link href="/inbox" className={styles.mobileBackBtn} aria-label="Terug naar lijst">
+                    <ChevronLeft size={18} />
+                  </Link>
                   <MessageCircle size={16} />
                   <div>
                     <div className={styles.threadName}>{leadContext.naam}</div>
@@ -143,6 +149,10 @@ export default async function InboxPage({
                   </div>
                 </div>
                 <div className={styles.threadHeadRight}>
+                  {/* Info-knop opent LeadContextPane als MobileSheet op <1200px */}
+                  {selectedLeadId && leadContext && (
+                    <MobileContextButton lead={leadContext} />
+                  )}
                   <InboxBotToggle
                     leadId={selectedLeadId}
                     botPaused={leadContext.botGepauzeerd}

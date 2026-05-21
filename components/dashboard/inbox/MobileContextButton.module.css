@@ -1,0 +1,25 @@
+.btn {
+  display: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  /* white-on-transparent past bij de donkergroene WhatsApp-header (#075e54);
+     er bestaat geen wit token — dit is een bewuste uitzondering voor
+     de header-overlay context. */
+  color: white;
+  cursor: pointer;
+}
+.btn:hover {
+  /* rgba white hover op gekleurde header — geen wit-token beschikbaar;
+     acceptabel in deze ene overlay-context. */
+  background: rgba(255, 255, 255, 0.15);
+}
+@media (max-width: 1200px) {
+  .btn {
+    display: inline-flex;
+  }
+}

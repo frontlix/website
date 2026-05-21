@@ -44,8 +44,45 @@
   .grid {
     grid-template-columns: 1fr;
   }
+  /* Default: toon lijst, verberg thread. */
   .colList {
+    display: flex;
+  }
+  .colThread {
     display: none;
+  }
+  /* Detail-view: toon thread, verberg lijst. */
+  .grid[data-pane="detail"] .colList {
+    display: none;
+  }
+  .grid[data-pane="detail"] .colThread {
+    display: flex;
+  }
+}
+
+/* ── Mobile back-button (alleen zichtbaar op mobile) ──────── */
+.mobileBackBtn {
+  display: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  /* white-on-transparent past bij de donkergroene WhatsApp-header (#075e54);
+     er bestaat geen wit token — dit is een bewuste uitzondering voor
+     de header-overlay context. */
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+}
+.mobileBackBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+@media (max-width: 800px) {
+  .mobileBackBtn {
+    display: inline-flex;
   }
 }
 
