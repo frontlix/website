@@ -116,8 +116,9 @@
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .banner {
-    padding: 16px;
+    grid-template-columns: 1fr;
     gap: 12px;
+    padding: 14px 16px;
   }
   .iconBadge {
     width: 34px;

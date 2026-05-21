@@ -35,9 +35,14 @@
   }
 }
 
-/* Op smal scherm: minis stapelen 1-per-rij. */
-@media (max-width: 540px) {
+/* Op smal scherm: minis en hoofd-grid stapelen 1-per-rij. */
+@media (max-width: 640px) {
   .miniGrid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

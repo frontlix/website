@@ -125,3 +125,24 @@
   color: var(--fg-muted);
   margin-top: 2px;
 }
+
+@media (max-width: 640px) {
+  .trendStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .trendStat {
+    padding: 12px 14px;
+  }
+  .apptList {
+    padding: 12px;
+  }
+  .apptRow {
+    gap: 10px;
+    padding: 10px;
+  }
+}
+@media (max-width: 380px) {
+  .trendStats {
+    grid-template-columns: 1fr;
+  }
+}
