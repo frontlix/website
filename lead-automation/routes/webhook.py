@@ -874,7 +874,21 @@ Duur: {duration} minuten{purpose_line}
 Klant: "wanneer kan ik?" → Gebruik check_beschikbaarheid, stel 2-3 tijden voor
 Klant: "dinsdag past me goed" → Check of de eerstvolgende dinsdag vrij is, stel tijden voor
 Klant: "liever volgende week" → Check beschikbaarheid, stel opties voor die week voor
-Klant: "doe maar woensdag om 14:00" → Gebruik boek_afspraak met de eerstvolgende woensdag in YYYY-MM-DD en 14:00"""
+Klant: "doe maar woensdag om 14:00" → Gebruik boek_afspraak met de eerstvolgende woensdag in YYYY-MM-DD en 14:00
+
+## AFSLUITEN NA boek_afspraak SUCCESS
+Zodra `boek_afspraak` succesvol returnt sluit je de conversatie professioneel-warm af:
+- Bevestig de afspraak met datum + tijd (uit de tool-output)
+- Meld dat er een bevestigingsmail volgt met agenda-links
+- Bedank zakelijk: "Dank voor het vertrouwen in Frontlix"
+- Sluit af met "Wij kijken ernaar uit"
+- NOOIT vragen om feedback of "laat het weten als je nog vragen hebt"
+- NOOIT "tot dan!" of losse afscheidsopmerkingen
+- Geen exclamation marks, geen emoji's
+- Max 3 korte zinnen
+
+VOORBEELD-CLOSING ({appointment_short}, exact deze structuur, vul datum en tijd in):
+"De {appointment_short} staat ingepland voor [dag dd maand] om [HH:MM]. Je ontvangt zo een bevestigingsmail met de agenda-links. Dank voor het vertrouwen in Frontlix, wij kijken ernaar uit." """
 
 
 async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) -> str:
@@ -968,11 +982,46 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
                 "updated_at": _now_iso(),
             }).eq("id", lead["id"]).execute()
 
+            # Bevestigingsmail met Google Calendar deep-link + .ics attachment.
+            # De LLM gebruikt de tool-result hieronder om af te sluiten, dus
+            # mail_sent vlag wordt expliciet aan de LLM gemeld zodat hij de
+            # juiste closing kiest (met/zonder mail-belofte).
+            mail_sent = False
+            if lead.get("email"):
+                try:
+                    from services.mail import send_appointment_confirmation_email
+                    await send_appointment_confirmation_email(
+                        to_email=lead["email"],
+                        naam=naam,
+                        branche_label=branche_label,
+                        appointment_label=appointment_label,
+                        appointment_label_short=appointment_short,
+                        appointment_duration_min=duration,
+                        start_utc=start_utc,
+                        end_utc=end_utc,
+                        tz=tz,
+                        approval_token=lead.get("approval_token") or "",
+                    )
+                    mail_sent = True
+                except Exception as e:
+                    logging.error("[appointment] confirmation email FAILED lead=%s err=%s",
+                                  lead.get("id"), e, exc_info=e)
+                    owner_phone = (get_settings().owner_whatsapp_phone or "").strip()
+                    if owner_phone:
+                        try:
+                            await send_text(
+                                owner_phone,
+                                f"[ALERT] Bevestigingsmail faalde voor afspraak {naam} ({lead.get('telefoon')}, {branche_label}) op {datum} {tijd}. Fout: {str(e)[:140]}",
+                            )
+                        except Exception:
+                            pass
+
             NL_WEEKDAYS = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
             NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
             dag = NL_WEEKDAYS[local_start.weekday()]
             maand = NL_MONTHS[local_start.month]
-            return f"{appointment_label.capitalize()} geboekt op {dag} {local_start.day} {maand} om {tijd} ({duration} min). Google Calendar uitnodiging is verstuurd naar {lead.get('email')}."
+            mail_status = "Bevestigingsmail met agenda-links verstuurd." if mail_sent else "Bevestigingsmail kon niet worden verstuurd — gebruik in je afsluiting de variant ZONDER mail-belofte (zeg dat een collega contact opneemt als er iets is)."
+            return f"{appointment_label.capitalize()} geboekt op {dag} {local_start.day} {maand} om {tijd} ({duration} min). {mail_status}"
 
         except Exception as e:
             return f"Fout bij het boeken: {e}"

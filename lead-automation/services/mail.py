@@ -1,17 +1,85 @@
-"""Email service — approval emails and customer quote emails via SMTP."""
+"""Email service — approval emails, customer quote emails, appointment confirmations via SMTP."""
 from __future__ import annotations
 
 import smtplib
 import ssl
+import uuid
+from datetime import datetime, timezone
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from html import escape
+from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 
 import httpx
 
 from config import get_settings
 from models.branches import PricingResult
+
+NL_WEEKDAYS_FULL = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+NL_MONTHS_FULL = ["", "januari", "februari", "maart", "april", "mei", "juni",
+                  "juli", "augustus", "september", "oktober", "november", "december"]
+
+
+def build_google_calendar_url(
+    summary: str,
+    description: str,
+    start_utc: datetime,
+    end_utc: datetime,
+    location: str = "",
+) -> str:
+    """Google Calendar 'add event' deep-link. Geen API-call nodig; alleen een
+    gestructureerde GET-URL die Google's render-endpoint pre-vult."""
+    fmt = "%Y%m%dT%H%M%SZ"
+    params = {
+        "action": "TEMPLATE",
+        "text": summary,
+        "dates": f"{start_utc.strftime(fmt)}/{end_utc.strftime(fmt)}",
+        "details": description,
+    }
+    if location:
+        params["location"] = location
+    return "https://calendar.google.com/calendar/render?" + urlencode(params)
+
+
+def build_ics(
+    uid: str,
+    summary: str,
+    description: str,
+    start_utc: datetime,
+    end_utc: datetime,
+    location: str = "",
+    organizer_email: str = "info@frontlix.com",
+) -> bytes:
+    """Genereer RFC-5545 .ics inline. Hang aan email als attachment; Apple Mail,
+    Outlook en de meeste andere clients tonen automatisch 'Toevoegen aan agenda'."""
+    fmt = "%Y%m%dT%H%M%SZ"
+    now_fmt = datetime.now(timezone.utc).strftime(fmt)
+
+    def esc(s: str) -> str:
+        return s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Frontlix//Lead Automation//NL",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:{uid}",
+        f"DTSTAMP:{now_fmt}",
+        f"DTSTART:{start_utc.strftime(fmt)}",
+        f"DTEND:{end_utc.strftime(fmt)}",
+        f"SUMMARY:{esc(summary)}",
+        f"DESCRIPTION:{esc(description)}",
+    ]
+    if location:
+        lines.append(f"LOCATION:{esc(location)}")
+    lines.append(f"ORGANIZER:mailto:{organizer_email}")
+    lines.append("END:VEVENT")
+    lines.append("END:VCALENDAR")
+    return ("\r\n".join(lines) + "\r\n").encode("utf-8")
 
 
 def _nl(n: float) -> str:
@@ -158,7 +226,7 @@ async def send_approval_email(
 
               <!-- Klantgegevens -->
               <tr><td style="padding:24px 40px 0 40px">
-                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#B0B8C9">Klantgegevens</p>
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Klantgegevens</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
                     <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;width:42%;border-bottom:1px solid #F0F2F5;vertical-align:top">Naam</td>
@@ -183,7 +251,7 @@ async def send_approval_email(
 
               <!-- Prijsoverzicht -->
               <tr><td style="padding:24px 40px 0 40px">
-                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#B0B8C9">Prijsoverzicht</p>
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF">Prijsoverzicht</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   {price_lines_html}
                 </table>
@@ -348,4 +416,170 @@ async def send_customer_quote_email(
         subject=f"Je offerte voor {branche_label}, {voornaam}",
         html_body=html,
         attachments=attachments,
+    )
+
+
+async def send_appointment_confirmation_email(
+    to_email: str,
+    naam: str,
+    branche_label: str,
+    appointment_label: str,
+    appointment_label_short: str,
+    appointment_duration_min: int,
+    start_utc: datetime,
+    end_utc: datetime,
+    tz: ZoneInfo,
+    approval_token: str,
+) -> None:
+    """Stuur bevestigingsmail met Frontlix-gebrande layout en TWEE gelijkwaardige
+    agenda-knoppen: Google Agenda (primary, blauwe vulling) → deep-link naar
+    calendar.google.com; Apple Agenda (secondary, witte vulling + blauwe rand) →
+    /calendar/{token}.ics endpoint dat het .ics-bestand on-the-fly serveert.
+
+    Geen .ics-attachment meer in de mail zelf — één canonical pad: knop →
+    endpoint → download. Voorkomt de 'Eén bijlage'-footer in Gmail en is
+    minder verwarrend voor de klant.
+    """
+    font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
+    voornaam = naam.split()[0] if naam else "daar"
+    logo_url = "https://frontlix.com/logo.png"
+    site_url = (get_settings().site_url or "").rstrip("/")
+    apple_calendar_url = f"{site_url}/calendar/{approval_token}.ics"
+
+    # Localized labels
+    local_start = start_utc.astimezone(tz)
+    local_end = end_utc.astimezone(tz)
+    dag_naam = NL_WEEKDAYS_FULL[local_start.weekday()].capitalize()
+    maand_naam = NL_MONTHS_FULL[local_start.month]
+    datum_label = f"{dag_naam} {local_start.day} {maand_naam} {local_start.year}"
+    starttijd = local_start.strftime("%H:%M")
+    eindtijd = local_end.strftime("%H:%M")
+
+    # Calendar links
+    cal_summary = f"Frontlix {appointment_label} ({branche_label})"
+    cal_description = (
+        f"{appointment_label.capitalize()} van {appointment_duration_min} minuten.\n"
+        f"Klant: {naam}\nBranche: {branche_label}\n"
+        f"Bevestigd door Frontlix."
+    )
+    google_url = build_google_calendar_url(
+        summary=cal_summary,
+        description=cal_description,
+        start_utc=start_utc,
+        end_utc=end_utc,
+    )
+    # Geen ics_bytes meer als attachment — Apple-knop linkt naar /calendar/{token}.ics
+    # endpoint dat het bestand on-the-fly serveert. Eén canonical pad voor de klant.
+
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="nl">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background-color:#F0F2F5;-webkit-font-smoothing:antialiased">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F0F2F5">
+      <tr><td align="center" style="padding:40px 16px">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%">
+
+          <!-- Logo + naam -->
+          <tr><td style="padding:0 0 24px 0" align="center">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle"><img src="{logo_url}" width="36" height="36" alt="Frontlix" style="display:block" /></td>
+                <td style="vertical-align:middle;padding-left:10px">
+                  <span style="font-family:{font};font-size:20px;font-weight:700;letter-spacing:-0.3px"><span style="color:#0F1729">Front</span><span style="color:#00CFFF">lix</span></span>
+                </td>
+              </tr>
+            </table>
+          </td></tr>
+
+          <!-- Main card -->
+          <tr><td style="background-color:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06)">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+
+              <!-- Gradient top bar -->
+              <tr><td style="height:4px;background:linear-gradient(90deg,#1A56FF,#00CFFF);font-size:0;line-height:0">&nbsp;</td></tr>
+
+              <!-- Header -->
+              <tr><td style="padding:32px 40px 8px 40px">
+                <p style="margin:0 0 4px 0;font-family:{font};font-size:13px;font-weight:700;color:#1A56FF;text-transform:uppercase;letter-spacing:1.2px">Bevestiging afspraak</p>
+                <h1 style="margin:0;font-family:{font};font-size:22px;font-weight:700;color:#0F1729">Je afspraak is ingepland</h1>
+              </td></tr>
+
+              <!-- Body -->
+              <tr><td style="padding:18px 40px 8px 40px">
+                <p style="margin:0;font-family:{font};font-size:15px;color:#475569;line-height:1.6">Hoi {escape(voornaam)}, dank voor het vertrouwen in Frontlix. Hieronder vind je de details van je {escape(appointment_label_short)}.</p>
+              </td></tr>
+
+              <!-- Detail-tabel -->
+              <tr><td style="padding:18px 40px 0 40px">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;width:38%;border-bottom:1px solid #F0F2F5;vertical-align:top">Soort afspraak</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#0F1729;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(appointment_label.capitalize())}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Datum</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#0F1729;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(datum_label)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Tijd</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#0F1729;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{starttijd} &ndash; {eindtijd}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Duur</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#0F1729;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{appointment_duration_min} minuten</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 18px 12px 0;font-family:{font};font-size:13px;color:#7A8599;border-bottom:1px solid #F0F2F5;vertical-align:top">Branche</td>
+                    <td style="padding:12px 0 12px 4px;font-family:{font};font-size:14px;color:#0F1729;font-weight:500;border-bottom:1px solid #F0F2F5;vertical-align:top">{escape(branche_label)}</td>
+                  </tr>
+                </table>
+              </td></tr>
+
+              <!-- Sectie: Voeg toe aan agenda (2 gelijkwaardige knoppen) -->
+              <tr><td style="padding:28px 40px 8px 40px" align="center">
+                <p style="margin:0 0 14px 0;font-family:{font};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#1A56FF;text-align:center">Voeg toe aan je agenda</p>
+              </td></tr>
+              <tr><td style="padding:0 24px" align="center">
+                <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
+                  <tr>
+                    <td align="center" style="padding:4px 8px">
+                      <a href="{escape(google_url)}" target="_blank" style="display:inline-block;background:#1A56FF;color:#ffffff;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:10px;letter-spacing:0.3px;min-width:160px;text-align:center;white-space:nowrap">Google Agenda</a>
+                    </td>
+                    <td align="center" style="padding:4px 8px">
+                      <a href="{escape(apple_calendar_url)}" style="display:inline-block;background:#ffffff;color:#1A56FF;font-family:{font};font-size:14px;font-weight:700;text-decoration:none;padding:12px 26px;border-radius:10px;letter-spacing:0.3px;border:2px solid #1A56FF;min-width:160px;text-align:center;white-space:nowrap">Apple Agenda</a>
+                    </td>
+                  </tr>
+                </table>
+              </td></tr>
+              <tr><td style="padding:14px 40px 0 40px" align="center">
+                <p style="margin:0;font-family:{font};font-size:12px;color:#9CA3AF;line-height:1.5;text-align:center">De Apple-knop werkt ook voor Outlook en andere agenda-apps.</p>
+              </td></tr>
+
+              <!-- Afsluiter -->
+              <tr><td style="padding:28px 40px 32px 40px">
+                <p style="margin:0;font-family:{font};font-size:15px;color:#475569;line-height:1.6">Wij kijken ernaar uit.<br>
+                <span style="color:#0F1729;font-weight:700">&mdash; <span style="color:#0F1729">Front</span><span style="color:#00CFFF">lix</span></span></p>
+              </td></tr>
+
+            </table>
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="padding:24px 0 0 0" align="center">
+            <p style="margin:0;font-family:{font};font-size:12px;color:#B0B8C9"><span style="color:#0F1729;font-weight:500">Front</span><span style="color:#00CFFF;font-weight:500">lix</span> &middot; Automatisch verstuurde bevestiging</p>
+          </td></tr>
+
+        </table>
+      </td></tr>
+    </table>
+    </body>
+    </html>
+    """
+
+    # Geen attachments: Apple Agenda knop linkt naar /calendar/{token}.ics endpoint.
+    _send_email(
+        to=to_email,
+        subject=f"Bevestiging: {appointment_label_short} op {datum_label}",
+        html_body=html,
     )

@@ -16,6 +16,7 @@ from routes.demo import router as demo_router
 from routes.approve import router as approve_router
 from routes.edit import router as edit_router
 from routes.schedule import router as schedule_router
+from routes.calendar import router as calendar_router
 from routes.dashboard_api import router as dashboard_api_router
 from routes.external_webhook import router as external_webhook_router
 from routes.web_chat import router as web_chat_router
@@ -49,6 +50,7 @@ app.include_router(demo_router)
 app.include_router(approve_router)
 app.include_router(edit_router)
 app.include_router(schedule_router)
+app.include_router(calendar_router)
 app.include_router(dashboard_api_router)
 # Pakket 4a/4b: HMAC external form webhook + web-chat fallback. Both registered
 # before the pd_* block so the pd_* router-block (frozen) stays intact at the end.

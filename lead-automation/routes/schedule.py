@@ -552,16 +552,50 @@ async def schedule_submit(request: Request):
         "message_type": "text",
     }).execute()
 
-    # WhatsApp bevestiging
+    # Bevestigingsmail met agenda-deep-links + .ics attachment
+    mail_sent = False
+    if lead.get("email"):
+        try:
+            from services.mail import send_appointment_confirmation_email
+            await send_appointment_confirmation_email(
+                to_email=lead["email"],
+                naam=naam,
+                branche_label=branche_label,
+                appointment_label=appointment_label,
+                appointment_label_short=appointment_short,
+                appointment_duration_min=duration,
+                start_utc=start_utc,
+                end_utc=end_utc,
+                tz=TZ,
+                approval_token=lead.get("approval_token") or "",
+            )
+            mail_sent = True
+        except Exception as e:
+            logging.error("[schedule] confirmation email FAILED lead=%s err=%s",
+                          lead.get("id"), e, exc_info=e)
+            _alert_owner(
+                "Bevestigingsmail faalde na afspraak-booking",
+                f"Lead {naam} ({lead.get('telefoon')}, {branche_label}) op {selected_date} {selected_time}. Fout: {e}",
+            )
+
+    # WhatsApp zakelijke closing — content hangt af van of mail succesvol was
     try:
         from services.whatsapp import send_text
         dag_naam = NL_WEEKDAYS_FULL[local_start.weekday()]
         datum_str = f"{dag_naam} {local_start.day} {NL_MONTHS_FULL[local_start.month]} om {selected_time}"
-        voornaam = naam.split()[0]
-        await send_text(
-            lead["telefoon"],
-            f"Top {voornaam}! Je {appointment_label} staat in de agenda voor {datum_str}. Je krijgt een Google Calendar uitnodiging in je mail. Tot dan!",
-        )
+        if mail_sent:
+            wa_msg = (
+                f"De {appointment_short} staat ingepland voor {datum_str}. "
+                f"Je ontvangt zo een bevestigingsmail met de agenda-links. "
+                f"Dank voor het vertrouwen in Frontlix, wij kijken ernaar uit."
+            )
+        else:
+            wa_msg = (
+                f"De {appointment_short} staat ingepland voor {datum_str}. "
+                f"Een collega neemt contact met je op als er iets is. "
+                f"Dank voor het vertrouwen in Frontlix, wij kijken ernaar uit."
+            )
+        await send_text(lead["telefoon"], wa_msg)
     except Exception as e:
         logging.error("[schedule] WhatsApp confirmation failed: %s", e)
 

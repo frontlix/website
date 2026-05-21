@@ -1,9 +1,11 @@
 """Quote approval route — triggered when team clicks the approve button in the email."""
 from __future__ import annotations
 
+import asyncio
+import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse
 
 from services.supabase import get_supabase
@@ -73,9 +75,98 @@ def _success_page(naam: str, already_sent: bool = False) -> str:
     </body></html>"""
 
 
+async def _process_approval(lead: dict, config) -> None:
+    """Heavy work: PDF, WhatsApp document + follow-up, customer email, status update.
+
+    Wordt uitgevoerd als FastAPI BackgroundTask NA de success-page response — de
+    klant ziet dus direct 'Offerte goedgekeurd' i.p.v. 8-12 seconden te wachten.
+    Bij elke step-failure: log + alert eigenaar via WhatsApp (best-effort).
+    Als alles faalt: revert status pending_approval zodat het team opnieuw kan klikken.
+    """
+    sb = get_supabase()
+    lead_id = lead["id"]
+    pdf_url: str | None = None
+
+    # 1) Genereer PDF
+    try:
+        result = await generate_quote_pdf(
+            lead_id=lead_id,
+            branche_id=lead["demo_type"],
+            klant_naam=lead.get("naam") or "Klant",
+            klant_email=lead.get("email") or "",
+            collected_data=lead.get("collected_data") or {},
+        )
+        pdf_url = result["url"]
+    except Exception as e:
+        logging.error("[approve-bg] PDF gen FAILED lead=%s err=%s", lead_id, e, exc_info=e)
+        await _alert_owner("PDF-generatie faalde bij offerte-goedkeuring", lead, str(e))
+        # Revert status zodat team opnieuw kan klikken
+        sb.table("leads").update({"status": "pending_approval", "updated_at": _now_iso()}).eq("id", lead_id).execute()
+        return
+
+    # 2) WhatsApp document + follow-up
+    try:
+        await send_document(lead["telefoon"], pdf_url, f"Offerte-{config.label}.pdf",
+                            f"Hier is je offerte voor {config.label}! Bekijk 'm rustig.")
+        await asyncio.sleep(3)  # delivery-spacing
+        await send_text(lead["telefoon"], "Als je een afspraak wilt inplannen om alles door te spreken, laat het gerust weten. Dan zoek ik een mooi moment uit!")
+    except Exception as e:
+        logging.error("[approve-bg] WhatsApp send FAILED lead=%s err=%s", lead_id, e, exc_info=e)
+        await _alert_owner("WhatsApp-verzending faalde bij offerte-goedkeuring", lead, str(e))
+        # Niet-fataal: ga door met email zodat klant 't nog wel via mail krijgt.
+
+    # 3) Klant-email met PDF-attachment
+    if lead.get("email"):
+        try:
+            site_url = get_settings().site_url
+            await send_customer_quote_email(
+                to_email=lead["email"],
+                naam=lead.get("naam") or "klant",
+                branche_label=config.label,
+                pdf_url=pdf_url,
+                schedule_url=f"{site_url}/schedule?token={lead['approval_token']}",
+            )
+        except Exception as e:
+            logging.error("[approve-bg] customer email FAILED lead=%s err=%s", lead_id, e, exc_info=e)
+            await _alert_owner("Klant-mail faalde bij offerte-goedkeuring", lead, str(e))
+
+    # 4) Finaliseer status
+    sb.table("leads").update({
+        "quote_pdf_url": pdf_url,
+        "status": "quote_sent",
+        "updated_at": _now_iso(),
+    }).eq("id", lead_id).execute()
+
+    sb.table("conversations").insert({
+        "lead_id": lead_id,
+        "role": "assistant",
+        "content": f"(PDF offerte verzonden — {pdf_url})",
+        "message_type": "document",
+        "media_url": pdf_url,
+    }).execute()
+
+
+async def _alert_owner(subject: str, lead: dict, error: str) -> None:
+    """Best-effort WhatsApp-alert naar de business-owner bij background-failures."""
+    owner = (get_settings().owner_whatsapp_phone or "").strip()
+    if not owner:
+        return
+    try:
+        await send_text(
+            owner,
+            f"[ALERT] {subject}\nLead: {lead.get('naam')} ({lead.get('telefoon')})\nFout: {error[:200]}",
+        )
+    except Exception as e:
+        logging.error("[approve-bg] owner-alert send failed: %s", e)
+
+
 @router.get("/approve")
-async def approve_quote(request: Request):
-    """Handle quote approval from the email button click."""
+async def approve_quote(request: Request, background: BackgroundTasks):
+    """Handle quote approval from the email button click.
+
+    Toont de success-page DIRECT en doet de heavy work (PDF + WA + mail) als
+    BackgroundTask — FastAPI's BackgroundTasks runt na de response. Voorheen
+    duurde dit 8-12 seconden waarin het scherm wit bleef; nu instant feedback."""
     token = request.query_params.get("token")
     if not token:
         return HTMLResponse(_error_page("Ongeldige link", "Deze link werkt niet meer."), status_code=400)
@@ -94,7 +185,6 @@ async def approve_quote(request: Request):
 
     status = lead.get("status", "")
 
-    # Already processed
     if status in ("quote_sent", "scheduling", "appointment_booked"):
         return HTMLResponse(_success_page(lead.get("naam") or "de klant", already_sent=True))
 
@@ -104,7 +194,8 @@ async def approve_quote(request: Request):
     if status != "pending_approval":
         return HTMLResponse(_error_page("Niet beschikbaar", f'Status "{status}" kan niet worden goedgekeurd.'), status_code=400)
 
-    # Idempotency claim — atomic conditional update
+    # Idempotency claim — atomic conditional update voorkomt dubbele verzending
+    # bij dubbel-klikken of refresh terwijl de background-task nog loopt.
     claim = sb.table("leads").update({
         "status": "quote_processing",
         "updated_at": _now_iso(),
@@ -121,58 +212,6 @@ async def approve_quote(request: Request):
     if not config:
         return HTMLResponse(_error_page("Onbekende branche", f'Branche "{demo_type}" is niet bekend.'), status_code=400)
 
-    # Generate PDF
-    try:
-        result = await generate_quote_pdf(
-            lead_id=lead["id"],
-            branche_id=demo_type,
-            klant_naam=lead.get("naam") or "Klant",
-            klant_email=lead.get("email") or "",
-            collected_data=lead.get("collected_data") or {},
-        )
-        pdf_url = result["url"]
-    except Exception as e:
-        print(f"PDF generation failed: {e}")
-        return HTMLResponse(_error_page("PDF mislukt", "Er ging iets mis bij het genereren van de PDF."), status_code=500)
-
-    # Send PDF via WhatsApp + follow-up scheduling message
-    caption = f"Hier is je offerte voor {config.label}! Bekijk 'm rustig."
-    try:
-        import asyncio
-        await send_document(lead["telefoon"], pdf_url, f"Offerte-{config.label}.pdf", caption)
-        await asyncio.sleep(3)  # wacht zodat WhatsApp het document eerst aflevert
-        await send_text(lead["telefoon"], "Als je een afspraak wilt inplannen om alles door te spreken, laat het gerust weten. Dan zoek ik een mooi moment uit!")
-    except Exception as e:
-        print(f"WhatsApp document/follow-up send failed: {e}")
-
-    # Send customer email
-    if lead.get("email"):
-        site_url = get_settings().site_url
-        try:
-            await send_customer_quote_email(
-                to_email=lead["email"],
-                naam=lead.get("naam") or "klant",
-                branche_label=config.label,
-                pdf_url=pdf_url,
-                schedule_url=f"{site_url}/schedule?token={lead['approval_token']}",
-            )
-        except Exception as e:
-            print(f"Customer email failed: {e}")
-
-    # Update lead status + save PDF URL
-    sb.table("leads").update({
-        "quote_pdf_url": pdf_url,
-        "status": "quote_sent",
-        "updated_at": _now_iso(),
-    }).eq("id", lead["id"]).execute()
-
-    # Save in conversations
-    sb.table("conversations").insert({
-        "lead_id": lead["id"],
-        "role": "assistant",
-        "content": f"(PDF offerte verzonden — {pdf_url})",
-        "message_type": "document",
-        "media_url": pdf_url,
-    }).execute()
-
+    # Schedule heavy work AFTER response is sent; user ziet direct success-page.
+    background.add_task(_process_approval, lead, config)
     return HTMLResponse(_success_page(lead.get("naam") or "klant"))
