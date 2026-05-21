@@ -817,7 +817,7 @@ SCHEDULING_TOOLS = [
         "type": "function",
         "function": {
             "name": "check_beschikbaarheid",
-            "description": "Check welke tijdslots beschikbaar zijn in de agenda van Frontlix. Gebruik dit als de klant vraagt wanneer het kan of als je moet weten welke momenten beschikbaar zijn.",
+            "description": "Returneert de VOLLEDIGE lijst van beschikbare tijdslots in de Frontlix-agenda voor de komende 14 dagen. MOET worden aangeroepen voordat je een tijd-bevestiging of een 'niet beschikbaar'-antwoord geeft. Roep deze opnieuw aan elke turn waar de klant een tijd noemt of vraagt om beschikbaarheid.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -873,10 +873,20 @@ Duur: {duration} minuten{purpose_line}
 - Max 2-3 zinnen per bericht, informeel Nederlands
 - Geen streepjes (-) of gedachtestrepen (—) gebruiken
 - NOOIT emoji's gebruiken. Geen smileys, geen duimpjes, geen enkele emoji
-- Als de klant vaag is ("volgende week", "ergens dinsdag") → check de agenda en stel 2-3 passende tijden voor
-- Als de klant een tijd noemt die niet beschikbaar is → leg vriendelijk uit en stel een alternatief voor
 - Als de klant vraagt WAAROM/WAARVOOR de afspraak is → leg het kort uit met de "Doel"-zin hierboven, dan vraag wanneer het uitkomt
 - Als de klant twijfelt of geen afspraak wil → respecteer dat, geen druk uitoefenen
+
+## BESCHIKBAARHEID-WORKFLOW (verplicht patroon, geen uitzonderingen)
+1. Klant noemt een SPECIFIEKE tijd (bijv. "morgen om 3 uur", "vrijdag 14:00", "dinsdag om 10") →
+   STAP A: roep `check_beschikbaarheid` aan (altijd, ook als je net al gecheckt hebt)
+   STAP B: zoek de gevraagde tijd in de lijst voor die dag. Als hij erin staat → roep `boek_afspraak` aan
+   STAP C: als hij ECHT niet in de lijst staat → leg dat uit en stel 2-3 alternatieven voor die WEL in de lijst staan (uit dezelfde dag of dichtbij)
+2. Klant is vaag ("volgende week", "ergens dinsdag", "morgenochtend") →
+   STAP A: roep `check_beschikbaarheid` aan
+   STAP B: stel 2-3 passende tijden voor uit de lijst
+3. NOOIT zeggen dat een tijd niet beschikbaar is zonder eerst `check_beschikbaarheid` in DEZE turn aangeroepen te hebben. Geen uitzonderingen.
+4. NOOIT alternatieve tijden verzinnen — alle voorgestelde tijden moeten letterlijk uit de meest recente check_beschikbaarheid-output komen.
+5. "Morgen om 3 uur" = morgendatum om 15:00 (NL 24-uurs notatie). Andere relatieve tijden: "vanavond" = vanaf 17:00, "morgenochtend" = 07:00-12:00, "middag" = 12:00-17:00.
 
 ## VOORBEELDEN (vervang "kennismakingsgesprek" altijd door "{appointment_short}")
 Klant: "wanneer kan ik?" → Gebruik check_beschikbaarheid, stel 2-3 tijden voor
@@ -910,8 +920,10 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
     if tool_name == "check_beschikbaarheid":
         now = datetime.now(timezone.utc)
         range_end = now + timedelta(days=14)
+        # 14 dagen × ~22 slots/dag (07:00-18:00 elke 30min) = ~308 slots max.
+        # Limit 500 voor veiligheid; was 100 wat ~4-5 dagen ver dekte.
         try:
-            all_slots = await get_free_slots(now, range_end, 100)
+            all_slots = await get_free_slots(now, range_end, 500)
         except Exception as e:
             return f"Fout bij ophalen agenda: {e}"
 
@@ -937,12 +949,17 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
             times = days[date_key]
             dt = datetime.fromisoformat(f"{date_key}T00:00:00").astimezone(tz) if "T" in date_key else datetime.strptime(date_key, "%Y-%m-%d").replace(tzinfo=tz)
             label = f"{NL_WEEKDAYS[dt.weekday()]} {dt.day} {NL_MONTHS[dt.month]}"
-            times_str = ", ".join(times[:6])  # max 6 tijden tonen per dag
-            if len(times) > 6:
-                times_str += f" (+{len(times)-6} meer)"
+            # ALLE tijden returnen (was eerst :6 met '+X meer' truncatie). Anders
+            # ziet de agent bv. 15:00 niet en hallucineert 'niet beschikbaar'.
+            times_str = ", ".join(times)
             lines.append(f"- {label} ({date_key}): {times_str}")
 
-        return f"Beschikbare tijdslots (30 min):\n" + "\n".join(lines)
+        return (
+            "Beschikbare tijdslots (volledige lijst, 30 min ieder):\n"
+            + "\n".join(lines)
+            + "\n\nBELANGRIJK: een tijd is alleen niet-beschikbaar als hij ECHT NIET in deze lijst staat. "
+            "Verifieer altijd in de lijst hierboven voordat je 'niet beschikbaar' zegt."
+        )
 
     elif tool_name == "boek_afspraak":
         datum = tool_args.get("datum", "")
