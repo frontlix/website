@@ -209,9 +209,17 @@ async def _handle_branche_webhook(lead: dict, message: dict, msg_type: str, phon
         await _handle_button_reply(lead, message, phone)
         return
 
-    # Non-text types
+    # Album-headers en system-events stilletjes negeren.
+    # Bij een multi-photo send levert Meta éérst een type=unsupported bericht af
+    # (de album-wrapper), gevolgd door één type=image per foto. Geen rejection
+    # naar de klant — de foto's volgen en worden door _handle_image opgepakt.
+    if msg_type in ("unsupported", "reaction", "system", "ephemeral", "order", ""):
+        print(f"[WEBHOOK] silently ignored msg_type={msg_type!r} (album-header / system event)")
+        return
+
+    # Niet-ondersteund media-type (video, audio, document, sticker, location, contacts).
     if msg_type != "text":
-        await send_text(phone, "Op dit moment kan ik alleen tekstberichten, knoppen en foto's verwerken. Stuur aub een tekstbericht.")
+        await send_text(phone, "Stuur het bericht als tekst of als foto, dan kan ik het verwerken.")
         return
 
     text_body = (message.get("text") or {}).get("body", "").strip()
