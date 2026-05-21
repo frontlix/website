@@ -63,3 +63,29 @@
      pakt in plaats van een rechter-kolom. */
   width: 100%;
 }
+
+@media (max-width: 640px) {
+  /* Stack title-block en close-button op mobile zodat geen van beide
+     midden-in-een-woord wrapt. */
+  .head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+  .title {
+    flex-wrap: wrap;
+  }
+  .titleText {
+    font-size: 15px;
+  }
+  /* Tijd verbergen — staat al in de status-bar van de telefoon. */
+  .titleSep,
+  .titleTime {
+    display: none;
+  }
+  .closeBtn {
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+}
