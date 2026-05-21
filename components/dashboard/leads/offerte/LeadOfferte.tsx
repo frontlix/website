@@ -296,19 +296,6 @@ export function LeadOfferte({
     setKortingOmschrijving(omschrijving)
   }
 
-  const handlePreviewClick = () => {
-    // "Preview huidige versie" toont de PDF van de laatst verzonden versie —
-    // zoals de klant 'm heeft ontvangen. Geen concept-rendering hier (daar is
-    // de sidebar "PDF"-knop voor).
-    const url = laatsteVerzonden?.pdf_url
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer')
-    } else {
-      // eslint-disable-next-line no-alert
-      alert('Nog geen verzonden offerte beschikbaar — verstuur deze concept-versie eerst.')
-    }
-  }
-
   const handleRevertClick = useCallback(async () => {
     // Bevestiging — revert is destructief voor de huidige concept-edits.
     // eslint-disable-next-line no-alert
@@ -366,7 +353,6 @@ export function LeadOfferte({
         saveState={saveState}
         lastSavedAt={lastSavedAt}
         verzondenPdfUrl={laatsteVerzonden?.pdf_url ?? huidige?.pdf_url ?? null}
-        onPreviewClick={handlePreviewClick}
         onRevertClick={handleRevertClick}
         canRevert={canRevert}
       />

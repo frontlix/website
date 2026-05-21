@@ -1,20 +1,20 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import { getLeadDetail } from '@/lib/dashboard/lead-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
+import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { berekenTotalen } from '@/lib/dashboard/btw-calc'
 import { formatEuro, formatDateNL } from '@/lib/dashboard/format'
+import type { TenantSettings } from '@/lib/dashboard/database.types'
 import styles from './page.module.css'
 
 /**
- * Offerte-preview pagina — toont de huidige offerte-state als nette
- * HTML-rendering, zoals de klant 'm zou ontvangen in PDF-vorm.
+ * Offerte-preview pagina — toont de huidige offerte-state in een lay-out
+ * die zo dicht mogelijk de echte verzonden PDF benadert (zie
+ * lead-automation/templates/quote.html voor het PDF-template dat de
+ * bot-service gebruikt). Daarmee krijgt de owner een betrouwbare voor-
+ * vertoning van wat de klant zou ontvangen na "Versturen via WhatsApp".
  *
- * Gebaseerd LIVE op de prijsregels in de database, dus elke aanpassing
- * in de Offerte-tab is hier meteen zichtbaar zodra de auto-save klaar is.
- *
- * Print-vriendelijk: user kan via browser-print naar PDF exporteren
- * (Ctrl/⌘+P).
+ * Print-vriendelijk: Cmd/Ctrl+P → PDF.
  */
 export const dynamic = 'force-dynamic'
 
@@ -23,15 +23,31 @@ export default async function OffertePreviewPage({
 }: {
   params: Promise<{ lead_id: string }>
 }) {
-  // Auth: alleen approved dashboard-users mogen previews zien
   await requireApprovedUser()
-
   const { lead_id } = await params
-  const detail = await getLeadDetail(lead_id)
+
+  const [detail, supabase] = await Promise.all([
+    getLeadDetail(lead_id),
+    getDashboardSupabase(),
+  ])
   if (!detail) notFound()
 
+  // Tenant-info: bedrijfsnaam, adres, contact — gevonden in tenant_settings
+  // (single-row per tenant). Service-role is hier niet nodig: de user is
+  // gauth'd en mag z'n eigen tenant lezen.
+  const { data: tenantRaw } = await supabase
+    .from('tenant_settings')
+    .select('*')
+    .limit(1)
+    .maybeSingle()
+  const tenant = (tenantRaw ?? null) as TenantSettings | null
+
   const { lead, prijsregels, offertes } = detail
-  const huidige = offertes.find((o) => o.is_concept) ?? offertes[0]
+  // "Huidige" = concept als die bestaat, anders laatst verstuurd; conform
+  // wat de Offerte-tab ook toont.
+  const concept = offertes.find((o) => o.is_concept)
+  const laatsteVerzonden = offertes.find((o) => !o.is_concept)
+  const huidige = concept ?? laatsteVerzonden ?? offertes[0]
   const versie = huidige?.versie ?? 1
   const versieDatum = huidige?.aangemaakt_op ?? new Date().toISOString()
 
@@ -40,69 +56,142 @@ export default async function OffertePreviewPage({
   const regelTotalen = prijsregels.map((r) => Number(r.totaal ?? 0))
   const totalen = berekenTotalen(regelTotalen, kortingPct)
 
-  // Geldigheidsdatum = versie-aanmaak + geldigheid_dagen (default 30)
-  const geldigheidDagen = lead.offerte_geldigheid_dagen ?? 30
+  // Geldigheidsdatum: versie-aanmaak + tenant.offerte_geldigheid_dagen.
+  const geldigheidDagen = tenant?.offerte_geldigheid_dagen ?? 30
   const geldigTot = new Date(versieDatum)
   geldigTot.setDate(geldigTot.getDate() + geldigheidDagen)
 
+  // ─── Tenant-blok (rechts in header) ─────────────────────────────
+  const bedrijfsnaam = tenant?.bedrijfsnaam ?? 'Bedrijf'
+  const bedrijfsAdresLines: string[] = []
+  if (tenant?.adres) {
+    const huisnr = tenant.base_huisnummer ? ` ${tenant.base_huisnummer}` : ''
+    bedrijfsAdresLines.push(`${tenant.adres}${huisnr}`)
+  }
+  if (tenant?.postcode || tenant?.plaats) {
+    bedrijfsAdresLines.push(
+      [tenant.postcode, tenant.plaats].filter(Boolean).join(' '),
+    )
+  }
+  const bedrijfsTel = tenant?.eigenaar_spoed_telefoon ?? tenant?.eigenaar_whatsapp ?? null
+  const bedrijfsEmail = tenant?.eigenaar_email ?? null
+
   // Klant-adres samenstellen
-  const adresLine1 = [lead.straat, lead.huisnummer].filter(Boolean).join(' ')
-  const adresLine2 = [lead.postcode, lead.plaats].filter(Boolean).join(' ')
+  const klantAdresLine1 = [lead.straat, lead.huisnummer].filter(Boolean).join(' ')
+  const klantAdresLine2 = [lead.postcode, lead.plaats].filter(Boolean).join(' ')
+
+  // Sub-diensten label voor de eyebrow
+  const diensten = Array.isArray(lead.sub_diensten) ? lead.sub_diensten : []
+  const dienstenLabel =
+    diensten.length > 0
+      ? diensten
+          .map((d: string) =>
+            d === 'invegen'
+              ? 'Voegen invegen'
+              : d === 'preventieve_onkruid'
+                ? 'Preventief onkruid'
+                : d === 'beschermlaag'
+                  ? 'Beschermlaag'
+                  : d === 'onderhoud'
+                    ? 'Onderhoud'
+                    : d,
+          )
+          .join(' · ')
+      : 'Straatwerk'
+
+  const referentie = `L-${lead_id.slice(-4)} / v${versie}`
 
   return (
     <main className={styles.sheet}>
-      {/* ─── Header: logo + bedrijf + offerte-meta ─────────────── */}
-      <header className={styles.header}>
-        <div className={styles.brand}>
-          <Image
-            src="/logo-trans.png"
-            alt="Frontlix"
-            width={40}
-            height={40}
-            className={styles.logo}
-            priority
-          />
-          <div className={styles.brandText}>
-            <div className={styles.brandName}>Schoon-Straatje</div>
-            <div className={styles.brandSub}>Voegen invegen · straatwerk</div>
-          </div>
-        </div>
-        <div className={styles.meta}>
-          <div className={styles.metaRow}>
-            <span className={styles.metaLabel}>Offerte</span>
-            <span className={styles.metaValue}>v{versie}</span>
-          </div>
-          <div className={styles.metaRow}>
-            <span className={styles.metaLabel}>Datum</span>
-            <span className={styles.metaValue}>{formatDateNL(versieDatum)}</span>
-          </div>
-          <div className={styles.metaRow}>
-            <span className={styles.metaLabel}>Geldig t/m</span>
-            <span className={styles.metaValue}>{formatDateNL(geldigTot.toISOString())}</span>
-          </div>
-        </div>
-      </header>
+      {/* Top-gradient bar — Frontlix signature accent */}
+      <div className={styles.topBar} aria-hidden="true" />
 
-      {/* ─── Klantgegevens ────────────────────────────────────── */}
-      <section className={styles.klant}>
-        <div className={styles.klantLabel}>Aan</div>
-        <div className={styles.klantNaam}>{lead.naam ?? 'Klant'}</div>
-        {adresLine1 ? <div className={styles.klantLine}>{adresLine1}</div> : null}
-        {adresLine2 ? <div className={styles.klantLine}>{adresLine2}</div> : null}
-        {lead.email ? <div className={styles.klantLine}>{lead.email}</div> : null}
-        {lead.telefoon ? <div className={styles.klantLine}>{lead.telefoon}</div> : null}
-      </section>
+      <div className={styles.page}>
+        {/* ─── HEADER ──────────────────────────────────────────────── */}
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <div className={styles.brandName}>{bedrijfsnaam}</div>
+            <div className={styles.powered}>
+              Offerte gegenereerd door{' '}
+              <span className={styles.brandFront}>Front</span>
+              <span className={styles.brandLix}>lix</span>
+            </div>
+          </div>
+          <div className={styles.headerRight}>
+            <div className={styles.companyBlock}>
+              <div className={styles.companyName}>{bedrijfsnaam}</div>
+              {bedrijfsAdresLines.map((line, idx) => (
+                <div key={idx}>{line}</div>
+              ))}
+              {bedrijfsTel ? <div>{bedrijfsTel}</div> : null}
+              {bedrijfsEmail ? <div>{bedrijfsEmail}</div> : null}
+            </div>
+          </div>
+        </header>
 
-      {/* ─── Regels-tabel ─────────────────────────────────────── */}
-      <section className={styles.regelsBlok}>
-        <table className={styles.regelsTabel}>
+        {/* ─── TITEL + META ────────────────────────────────────────── */}
+        <section className={styles.titleRow}>
+          <div className={styles.titleCell}>
+            <div className={styles.titleEyebrow}>
+              Offerte &middot; {dienstenLabel}
+            </div>
+            <h1 className={styles.titleMain}>
+              Voorstel voor {lead.naam ?? 'klant'}
+            </h1>
+          </div>
+          <div className={styles.metaCell}>
+            <div className={styles.metaLine}>
+              Referentie<strong>{referentie}</strong>
+            </div>
+            <div className={styles.metaLine}>
+              Datum<strong>{formatDateNL(versieDatum)}</strong>
+            </div>
+            <div className={styles.metaLine}>
+              Geldig tot<strong>{formatDateNL(geldigTot.toISOString())}</strong>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── KLANT ───────────────────────────────────────────────── */}
+        <section className={styles.klantCard}>
+          <div className={styles.klantEyebrow}>Klantgegevens</div>
+          <div className={styles.klantField}>
+            <span className={styles.klantKey}>Naam</span>
+            <span className={styles.klantValue}>{lead.naam ?? '—'}</span>
+          </div>
+          {klantAdresLine1 ? (
+            <div className={styles.klantField}>
+              <span className={styles.klantKey}>Adres</span>
+              <span className={styles.klantValue}>
+                {klantAdresLine1}
+                {klantAdresLine2 ? `, ${klantAdresLine2}` : ''}
+              </span>
+            </div>
+          ) : null}
+          {lead.email ? (
+            <div className={styles.klantField}>
+              <span className={styles.klantKey}>E-mail</span>
+              <span className={styles.klantValue}>{lead.email}</span>
+            </div>
+          ) : null}
+          {lead.telefoon ? (
+            <div className={styles.klantField}>
+              <span className={styles.klantKey}>Telefoon</span>
+              <span className={styles.klantValue}>{lead.telefoon}</span>
+            </div>
+          ) : null}
+        </section>
+
+        {/* ─── PRIJSOVERZICHT ──────────────────────────────────────── */}
+        <h2 className={styles.section}>Prijsoverzicht</h2>
+        <table className={styles.priceTable}>
           <thead>
             <tr>
-              <th className={styles.thOmschrijving}>Omschrijving</th>
-              <th className={styles.thNumeric}>Aantal</th>
-              <th className={styles.thEenheid}>Eenheid</th>
-              <th className={styles.thNumeric}>Prijs / eenh.</th>
-              <th className={styles.thNumeric}>Totaal</th>
+              <th>Omschrijving</th>
+              <th className={styles.num}>Aantal</th>
+              <th className={styles.num}>Eenheid</th>
+              <th className={styles.num}>Per eenheid</th>
+              <th className={styles.num}>Totaal</th>
             </tr>
           </thead>
           <tbody>
@@ -115,62 +204,60 @@ export default async function OffertePreviewPage({
             ) : (
               prijsregels.map((r) => (
                 <tr key={r.id}>
-                  <td>{r.omschrijving}</td>
-                  <td className={styles.tdNumeric}>{r.aantal ?? '—'}</td>
-                  <td>{r.eenheid ?? '—'}</td>
-                  <td className={styles.tdNumeric}>{formatEuro(Number(r.stukprijs))}</td>
-                  <td className={styles.tdNumeric}>{formatEuro(Number(r.totaal))}</td>
+                  <td className={styles.label}>{r.omschrijving}</td>
+                  <td className={styles.num}>{r.aantal ?? '—'}</td>
+                  <td className={styles.num}>{r.eenheid ?? '—'}</td>
+                  <td className={styles.num}>
+                    {r.stukprijs ? formatEuro(Number(r.stukprijs)) : '—'}
+                  </td>
+                  <td className={styles.amount}>{formatEuro(Number(r.totaal))}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </section>
 
-      {/* ─── Totalen (rechtsuitgelijnd blok) ─────────────────────── */}
-      <section className={styles.totalenBlok}>
-        <div className={styles.totalenInner}>
-          <div className={styles.totaalRow}>
-            <span>Subtotaal</span>
-            <span>{formatEuro(totalen.subtotaalExcl)}</span>
+        {/* ─── TOTALEN ─────────────────────────────────────────────── */}
+        <div className={styles.totals}>
+          <div className={`${styles.totalsRow} ${styles.subtotal}`}>
+            <span className={styles.l}>Subtotaal excl. BTW</span>
+            <span className={styles.r}>{formatEuro(totalen.subtotaalExcl)}</span>
           </div>
           {kortingPct > 0 && totalen.kortingBedrag > 0 ? (
-            <div className={`${styles.totaalRow} ${styles.totaalRowKorting}`}>
-              <span>
-                Korting ({kortingPct}%){' '}
-                {lead.korting_omschrijving ? (
-                  <span className={styles.kortingOmschr}>· {lead.korting_omschrijving}</span>
-                ) : null}
+            <div className={`${styles.totalsRow} ${styles.korting}`}>
+              <span className={styles.l}>
+                Korting ({kortingPct}%)
+                {lead.korting_omschrijving ? ` · ${lead.korting_omschrijving}` : ''}
               </span>
-              <span>− {formatEuro(totalen.kortingBedrag)}</span>
+              <span className={styles.r}>− {formatEuro(totalen.kortingBedrag)}</span>
             </div>
           ) : null}
-          <div className={`${styles.totaalRow} ${styles.totaalRowStrong}`}>
-            <span>Excl. BTW</span>
-            <span>{formatEuro(totalen.naKortingExcl)}</span>
+          <div className={`${styles.totalsRow} ${styles.btw}`}>
+            <span className={styles.l}>BTW {totalen.btwPercentage}%</span>
+            <span className={styles.r}>{formatEuro(totalen.btw)}</span>
           </div>
-          <div className={`${styles.totaalRow} ${styles.totaalRowMuted}`}>
-            <span>BTW {totalen.btwPercentage}%</span>
-            <span>{formatEuro(totalen.btw)}</span>
-          </div>
-          <div className={`${styles.totaalRow} ${styles.totaalRowHero}`}>
-            <span>Totaal incl. BTW</span>
-            <span>{formatEuro(totalen.totaalIncl)}</span>
+          <div className={`${styles.totalsRow} ${styles.grand}`}>
+            <span className={styles.l}>Totaal incl. BTW</span>
+            <span className={styles.r}>{formatEuro(totalen.totaalIncl)}</span>
           </div>
         </div>
-      </section>
 
-      {/* ─── Footer: voorwaarden + tip om te printen ─────────────── */}
-      <footer className={styles.footer}>
-        <p className={styles.voorwaarden}>
-          Op deze offerte zijn onze algemene voorwaarden van toepassing. Met
-          garantie voor 12 maanden op uitgevoerd werk.
-        </p>
+        {/* ─── VOORWAARDEN ─────────────────────────────────────────── */}
+        <div className={styles.conditions}>
+          <strong>Voorwaarden &amp; geldigheid.</strong>{' '}
+          Deze offerte is geldig tot {formatDateNL(geldigTot.toISOString())} en
+          betreft een vrijblijvende prijsindicatie op basis van de door u
+          verstrekte informatie. Definitieve afstemming volgt tijdens de
+          afspraak ter plaatse. Genoemde bedragen zijn exclusief eventuele
+          onvoorziene werkzaamheden en gelden onder voorbehoud van
+          toegankelijkheid van het werkadres.
+        </div>
+
         <p className={styles.printHint}>
           Tip: gebruik Cmd/Ctrl + P om deze pagina af te drukken of als PDF op
           te slaan.
         </p>
-      </footer>
+      </div>
     </main>
   )
 }

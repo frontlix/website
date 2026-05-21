@@ -8,13 +8,13 @@
  *  - Status-tekst (concept / verstuurd-op datum)
  *  - "Auto uit lead-data" pill (alleen bij hasAutoRegels)
  *  - Save-indicator (idle / saving / saved) — gestuurd door parent
+ *  - Knop "Terug naar verzonden versie" (revert, alleen bij canRevert)
  *  - Knop "Bekijk verzonden offerte" (alleen bij verstuurd + pdf_url)
- *  - Knop "Preview huidige versie"
  *
  * Component is volledig presentational — alle state komt via props.
  */
 
-import { Sparkles, ExternalLink, Eye, Undo2 } from 'lucide-react'
+import { Sparkles, ExternalLink, Undo2 } from 'lucide-react'
 import { formatDateNL } from '@/lib/dashboard/format'
 import styles from './OfferteHeader.module.css'
 
@@ -27,14 +27,12 @@ export type OfferteHeaderProps = {
   verstuurdOp: string | null
   /** Toont de "Auto uit lead-data" pill wanneer true. */
   hasAutoRegels: boolean
-  /** Save-state voor de indicator. Fase 1: meestal `'idle'`. */
+  /** Save-state voor de indicator. */
   saveState?: 'idle' | 'saving' | 'saved'
   /** ISO timestamp van laatste succesvolle save — toont "zojuist bewaard". */
   lastSavedAt?: string | null
   /** Huidige `offerte.pdf_url` — opent in nieuw tabblad bij click. */
   verzondenPdfUrl?: string | null
-  /** Callback voor "Preview huidige versie". Fase 1: meestal stub. */
-  onPreviewClick?: () => void
   /**
    * Callback voor "Terug naar verzonden versie".
    * Alleen relevant als `canRevert === true`; anders wordt de knop verborgen.
@@ -55,7 +53,6 @@ export function OfferteHeader({
   saveState = 'idle',
   lastSavedAt: _lastSavedAt,
   verzondenPdfUrl,
-  onPreviewClick,
   onRevertClick,
   canRevert = false,
 }: OfferteHeaderProps) {
@@ -114,15 +111,6 @@ export function OfferteHeader({
             Bekijk verzonden offerte
           </a>
         ) : null}
-
-        <button
-          type="button"
-          className={styles.outlineBtn}
-          onClick={() => onPreviewClick?.()}
-        >
-          <Eye size={14} aria-hidden="true" />
-          Preview huidige versie
-        </button>
       </div>
     </header>
   )
