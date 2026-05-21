@@ -281,6 +281,9 @@ export async function createManualLeadEnOfferte(
       stukprijs: r.prijs,
       totaal: Math.round(r.totaal * 100) / 100,
       volgorde: volgordeOffset + idx + 1,
+      // Door computeRules() gegenereerd → markeer als auto zodat info-tab
+      // sync ze later correct kan vervangen ipv duplicaten te creëren.
+      bron: 'auto_lead' as const,
     }))
   )
 
