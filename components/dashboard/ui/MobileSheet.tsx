@@ -12,6 +12,11 @@ export interface MobileSheetProps {
   footer?: React.ReactNode
   /** Optioneel: backdrop-click sluit niet (voor dwingende sheets). */
   dismissible?: boolean
+  /** Vanaf welke kant de sheet inschuift op mobile. 'bottom' = standaard
+   *  bottom-sheet; 'top' = drop-down vanaf bovenkant (handig voor zoek/
+   *  filters die dicht bij de topbar horen). Op tablet+ blijft 't een
+   *  gecentreerde modal — geen effect. */
+  anchor?: 'top' | 'bottom'
 }
 
 export function MobileSheet({
@@ -21,6 +26,7 @@ export function MobileSheet({
   children,
   footer,
   dismissible = true,
+  anchor = 'bottom',
 }: MobileSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -62,14 +68,16 @@ export function MobileSheet({
       />
       <div
         ref={sheetRef}
-        className={`${styles.sheet} ${open ? styles.sheetOpen : ''}`}
+        className={`${styles.sheet} ${anchor === 'top' ? styles.anchorTop : styles.anchorBottom} ${open ? styles.sheetOpen : ''}`}
         role="dialog"
         aria-modal="true"
         aria-hidden={!open}
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
       >
-        <span className={styles.handle} aria-hidden="true" />
+        {anchor === 'bottom' && (
+          <span className={styles.handle} aria-hidden="true" />
+        )}
         <div className={styles.header}>
           {title ? (
             <div id={titleId} className={styles.title}>{title}</div>

@@ -34,7 +34,12 @@ export function MobileSearchSheet() {
       >
         <Search size={18} />
       </button>
-      <MobileSheet open={open} onClose={() => setOpen(false)} title="Zoeken">
+      <MobileSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Zoeken"
+        anchor="top"
+      >
         <form onSubmit={onSubmit}>
           <div className={styles.inputRow}>
             <input

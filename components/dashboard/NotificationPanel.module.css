@@ -175,11 +175,16 @@
   background: var(--card-hover-bg);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  /* Op telefoon: switch naar viewport-fixed positionering. Met absolute-
+     positionering hangt 't paneel aan de bell-button (rechts in topbar),
+     en `left+right+width` tegelijk geeft browser-conflict waardoor 't
+     buiten beeld loopt. Fixed pakt 'm vast aan de viewport. */
   .panel {
-    /* Op kleine telefoons: full-bleed minus 8px margin links/rechts. */
-    width: calc(100vw - 16px);
-    right: 8px;
+    position: fixed;
+    top: 68px; /* topbar 60px + 8px gap */
     left: 8px;
+    right: 8px;
+    width: auto;
   }
 }

@@ -27,14 +27,22 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Mobile: bottom-sheet */
-.sheet {
+/* Mobile: bottom-sheet (default anchor) of top-sheet (search/filters) */
+.anchorBottom {
   left: 0;
   right: 0;
   bottom: 0;
   max-height: 92vh;
   border-radius: 16px 16px 0 0;
   transform: translateY(100%);
+}
+.anchorTop {
+  left: 0;
+  right: 0;
+  top: 0;
+  max-height: 92vh;
+  border-radius: 0 0 16px 16px;
+  transform: translateY(-100%);
 }
 .sheetOpen {
   transform: translateY(0);
