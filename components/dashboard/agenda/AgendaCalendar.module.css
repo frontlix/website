@@ -116,3 +116,13 @@
     padding: 6px 4px;
   }
 }
+
+@media (max-width: 480px) {
+  .grid {
+    grid-auto-rows: minmax(64px, auto);
+  }
+  .weekday {
+    padding: 4px 2px;
+    font-size: 10px;
+  }
+}

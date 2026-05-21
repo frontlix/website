@@ -116,3 +116,15 @@
     grid-template-columns: 48px repeat(7, minmax(0, 1fr));
   }
 }
+
+@media (max-width: 800px) {
+  /* Op telefoon: laat het grid horizontaal scrollen zodat dagen
+     leesbaar blijven. Min-width zorgt dat kolommen niet kleiner
+     worden dan 72px (gebruikbare touch-precision). */
+  .grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    grid-template-columns: 48px repeat(7, minmax(72px, 1fr));
+    min-width: 600px;
+  }
+}
