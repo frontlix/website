@@ -30,7 +30,7 @@
   font-weight: 600;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .nav {
     position: static;
     flex-direction: row;
@@ -38,6 +38,7 @@
     padding: 4px;
   }
   .item {
+    min-height: var(--tap-min);
     flex-shrink: 0;
   }
 }

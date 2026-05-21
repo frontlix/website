@@ -327,3 +327,26 @@
   font-size: 13px;
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  /* Sidebar layout — al 900px collapse, maar zorg dat ie ook op kleine telefoons 1-kolom is. */
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  /* Prijzen-lijst en service-rows: stack label boven waarde. */
+  .pricingRow,
+  .serviceRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  /* Notificaties tabel: horizontaal scrollbaar op kleine schermen. */
+  .notifTable {
+    overflow-x: auto;
+  }
+  /* Toggle-switches: minimum tap-area voor mobiel. */
+  .toggle {
+    min-height: 28px;
+    min-width: var(--tap-min);
+  }
+}
