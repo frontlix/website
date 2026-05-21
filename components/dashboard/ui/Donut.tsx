@@ -20,9 +20,19 @@ export function Donut({
   const dash = (clamped / 100) * circumference
   const gradientId = 'donut-grad-' + Math.round(Math.random() * 1e9)
 
+  // CSS-variabelen-fallback voor responsive sizing: desktop pakt de
+   // `size` prop, mobile-CSS kan via --donut-size kleiner maken zonder
+   // dat we de SVG-content opnieuw moeten meten. SVG schaalt 100% mee.
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <div
+      style={{
+        position: 'relative',
+        width: `var(--donut-size, ${size}px)`,
+        height: `var(--donut-size, ${size}px)`,
+        flexShrink: 0,
+      }}
+    >
+      <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1A56FF" />
@@ -60,7 +70,7 @@ export function Donut({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: size <= 80 ? 13 : 16,
+            fontSize: `var(--donut-label-size, ${size <= 80 ? 13 : 16}px)`,
             fontWeight: 700,
             letterSpacing: '-0.01em',
             color: 'var(--fg, #1A1A1A)',

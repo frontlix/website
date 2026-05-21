@@ -48,8 +48,4 @@
     padding: 7px 10px;
     font-size: 12px;
   }
-  /* Reactietijd-tab verbergen op telefoon — minder relevant in mobile-context. */
-  .tab[data-kpi="reactietijd"] {
-    display: none;
-  }
 }
