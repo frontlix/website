@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Search, Menu, Plus } from 'lucide-react'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { LeadsViewSwitcher } from './leads/LeadsViewSwitcher'
+import { MobileSearchSheet } from './ui/MobileSearchSheet'
 import { NotificationPanel, type NotifItem } from './NotificationPanel'
 import styles from './Topbar.module.css'
 
@@ -110,6 +111,7 @@ export function Topbar({
       </form>
 
       <div className={styles.actions}>
+        <MobileSearchSheet />
         <LeadsViewSwitcher />
         <Link href={offerteHref} className={`${styles.newQuoteBtn} ${styles.hideOnSmall}`} scroll={false}>
           <Plus size={14} />

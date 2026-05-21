@@ -12,8 +12,8 @@
 /* Hamburger — alleen op smalle schermen, opent mobile-nav drawer. */
 .hamburger {
   display: none;
-  width: 36px;
-  height: 36px;
+  width: var(--tap-min);
+  height: var(--tap-min);
   align-items: center;
   justify-content: center;
   border-radius: 9px;
