@@ -41,3 +41,14 @@
   color: var(--fg-muted);
   font-size: 13px;
 }
+
+/* ── dash-card wrapper: geen padding, overflow verborgen ── */
+.wrapper {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Offerte-prijs in primaire kleur ────────────────────── */
+.priceStrong {
+  color: var(--primary);
+}

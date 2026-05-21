@@ -111,7 +111,7 @@ const COLUMNS: Array<Column<LeadListItem>> = [
     align: 'right',
     render: (row) =>
       row.totaal_prijs ? (
-        <strong style={{ color: 'var(--primary)' }}>
+        <strong className={styles.priceStrong}>
           {formatEuro(row.totaal_prijs)}
         </strong>
       ) : (
@@ -136,7 +136,7 @@ const EMPTY_STATE = (
 // ── Component ────────────────────────────────────────────────────────────────
 export function LeadsTable({ leads }: { leads: LeadListItem[] }) {
   return (
-    <div className="dash-card" style={{ padding: 0, overflow: 'hidden' }}>
+    <div className={`dash-card ${styles.wrapper}`}>
       <TableToCards<LeadListItem>
         columns={COLUMNS}
         rows={leads}
