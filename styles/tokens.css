@@ -88,6 +88,24 @@
   --sidebar-w:       240px;
 
   /* ─────────────────────────────────────────────────────────
+     Mobile — breakpoint-set (documentatie + JS-toegang)
+     CSS @media kan custom-properties nog niet evalueren, dus
+     deze tokens zijn alleen leidend, niet bindend. Bij elke
+     media query in de codebase deze waarden hardcoderen.
+     ───────────────────────────────────────────────────────── */
+  --bp-sm: 480px;
+  --bp-md: 640px;
+  --bp-lg: 768px;
+  --bp-xl: 1100px;
+
+  /* Tap-target minimum — WCAG 2.5.5 (Target Size). */
+  --tap-min: 44px;
+
+  /* Default content-padding op desktop; .density-* classes overschrijven 'm.
+     Onderaan dit bestand staan media queries die 'm op mobile verkleinen. */
+  --content-pad: 24px;
+
+  /* ─────────────────────────────────────────────────────────
      Unprefixed aliases — matchen het Claude-Design exports
      (de design-bundle gebruikt `--bg`, `--fg` etc. zonder
      prefix; we exporteren beide namen zodat zowel het oude
@@ -150,3 +168,15 @@
 .density-compact { --content-pad: 16px; }
 .density-cozy    { --content-pad: 24px; }
 .density-roomy   { --content-pad: 36px; }
+
+/* Mobile density override — content-padding krimpt op kleinere viewports.
+   Werkt op elk element dat var(--content-pad) gebruikt (dashboard-layout).
+   Wint van .density-cozy/.density-roomy via source-order (deze blocks
+   staan ná de density-class-declaraties; verplaatsen breekt de override). */
+@media (max-width: 768px) {
+  /* .density-compact (16px) krimpt niet verder — al compact genoeg. */
+  .density-cozy, .density-roomy { --content-pad: 16px; }
+}
+@media (max-width: 480px) {
+  .density-cozy, .density-roomy { --content-pad: 12px; }
+}
