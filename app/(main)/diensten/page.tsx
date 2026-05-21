@@ -113,7 +113,7 @@ export default function DienstenPage() {
           <p className={styles.heroSubtext}>
             Terwijl jij bezig bent met je klanten, worden je leads automatisch
             opgevangen. De juiste vragen worden gesteld en een offerte wordt
-            verstuurd — zonder dat jij iets hoeft te doen.
+            verstuurd, zonder dat jij iets hoeft te doen.
           </p>
         </div>
       </section>
