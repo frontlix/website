@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
  */
 export function getInitialMatch(query: string): boolean {
   if (typeof window === 'undefined') return false
+  if (typeof window.matchMedia !== 'function') return false
   return window.matchMedia(query).matches
 }
 
@@ -16,7 +17,11 @@ export function getInitialMatch(query: string): boolean {
  * viewport en luistert hij op changes.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState<boolean>(() => getInitialMatch(query))
+  // Altijd `false` als initial state — anders zou de client-init via
+  // getInitialMatch() afwijken van de server-render (true vs false),
+  // wat Next.js als hydration-mismatch logt. useEffect zet de echte
+  // waarde direct na mount.
+  const [matches, setMatches] = useState<boolean>(false)
 
   useEffect(() => {
     const mql = window.matchMedia(query)

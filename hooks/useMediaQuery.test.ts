@@ -24,4 +24,9 @@ describe('getInitialMatch', () => {
     })
     expect(getInitialMatch('(max-width: 640px)')).toBe(false)
   })
+
+  it('geeft false terug als window.matchMedia ontbreekt', () => {
+    vi.stubGlobal('window', {}) // window aanwezig, geen matchMedia
+    expect(getInitialMatch('(max-width: 640px)')).toBe(false)
+  })
 })
