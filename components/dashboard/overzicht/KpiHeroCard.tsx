@@ -47,13 +47,17 @@ export function KpiHeroCard({ metric }: { metric: KpiMetric }) {
           </div>
 
           <div className={styles.deltaRow}>
-            <span className={`${styles.delta} ${delta.up ? styles.deltaUp : styles.deltaDown}`}>
-              {delta.up ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />}
-              {delta.display}
-            </span>
-            <span className={styles.deltaSep}>·</span>
-            <span className={styles.compareLabel}>{metric.compareLabel}</span>
-            <span className={styles.deltaSep}>·</span>
+            {delta.display !== '—' ? (
+              <>
+                <span className={`${styles.delta} ${delta.up ? styles.deltaUp : styles.deltaDown}`}>
+                  {delta.up ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />}
+                  {delta.display}
+                </span>
+                <span className={styles.deltaSep}>·</span>
+                <span className={styles.compareLabel}>{metric.compareLabel}</span>
+                <span className={styles.deltaSep}>·</span>
+              </>
+            ) : null}
             <span className={styles.rangeLabel}>{metric.rangeLabel}</span>
           </div>
         </div>

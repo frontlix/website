@@ -76,10 +76,56 @@ export function formatKpiValue(value: number, unit: KpiUnit): {
     return { number: value.toLocaleString('nl-NL'), suffix: ' %' }
   }
   if (unit === 's') {
-    return { number: value.toLocaleString('nl-NL'), suffix: ' s' }
+    // Voor reactietijd: <60s blijft seconden, daarboven auto-promote
+    // naar minuten/uren/dagen. Anders krijg je '84.783 s' voor 23u33m,
+    // wat onleesbaar is en oogt als het getal 84.783.
+    return formatDurationParts(value)
   }
   // count
   return { number: value.toLocaleString('nl-NL') }
+}
+
+/**
+ * Splits een aantal seconden in number+suffix voor KPI-weergave.
+ * - <60s     -> '47' + ' s'
+ * - <60m     -> '12' + ' m'
+ * - <24u     -> '2u 15' + ' m'   (uur+min als beide niet 0)
+ * - >=24u    -> '1d 5' + ' u'    (dag+uur)
+ */
+function formatDurationParts(seconds: number): { number: string; suffix: string } {
+  const s = Math.max(0, Math.round(seconds))
+  if (s < 60) return { number: String(s), suffix: ' s' }
+  if (s < 3600) return { number: String(Math.round(s / 60)), suffix: ' m' }
+  if (s < 86400) {
+    const h = Math.floor(s / 3600)
+    const m = Math.round((s % 3600) / 60)
+    return m > 0
+      ? { number: `${h}u  ${m}`, suffix: ' m' }
+      : { number: String(h), suffix: ' u' }
+  }
+  const d = Math.floor(s / 86400)
+  const h = Math.round((s % 86400) / 3600)
+  return h > 0
+    ? { number: `${d}d  ${h}`, suffix: ' u' }
+    : { number: String(d), suffix: ' d' }
+}
+
+/**
+ * Compacte duration-string voor delta en 'nog tot doel': '47s',
+ * '12m', '2u 15m', '1d 5u'. Geen leading sign.
+ */
+function formatDurationShort(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds))
+  if (s < 60) return `${s}s`
+  if (s < 3600) return `${Math.round(s / 60)}m`
+  if (s < 86400) {
+    const h = Math.floor(s / 3600)
+    const m = Math.round((s % 3600) / 60)
+    return m > 0 ? `${h}u  ${m}m` : `${h}u`
+  }
+  const d = Math.floor(s / 86400)
+  const h = Math.round((s % 86400) / 3600)
+  return h > 0 ? `${d}d  ${h}u` : `${d}d`
 }
 
 /**
@@ -125,7 +171,7 @@ export function computeDelta(metric: KpiMetric): {
   if (metric.unit === 's') {
     return {
       up: goingUp,
-      display: `${sign}${absDiff.toFixed(0)} s`,
+      display: `${sign}${formatDurationShort(absDiff)}`,
       uitschieter,
     }
   }
@@ -177,7 +223,7 @@ export function nogTotDoel(metric: KpiMetric): {
     if (onder >= 0) {
       return { done: true, display: 'onder doel' }
     }
-    return { done: false, display: `+${Math.abs(onder)} s boven` }
+    return { done: false, display: `+${formatDurationShort(Math.abs(onder))} boven` }
   }
   const nog = metric.doel - metric.value
   if (nog <= 0) {

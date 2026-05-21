@@ -35,14 +35,21 @@
   }
 }
 
-/* Op smal scherm: minis en hoofd-grid stapelen 1-per-rij. */
+/* Op smal scherm: hoofd-grid stapelt; minis blijven 2×2 zodat ze niet
+   een halve scherm-hoogte vertical innemen. Op zeer kleine schermen
+   (<360px) wel naar 1-kolom omdat de getallen anders te krap zijn. */
 @media (max-width: 640px) {
-  .miniGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
   .grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  .miniGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+@media (max-width: 360px) {
+  .miniGrid {
+    grid-template-columns: 1fr;
   }
 }

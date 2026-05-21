@@ -42,14 +42,16 @@ export function KpiMiniCard({
         <span className={styles.number}>{number}</span>
         {suffix && <span className={styles.suffix}>{suffix}</span>}
       </div>
-      <div className={`${styles.delta} ${delta.up ? styles.deltaUp : styles.deltaDown}`}>
-        {delta.display !== '—' && (delta.up ? (
-          <ArrowUp size={12} strokeWidth={2.5} />
-        ) : (
-          <ArrowDown size={12} strokeWidth={2.5} />
-        ))}
-        {delta.display}
-      </div>
+      {delta.display !== '—' && (
+        <div className={`${styles.delta} ${delta.up ? styles.deltaUp : styles.deltaDown}`}>
+          {delta.up ? (
+            <ArrowUp size={12} strokeWidth={2.5} />
+          ) : (
+            <ArrowDown size={12} strokeWidth={2.5} />
+          )}
+          {delta.display}
+        </div>
+      )}
     </>
   )
 
