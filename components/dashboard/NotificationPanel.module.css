@@ -70,7 +70,8 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  width: 360px;
+  /* Cap breedte op viewport zodat het paneel niet buiten beeld loopt op smalle schermen. */
+  width: min(360px, calc(100vw - 16px));
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -172,4 +173,13 @@
 }
 .footer:hover {
   background: var(--card-hover-bg);
+}
+
+@media (max-width: 480px) {
+  .panel {
+    /* Op kleine telefoons: full-bleed minus 8px margin links/rechts. */
+    width: calc(100vw - 16px);
+    right: 8px;
+    left: 8px;
+  }
 }
