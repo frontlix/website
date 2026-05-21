@@ -99,7 +99,7 @@
   --tap-min: 44px;
 
   /* Mobile-density override op --content-pad (zie media query onder). */
-  --content-pad: var(--content-pad, 24px);
+  --content-pad: 24px;
 
   /* ─────────────────────────────────────────────────────────
      Unprefixed aliases — matchen het Claude-Design exports
@@ -165,8 +165,10 @@
 
 /* Mobile density override — content-padding krimpt op kleinere viewports.
    Werkt op elk element dat var(--content-pad) gebruikt (dashboard-layout).
-   Wins van .density-cozy class omdat media query meer-specifiek is. */
+   Wint van .density-cozy/.density-roomy via source-order (deze blocks
+   staan ná de density-class-declaraties; verplaatsen breekt de override). */
 @media (max-width: 768px) {
+  /* .density-compact (16px) krimpt niet verder — al compact genoeg. */
   .density-cozy, .density-roomy { --content-pad: 16px; }
 }
 @media (max-width: 480px) {
