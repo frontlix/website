@@ -86,3 +86,11 @@
 .deltaDown {
   color: #C33333;
 }
+
+/* Reactietijd-mini verbergen op telefoon — past bij `.tab[data-kpi="reactietijd"]`
+   in KpiTabs: minder relevant in mobile-context. */
+@media (max-width: 640px) {
+  .card[data-kpi="reactietijd"] {
+    display: none;
+  }
+}

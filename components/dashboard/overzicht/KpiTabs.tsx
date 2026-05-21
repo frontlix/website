@@ -41,6 +41,7 @@ export function KpiTabs({
             className={`${styles.tab} ${isActive ? styles.active : ''}`}
             scroll={false}
             aria-pressed={isActive}
+            data-kpi={key}
           >
             <Icon size={13} strokeWidth={2.25} />
             <span>{TAB_LABELS[key]}</span>

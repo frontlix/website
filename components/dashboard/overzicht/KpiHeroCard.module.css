@@ -190,15 +190,16 @@
   }
 }
 
-/* Mobile (<640px): icoon weg (label is voldoende), value krijgt volle
-   breedte, donut + doel-info als compacte rij eronder. */
+/* Mobile (<640px): 2-koloms hero — huidige waarde links, doel rechts.
+   Icoon weg, donut weg (info zit in 'nog €X' tekst). Verticale border
+   tussen kolommen voor visuele scheiding. */
 @media (max-width: 640px) {
   .card {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
     gap: 14px;
     padding: 16px;
   }
-  /* Icoon-badge verbergen — neemt op telefoon te veel visueel gewicht
-     in vergelijking met de informatie. Label boven de value is genoeg. */
   .iconBadge {
     display: none;
   }
@@ -216,32 +217,55 @@
     font-size: 11.5px;
   }
   .valueRow {
-    margin-bottom: 0;
+    margin-bottom: 6px;
   }
   .valueNumber {
-    font-size: 34px;
+    font-size: 28px;
   }
   .valueAffix {
-    font-size: 20px;
+    font-size: 18px;
   }
   .valueAffixSuffix {
     font-size: 14px;
   }
-  /* Donut+doel staat onder de body als 1-koloms collapse op 860; op
-     mobile maken we 'm strakker: donut links, doel-blok rechts ervan
-     in één rij met scheidings-lijn boven voor visuele groepering. */
+  /* Rechter kolom: alleen doel-blok (Donut verborgen). Border links
+     scheidt 'm visueel van de huidige waarde. */
   .right {
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    gap: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0;
+    padding-top: 0;
+    padding-left: 14px;
+    border-top: none;
+    border-left: 1px solid var(--border);
+    width: 100%;
   }
+  /* Donut weg op mobile — eerste child van .right */
+  .right > div:first-child {
+    display: none;
+  }
+  /* Doel-block krijgt zelfde label→value→sub-ritme als links */
+  .doelBlock {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+  }
+  /* Doel-label dezelfde uppercase-stijl als de hoofd-label voor symmetrie */
   .doelLabel {
-    font-size: 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 4px;
   }
   .doelValue {
-    font-size: 17px;
+    font: 700 22px/1 var(--font-heading);
+    margin-bottom: 6px;
   }
   .nog {
-    font-size: 11.5px;
+    font-size: 12px;
   }
 }

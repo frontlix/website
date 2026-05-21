@@ -57,10 +57,19 @@ export function KpiMiniCard({
 
   if (href) {
     return (
-      <Link href={href} className={`${styles.card} ${styles.clickable}`} scroll={false}>
+      <Link
+        href={href}
+        className={`${styles.card} ${styles.clickable}`}
+        scroll={false}
+        data-kpi={metric.key}
+      >
         {content}
       </Link>
     )
   }
-  return <div className={styles.card}>{content}</div>
+  return (
+    <div className={styles.card} data-kpi={metric.key}>
+      {content}
+    </div>
+  )
 }
