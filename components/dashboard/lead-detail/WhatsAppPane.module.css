@@ -94,3 +94,15 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* ── Mobile: verkleinde min-hoogte zodat pane niet te lang uitrekkt ── */
+@media (max-width: 800px) {
+  .pane {
+    min-height: 360px;
+  }
+}
+@media (max-width: 480px) {
+  .pane {
+    min-height: 280px;
+  }
+}
