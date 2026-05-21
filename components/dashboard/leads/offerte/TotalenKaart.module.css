@@ -55,14 +55,16 @@
 }
 
 /* Hero-blok met gradient — het eind-totaal incl. BTW.
-   Verticale stack: label + geldigheidsdatum boven, groot bedrag eronder.
-   Past op de smallere sidebar zonder dat tekst en bedrag botsen. */
+   Horizontale layout: label/sub links, groot bedrag rechts.
+   Op smalle sidebar past dit door compacter label en bedrag. */
 .hero {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   margin-top: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-4);
   background: var(--gradient);
   border-radius: var(--radius-md);
   color: var(--color-white);
@@ -73,30 +75,35 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 0 1 auto;
 }
 
 .heroLabel {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-white);
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .heroSub {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .heroAmount {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--color-white);
+  white-space: nowrap;
   line-height: 1.1;
-  /* Bedrag op eigen regel, rechts uitgelijnd voor visuele rust. */
-  align-self: flex-end;
+  flex-shrink: 0;
 }
 
 /* Knoppen-rij: PDF compact (auto-breedte) + Versturen vult de rest. */
