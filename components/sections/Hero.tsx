@@ -83,7 +83,7 @@ export default function Hero() {
 
           <p className={styles.subtext}>
             Binnen 60 seconden reageert ons systeem op elke nieuwe lead via
-            WhatsApp, persoonlijk, automatisch. Van aanvraag tot offerte tot afspraak.
+            WhatsApp, persoonlijk en automatisch. Van aanvraag tot offerte tot afspraak.
           </p>
 
           <div className={styles.ctas}>

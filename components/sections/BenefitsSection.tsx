@@ -124,7 +124,7 @@ export default function BenefitsSection() {
             </h2>
           </div>
           <p className={styles.description}>
-            <strong>Elke nieuwe lead</strong> krijgt automatisch een persoonlijk WhatsApp-bericht met offerte. Binnen 60 seconden, 24/7, zonder dat jij iets hoeft te doen.
+            <strong>Elke nieuwe lead</strong> krijgt automatisch een persoonlijk WhatsApp-bericht met offerte. Binnen 60 seconden, 24/7 en zonder dat jij iets hoeft te doen.
           </p>
         </div>
 
