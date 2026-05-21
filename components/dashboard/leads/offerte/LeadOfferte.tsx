@@ -36,6 +36,7 @@ import {
 import { berekenMarge } from '@/lib/dashboard/marge-calc'
 import { KostprijzenModal } from './KostprijzenModal'
 import { LeadContextChips } from './LeadContextChips'
+import { LegacyOfferteNotice } from './LegacyOfferteNotice'
 import { OfferteHeader } from './OfferteHeader'
 import OfferteRegelsTable, { type RegelEdit } from './OfferteRegelsTable'
 import { OfferteSidebar } from './OfferteSidebar'
@@ -365,6 +366,13 @@ export function LeadOfferte({
       />
 
       <LeadContextChips lead={lead} onEditInfoClick={handleEditInfoClick} />
+
+      {/* Legacy notice: verzonden offerte aanwezig maar geen prijsregels —
+          oude bot-flow sloeg alleen offertes.totaal_incl + PDF op. Knop
+          om alsnog regels uit lead-data te genereren. */}
+      {verstuurd && prijsregels.length === 0 ? (
+        <LegacyOfferteNotice leadId={leadId} />
+      ) : null}
 
       <div className={styles.body}>
         <div className={styles.main}>

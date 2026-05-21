@@ -1,0 +1,102 @@
+/* LegacyOfferteNotice — banner bovenaan offerte-tab voor leads zonder
+   prijsregels in de DB. Subtle accent kleur (primary tinted) zodat 'ie
+   opvalt maar niet alarmerend overkomt. */
+
+.notice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: rgba(26, 86, 255, 0.06);
+  border: 1px solid rgba(26, 86, 255, 0.20);
+  border-radius: var(--radius-md);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--fg-soft);
+}
+
+.error {
+  margin: var(--space-2) 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--gradient);
+  background-clip: padding-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-white);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: box-shadow 0.15s, opacity 0.15s;
+}
+
+.button:hover:not(:disabled) {
+  box-shadow: var(--shadow-primary);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Op smalle schermen: stack verticaal — banner past nooit naast chat. */
+@media (max-width: 720px) {
+  .notice {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'icon body'
+      'btn  btn';
+  }
+  .iconWrap {
+    grid-area: icon;
+  }
+  .body {
+    grid-area: body;
+  }
+  .button {
+    grid-area: btn;
+    justify-content: center;
+    width: 100%;
+  }
+}
