@@ -34,7 +34,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Hoofdregel — "Excl BTW" na korting. */
+/* Hoofdregel — "Excl BTW" na korting. Krijgt een separator-lijn boven
+   zodat Subtotaal + Korting visueel boven de streep staan en
+   Excl BTW + BTW 21% onder. */
+.rowStrong {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-1);
+}
 .rowStrong .rowLabel,
 .rowStrong .rowValue {
   font-weight: 700;
@@ -119,10 +126,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  gap: 6px;
+  padding: var(--space-2) var(--space-2);
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, opacity 0.15s, box-shadow 0.15s;
@@ -131,9 +138,11 @@
   white-space: nowrap;
 }
 
-/* PDF-knop blijft compact (alleen icoon + tekst). */
+/* PDF-knop blijft compact (alleen icoon + korte tekst). */
 .btnOutline {
   flex: 0 0 auto;
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
 }
 
 /* Versturen-knop vult de rest van de breedte. */
