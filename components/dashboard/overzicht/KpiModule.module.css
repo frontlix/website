@@ -45,6 +45,10 @@
   }
   .miniGrid {
     grid-template-columns: 1fr 1fr;
+    /* Alle rijen even hoog (= even hoog als de "tallest" card). Voorkomt
+       dat één lange label (2 regels) een hele rij hoger maakt dan de
+       andere. Cards stretchen netjes mee. */
+    grid-auto-rows: 1fr;
     gap: 8px;
   }
 }

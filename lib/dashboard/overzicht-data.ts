@@ -162,7 +162,10 @@ export function buildKpiMetrics(input: {
     },
     conversie: {
       key: 'conversie',
-      label: 'Conversie offerte → klant',
+      // Korter dan "Conversie offerte → klant" — past op 1 regel in de
+      // mobile mini-card. De "%"-suffix maakt al duidelijk dat 't een rate
+      // is, en de tab heet nog steeds "Conversie".
+      label: 'Offerte → klant',
       value: input.conversiePctLast30,
       prevValue: input.conversiePctPrev30,
       unit: 'pct',
