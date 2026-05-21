@@ -31,31 +31,50 @@ export function computeRules(
   const r: RegelComputed[] = []
   const m2 = Number(data.m2) || 0
 
-  const kleuren: string[] = []
-  if (data.kleur_naturel) kleuren.push('naturel')
-  if (data.kleur_antraciet) kleuren.push('antraciet')
-  const kleurLabel = kleuren.length === 0 ? 'kleur n.t.b.' : kleuren.join(' + ')
+  // Kleur-label — exact zoals Schoon Straatje 'm in de PDF zet:
+  //  - alleen naturel: "naturel"
+  //  - alleen antraciet: "antraciet"
+  //  - beide: "naturel + antraciet"
+  //  - geen: leeg (geen suffix in label)
+  const kleurDelen: string[] = []
+  if (data.kleur_naturel) kleurDelen.push('naturel')
+  if (data.kleur_antraciet) kleurDelen.push('antraciet')
+  const kleurLabel = kleurDelen.join(' + ')
+  const kleurSuffix = kleurLabel ? ` ${kleurLabel}` : ''
 
   if (data.sub.includes('invegen')) {
+    // Reiniging-regel — matcht Schoon Straatje:
+    //  m² < 100 → "Reiniging oppervlak (dagprijs)" met aantal=1 dag
+    //  m² ≥ 100 → "Reiniging oppervlak" met aantal=m², eenheid=m²
     const reinPr = pricing.reiniging_per_m2
-    r.push({
-      desc: 'Reiniging straatwerk',
-      aantal: m2,
-      eenheid: 'm²',
-      prijs: reinPr,
-      totaal: m2 * reinPr,
-    })
+    if (m2 < 100 && m2 > 0) {
+      // Dagprijs voor kleine oppervlakken (SS conventie). Onze pricing-
+      // config kent geen aparte dagprijs, dus we doen m² × tarief.
+      const dagprijs = Math.round(m2 * reinPr * 100) / 100
+      r.push({
+        desc: 'Reiniging oppervlak (dagprijs)',
+        aantal: 1,
+        eenheid: 'dag',
+        prijs: dagprijs,
+        totaal: dagprijs,
+      })
+    } else if (m2 > 0) {
+      r.push({
+        desc: 'Reiniging oppervlak',
+        aantal: m2,
+        eenheid: 'm²',
+        prijs: reinPr,
+        totaal: m2 * reinPr,
+      })
+    }
 
-    // Arbeid invegen — gebruikt nu de expliciete per-type m² uit data.
-    // Eerder kwam de verdeling uit de zakken-ratio; nu controleert de owner
-    // de m²-toewijzing rechtstreeks in StepWerk (defaults: alleen-actief =
-    // volle m², beide actief = 50/50).
+    // Arbeid invegen — namen exact als SS: "Invegen normaal voegzand excl voegzand"
     if (data.voegzand_normaal_actief) {
       const am2 = Number(data.voegzand_normaal_m2) || 0
       const arbPr = pricing.arbeid_invegen_normaal_per_m2
       if (am2 > 0) {
         r.push({
-          desc: 'Invegen — arbeid normaal voegzand',
+          desc: 'Invegen normaal voegzand excl voegzand',
           aantal: Math.round(am2),
           eenheid: 'm²',
           prijs: arbPr,
@@ -68,7 +87,7 @@ export function computeRules(
       const arbPr = pricing.arbeid_invegen_onkruidwerend_per_m2
       if (am2 > 0) {
         r.push({
-          desc: 'Invegen — arbeid onkruidwerend voegzand',
+          desc: 'Invegen onkruidwerend voegzand excl voegzand',
           aantal: Math.round(am2),
           eenheid: 'm²',
           prijs: arbPr,
@@ -77,13 +96,15 @@ export function computeRules(
       }
     }
 
+    // Voegzand-product — SS format: "Voegzand normaal naturel (15 kg/zak)".
+    // Eenheid = "zakken" (meervoud), zoals in SS PDF te zien.
     if (data.voegzand_normaal_actief && Number(data.voegzand_normaal_zakken) > 0) {
       const zakken = Number(data.voegzand_normaal_zakken)
       const prijs = Number(data.voegzand_normaal_prijs)
       r.push({
-        desc: `Voegzand normaal (${kleurLabel})`,
+        desc: `Voegzand normaal${kleurSuffix} (15 kg/zak)`,
         aantal: zakken,
-        eenheid: 'zak',
+        eenheid: 'zakken',
         prijs,
         totaal: zakken * prijs,
       })
@@ -92,9 +113,9 @@ export function computeRules(
       const zakken = Number(data.voegzand_onkruidwerend_zakken)
       const prijs = Number(data.voegzand_onkruidwerend_prijs)
       r.push({
-        desc: `Voegzand onkruidwerend (${kleurLabel})`,
+        desc: `Voegzand onkruidwerend${kleurSuffix} (15 kg/zak)`,
         aantal: zakken,
-        eenheid: 'zak',
+        eenheid: 'zakken',
         prijs,
         totaal: zakken * prijs,
       })
@@ -104,7 +125,7 @@ export function computeRules(
   if (data.sub.includes('preventieve_onkruid')) {
     const pr = pricing.preventieve_onkruid_per_m2
     r.push({
-      desc: 'Preventieve onkruidbehandeling',
+      desc: 'Preventieve onkruidbeheersing',
       aantal: m2,
       eenheid: 'm²',
       prijs: pr,
@@ -114,7 +135,7 @@ export function computeRules(
   if (data.sub.includes('beschermlaag')) {
     const pr = pricing.beschermlaag_per_m2
     r.push({
-      desc: 'Nieuwe beschermlaag toepassen',
+      desc: 'Nieuwe beschermlaag incl product',
       aantal: m2,
       eenheid: 'm²',
       prijs: pr,
@@ -132,9 +153,9 @@ export function computeRules(
     }
     const plPrice = planMap[w] ?? ONDERHOUD_PRIJZEN[w] ?? 1.75
     r.push({
-      desc: `Onderhoudsplan — elke ${w} weken`,
+      desc: `Onderhoudsbeheersing (elke ${w} weken)`,
       aantal: m2,
-      eenheid: 'm²/beurt',
+      eenheid: 'm²',
       prijs: plPrice,
       totaal: m2 * plPrice,
     })
@@ -144,7 +165,7 @@ export function computeRules(
     const rollen = Number(data.planten_afschermen_rollen)
     const prijs = Number(data.planten_afschermen_prijs)
     r.push({
-      desc: 'Plantenafscherming folie',
+      desc: 'Afdekfolie planten',
       aantal: rollen,
       eenheid: 'rol',
       prijs,
@@ -157,14 +178,17 @@ export function computeRules(
     Number(data.extra_arbeid_personen) > 0
   ) {
     const arbPr = pricing.extra_arbeid_per_min
-    const tot =
-      Number(data.extra_arbeid_minuten) *
-      Number(data.extra_arbeid_personen) *
-      arbPr
+    const minuten = Number(data.extra_arbeid_minuten)
+    const personen = Number(data.extra_arbeid_personen)
+    const tot = minuten * personen * arbPr
+    // SS-conventie: "Extra arbeid: {label} (X min × Y personen)" als label,
+    // anders gewoon "Extra arbeid (X min × Y personen)".
+    const label = data.extra_arbeid_omschrijving?.trim()
+    const prefix = label ? `Extra arbeid: ${label}` : 'Extra arbeid'
     r.push({
-      desc: `Extra arbeid${data.extra_arbeid_omschrijving ? ` — ${data.extra_arbeid_omschrijving}` : ''} (${data.extra_arbeid_minuten}min × ${data.extra_arbeid_personen} pers.)`,
-      aantal: Number(data.extra_arbeid_minuten),
-      eenheid: 'min',
+      desc: `${prefix} (${minuten} min × ${personen} personen)`,
+      aantal: minuten * personen,
+      eenheid: 'minuten',
       prijs: arbPr,
       totaal: tot,
     })
@@ -173,12 +197,14 @@ export function computeRules(
   if (Number(data.afstand_km) > pricing.reiskosten_drempel_km) {
     const km = Number(data.afstand_km) - pricing.reiskosten_drempel_km
     const pr = pricing.reiskosten_per_km
+    // SS-formaat: "Reiskosten (X km enkele reis, retour)" met aantal = 2× km
+    const retourKm = Math.round(km * 2 * 100) / 100
     r.push({
-      desc: `Reiskosten (${km} km × €${pr.toFixed(2).replace('.', ',')})`,
-      aantal: km,
+      desc: `Reiskosten (${Math.round(Number(data.afstand_km))} km enkele reis, retour)`,
+      aantal: retourKm,
       eenheid: 'km',
       prijs: pr,
-      totaal: km * pr,
+      totaal: retourKm * pr,
     })
   }
 
