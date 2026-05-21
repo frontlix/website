@@ -54,12 +54,13 @@
   font-weight: 600;
 }
 
-/* Hero-blok met gradient — het eind-totaal incl. BTW. */
+/* Hero-blok met gradient — het eind-totaal incl. BTW.
+   Verticale stack: label + geldigheidsdatum boven, groot bedrag eronder.
+   Past op de smallere sidebar zonder dat tekst en bedrag botsen. */
 .hero {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-2);
   margin-top: var(--space-3);
   padding: var(--space-4) var(--space-5);
   background: var(--gradient);
@@ -70,7 +71,7 @@
 .heroLeft {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   min-width: 0;
 }
 
@@ -80,22 +81,22 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-white);
-  white-space: nowrap;
 }
 
 .heroSub {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
-  white-space: nowrap;
 }
 
 .heroAmount {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--color-white);
-  white-space: nowrap;
+  line-height: 1.1;
+  /* Bedrag op eigen regel, rechts uitgelijnd voor visuele rust. */
+  align-self: flex-end;
 }
 
 /* Knoppen-rij: PDF compact (auto-breedte) + Versturen vult de rest. */
