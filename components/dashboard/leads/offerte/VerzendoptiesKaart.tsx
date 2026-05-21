@@ -5,7 +5,7 @@ import type { ChangeEvent } from 'react'
 import styles from './VerzendoptiesKaart.module.css'
 
 export type VerzendOpties = {
-  /** Geldigheid in dagen. Default-keuzes in UI: 7 / 14 / 30 / 60. */
+  /** Geldigheid in dagen — vrij invulbaar (1 t/m 365). */
   geldigheidDagen: number
   /**
    * Vlaggen worden voorlopig niet getoond in de UI (de drie checkboxes
@@ -24,11 +24,18 @@ type Props = {
   onChange: (opties: VerzendOpties) => void
 }
 
-const GELDIGHEID_OPTIES = [7, 14, 30, 60] as const
+const PRESETS = [7, 14, 30, 60] as const
 
 export function VerzendoptiesKaart({ opties, onChange }: Props) {
-  function handleGeldigheid(e: ChangeEvent<HTMLSelectElement>) {
-    onChange({ ...opties, geldigheidDagen: Number(e.target.value) })
+  function handleNumberInput(e: ChangeEvent<HTMLInputElement>) {
+    const raw = Number(e.target.value)
+    // Clamp 1-365; lege/ongeldige input → 1 (voorkomt 0-dagen edge case).
+    const clamped = Math.max(1, Math.min(365, Number.isFinite(raw) ? raw : 1))
+    onChange({ ...opties, geldigheidDagen: clamped })
+  }
+
+  function handlePreset(value: number) {
+    onChange({ ...opties, geldigheidDagen: value })
   }
 
   return (
@@ -42,18 +49,38 @@ export function VerzendoptiesKaart({ opties, onChange }: Props) {
         <label htmlFor="verzendopties-geldigheid" className={styles.geldigheidLabel}>
           Geldigheid
         </label>
-        <select
-          id="verzendopties-geldigheid"
-          value={opties.geldigheidDagen}
-          onChange={handleGeldigheid}
-          className={styles.select}
-        >
-          {GELDIGHEID_OPTIES.map((d) => (
-            <option key={d} value={d}>
-              {d} dagen
-            </option>
-          ))}
-        </select>
+        <div className={styles.geldigheidInputWrap}>
+          <input
+            id="verzendopties-geldigheid"
+            type="number"
+            min={1}
+            max={365}
+            step={1}
+            value={opties.geldigheidDagen}
+            onChange={handleNumberInput}
+            className={styles.geldigheidNumber}
+            aria-label="Geldigheid in dagen"
+          />
+          <span className={styles.geldigheidSuffix}>dagen</span>
+        </div>
+      </div>
+
+      {/* Snelkeuzes — klik = direct invullen, blijft handmatig overschrijfbaar. */}
+      <div className={styles.presets}>
+        {PRESETS.map((d) => {
+          const isActive = d === opties.geldigheidDagen
+          return (
+            <button
+              key={d}
+              type="button"
+              onClick={() => handlePreset(d)}
+              className={`${styles.preset} ${isActive ? styles.presetActive : ''}`}
+              aria-pressed={isActive}
+            >
+              {d}
+            </button>
+          )
+        })}
       </div>
     </div>
   )
