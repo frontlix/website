@@ -1,0 +1,30 @@
+/* Trigger-knop: alleen zichtbaar op ≤ 640px */
+.trigger {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  min-height: var(--tap-min);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--fg);
+  font: 600 13px/1 var(--font-body);
+  cursor: pointer;
+}
+.trigger:hover {
+  background: var(--card-hover-bg);
+}
+@media (max-width: 640px) {
+  .trigger {
+    display: inline-flex;
+  }
+}
+
+/* Sectie-scheiding binnen de sheet */
+.section {
+  margin-bottom: 16px;
+}
+.section:last-child {
+  margin-bottom: 0;
+}

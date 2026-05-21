@@ -301,8 +301,18 @@
   }
 }
 @media (max-width: 800px) {
+  /* Horizontale scroll met snap — kolommen 280px breed zodat de volgende
+     kolom net zichtbaar is als visuele scroll-hint. */
   .dash-pipeline-track {
-    grid-template-columns: 1fr;
+    grid-auto-flow: column;
+    grid-auto-columns: 280px;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+  }
+  .dash-pipeline-track > * {
+    scroll-snap-align: start;
   }
 }
 

@@ -6,6 +6,7 @@ import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
 import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
 import { LeadsFilterTabs } from '@/components/dashboard/leads/LeadsFilterTabs'
 import { WebChatToggle } from '@/components/dashboard/leads/WebChatToggle'
+import { MobileFiltersSheet } from '@/components/dashboard/leads/MobileFiltersSheet'
 import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import styles from './page.module.css'
@@ -163,8 +164,16 @@ export default async function LeadsPage({
 
       {/* Filter-tabs bovenin */}
       <div className={styles.filterRow}>
-        <LeadsFilterTabs counts={counts} />
-        <WebChatToggle count={webCount} />
+        {/* Desktop-filters: verborgen op ≤ 640px; mobiel toont MobileFiltersSheet */}
+        <div className={styles.desktopFilters}>
+          <LeadsFilterTabs counts={counts} />
+          <WebChatToggle count={webCount} />
+        </div>
+        {/* Mobile-only filter-trigger */}
+        <MobileFiltersSheet
+          filterTabs={{ counts }}
+          webChat={{ count: webCount }}
+        />
         <SearchBar initial={search} />
       </div>
 

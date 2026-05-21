@@ -1,14 +1,18 @@
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
-import type { LeadListItem } from '@/lib/dashboard/lead-queries'
-import { Avatar } from '@/components/dashboard/ui/Avatar'
+'use client'
+
 import { Pill } from '@/components/dashboard/ui/Pill'
+import { Avatar } from '@/components/dashboard/ui/Avatar'
+import { TableToCards } from '@/components/dashboard/ui/TableToCards'
+import type { Column } from '@/components/dashboard/ui/TableToCards'
 import { formatEuro, formatRelative, gesprekFaseLabel } from '@/lib/dashboard/format'
 import { DIENST_LABELS } from '@/lib/dashboard/manual-offerte-types'
 import type { SubDienst } from '@/lib/dashboard/manual-offerte-types'
+import type { LeadListItem } from '@/lib/dashboard/lead-queries'
 import styles from './LeadsTable.module.css'
 
-type StatusMeta = { label: string; tone: 'blue' | 'amber' | 'green' | 'red' | 'gray' }
+// ── Status-meta tabel ────────────────────────────────────────────────────────
+type PillTone = 'blue' | 'amber' | 'green' | 'red' | 'gray'
+type StatusMeta = { label: string; tone: PillTone }
 
 const STATUS_META: Record<string, StatusMeta> = {
   nieuw:             { label: 'Nieuw',              tone: 'blue'  },
@@ -21,96 +25,125 @@ const STATUS_META: Record<string, StatusMeta> = {
   handoff:           { label: 'Handover',           tone: 'red'   },
 }
 
+/** Geeft label + tone terug voor een status-string (of defaults). */
+function pillToneFor(s: string | null): PillTone {
+  if (!s) return 'gray'
+  return (STATUS_META[s] ?? { tone: 'gray' }).tone
+}
+
 function statusMeta(s: string | null): StatusMeta {
   if (!s) return { label: '—', tone: 'gray' }
   return STATUS_META[s] ?? { label: s.replace(/_/g, ' '), tone: 'gray' }
 }
 
-/**
- * Tabel-view voor /leads. Kolommen volgens design-spec:
- * Lead | Dienst | m² | Status | Gespreksfase | Offerte | Laatste actie | →
- */
-export function LeadsTable({ leads }: { leads: LeadListItem[] }) {
-  return (
-    <div className={`${styles.tableWrap} dash-card`}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Lead</th>
-            <th>Dienst</th>
-            <th className={styles.numeric}>m²</th>
-            <th>Status</th>
-            <th>Gespreksfase</th>
-            <th className={styles.numeric}>Offerte</th>
-            <th>Laatste actie</th>
-            <th aria-label="Open" />
-          </tr>
-        </thead>
-        <tbody>
-          {leads.map((lead) => {
-            const meta = statusMeta(lead.status)
-            const dienstLabels = (lead.sub_diensten ?? [])
-              .map((d) => DIENST_LABELS[d as SubDienst] ?? humanize(d))
-              .filter(Boolean)
-            const dienstText = dienstLabels.join(' + ')
-            const subline = [lead.lead_id, lead.plaats].filter(Boolean).join(' · ')
-
-            return (
-              <tr key={lead.lead_id} className={styles.row}>
-                <td>
-                  <Link href={`/leads/${lead.lead_id}`} className={styles.link}>
-                    <div className={styles.leadCell}>
-                      <Avatar name={lead.naam} size="sm" />
-                      <div className={styles.leadCellBody}>
-                        <div className={styles.leadNameRow}>
-                          <strong className={styles.leadName}>{lead.naam}</strong>
-                          {lead.kanaal === 'web' && (
-                            <Pill tone="amber" sm>Geen WhatsApp</Pill>
-                          )}
-                        </div>
-                        {subline && (
-                          <div className={styles.leadSub}>{subline}</div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                </td>
-                <td className={styles.muted}>{dienstText || '—'}</td>
-                <td className={styles.numeric}>{lead.m2 ?? '—'}</td>
-                <td>
-                  <Pill tone={meta.tone} dot>{meta.label}</Pill>
-                </td>
-                <td className={styles.muted}>
-                  {lead.gesprek_fase ? gesprekFaseLabel(lead.gesprek_fase) : '—'}
-                </td>
-                <td className={styles.numeric}>
-                  {lead.totaal_prijs ? (
-                    <strong style={{ color: 'var(--primary)' }}>{formatEuro(lead.totaal_prijs)}</strong>
-                  ) : (
-                    <span className={styles.muted}>—</span>
-                  )}
-                </td>
-                <td className={`${styles.muted} ${styles.timeCell}`}>
-                  {formatRelative(lead.bijgewerkt)}
-                </td>
-                <td className={styles.chevronCell}>
-                  <Link
-                    href={`/leads/${lead.lead_id}`}
-                    aria-label={`Open ${lead.naam}`}
-                    className={styles.chevronLink}
-                  >
-                    <ChevronRight size={14} />
-                  </Link>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
 function humanize(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// ── Kolom-configuratie ────────────────────────────────────────────────────────
+// Bewust buiten de component gedefinieerd zodat de array-referentie stabiel is
+// (geen re-allocatie bij elke render).
+const COLUMNS: Array<Column<LeadListItem>> = [
+  {
+    key: 'naam',
+    label: 'Lead',
+    mobile: 'primary',
+    render: (row) => {
+      const subline = [row.lead_id, row.plaats].filter(Boolean).join(' · ')
+      return (
+        <div className={styles.leadCell}>
+          <Avatar name={row.naam} size="sm" />
+          <div className={styles.leadCellBody}>
+            <div className={styles.leadNameRow}>
+              <strong className={styles.leadName}>{row.naam}</strong>
+              {row.kanaal === 'web' && (
+                <Pill tone="amber" sm>Geen WhatsApp</Pill>
+              )}
+            </div>
+            {subline && <div className={styles.leadSub}>{subline}</div>}
+          </div>
+        </div>
+      )
+    },
+  },
+  {
+    key: 'sub_diensten',
+    label: 'Dienst',
+    mobile: 'secondary',
+    render: (row) => {
+      const labels = (row.sub_diensten ?? [])
+        .map((d) => DIENST_LABELS[d as SubDienst] ?? humanize(d))
+        .filter(Boolean)
+      return labels.join(', ') || '—'
+    },
+  },
+  {
+    key: 'm2',
+    label: 'm²',
+    mobile: 'secondary',
+    align: 'right',
+    render: (row) => (row.m2 != null ? `${row.m2} m²` : '—'),
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    mobile: 'primary',
+    render: (row) => {
+      const meta = statusMeta(row.status)
+      return (
+        <Pill tone={pillToneFor(row.status)} dot>
+          {meta.label}
+        </Pill>
+      )
+    },
+  },
+  {
+    key: 'gesprek_fase',
+    label: 'Gespreksfase',
+    mobile: 'secondary',
+    render: (row) =>
+      row.gesprek_fase ? gesprekFaseLabel(row.gesprek_fase) : '—',
+  },
+  {
+    key: 'totaal_prijs',
+    label: 'Offerte',
+    mobile: 'primary',
+    align: 'right',
+    render: (row) =>
+      row.totaal_prijs ? (
+        <strong style={{ color: 'var(--primary)' }}>
+          {formatEuro(row.totaal_prijs)}
+        </strong>
+      ) : (
+        '—'
+      ),
+  },
+  {
+    key: 'bijgewerkt',
+    label: 'Laatste actie',
+    mobile: 'secondary',
+    render: (row) => formatRelative(row.bijgewerkt),
+  },
+]
+
+// ── Lege state JSX ────────────────────────────────────────────────────────────
+const EMPTY_STATE = (
+  <div className={styles.empty}>
+    <p>Geen leads gevonden</p>
+  </div>
+)
+
+// ── Component ────────────────────────────────────────────────────────────────
+export function LeadsTable({ leads }: { leads: LeadListItem[] }) {
+  return (
+    <div className="dash-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <TableToCards<LeadListItem>
+        columns={COLUMNS}
+        rows={leads}
+        keyField="lead_id"
+        rowHref={(r) => '/leads/' + r.lead_id}
+        emptyState={EMPTY_STATE}
+      />
+    </div>
+  )
 }

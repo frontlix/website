@@ -13,6 +13,25 @@
   min-width: 0;
 }
 
+/* Desktop-filters wrapper — verborgen op mobile zodat MobileFiltersSheet
+   het overneemt. Flex zodat LeadsFilterTabs + WebChatToggle naast elkaar staan. */
+.desktopFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .desktopFilters {
+    display: none;
+  }
+  .filterRow {
+    gap: 8px;
+  }
+}
+
 .emptyState {
   padding: 60px 24px;
   text-align: center;
