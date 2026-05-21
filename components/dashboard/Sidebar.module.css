@@ -180,12 +180,11 @@
 }
 
 @media (max-width: 768px) {
-  /* Op mobiel: sidebar is een slide-in drawer i.p.v. layout-kolom. */
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 280px;
+    width: min(280px, calc(100vw - 32px));
     z-index: 100;
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -197,5 +196,16 @@
   .closeBtn,
   .backdrop {
     display: flex;
+  }
+  /* Tap-target garantie voor nav-items. */
+  .navItem {
+    min-height: var(--tap-min);
+  }
+  /* Tenant naam ellipsis bij lange namen op smalle drawer. */
+  .tenant {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
   }
 }
