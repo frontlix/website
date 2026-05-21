@@ -5,14 +5,14 @@ import type { ChangeEvent } from 'react'
 import styles from './KortingKaart.module.css'
 
 type Props = {
-  /** Huidig kortingspercentage, 0-100 (UI clampt op 0-20 via slider/presets). */
+  /** Huidig kortingspercentage, 0-100 (UI clampt op 0-40 via slider/presets). */
   kortingPct: number
   /** Vrije tekst — bv. "Kennismakingskorting". */
   kortingOmschrijving: string
   onChange: (pct: number, omschrijving: string) => void
 }
 
-const PRESETS = [0, 5, 10, 15] as const
+const PRESETS = [0, 10, 20, 40] as const
 
 export function KortingKaart({ kortingPct, kortingOmschrijving, onChange }: Props) {
   function handleSlider(e: ChangeEvent<HTMLInputElement>) {
@@ -41,7 +41,7 @@ export function KortingKaart({ kortingPct, kortingOmschrijving, onChange }: Prop
       <input
         type="range"
         min={0}
-        max={20}
+        max={40}
         step={1}
         value={kortingPct}
         onChange={handleSlider}
