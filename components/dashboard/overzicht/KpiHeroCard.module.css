@@ -190,50 +190,58 @@
   }
 }
 
-/* Mobile (<640px): nog compacter — kleiner icoon, kleinere donut,
-   alles dichter op elkaar zodat de hero niet half het scherm vult. */
+/* Mobile (<640px): icoon weg (label is voldoende), value krijgt volle
+   breedte, donut + doel-info als compacte rij eronder. */
 @media (max-width: 640px) {
   .card {
-    gap: 12px;
-    padding: 14px;
+    gap: 14px;
+    padding: 16px;
+  }
+  /* Icoon-badge verbergen — neemt op telefoon te veel visueel gewicht
+     in vergelijking met de informatie. Label boven de value is genoeg. */
+  .iconBadge {
+    display: none;
   }
   .left {
-    gap: 12px;
-    align-items: center;
-  }
-  .iconBadge {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    gap: 0;
   }
   .body {
-    /* iconBadge ge-center'd op de label-rij — die wordt nu kleiner zodat
-       het label en value beide visueel naast/onder het icoon balanceren */
-    align-self: center;
+    width: 100%;
+    align-self: stretch;
   }
   .headRow {
-    margin-bottom: 2px;
-  }
-  .valueRow {
     margin-bottom: 4px;
   }
+  .label {
+    font-size: 11.5px;
+  }
+  .valueRow {
+    margin-bottom: 0;
+  }
   .valueNumber {
-    font-size: 30px;
+    font-size: 34px;
   }
   .valueAffix {
-    font-size: 18px;
+    font-size: 20px;
   }
   .valueAffixSuffix {
     font-size: 14px;
   }
-  /* Donut + doel-blok als horizontale rij — doel-info rechts naast donut */
+  /* Donut+doel staat onder de body als 1-koloms collapse op 860; op
+     mobile maken we 'm strakker: donut links, doel-blok rechts ervan
+     in één rij met scheidings-lijn boven voor visuele groepering. */
+  .right {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    gap: 16px;
+  }
   .doelLabel {
     font-size: 10px;
   }
   .doelValue {
-    font-size: 16px;
+    font-size: 17px;
   }
   .nog {
-    font-size: 11px;
+    font-size: 11.5px;
   }
 }

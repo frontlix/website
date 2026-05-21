@@ -65,7 +65,7 @@ export function KpiHeroCard({ metric }: { metric: KpiMetric }) {
 
       {/* ── Rechter blok: donut + doel-info ── */}
       <div className={styles.right}>
-        <Donut pct={pct} size={88} stroke={9} />
+        <Donut pct={pct} size={104} stroke={10} />
         <div className={styles.doelBlock}>
           <div className={styles.doelLabel}>Doel</div>
           <div className={styles.doelValue}>
