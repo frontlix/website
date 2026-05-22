@@ -149,7 +149,7 @@ async def create_event(
     event = service.events().insert(
         calendarId=calendar_id,
         body=body,
-        sendUpdates="all" if attendee_email else "none",
+        sendUpdates="none",
     ).execute()
 
     return event.get("id", "")
