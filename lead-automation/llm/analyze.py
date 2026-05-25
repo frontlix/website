@@ -30,8 +30,9 @@ Intent = Literal[
     "direct_answer",       # customer answered the asked field with a concrete value
     "doesnt_know",         # customer says "geen idee" / "weet ik niet"
     "will_provide_later",  # customer says "kom ik later op terug" / "moet ik nog opzoeken"
-    "price_question",      # customer asks about price / cost mid-flow
+    "price_question",      # customer asks about price / cost mid-flow (van de PERSONA's dienst)
     "process_question",    # customer asks how something works ("hoe meet ik m²?")
+    "faq_question",        # customer asks about Frontlix-de-dienst (kost, opzettijd, veiligheid, team, KvK, etc.)
     "off_topic",           # customer brings up unrelated topic / small talk
     "gibberish",           # message is nonsense / random typing
     "is_bot_question",     # customer asks "ben jij een bot/AI?"
@@ -134,9 +135,10 @@ The bot last asked about: **{current_question}**
 - direct_answer       : customer gave a concrete answer to the current question (or any other field).
 - doesnt_know         : customer says "weet ik niet", "geen idee", "geen flauw idee", or similar uncertainty on THIS field.
 - will_provide_later  : customer says they will look it up / come back later ("moet ik nog kijken", "kom ik later op terug").
-- price_question      : customer asks about price/cost in the same message.
-- process_question    : customer asks HOW to find out / measure / identify ("hoe meet ik dat?", "hoe weet ik wat ik heb?").
-- off_topic           : customer brings up unrelated topic, small talk, weather, jokes.
+- price_question      : customer asks about the price/cost of the PERSONA's product or service (e.g. "wat kost een paneel?", "wat kost m² dakdekken?", "wat kost wekelijks schoonmaken?"). NIET over Frontlix zelf.
+- process_question    : customer asks HOW to find out / measure / identify something needed for the offerte ("hoe meet ik m²?", "hoe weet ik wat voor dak ik heb?").
+- faq_question        : customer asks about FRONTLIX-the-service / the platform behind this conversation. Topics: Frontlix-pricing of het systeem zelf ("wat kost jullie systeem?"), opzettijd ("hoe snel zijn jullie live?"), data-veiligheid / AVG ("is mijn data veilig?"), integraties ("werkt het met WordPress?"), team / wie zit erachter, contact / KvK / bedrijfsgegevens, betalingsvoorwaarden / garantie, technische kennis nodig, gratis proeftijd, wat gebeurt bij vraag die bot niet kan beantwoorden. Belangrijk onderscheid met `price_question`: faq_question = prijs van FRONTLIX zelf; price_question = prijs van de PERSONA's dienst (panelen, dakwerk, schoonmaak).
+- off_topic           : customer brings up unrelated topic that is NOT answerable from Frontlix-info (weer, grappen, persoonlijke vragen, externe onderwerpen die niets met Frontlix of de offerte te maken hebben).
 - gibberish           : message is nonsense, random letters, no parseable content.
 - is_bot_question     : customer asks if they're talking to a bot/AI ("ben je een bot?", "ben jij AI?").
 - acknowledgement     : pure ack ("ok", "ja", "duidelijk", "thanks") with no answer to the current question and no question back.

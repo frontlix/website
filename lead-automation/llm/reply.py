@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from services.openai_client import get_openai
 from models.lead import ConversationMessage
 from branches import get_branche, get_effective_missing_fields, get_photo_count, is_photo_step_done
+from llm.faq import FAQ_SECTION
 
 if TYPE_CHECKING:
     from llm.analyze import AnalysisResult
@@ -602,7 +603,8 @@ _INTENT_GUIDANCE: dict[str, str] = {
     "will_provide_later": "Customer wants to come back to this later. Acknowledge briefly and move to the NEXT field — they can update the value any time.",
     "price_question": "Customer asked about price. Quote from PRICING section briefly, THEN ask the SAME field that was pending. Do NOT skip it.",
     "process_question": "Customer asked HOW to find/measure something. Give a brief tip from PRACTICAL TIPS, then re-ask the SAME field. Do NOT skip it.",
-    "off_topic": "Customer went off-topic. Acknowledge in ONE short sentence, then ask the SAME field that was pending.",
+    "faq_question": "Customer asked a question about FRONTLIX-the-service (the platform, not the persona's product). Answer kort en feitelijk (max 1-2 zinnen) ALLEEN op basis van claims uit FAQ_OVER_FRONTLIX hieronder, dan een LITERAL newline (\\n in je output, dus echt een regelafbreking), dan de SAME field opnieuw vragen. Verzin NIETS dat niet in FAQ_OVER_FRONTLIX staat. Voorbeeld: \"Je krijgt 1 maand gratis proeftijd en we starten met een gratis kennismakingsgesprek.\\nWeet je ongeveer hoeveel stroom je per jaar verbruikt?\"",
+    "off_topic": "Customer's message is NOT answerable from FAQ_OVER_FRONTLIX (weer, grappen, persoonlijke vragen, externe onderwerpen). Reageer met EXACT: \"Daar kan ik je helaas niet bij helpen, ik richt me alleen op het opstellen van de offerte.\" dan een LITERAL newline (\\n), dan de SAME field opnieuw vragen. Geen smalltalk meebewegen, geen sorry-spiraal.",
     "gibberish": "Customer's message is unparseable. Politely ask for clarification on the SAME field with a softened version.",
     "is_bot_question": "Customer asked if you're a bot. Answer honestly and briefly (\"Klopt, ik ben Frontlix's slimme assistent.\"), then ask the SAME field.",
     "acknowledgement": "Pure acknowledgement (\"ok\", \"ja\", \"thanks\") OR a yes/no answer like \"nee\" to a yes/no field. REACTION is REQUIRED — briefly reference what they confirmed/declined (e.g. \"Geen foto's, geen probleem.\" / \"Akkoord, top.\"). NEVER skip straight to the next question. Then ask the NEXT field with no re-introduction.",
@@ -659,13 +661,23 @@ async def generate_reply(
             f"- guidance: {guidance}\n"
         )
 
+    # FAQ-knowledge wordt alleen ingeladen als de analyzer faq_question detecteert,
+    # scheelt ~500 tokens per call in alle andere gevallen.
+    faq_block = ""
+    if analysis is not None and analysis.intent == "faq_question":
+        faq_block = (
+            "\n## FAQ_OVER_FRONTLIX (gebruik ALLEEN bij intent=faq_question, "
+            "ALLEEN claims hieruit, geen verzinningen, geen externe info)\n"
+            f"{FAQ_SECTION}\n"
+        )
+
     full_prompt = f"""{base_prompt}
 
 ## NOW
 Known info:{known_info}
 
 NEXT: {next_tag}
-{intent_section}
+{intent_section}{faq_block}
 Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."""
 
     chat_history = _format_history_for_reply(history)
