@@ -147,7 +147,7 @@ If the customer simultaneously gives an answer AND asks a question (e.g. "plat d
 ## EXTRACTION RULES
 - The output schema requires ALL branche-fields to be present in `extracted.data`. Set keys you have NO new value for to `null`. Only set a key to a concrete string when the customer just provided (or corrected) that value.
 - Same rule for `naam` and `email`: null = no change, string = new/corrected.
-- Enums must match one of the listed enum_values exactly (case-insensitive). If the customer says something ambiguous, set the key to null.
+- Enums must match one of the listed enum_values, with TYPO/VARIANT TOLERANCE. If the customer's word is clearly the same concept with a small spelling error or variant (e.g. "schijn"/"scuin"/"skuin" → "schuin", "plat dak"/"pkat" → "plat", "panen"/"dakpanen" → "pannen", "bitumeen"/"biteumen" → "bitumen", "leistein" → "leisteen", "edpm"/"epd" → "EPDM"), MAP it to the correct enum value. Set to null ONLY if the answer is genuinely off-list (customer says "weet niet", asks a question back, or names something completely unrelated to any enum value).
 - Numbers (m², kWh): strip units, return digits only as a string ("4000", "200").
 - If the customer says "weet niet" / "geen idee" on a field, set that field to null (don't store "weet niet" as the value).
 
