@@ -603,8 +603,31 @@ _INTENT_GUIDANCE: dict[str, str] = {
     "will_provide_later": "Customer wants to come back to this later. Acknowledge briefly and move to the NEXT field — they can update the value any time.",
     "price_question": "Customer asked about price. Quote from PRICING section briefly, THEN ask the SAME field that was pending. Do NOT skip it.",
     "process_question": "Customer asked HOW to find/measure something. Give a brief tip from PRACTICAL TIPS, then re-ask the SAME field. Do NOT skip it.",
-    "faq_question": "Customer asked a question about FRONTLIX-the-service (the platform, not the persona's product). Answer kort en feitelijk (max 1-2 zinnen) ALLEEN op basis van claims uit FAQ_OVER_FRONTLIX hieronder. Druk daarna op Enter (echte regelafbreking, NIET de tekst backslash-n typen), zodat het volgende deel op een nieuwe regel komt. Stel daarna de SAME field opnieuw. Verzin NIETS dat niet in FAQ_OVER_FRONTLIX staat. Voorbeeld output (twee regels, gescheiden door een echte newline, niet door letters):\nJe krijgt 1 maand gratis proeftijd en we starten met een gratis kennismakingsgesprek.\nWeet je ongeveer hoeveel stroom je per jaar verbruikt?",
-    "off_topic": "Customer's message is NOT answerable from FAQ_OVER_FRONTLIX (weer, grappen, persoonlijke vragen, externe onderwerpen). Reageer met EXACT deze zin: Daar kan ik je helaas niet bij helpen, ik richt me alleen op het opstellen van de offerte. Druk daarna op Enter (echte regelafbreking, NIET de tekst backslash-n typen), zodat het volgende deel op een nieuwe regel komt. Stel daarna de SAME field opnieuw. Voorbeeld output (twee regels):\nDaar kan ik je helaas niet bij helpen, ik richt me alleen op het opstellen van de offerte.\nMet wie heb ik het genoegen?",
+    "faq_question": (
+        "Customer asked about FRONTLIX-the-service. STRUCTURE OVERRIDE: De persona-regel "
+        "'REACTION en QUESTION samen op één regel' geldt HIER NIET. Bij dit intent ALTIJD "
+        "TWEE APARTE REGELS gescheiden door een ECHTE REGELAFBREKING (newline character, "
+        "het effect van een Enter-toets in de chat).\n"
+        "REGEL 1: FAQ-antwoord, 1-2 zinnen, ALLEEN claims uit FAQ_OVER_FRONTLIX. Verzin niets.\n"
+        "REGEL 2: De SAME field opnieuw vragen, volledige beleefde zin.\n"
+        "VERBODEN: beide zinnen op één regel met spatie ertussen. VERBODEN: de letterlijke "
+        "tekst backslash-n typen. VERPLICHT format (echte regelafbreking tussen de zinnen):\n"
+        "Frontlix biedt 1 maand gratis proeftijd, zonder verrassingen.\n"
+        "Met wie heb ik het genoegen?"
+    ),
+    "off_topic": (
+        "Customer's message is NOT answerable from FAQ_OVER_FRONTLIX (weer, grappen, "
+        "persoonlijke vragen, externe onderwerpen). STRUCTURE OVERRIDE: De persona-regel "
+        "'REACTION en QUESTION samen op één regel' geldt HIER NIET. ALTIJD TWEE APARTE "
+        "REGELS gescheiden door een ECHTE REGELAFBREKING (Enter-toets).\n"
+        "REGEL 1 (exact deze zin): Daar kan ik je helaas niet bij helpen, ik richt me "
+        "alleen op het opstellen van de offerte.\n"
+        "REGEL 2: De SAME field opnieuw vragen, volledige beleefde zin.\n"
+        "VERBODEN: beide zinnen op één regel. VERBODEN: de letterlijke tekst backslash-n "
+        "typen. VERBODEN: smalltalk meebewegen of sorry-spiraal. VERPLICHT format:\n"
+        "Daar kan ik je helaas niet bij helpen, ik richt me alleen op het opstellen van de offerte.\n"
+        "Met wie heb ik het genoegen?"
+    ),
     "gibberish": "Customer's message is unparseable. Politely ask for clarification on the SAME field with a softened version.",
     "is_bot_question": "Customer asked if you're a bot. Answer honestly and briefly (\"Klopt, ik ben Frontlix's slimme assistent.\"), then ask the SAME field.",
     "acknowledgement": "Pure acknowledgement (\"ok\", \"ja\", \"thanks\") OR a yes/no answer like \"nee\" to a yes/no field. REACTION is REQUIRED — briefly reference what they confirmed/declined (e.g. \"Geen foto's, geen probleem.\" / \"Akkoord, top.\"). NEVER skip straight to the next question. Then ask the NEXT field with no re-introduction.",
@@ -709,4 +732,20 @@ Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First
         ],
     )
 
-    return (response.choices[0].message.content or "").strip() or "Sorry, er ging iets mis. Probeer het opnieuw."
+    reply = (response.choices[0].message.content or "").strip()
+
+    # Safety net: faq_question en off_topic MOETEN twee regels zijn. Als het LLM toch
+    # alles op één regel zet (persona-regel 'flowing line' wint soms van de override),
+    # splitsen we forced op het laatste zinseinde (. ? !) zodat de field-vraag op een
+    # eigen regel komt te staan.
+    if (
+        analysis is not None
+        and analysis.intent in {"faq_question", "off_topic"}
+        and reply
+        and "\n" not in reply
+    ):
+        best = max(reply.rfind(". "), reply.rfind("? "), reply.rfind("! "))
+        if best > 0:
+            reply = reply[: best + 1] + "\n" + reply[best + 2 :]
+
+    return reply or "Sorry, er ging iets mis. Probeer het opnieuw."
