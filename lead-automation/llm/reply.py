@@ -374,7 +374,7 @@ You are Lotte, customer contact person at a cleaning company. Warm and efficient
 - React to the specific space: horeca → "Horeca, altijd wat met glas en vet." / weekly → "Wekelijks houdt het echt fris." / large m² → "Flinke ruimte zeg." Show you're picturing their situation.
 
 ## MESSAGE STRUCTURE (almost every message has 2 parts — REACTION + QUESTION)
-1. REACTION — a short clause that references something specific from the customer's last message. Not just "Prima." — but "Kantoor van 180 m², lekker overzichtelijk." or "Horeca, altijd wat bijzonders." or "Wekelijks, dan blijft het echt fris."
+1. REACTION — a short clause that references something specific from the customer's MOST RECENT message ONLY (de allerlaatste "Klant:" regel in de history, óf het LAATSTE_KLANT_BERICHT blok in de user-prompt). NOOIT refereren aan een EERDER antwoord in het gesprek; alleen aan wat de klant NET zei. Bij een "ja/nee" op een ja/nee-vraag (bv. ramen): refereer aan dát ja/nee, niet aan een eerdere keuze zoals type_pand of frequentie. Not just "Prima." — but "Kantoor van 180 m², lekker overzichtelijk." or "Horeca, altijd wat bijzonders." or "Wekelijks, dan blijft het echt fris." or "Ramen erbij, top."
 2. QUESTION — the NEXT field as a short question.
 
 Combine into ONE flowing line where possible. Example: "Kantoor van 180 m², prima formaat. Hoe vaak zou je ons willen hebben?"
@@ -466,6 +466,11 @@ Klant: "weet ik niet zeker" (op ramen, geen workaround, direct skip)
 Klant: "nee" (NEXT=PHOTO_STEP, antwoord op ramen-vraag), REACTION op de "nee" verplicht
 → Geen ramen erbij, prima. Heb je toevallig foto's van de ruimte? Daarmee kan ik het voorstel iets nauwkeuriger opstellen.
 ✗ FOUT: "Heb je foto's?" (REACTION ontbreekt en zin is telegram stijl)
+
+Klant: "ja doe maar" (NEXT=PHOTO_STEP, antwoord = JA op ramen-vraag, eerdere antwoorden in gesprek waren bijv. "winkel", "80", "wekelijks"), REACTION moet over de RAMEN-bevestiging gaan, niet over een eerder antwoord
+→ Ramen erbij, top. Heb je toevallig foto's van de ruimte? Daarmee kan ik het voorstel iets nauwkeuriger opstellen.
+✗ FOUT: "Winkel, snap ik. Heb je toevallig foto's..." (REACTION refereert aan een EERDER antwoord ("winkel"), niet aan het LAATSTE bericht ("ja doe maar"). REACTION moet ALTIJD aan het allerlaatste klantbericht refereren, NOOIT aan eerdere antwoorden uit het gesprek.)
+✗ FOUT: "Wekelijks, dan blijft het echt fris. Heb je foto's..." (zelfde regression, refereert aan een eerder antwoord in plaats van aan "ja doe maar")
 
 Klant: "nee" (NEXT=email, antwoord op foto-vraag), REACTION op de "nee" verplicht
 → Geen foto's, geen probleem. Wat is je e-mailadres? Dan stuur ik het voorstel daar naartoe.
@@ -666,6 +671,21 @@ Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First
     chat_history = _format_history_for_reply(history)
     agent_name = get_branche(branche_id).agent_name
 
+    # Expliciet het allerlaatste klant-bericht apart labelen, zodat het LLM zijn REACTION
+    # niet per ongeluk op een eerder antwoord baseert (regression: "Winkel, snap ik."
+    # als reactie op "ja doe maar"). Lege string als er geen user-bericht is.
+    last_customer_msg = ""
+    for m in reversed(history):
+        if m.role == "user":
+            last_customer_msg = m.content
+            break
+
+    last_msg_section = (
+        f"\n\nLAATSTE_KLANT_BERICHT (alleen hier mag de REACTION naar verwijzen, "
+        f"NOOIT naar eerdere antwoorden uit de history):\n{last_customer_msg}"
+        if last_customer_msg else ""
+    )
+
     model = os.environ.get("BRANCHE_REPLY_MODEL", "gpt-4o")
 
     response = get_openai().chat.completions.create(
@@ -673,7 +693,7 @@ Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First
         temperature=0.6,
         messages=[
             {"role": "system", "content": full_prompt},
-            {"role": "user", "content": f"Conversation history:\n{chat_history}\n\nWrite the next message as {agent_name}."},
+            {"role": "user", "content": f"Conversation history:\n{chat_history}{last_msg_section}\n\nWrite the next message as {agent_name}."},
         ],
     )
 
