@@ -31,6 +31,7 @@ from pd_schedule import router as pd_schedule_router
 from branches.loader import hydrate_all, start_background_refresh
 from services.delivery_timeout_cron import start as start_delivery_timeout_cron
 from services.web_chat_reminder_cron import start as start_web_chat_reminder_cron
+from services.water_reminder_cron import start as start_water_reminder_cron
 
 app = FastAPI(
     title="Frontlix Lead Automation",
@@ -73,11 +74,12 @@ async def _startup() -> None:
     # the reminder cron also self-disables when WEB_CHAT_FALLBACK_ENABLED=false.
     app.state.delivery_timeout_task = asyncio.create_task(start_delivery_timeout_cron())
     app.state.web_chat_reminder_task = asyncio.create_task(start_web_chat_reminder_cron())
+    app.state.water_reminder_task = asyncio.create_task(start_water_reminder_cron())
 
 
 @app.on_event("shutdown")
 async def _shutdown() -> None:
-    for attr in ("config_refresh_task", "delivery_timeout_task", "web_chat_reminder_task"):
+    for attr in ("config_refresh_task", "delivery_timeout_task", "web_chat_reminder_task", "water_reminder_task"):
         task = getattr(app.state, attr, None)
         if task is not None:
             task.cancel()
