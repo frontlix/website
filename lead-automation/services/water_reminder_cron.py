@@ -100,3 +100,67 @@ def should_trigger(now: datetime) -> bool:
 def format_istanbul_time(now: datetime) -> str:
     """Format the Istanbul-time as 'HH:00'."""
     return f"{now.hour:02d}:00"
+
+
+_sent_indices: set[int] = set()
+
+
+async def _send_to_recipient(recipient: dict, tijdstip: str, joke: str, slot_index: int) -> None:
+    """Send 1 template to 1 recipient. Logs success/failure, never raises."""
+    try:
+        await send_template(
+            phone=recipient["phone"],
+            template_name=TEMPLATE_NAME,
+            parameters=[recipient["name"], tijdstip, joke],
+        )
+        logger.info(
+            "water_reminder slot=%d sent to name=%s phone=%s",
+            slot_index, recipient["name"], recipient["phone"],
+        )
+    except Exception:
+        logger.exception(
+            "water_reminder slot=%d FAILED for name=%s phone=%s",
+            slot_index, recipient["name"], recipient["phone"],
+        )
+
+
+async def _check_and_send(now: datetime) -> None:
+    """Single tick: check if a slot triggers, and if so send to all recipients in parallel."""
+    if not should_trigger(now):
+        return
+
+    slot_index = slot_index_for(now)
+    assert slot_index is not None, "should_trigger guaranteed a valid slot"
+
+    if slot_index in _sent_indices:
+        return
+
+    # Add to set BEFORE send to prevent duplicate sends on flap within the same minute.
+    _sent_indices.add(slot_index)
+
+    joke = JOKES[slot_index - 1]
+    tijdstip = format_istanbul_time(now)
+
+    logger.info("water_reminder triggering slot=%d (joke=%r, tijdstip=%s)", slot_index, joke, tijdstip)
+
+    await asyncio.gather(
+        *[_send_to_recipient(r, tijdstip, joke, slot_index) for r in RECIPIENTS],
+        return_exceptions=True,
+    )
+
+
+async def start() -> None:
+    """Entry point. Run as asyncio.create_task() from main.py startup."""
+    if not ENABLED:
+        logger.info("water_reminder ENABLED=False; cron task exits immediately")
+        return
+
+    logger.info("water_reminder cron started (24 slots scheduled across 4 days)")
+
+    while True:
+        try:
+            now = datetime.now(ISTANBUL_TZ)
+            await _check_and_send(now)
+        except Exception:
+            logger.exception("water_reminder loop tick failed (continuing)")
+        await asyncio.sleep(LOOP_INTERVAL_S)

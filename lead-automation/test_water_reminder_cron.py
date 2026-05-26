@@ -94,3 +94,65 @@ class TestJokesList:
         # Template body adds ". Tijd om water te drinken 💧", so jokes must not end with "."
         for i, joke in enumerate(JOKES, 1):
             assert not joke.endswith("."), f"Joke #{i} ends with period: {joke!r}"
+
+
+class TestCheckAndSend:
+    """Tests for _check_and_send idempotency. We patch send_template to count calls."""
+
+    @pytest.fixture(autouse=True)
+    def reset_sent_indices(self):
+        from services.water_reminder_cron import _sent_indices
+        _sent_indices.clear()
+        yield
+        _sent_indices.clear()
+
+    @pytest.mark.asyncio
+    async def test_marks_slot_as_sent_after_call(self, monkeypatch):
+        from services import water_reminder_cron
+
+        calls = []
+
+        async def fake_send_template(phone, template_name, parameters):
+            calls.append((phone, template_name, parameters))
+
+        monkeypatch.setattr(water_reminder_cron, "send_template", fake_send_template)
+
+        now = _ist(2026, 5, 28, 10, 0)
+        await water_reminder_cron._check_and_send(now)
+
+        assert 1 in water_reminder_cron._sent_indices
+        assert len(calls) == 2  # two recipients
+
+    @pytest.mark.asyncio
+    async def test_does_not_resend_same_slot(self, monkeypatch):
+        from services import water_reminder_cron
+
+        calls = []
+
+        async def fake_send_template(phone, template_name, parameters):
+            calls.append((phone, template_name, parameters))
+
+        monkeypatch.setattr(water_reminder_cron, "send_template", fake_send_template)
+
+        now = _ist(2026, 5, 28, 10, 0)
+        await water_reminder_cron._check_and_send(now)
+        await water_reminder_cron._check_and_send(now)
+
+        assert len(calls) == 2  # still just two, not four
+
+    @pytest.mark.asyncio
+    async def test_does_nothing_off_schedule(self, monkeypatch):
+        from services import water_reminder_cron
+
+        calls = []
+
+        async def fake_send_template(phone, template_name, parameters):
+            calls.append((phone, template_name, parameters))
+
+        monkeypatch.setattr(water_reminder_cron, "send_template", fake_send_template)
+
+        now = _ist(2026, 5, 27, 10, 0)  # day before range
+        await water_reminder_cron._check_and_send(now)
+
+        assert len(calls) == 0
+        assert len(water_reminder_cron._sent_indices) == 0
