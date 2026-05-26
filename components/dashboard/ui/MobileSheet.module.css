@@ -27,12 +27,19 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Mobile: bottom-sheet (default anchor) of top-sheet (search/filters) */
+/* Mobile: bottom-sheet (default anchor) of top-sheet (search/filters).
+   `dvh` (dynamic viewport height) maakt de sheet meeschalend met
+   Safari's URL-bar/toolbar — `vh` is op iOS gebaseerd op de LARGEST
+   viewport, waardoor 92vh groter werd dan de zichtbare ruimte zodra
+   chrome uitklapte. Resultaat: de onderkant van de scrollable body
+   viel buiten beeld en het laatste stuk was niet meer bereikbaar.
+   De `vh`-regel blijft als fallback voor browsers zonder `dvh`. */
 .anchorBottom {
   left: 0;
   right: 0;
   bottom: 0;
   max-height: 92vh;
+  max-height: 92dvh;
   border-radius: 16px 16px 0 0;
   transform: translateY(100%);
 }
@@ -41,6 +48,7 @@
   right: 0;
   top: 0;
   max-height: 92vh;
+  max-height: 92dvh;
   border-radius: 0 0 16px 16px;
   transform: translateY(-100%);
 }
@@ -113,6 +121,13 @@
 .body {
   flex: 1;
   overflow-y: auto;
+  /* `overscroll-behavior: contain` voorkomt scroll-chaining naar de
+     achtergrond-page (die via body-scroll-lock vastgezet is). Zonder
+     deze regel raakt iOS Safari "vastgeklikt" zodra je het einde van
+     de sheet-body bereikt — het touch-event probeert de gelockte
+     body te scrollen, faalt stil, en de sheet-scroll lijkt te
+     stoppen tot je 'm opnieuw aanraakt. */
+  overscroll-behavior: contain;
   padding: 16px;
 }
 

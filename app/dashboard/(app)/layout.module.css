@@ -21,6 +21,12 @@
   overflow-y: auto;
   background: var(--surface);
   position: relative;
+  /* Containment van overscroll: voorkomt iOS rubber-band aan de
+     onderkant van de pagina ("scroll-en-springt-terug" effect). Werkt
+     hier omdat .content de echte scroll-container is binnen het
+     dashboard-shell (body/html scrollen niet zelf — zie .shell met
+     height: 100vh + .main overflow: hidden). */
+  overscroll-behavior-y: contain;
 }
 
 .contentInner {

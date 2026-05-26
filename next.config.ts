@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
   // bij launch met missing chromium.
   serverExternalPackages: ['puppeteer'],
 
+  // Sta dev-toegang vanaf het lokale LAN toe (telefoon op zelfde WiFi).
+  // Zonder deze whitelist logt Next.js 15 een cross-origin warning en kan
+  // het _next/* chunks of HMR-payload anders behandelen, wat op iPhone
+  // Safari tot subtle hydration-mismatches leidt. Alleen dev — geen
+  // effect op productie. Mijn Mac zit op 192.168.1.228; pas aan als je
+  // IP wijzigt of dek het hele subnet af met '192.168.1.*'.
+  allowedDevOrigins: ['192.168.1.228', '192.168.1.*'],
+
   async headers() {
     return [
       {

@@ -62,6 +62,13 @@
   gap: 10px;
 }
 
+/* Korte titel-variant — standaard verborgen (= desktop toont volledige
+   titel). Mobile media-query hieronder switcht ze om zodat de header
+   op telefoon op 1 regel past. */
+.titleShort {
+  display: none;
+}
+
 /* "Concept · auto-saved" pill naast de titel zodra een draft is bewaard. */
 .draftBadge {
   display: inline-flex;
@@ -1388,11 +1395,78 @@
     max-height: 100vh;
     border-radius: 0;
   }
+
+  /* ── Header: compacter op telefoon ───────────────────────────────
+     Subtitel verbergen — die wrapte op mobile naar 2 regels en duwde
+     de X-knop in een vreemde verticale positie. Zonder subtitel
+     collapsen titel + X naar één rustige regel.
+     - titleBlock op `flex-start`: icoon plakt aan de bovenkant van
+       de (eventueel 2-regelige) titel i.p.v. visueel zwevend midden,
+       wat 'm opgekropt liet voelen.
+     - draftBadge `nowrap` zodat "Auto-saved" niet binnen z'n pill
+       afgebroken wordt. */
   .header {
     padding: 14px 16px;
   }
+  .subtitle {
+    display: none;
+  }
+  .titleBlock {
+    align-items: flex-start;
+  }
+  .draftBadge {
+    white-space: nowrap;
+  }
+  /* Wissel naar de korte titel-variant — "Offerte opstellen" past op 1
+     regel naast icoon + badge + X-knop, "Handmatige offerte opstellen"
+     wrapte naar 2 regels en maakte de header opgekropt. */
+  .titleFull {
+    display: none;
+  }
+  .titleShort {
+    display: inline;
+  }
+
+  /* ── Stepper: alle 4 stappen passen zonder horizontaal scrollen ──
+     Voorheen: padding 12/14 + font 13px → "Versturen" viel buiten
+     beeld, alleen bereikbaar via swipen. Compactere step + tight
+     chevrons + 20px number-circle past binnen 375px iPhone-viewport. */
+  .stepper {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+    overflow-x: visible;
+  }
+  .step {
+    padding: 8px 4px;
+    font-size: 11.5px;
+    gap: 5px;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .stepNum {
+    width: 20px;
+    height: 20px;
+    font-size: 10.5px;
+  }
+  .stepChevron {
+    padding: 0;
+  }
+  .stepChevron svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* ── Body & footer ──────────────────────────────────────────────
+     bodyStack-gap van 18→14: minder onnodige whitespace tussen
+     sections. padding-bottom op .body voorkomt dat het laatste veld
+     onder de sticky footer kan verdwijnen tijdens scrollen. */
   .body {
     padding: 16px;
+    padding-bottom: 24px;
+  }
+  .bodyStack {
+    gap: 14px;
   }
   .footer {
     padding: 12px 16px;
@@ -1402,21 +1476,651 @@
     bottom: 0;
     background: var(--bg);
   }
-  /* Bestaande grid-collapses verplaatst van 720 naar 768. */
+
+  /* ── Form-grids: alle multi-koloms grids 1-koloms op mobile ────── */
   .grid2,
   .grid21,
-  .gridAddr,
-  .extraGrid,
   .kanaalGrid,
-  .zandDetail,
   .topToolsGrid {
     grid-template-columns: 1fr;
   }
-  .stepper {
-    overflow-x: auto;
+  /* Extra arbeid-grid (Omschrijving + minuten + personen): Omschrijving
+     krijgt volle breedte (lange placeholder past anders niet), minuten
+     en personen naast elkaar eronder — beide zijn smalle numerieke
+     velden die comfortabel in een halve kolom passen. */
+  .extraGrid {
+    grid-template-columns: 1fr 1fr;
   }
-  /* Knoppen krijgen tap-min hoogte. */
+  .extraGrid > *:first-child {
+    grid-column: 1 / -1;
+  }
+  /* Adres-grid (postcode + huisnummer + afstand) blijft 3 koloms —
+     dit zijn alle drie compacte velden die comfortabel naast elkaar
+     passen op telefoon. Stacken zou onnodig veel hoogte kosten. */
+  .gridAddr {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  /* Voegzand-detail (Oppervlakte + Aantal zakken + Prijs per zak):
+     Oppervlakte spant volle breedte (heeft de "Zakken volgen
+     automatisch"-hint eronder, die zou afgekapt voelen in een halve
+     kolom). Aantal zakken + Prijs per zak passen daarna comfortabel
+     naast elkaar — beide zijn smalle numerieke velden. */
+  .zandDetail {
+    grid-template-columns: 1fr 1fr;
+  }
+  .zandDetail > .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Inputs: 16px font om iOS-zoom-on-focus te voorkomen ────────
+     iOS Safari zoomt automatisch in zodra je op een input <16px tikt.
+     Dat veroorzaakt de "viewport-springt-weg" ervaring na elke tap.
+     16px houdt iOS rustig zonder de inputs zichtbaar te vergroten. */
+  .input,
+  .textarea,
+  .searchInput,
+  .aiTextarea,
+  .kortingPctInput {
+    font-size: 16px;
+  }
+
+  /* ── Form-labels rustiger ───────────────────────────────────────
+     Desktop: uppercase 11px 700 met letter-spacing — strak op groot
+     scherm. Op mobile leest dat als formulier-chrome dat schermhoogte
+     opslokt zonder waarde toe te voegen. Natural-case + iets groter
+     + lichter gewicht is rustiger. */
+  .fieldLabel {
+    text-transform: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--fg-soft);
+  }
+
+  /* ── AI-card subtitel: 2-regelige clamp i.p.v. truncate ─────────
+     `white-space: nowrap` op desktop kapt "Surface vult naam, adres,
+     m² en wensen automatisch in" af tot iets als "…en wens…". Op
+     mobile mag 'ie rustig 2 regels innemen, dan blijft 'ie volledig
+     leesbaar in de smalle full-width card. */
+  .aiCardClosedSub {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.35;
+  }
+
+  /* Footer-knoppen krijgen comfortabele tap-min hoogte. */
   .footer button {
     min-height: var(--tap-min);
+  }
+
+  /* ── Voegzand-row: summary wrapt naar eigen regel onder de titel ─
+     Op desktop: checkbox + (titel/sub-blok) + summary-prijs (nowrap)
+     staan horizontaal naast elkaar. Op telefoon dwong de nowrap-
+     summary het titel-blok in een smalle kolom, waardoor "Normaal
+     voegzand" + "Standaard kwarts/zilver, voor algemeen voegwerk"
+     in een lange smalle pilaar werden gestapeld.
+     Fix: zandHead mag wrappen, summary heeft flex-basis 100% zodat
+     'ie altijd naar een eigen regel onder titel+sub klapt. Titel-
+     blok krijgt zo de volle breedte voor 1-regelige titel + sub. */
+  .zandHead {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .zandSummary {
+    flex-basis: 100%;
+    white-space: normal;
+  }
+
+  /* "Standaard € X.XX"-hints onder prijs-inputs verbergen op telefoon.
+     De prijs staat al ín de input zelf (default-waarde), dus de extra
+     hint-regel kost alleen verticale ruimte. Sibling-selector op
+     `.euroRow + .standaardHint` raakt alleen de prijs-hints (voegzand
+     + planten-afscherming) en laat de "Zakken volgen automatisch"-
+     hint onder Oppervlakte ongemoeid. */
+  .euroRow + .standaardHint {
+    display: none;
+  }
+
+  /* Voegzand sub-tekst ("Standaard kwarts/zilver…" / "Polymeer-
+     gebonden…") verbergen op telefoon — de titel "Normaal voegzand"
+     en "Onkruidwerend voegzand" is op zichzelf duidelijk genoeg in
+     een offerte-context. Sub-tekst staat alleen ín de zandRow, dus
+     deze structurele selector raakt niets anders. */
+  .zandRow .optSub {
+    display: none;
+  }
+
+  /* Utility-class voor losse explainer-divs (geen vaste class-naam
+     beschikbaar omdat ze inline gestyled zijn). Wordt in StepWerk
+     toegepast op de Voegzand-/Kleur-/Plantenafscherming-hints die
+     op mobile overbodig zijn — de UI is zonder die regels al
+     leesbaar genoeg. */
+  .hideOnMobile {
+    display: none;
+  }
+
+  /* Step 4 summary-head: prijs-blok onder naam/adres klappen.
+     Op desktop staat het Totaal-blok rechts van avatar + adres-blok
+     (justify-content: space-between). Op telefoon werd de rechter
+     kolom dusdanig smal dat "Totaal incl. BTW" wrapte ("Totaal incl."
+     / "BTW") én het bedrag in stukjes brak ("€" / "735,37").
+     Fix: summaryHead mag wrappen, summaryTotaal pakt z'n eigen rij
+     met flex-basis: 100% — label links, bedrag rechts in één rij
+     onder de adres-info, gescheiden door een dunne border-top. */
+  .summaryHead {
+    flex-wrap: wrap;
+  }
+  .summaryIdent {
+    flex: 1;
+    min-width: 0;
+  }
+  .summaryTotaal {
+    flex-basis: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    text-align: left;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+    gap: 12px;
+  }
+  .summaryTotaalLabel,
+  .summaryTotaalValue {
+    white-space: nowrap;
+  }
+  /* Bigger accent totaal-bedrag op telefoon — design wil dat dit als
+     prominente focus-element leest, niet als secundair label. */
+  .summaryTotaalValue {
+    font-size: 30px;
+    letter-spacing: -0.02em;
+  }
+  /* Kanaal-tegels: ruimere tap-targets (HIG min 48px hoog). */
+  .kanaalBtn {
+    min-height: 64px;
+    padding: 12px;
+  }
+
+  /* AI-paste + bestaande-klant tools binnen StepKlant verbergen — die
+     wonen op mobile in Step 0 (StepStart). De ExistingClientSearch in
+     z'n "gekoppeld"-state (een losse pill buiten .topToolsGrid) blijft
+     wel zichtbaar, zodat de user kan loskoppelen. */
+  .topToolsGrid {
+    display: none;
+  }
+  .orDivider {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────── */
+/*  MOBILE SHELL: header swap, progress bar, sticky bottom footer       */
+/*  + Step 0 (StepStart) entry-scherm                                   */
+/*                                                                       */
+/*  Allemaal mobile-only — JSX wordt op desktop niet gerendered, dus    */
+/*  geen @media-wrapper nodig.                                          */
+/* ─────────────────────────────────────────────────────────────────── */
+
+/* Mobile header — 3-koloms grid (back-btn / centered title / draft-btn).
+   Vervangt de desktop titleRow + stepper. */
+.headerMobileTop {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 12px;
+}
+
+.headerMobileBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--fg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.headerMobileBtn:active {
+  background: var(--border);
+}
+
+.headerMobileTitleBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  min-width: 0;
+}
+.headerMobileTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.2;
+}
+.headerMobileSubtitle {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  line-height: 1.2;
+}
+
+/* Lineaire progress bar (mobile, steps 1-4). Width wordt inline gezet
+   via JS op basis van step. */
+.progressBar {
+  height: 3px;
+  background: var(--track-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.progressBarFill {
+  height: 100%;
+  background: var(--gradient);
+  border-radius: 999px;
+  transition: width 240ms ease;
+}
+
+/* Mobile footer — sticky bottom met totaal-bar + Preview-knop + CTA. */
+.footerMobile {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.04);
+}
+.mobileTotaalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mobileTotaalText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.mobileTotaalLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+}
+.mobileTotaalValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.btnPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnPreview:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnPrimaryFull {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: var(--gradient);
+  color: white;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(26, 86, 255, 0.25);
+  min-height: 48px;
+}
+.btnPrimaryFull:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Step 0 (StepStart) — entry-scherm ──────────────────────────── */
+
+.startWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.startIntro {
+  background: var(--gradient);
+  color: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 6px;
+}
+.startIntroTitle {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  /* Expliciet — globals.css zet `color: var(--color-text)` op alle
+     h-elementen, dat zou de inherited white van .startIntro overrulen. */
+  color: white;
+}
+.startIntroSub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: white;
+}
+
+.startTile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.startTile:active {
+  background: var(--surface);
+}
+.startTileIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--card-hover-bg);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.startTileIconGreen {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.startTileText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.startTileTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.startTileSub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.3;
+}
+.startTileChevron {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.startSearchCard {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+/* "Nieuwe klant invoeren" tile — dashed-border variant. */
+.startNewClientTile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 14px;
+  padding: 14px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  margin-top: 6px;
+}
+.startNewClientTile:active {
+  background: var(--surface);
+}
+
+.startBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 6px 0;
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+/* ── Step 3 (Offerte): mobile korting-presets + hint-rij ───────────
+   Op mobile vervangen 4 preset-knoppen de slider. Een groene
+   hint-rij verschijnt zodra de korting actief is. */
+.kortingPresetsMobile {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.kortingPresetBtn {
+  padding: 10px 4px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.kortingPresetBtn:active {
+  background: var(--surface-2);
+}
+.kortingPresetBtnActive {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.kortingHintMobile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--success-bg);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Step 2 (Werk): mobile tegel-grid + m² stepper + presets ────────
+   `.dienstenGrid` blijft altijd 2-koloms, ook op mobile (i.t.t. de
+   standaard `.grid2` die op mobile 1-koloms wordt). De m²-stepper is
+   het mobile-equivalent van de number-input — −/+ knoppen flankeren
+   een groot, centraal weergegeven cijfer met preset-chips eronder. */
+.dienstenGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* m² stepper: default desktop = input zichtbaar, stepper + presets
+   verborgen. Mobile draait dat om via media-query onder. */
+.m2InputDesktop {
+  /* Op desktop ongewijzigde input — geen extra styling nodig */
+}
+.m2Stepper,
+.m2Presets {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .m2InputDesktop {
+    display: none;
+  }
+  .m2Stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .m2StepperBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--card-hover-bg);
+    color: var(--primary);
+    border: none;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .m2StepperBtn:active {
+    background: rgba(26, 86, 255, 0.16);
+  }
+  .m2BigInput {
+    flex: 1;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    /* iOS-zoom voorkomen — al >16px, dus geen zoom-risico. Spinners
+       weghalen voor cleaner look. */
+    -moz-appearance: textfield;
+    appearance: textfield;
+    min-width: 0;
+    width: 100%;
+  }
+  .m2BigInput::-webkit-outer-spin-button,
+  .m2BigInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .m2BigInput:focus {
+    outline: none;
+  }
+  .m2Presets {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .m2Preset {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 4px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fg);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .m2PresetActive {
+    background: var(--card-hover-bg);
+    color: var(--primary);
+    border-color: rgba(26, 86, 255, 0.4);
+  }
+}
+
+/* ── Step 1 (Klant): mobile-only autofill-success-card ──────────────
+   Toont een groene "adres gevonden via PDOK"-bevestiging boven de
+   Straat/Plaats-inputs. Default verborgen — alleen zichtbaar op
+   mobile via media-query onder. */
+.autofillSuccess {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .autofillSuccess {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--success-bg);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .autofillSuccessIcon {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--success);
+    color: white;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .autofillSuccessText {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .autofillSuccessTitle {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.25;
+  }
+  .autofillSuccessSub {
+    font-size: 11.5px;
+    color: var(--fg-muted);
+    line-height: 1.25;
   }
 }

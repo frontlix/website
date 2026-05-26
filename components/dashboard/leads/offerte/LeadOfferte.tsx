@@ -36,6 +36,7 @@ import {
 import { berekenMarge } from '@/lib/dashboard/marge-calc'
 import { KostprijzenModal } from './KostprijzenModal'
 import { LeadContextChips } from './LeadContextChips'
+import { LeadOfferteMobile } from './LeadOfferteMobile'
 import { LegacyOfferteNotice } from './LegacyOfferteNotice'
 import { OfferteHeader } from './OfferteHeader'
 import OfferteRegelsTable, { type RegelEdit } from './OfferteRegelsTable'
@@ -345,50 +346,80 @@ export function LeadOfferte({
 
   return (
     <section className={styles.section}>
-      <OfferteHeader
-        versie={versie}
-        verstuurd={verstuurd}
-        verstuurdOp={lead.offerte_verstuurd_op}
-        hasAutoRegels={hasAutoRegels}
-        saveState={saveState}
-        lastSavedAt={lastSavedAt}
-        verzondenPdfUrl={laatsteVerzonden?.pdf_url ?? huidige?.pdf_url ?? null}
-        onRevertClick={handleRevertClick}
-        canRevert={canRevert}
-      />
+      {/* Twee parallelle render-trees, beide altijd in de HTML. CSS @media
+          toggelt welke zichtbaar is via display:contents/none. Geen JS-
+          detect = geen flash tijdens hydration. Trade-off: beide componenten
+          mounten en houden eigen state — bij viewport-resize mid-edit raakt
+          de net-zichtbaar-geworden tree de laatste edits kwijt (terug naar
+          server-state). Voor v1 acceptabel. */}
 
-      <LeadContextChips lead={lead} onEditInfoClick={handleEditInfoClick} />
+      <div className={styles.desktopTree}>
+        <OfferteHeader
+          versie={versie}
+          verstuurd={verstuurd}
+          verstuurdOp={lead.offerte_verstuurd_op}
+          hasAutoRegels={hasAutoRegels}
+          saveState={saveState}
+          lastSavedAt={lastSavedAt}
+          verzondenPdfUrl={laatsteVerzonden?.pdf_url ?? huidige?.pdf_url ?? null}
+          onRevertClick={handleRevertClick}
+          canRevert={canRevert}
+        />
 
-      {/* Legacy notice: verzonden offerte aanwezig maar geen prijsregels —
-          oude bot-flow sloeg alleen offertes.totaal_incl + PDF op. Knop
-          om alsnog regels uit lead-data te genereren. */}
-      {verstuurd && prijsregels.length === 0 ? (
-        <LegacyOfferteNotice leadId={leadId} />
-      ) : null}
+        <LeadContextChips lead={lead} onEditInfoClick={handleEditInfoClick} />
 
-      <div className={styles.body}>
-        <div className={styles.main}>
-          <OfferteRegelsTable initialRegels={prijsregels} onChange={setRegels} />
+        {/* Legacy notice: verzonden offerte aanwezig maar geen prijsregels —
+            oude bot-flow sloeg alleen offertes.totaal_incl + PDF op. Knop
+            om alsnog regels uit lead-data te genereren. */}
+        {verstuurd && prijsregels.length === 0 ? (
+          <LegacyOfferteNotice leadId={leadId} />
+        ) : null}
+
+        <div className={styles.body}>
+          <div className={styles.main}>
+            <OfferteRegelsTable initialRegels={prijsregels} onChange={setRegels} />
+          </div>
+
+          <div className={styles.aside}>
+            <OfferteSidebar
+              totalen={totalen}
+              geldigTot={geldigTot}
+              kortingPct={kortingPct}
+              kortingOmschrijving={kortingOmschrijving}
+              verzendOpties={verzendOpties}
+              fotosCount={fotosCount}
+              onKortingChange={handleKortingChange}
+              onVerzendOptiesChange={setVerzendOpties}
+              onPdfClick={handlePdfClick}
+              onSendClick={handleSendClick}
+              versturenDisabled={!heeftRegels}
+              margeOverview={margeOverview}
+              onOpenKostprijzen={() => setKostprijzenModalOpen(true)}
+              onCloseMarge={() => setMargeKaartZichtbaar(false)}
+            />
+          </div>
         </div>
+      </div>
 
-        <div className={styles.aside}>
-          <OfferteSidebar
-            totalen={totalen}
-            geldigTot={geldigTot}
-            kortingPct={kortingPct}
-            kortingOmschrijving={kortingOmschrijving}
-            verzendOpties={verzendOpties}
-            fotosCount={fotosCount}
-            onKortingChange={handleKortingChange}
-            onVerzendOptiesChange={setVerzendOpties}
-            onPdfClick={handlePdfClick}
-            onSendClick={handleSendClick}
-            versturenDisabled={!heeftRegels}
-            margeOverview={margeOverview}
-            onOpenKostprijzen={() => setKostprijzenModalOpen(true)}
-            onCloseMarge={() => setMargeKaartZichtbaar(false)}
-          />
-        </div>
+      <div className={styles.mobileTree}>
+        {verstuurd && prijsregels.length === 0 ? (
+          <LegacyOfferteNotice leadId={leadId} />
+        ) : null}
+
+        <LeadOfferteMobile
+          leadId={leadId}
+          lead={lead}
+          initialRegels={prijsregels}
+          fotosCount={fotosCount}
+          kortingPct={kortingPct}
+          kortingOmschrijving={kortingOmschrijving}
+          verzendOpties={verzendOpties}
+          onRegelsChange={setRegels}
+          onKortingChange={handleKortingChange}
+          onVerzendOptiesChange={setVerzendOpties}
+          onPdfClick={handlePdfClick}
+          onSendClick={handleSendClick}
+        />
       </div>
 
       {/* Kostprijzen-modal: in LeadOfferte (niet OfferteSidebar) zodat de

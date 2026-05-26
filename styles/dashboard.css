@@ -5,6 +5,17 @@
    Class-namen 1-op-1 met het Claude-Design bundle.
    ───────────────────────────────────────────────────────── */
 
+/* iOS Safari rubber-band-bounce uitschakelen voor de dashboard-app-shell.
+   Op iOS bouncet het document zelfs als er niets te scrollen valt — dat
+   geeft een vervelende "scroll-en-springt-terug" ervaring onderaan de
+   offerte-tab op mobile. overscroll-behavior:none op html+body stopt
+   die bounce volledig. Marketing-site behoudt normale rubber-band-UX
+   omdat deze file alleen op dashboard-routes geladen wordt. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* ── Utility flex helpers ──────────────────────────────── */
 .dash-row {
   display: flex;

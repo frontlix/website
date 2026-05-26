@@ -4,6 +4,10 @@ import { NextResponse, type NextRequest } from 'next/server'
 const DASHBOARD_HOSTS = new Set([
   'app.frontlix.com',
   'app.localhost:3000', // lokaal: voeg "127.0.0.1 app.localhost" toe aan /etc/hosts
+  // LAN-IP voor real-device testing op zelfde WiFi (bv. iPhone). Pas dit
+  // adres aan als het IP van de Mac wijzigt. Heeft geen effect in
+  // productie — productie luistert alleen op de app.frontlix.com host.
+  '192.168.1.228:3000',
 ])
 
 // Paden binnen de dashboard-host die GEEN session vereisen.

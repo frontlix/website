@@ -21,12 +21,24 @@ const n = existing.length ? Math.max(...existing) + 1 : 1
 const filename = label ? `screenshot-${n}-${label}.png` : `screenshot-${n}.png`
 const outPath = path.join(dir, filename)
 
+// Mobile viewport: label bevat "mobile" of "iphone" → iPhone-maat (393x852).
+// Andere labels (of geen label) krijgen desktop 1440x900.
+const isMobile = /mobile|iphone/i.test(label)
+const viewport = isMobile
+  ? { width: 393, height: 852, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
+  : { width: 1440, height: 900 }
+
 const browser = await puppeteer.launch({
   headless: 'new',
   args: ['--no-sandbox', '--disable-setuid-sandbox'],
 })
 const page = await browser.newPage()
-await page.setViewport({ width: 1440, height: 900 })
+await page.setViewport(viewport)
+if (isMobile) {
+  await page.setUserAgent(
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
+  )
+}
 await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 })
 await page.screenshot({ path: outPath, fullPage: true })
 await browser.close()

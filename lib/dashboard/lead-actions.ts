@@ -61,7 +61,9 @@ const EDITABLE_TEXT_FIELDS = new Set<string>([
   'bron',
   'hoofdcategorie',
   'zand_kleur',
+  'voegzand_type',
   'groene_aanslag',
+  'korstmos',
   'planten',
   'planten_afschermen',
   'toelichting',
@@ -81,7 +83,9 @@ export type LeadEditPatch = Partial<{
   bron: string | null
   hoofdcategorie: string
   zand_kleur: string | null
+  voegzand_type: string | null
   groene_aanslag: string | null
+  korstmos: string | null
   planten: string | null
   planten_afschermen: string | null
   toelichting: string | null

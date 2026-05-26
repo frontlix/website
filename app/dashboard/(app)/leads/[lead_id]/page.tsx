@@ -22,12 +22,19 @@ export const dynamic = 'force-dynamic'
 
 export default async function LeadDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lead_id: string }>
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { user, profile } = await requireApprovedUser()
   const isOwner = profile.is_owner === true
   const { lead_id } = await params
+  const { tab } = (await searchParams) ?? {}
+  // Op mobile verbergen we de WhatsApp-thread én de Afspraak-kaart wanneer
+  // de gebruiker actief de Offerte-tab bewerkt — het scherm moet zich dan
+  // focussen op de offerte-edit-flow. Desktop blijft beide kolommen tonen.
+  const offerteTabActief = (tab ?? 'info') === 'offerte'
   const [detail, allTags, leadTags] = await Promise.all([
     getLeadDetail(lead_id),
     getAllTags(),
@@ -43,7 +50,15 @@ export default async function LeadDetailPage({
   return (
     <>
       <LeadDetailHeader lead={lead} />
-      <LeadBotStatus lead={lead} />
+      {/* Bot-status strip — op desktop direct onder de header. Op mobile
+          verbergt CSS deze versie en wordt 'ie binnen colChat (vlak voor
+          WhatsApp-paneel) gerenderd zodat de gebruiker eerst de lead-
+          gegevens leest en pas in de gespreks-context de Surface-status
+          ziet. Twee render-instances delen dezelfde server-data; de
+          verborgen variant wordt nooit door de user gezien. */}
+      <div className={styles.botStatusDesktop}>
+        <LeadBotStatus lead={lead} />
+      </div>
       <WebChatPanel lead={lead} />
 
       <div className={styles.split}>
@@ -78,7 +93,12 @@ export default async function LeadDetailPage({
                   fotosCount={detail.fotos.length}
                   isOwner={isOwner}
                 />
-                <LeadAfspraak lead={lead} />
+                {/* Afspraak-blok hoort bij de offerte-flow, maar op mobile
+                    wil de gebruiker volle focus op de regel-editor — daar
+                    verbergen we 'm. Desktop houdt 'm zichtbaar. */}
+                <div className={styles.afspraakDesktopOnly}>
+                  <LeadAfspraak lead={lead} />
+                </div>
               </div>
             }
             fotos={<LeadPhotos fotos={detail.fotos} />}
@@ -102,8 +122,19 @@ export default async function LeadDetailPage({
           />
         </div>
 
-        {/* Rechterkolom: WhatsApp transcript */}
-        <div className={styles.colChat}>
+        {/* Rechterkolom: bot-status + WhatsApp transcript. Op mobile +
+            Offerte-tab verbergen we de hele kolom — gebruiker wil zich
+            focussen op de regel-editor zonder bot-status of chat eronder. */}
+        <div
+          className={`${styles.colChat} ${
+            offerteTabActief ? styles.colChatHiddenOnMobileOfferte : ''
+          }`}
+        >
+          {/* Mobile-only positie voor LeadBotStatus — op desktop verborgen
+              via CSS, op andere mobile-tabs zichtbaar boven WhatsApp. */}
+          <div className={styles.botStatusMobile}>
+            <LeadBotStatus lead={lead} />
+          </div>
           <WhatsAppPane
             leadId={lead.lead_id}
             leadNaam={lead.naam}

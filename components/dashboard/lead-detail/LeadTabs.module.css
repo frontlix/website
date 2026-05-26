@@ -59,3 +59,32 @@
   padding: 20px;
   min-height: 240px;
 }
+
+/* ── Mobile ────────────────────────────────────────────────────
+   5 tabs (Info / Offerte / Foto's / Tijdlijn / Notities) met desktop-
+   padding (12/14) + icon + 13px font = ~475px breed; mobile content-
+   area is ~343px. Resultaat: alleen "Info / Offerte / Foto's" zicht-
+   baar, de rest verstopt achter horizontaal scrollen.
+   Fix: compactere padding + iets kleinere font + tighter gap zodat
+   alle 5 in beeld passen. overflow-x: auto blijft staan als fall-
+   back voor zeer smalle schermen. Panel-padding ook compacter zodat
+   de tab-content niet onnodig insprong krijgt op telefoon. */
+@media (max-width: 768px) {
+  .tabBar {
+    padding: 0 2px;
+  }
+  .tab {
+    padding: 10px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .tabCount {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 5px;
+    font-size: 10.5px;
+  }
+  .panel {
+    padding: 14px;
+  }
+}

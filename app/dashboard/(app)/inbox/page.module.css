@@ -44,11 +44,17 @@
   .grid {
     grid-template-columns: 1fr;
   }
-  /* Default: toon lijst, verberg thread. */
-  .colList {
+  /* Default (geen gesprek geselecteerd): toon lijst, verberg thread. We
+     gebruiken hier `.grid[data-pane="list"]` zodat de mobiele regels
+     symmetrisch zijn met de detail-regels en genoeg specificity hebben
+     om de latere basis-regel `.colThread { display: flex }` (verderop in
+     dit bestand) te overschrijven. Zonder die attribuut-selector wint de
+     basis-regel via source order en blijft de "Kies een gesprek"
+     empty-state óók op mobile zichtbaar onder de lijst. */
+  .grid[data-pane="list"] .colList {
     display: flex;
   }
-  .colThread {
+  .grid[data-pane="list"] .colThread {
     display: none;
   }
   /* Detail-view: toon thread, verberg lijst. */

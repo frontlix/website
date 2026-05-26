@@ -126,6 +126,18 @@ a.metaItem:hover {
   }
   .actions {
     justify-content: flex-start;
+    /* Tightere gap zodat Notitie + Archief + Offerte versturen samen
+       op één regel passen — desktop-gap was 8px, dat dwong de primary-
+       knop naar een eigen regel op iPhone-breedte. */
+    gap: 6px;
+  }
+  .actionBtn {
+    /* Compactere padding + font op telefoon. Combinatie maakt de drie
+       knoppen ~330px breed (ipv ~350) zodat ze comfortabel in de iPhone
+       content-area passen zonder wrap. */
+    padding: 8px 10px;
+    font-size: 12px;
+    gap: 5px;
   }
   .nameRow {
     justify-content: flex-start;

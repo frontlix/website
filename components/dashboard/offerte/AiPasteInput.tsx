@@ -10,6 +10,14 @@ import styles from './ManualOfferteModal.module.css'
 
 type Props = {
   onExtracted: (fields: ExtractedFields) => void
+  /** Start het paneel direct uitgeklapt — handig in Step 0 (mobile),
+   *  waar 'Plak bericht' al een dedicated scherm is en de compacte
+   *  card-rust-toestand alleen een extra tik kost. */
+  defaultOpen?: boolean
+  /** Override van de interne close (X-knop in de header). Default
+   *  klapt 'ie alleen visueel dicht; in Step 0 willen we terug naar
+   *  het entry-menu, niet een dichtgeklapte card binnen 'n leeg scherm. */
+  onClose?: () => void
 }
 
 /**
@@ -19,8 +27,8 @@ type Props = {
  * door aan de parent (StepKlant), die zelf bepaalt welke wizard-velden
  * worden overschreven.
  */
-export function AiPasteInput({ onExtracted }: Props) {
-  const [open, setOpen] = useState(false)
+export function AiPasteInput({ onExtracted, defaultOpen = false, onClose }: Props) {
+  const [open, setOpen] = useState(defaultOpen)
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -75,8 +83,12 @@ export function AiPasteInput({ onExtracted }: Props) {
         <button
           type="button"
           onClick={() => {
-            setOpen(false)
             setError(null)
+            if (onClose) {
+              onClose()
+            } else {
+              setOpen(false)
+            }
           }}
           className={styles.aiCardClose}
           aria-label="Sluiten"

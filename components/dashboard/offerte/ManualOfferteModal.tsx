@@ -5,20 +5,25 @@ import { useRouter } from 'next/navigation'
 import {
   X,
   ChevronRight,
+  ChevronLeft,
   Edit3,
   Check,
   FileText,
   Mail,
+  Eye,
+  StickyNote,
 } from 'lucide-react'
 import {
   DEFAULTS,
   type ManualOfferteData,
 } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
+import { formatEuro } from '@/lib/dashboard/format'
 import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-actions'
 import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
+import { StepStart } from './StepStart'
 import { StepKlant, isValidEmail } from './StepKlant'
 import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
@@ -82,8 +87,11 @@ function formatDraftSavedAt(iso: string): string {
 
 export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const router = useRouter()
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(1)
   const [data, setData] = useState<ManualOfferteData>(DEFAULTS)
+  // Viewport-detectie voor mobile-only Step 0 + alternatieve header/footer.
+  // Default `false` matcht SSR/desktop; effect onder corrigeert dat na mount.
+  const [isMobile, setIsMobile] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   // Pricing-snapshot uit pricing_rules. Initieel FALLBACK zodat de wizard
@@ -104,6 +112,38 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       document.body.style.overflow = ''
     }
   }, [])
+
+  // matchMedia-luistraar voor mobile-viewport. Triggert ook bij rotate
+  // of resize tijdens een open modal — header/footer/progress passen
+  // zich automatisch aan.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  // Eénmalige flag — voorkomt dat we de user terugkatapulteren naar
+  // Step 0 als 'ie al naar Step 1+ is doorgeklikt en vervolgens iets
+  // van viewport-breedte verandert (rotatie, devtools, dubbele HMR).
+  const initialMobileStepDecided = useRef(false)
+
+  // Bij eerste mobile-detectie:
+  //  - spring naar Step 0 (entry-scherm) mits de user nog op Step 1 staat
+  //  - verberg de drafts-banners by default; op mobile alleen tonen
+  //    wanneer de user expliciet op het note-icoon rechtsboven tikt
+  //    (toggle setBannersDismissed in de header).
+  useEffect(() => {
+    if (initialMobileStepDecided.current) return
+    if (!isMobile) return
+    initialMobileStepDecided.current = true
+    if (step === 1) {
+      setStep(0)
+    }
+    setBannersDismissed(true)
+  }, [isMobile, step])
 
   // Haal actuele pricing op en pre-fill voegzand/planten-prijzen mét de
   // live waardes. We overschrijven alleen velden die nog op de hardcoded
@@ -381,6 +421,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     setData({ ...DEFAULTS, ...draft.data })
     setCurrentDraftId(id)
     setBannersDismissed(true)
+    // Sla op mobile het Step 0-entry-scherm over; user heeft al een
+    // klant in dit draft, geen reden om opnieuw via de menu-tegels
+    // te starten.
+    setStep(1)
   }
 
   const verwijderDraft = (id: string) => {
@@ -425,7 +469,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     2: data.hoofdcategorie.length > 0 && data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }
-  const canNext = step <= 3 ? valid[step as 1 | 2 | 3] : true
+  // Step 0 (mobile entry-scherm) heeft geen formulier-validatie nodig —
+  // advancen gebeurt via een tegel of de "Nieuwe klant"-knop in StepStart.
+  const canNext =
+    step === 0 ? true : step <= 3 ? valid[step as 1 | 2 | 3] : true
 
   const submit = () => {
     setError(null)
@@ -517,33 +564,81 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       <div className={styles.shell} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.header}>
-          <div className={styles.titleRow}>
-            <div className={styles.titleBlock}>
-              <div className={styles.titleIcon}><Edit3 size={16} /></div>
-              <div>
-                <div className={styles.title}>
-                  Handmatige offerte opstellen
-                  {currentDraft && (
-                    <span className={styles.draftBadge}>
-                      {draftSavedFlash ? (
-                        <>
-                          <Check size={11} /> Opgeslagen
-                        </>
-                      ) : (
-                        <>Concept · auto-saved</>
-                      )}
+          {isMobile ? (
+            <div className={styles.headerMobileTop}>
+              <button
+                type="button"
+                className={styles.headerMobileBtn}
+                onClick={() =>
+                  step === 0
+                    ? onClose()
+                    : setStep((s) => Math.max(0, s - 1) as 0 | 1 | 2 | 3 | 4)
+                }
+                aria-label={step === 0 ? 'Sluiten' : 'Vorige stap'}
+              >
+                {step === 0 ? <X size={16} /> : <ChevronLeft size={18} />}
+              </button>
+              <div className={styles.headerMobileTitleBlock}>
+                {step === 0 ? (
+                  <span className={styles.headerMobileTitle}>Nieuwe offerte</span>
+                ) : (
+                  <>
+                    <span className={styles.headerMobileTitle}>Handmatige offerte</span>
+                    <span className={styles.headerMobileSubtitle}>
+                      Stap {step} van 4 · {STEPS[step - 1].l}
                     </span>
-                  )}
-                </div>
-                <div className={styles.subtitle}>
-                  Bv. voor een klant die je telefonisch hebt gesproken — Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className={styles.headerMobileBtn}
+                onClick={() => setBannersDismissed((prev) => !prev)}
+                aria-label="Concepten"
+                title="Concepten"
+              >
+                <StickyNote size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className={styles.titleRow}>
+              <div className={styles.titleBlock}>
+                <div className={styles.titleIcon}><Edit3 size={16} /></div>
+                <div>
+                  <div className={styles.title}>
+                    <span className={styles.titleFull}>Handmatige offerte opstellen</span>
+                    <span className={styles.titleShort}>Offerte opstellen</span>
+                    {currentDraft && (
+                      <span className={styles.draftBadge}>
+                        {draftSavedFlash ? (
+                          <>
+                            <Check size={11} /> Opgeslagen
+                          </>
+                        ) : (
+                          <>Auto-saved</>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.subtitle}>
+                    Bv. voor een klant die je telefonisch hebt gesproken — Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
+                  </div>
                 </div>
               </div>
+              <button onClick={onClose} className={styles.closeBtn} type="button" aria-label="Sluiten">
+                <X size={16} />
+              </button>
             </div>
-            <button onClick={onClose} className={styles.closeBtn} type="button" aria-label="Sluiten">
-              <X size={16} />
-            </button>
-          </div>
+          )}
+
+          {isMobile && step > 0 && (
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressBarFill}
+                style={{ width: `${(step / 4) * 100}%` }}
+              />
+            </div>
+          )}
 
           {bannersVisible && (
             <div className={styles.draftBannerList}>
@@ -590,8 +685,8 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Stepper */}
-          <div className={styles.stepper}>
+          {/* Stepper (desktop-only — op mobile gebruiken we de progress bar boven) */}
+          {!isMobile && <div className={styles.stepper}>
             {STEPS.map((s, i) => {
               const active = step === s.n
               const done = step > s.n
@@ -601,7 +696,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
                 <span key={s.n} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <button
                     type="button"
-                    onClick={() => (done || active) && setStep(s.n as 1 | 2 | 3 | 4)}
+                    onClick={() => (done || active) && setStep(s.n as 0 | 1 | 2 | 3 | 4)}
                     className={cls}
                   >
                     <span className={numCls}>
@@ -615,12 +710,20 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
                 </span>
               )
             })}
-          </div>
+          </div>}
         </div>
 
         {/* Body */}
         <div className={styles.body}>
           <div className={styles.bodyStack}>
+            {step === 0 && (
+              <StepStart
+                data={data}
+                set={set}
+                onAdvance={() => setStep(1)}
+                onBeforeAiFill={suppressNextZakkenAuto}
+              />
+            )}
             {step === 1 && (
               <StepKlant
                 data={data}
@@ -637,48 +740,97 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
           {error && <div className={styles.errorBox}>{error}</div>}
         </div>
 
-        {/* Footer */}
-        <div className={styles.footer}>
-          <button onClick={onClose} className={styles.btnGhost} type="button">Annuleren</button>
-          <div className={styles.footerRight}>
-            {step >= 3 && (
+        {/* Footer — desktop versie (heel andere structuur op mobile, zie onder) */}
+        {!isMobile && (
+          <div className={styles.footer}>
+            <button onClick={onClose} className={styles.btnGhost} type="button">Annuleren</button>
+            <div className={styles.footerRight}>
+              {step >= 3 && (
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  onClick={downloadPdf}
+                  disabled={pdfBusy || rules.length === 0}
+                  title={
+                    rules.length === 0
+                      ? 'Vul eerst klant- en werk-gegevens in'
+                      : 'Download de offerte als PDF'
+                  }
+                >
+                  <FileText size={13} /> {pdfBusy ? 'PDF maken…' : 'Download PDF'}
+                </button>
+              )}
+              {step > 1 && (
+                <button type="button" className={styles.btnSecondary} onClick={() => setStep((s) => Math.max(1, s - 1) as 0 | 1 | 2 | 3 | 4)}>
+                  ← Vorige
+                </button>
+              )}
+              {!isSendStep && (
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  disabled={!canNext}
+                  onClick={() => canNext && setStep((s) => Math.min(4, s + 1) as 0 | 1 | 2 | 3 | 4)}
+                >
+                  Volgende <ChevronRight size={13} />
+                </button>
+              )}
+              {isSendStep && (
+                <button type="button" className={styles.btnPrimary} disabled={pending} onClick={submit}>
+                  <SubmitIcon size={13} />
+                  {pending ? 'Opslaan…' : submitLabel}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile footer — sticky bottom met totaal-bar + primaire CTA.
+            Niet getoond op Step 0 (entry-scherm) — daar advancen tegels. */}
+        {isMobile && step > 0 && (
+          <div className={styles.footerMobile}>
+            <div className={styles.mobileTotaalRow}>
+              <div className={styles.mobileTotaalText}>
+                <span className={styles.mobileTotaalLabel}>TOTAAL INCL. BTW</span>
+                <span className={styles.mobileTotaalValue}>
+                  {formatEuro(totals.total + totals.btw)}
+                </span>
+              </div>
               <button
                 type="button"
-                className={styles.btnSecondary}
+                className={styles.btnPreview}
                 onClick={downloadPdf}
                 disabled={pdfBusy || rules.length === 0}
-                title={
-                  rules.length === 0
-                    ? 'Vul eerst klant- en werk-gegevens in'
-                    : 'Download de offerte als PDF'
-                }
+                aria-label="Preview"
               >
-                <FileText size={13} /> {pdfBusy ? 'PDF maken…' : 'Download PDF'}
+                <Eye size={14} /> Preview
               </button>
-            )}
-            {step > 1 && (
-              <button type="button" className={styles.btnSecondary} onClick={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4)}>
-                ← Vorige
-              </button>
-            )}
+            </div>
             {!isSendStep && (
               <button
                 type="button"
-                className={styles.btnPrimary}
+                className={styles.btnPrimaryFull}
                 disabled={!canNext}
-                onClick={() => canNext && setStep((s) => Math.min(4, s + 1) as 1 | 2 | 3 | 4)}
+                onClick={() => canNext && setStep((s) => Math.min(4, s + 1) as 0 | 1 | 2 | 3 | 4)}
               >
-                Volgende <ChevronRight size={13} />
+                {step === 1 && <>Verder naar werk <ChevronRight size={16} /></>}
+                {step === 2 && <>Verder naar regels <ChevronRight size={16} /></>}
+                {step === 3 && <>Verder naar versturen <ChevronRight size={16} /></>}
               </button>
             )}
             {isSendStep && (
-              <button type="button" className={styles.btnPrimary} disabled={pending} onClick={submit}>
-                <SubmitIcon size={13} />
+              <button
+                type="button"
+                className={styles.btnPrimaryFull}
+                disabled={pending}
+                onClick={submit}
+              >
+                <SubmitIcon size={16} />
                 {pending ? 'Opslaan…' : submitLabel}
               </button>
             )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

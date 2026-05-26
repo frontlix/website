@@ -46,3 +46,41 @@
   padding-top: 16px;
   border-top: 1px solid var(--border);
 }
+
+/* LeadBotStatus heeft 2 render-posities afhankelijk van breedte:
+   - desktop: direct onder de header (vol-breed boven .split)
+   - mobile (≤768px): binnen .colChat vlak boven WhatsApp-paneel
+   CSS toggelt welke variant zichtbaar is. Beide instances delen
+   dezelfde server-data; alleen één is per moment zichtbaar voor
+   de gebruiker. */
+.botStatusDesktop {
+  display: block;
+}
+.botStatusMobile {
+  display: none;
+}
+@media (max-width: 768px) {
+  .botStatusDesktop {
+    display: none;
+  }
+  .botStatusMobile {
+    display: block;
+  }
+}
+
+/* Mobile-only verbergers — desktop houdt deze blokken zichtbaar. Breakpoint
+   640px matcht het breakpoint van LeadOfferteMobile zodat de hide-logica
+   exact synct met de mobile-variant van de offerte-tab. */
+@media (max-width: 640px) {
+  /* Afspraak-kaart verbergen op de Offerte-tab — gebruiker focust dan op
+     de regel-editor. Geldt alleen op mobile; deze tab-stack rendert toch
+     alleen wanneer offerte-tab actief is, dus extra check is overbodig. */
+  .afspraakDesktopOnly {
+    display: none;
+  }
+  /* Hele rechter-kolom verbergen op de Offerte-tab — bot-status én
+     WhatsApp-thread. Gebruiker focust dan volledig op de regel-editor. */
+  .colChatHiddenOnMobileOfferte {
+    display: none;
+  }
+}

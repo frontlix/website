@@ -6,6 +6,23 @@ import type { Prijsregel } from '@/lib/dashboard/database.types'
 import { formatEuro } from '@/lib/dashboard/format'
 import styles from './OfferteRegelsTable.module.css'
 
+/** Bouw "150 m² × € 3,95" voor de mobile read-only summary. Lege segmenten worden weggelaten. */
+function buildMetaSummary(aantal: string, eenheid: string, stukprijs: string): string {
+  const parts: string[] = []
+  const aantalStr = aantal?.trim()
+  const eenheidStr = eenheid?.trim()
+  if (aantalStr) {
+    parts.push(eenheidStr ? `${aantalStr} ${eenheidStr}` : aantalStr)
+  } else if (eenheidStr) {
+    parts.push(eenheidStr)
+  }
+  const stukprijsNum = parseDecimal(stukprijs)
+  if (stukprijsNum > 0) {
+    parts.push(`× ${formatEuro(stukprijsNum)}`)
+  }
+  return parts.join(' ')
+}
+
 /**
  * Lokale UI-state per regel: alle numerieke velden als string voor input-binding.
  * `uid` dient als stabiele React-key (ook voor nog niet opgeslagen regels).
@@ -214,43 +231,64 @@ type RegelRowProps = {
 
 function RegelRow({ regel, disabled, onUpdate, onRemove }: RegelRowProps) {
   const totaal = regelTotaal(regel)
+  // Mobile-only: pre-bouw "150 m² × € 3,95" zodat read-only auto-regels op
+  // telefoon één compacte regel zijn i.p.v. 4 stacking input-velden. Wordt
+  // op desktop via CSS verborgen (display:none). Voor manual regels niet
+  // gerenderd — die houden bewerkbare inputs ook op mobile.
+  const mobileMeta = disabled ? buildMetaSummary(regel.aantal, regel.eenheid, regel.stukprijs) : ''
 
   return (
-    <div className={styles.row} role="row">
+    <div className={styles.row} role="row" data-disabled={disabled ? 'true' : 'false'}>
+      {disabled && (
+        <div className={styles.mobileSummary} aria-hidden="true">
+          <div className={styles.mobileSummaryDesc}>{regel.omschrijving || '—'}</div>
+          {mobileMeta && <div className={styles.mobileSummaryMeta}>{mobileMeta}</div>}
+        </div>
+      )}
       <input
         type="text"
         value={regel.omschrijving}
         onChange={(e) => onUpdate(regel.uid, { omschrijving: e.target.value })}
-        className={styles.cellInput}
+        className={`${styles.cellInput} ${styles.cellOmschrijving}`}
         placeholder="Omschrijving"
         aria-label="Omschrijving"
       />
-      <input
-        type="text"
-        inputMode="decimal"
-        value={regel.aantal}
-        onChange={(e) => onUpdate(regel.uid, { aantal: e.target.value })}
-        className={`${styles.cellInput} ${styles.cellInputNumeric}`}
-        placeholder="0"
-        aria-label="Aantal"
-      />
-      <input
-        type="text"
-        value={regel.eenheid}
-        onChange={(e) => onUpdate(regel.uid, { eenheid: e.target.value })}
-        className={styles.cellInput}
-        placeholder="stuk"
-        aria-label="Eenheid"
-      />
-      <input
-        type="text"
-        inputMode="decimal"
-        value={regel.stukprijs}
-        onChange={(e) => onUpdate(regel.uid, { stukprijs: e.target.value })}
-        className={`${styles.cellInput} ${styles.cellInputNumeric}`}
-        placeholder="0,00"
-        aria-label="Stukprijs (excl BTW)"
-      />
+      {/* metaInputs wrapper — op desktop "transparant" via display:contents
+          (kinderen worden directe grid-items van .row, dus desktop-layout
+          ongewijzigd). Op mobile wordt het een flex-container die de drie
+          inputs strak groepeert met een × tussen eenheid en stukprijs,
+          analoog aan de auto-regel weergave "150 m² × € 3,95". */}
+      <div className={styles.metaInputs}>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={regel.aantal}
+          onChange={(e) => onUpdate(regel.uid, { aantal: e.target.value })}
+          className={`${styles.cellInput} ${styles.cellInputNumeric} ${styles.cellAantal}`}
+          placeholder="0"
+          aria-label="Aantal"
+        />
+        <input
+          type="text"
+          value={regel.eenheid}
+          onChange={(e) => onUpdate(regel.uid, { eenheid: e.target.value })}
+          className={`${styles.cellInput} ${styles.cellEenheid}`}
+          placeholder="stuk"
+          aria-label="Eenheid"
+        />
+        <span className={styles.metaSep} aria-hidden="true">
+          ×
+        </span>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={regel.stukprijs}
+          onChange={(e) => onUpdate(regel.uid, { stukprijs: e.target.value })}
+          className={`${styles.cellInput} ${styles.cellInputNumeric} ${styles.cellStukprijs}`}
+          placeholder="0,00"
+          aria-label="Stukprijs (excl BTW)"
+        />
+      </div>
       <div
         className={`${styles.cellComputed} ${styles.colNumeric}`}
         role="cell"

@@ -35,3 +35,23 @@
     padding: var(--space-5);
   }
 }
+
+/* Mobile/desktop tree-switch zonder JS — beide trees zitten in de DOM,
+   CSS @media-query bepaalt welke zichtbaar is. `display: contents` zorgt
+   dat de wrapper transparant is voor flex-layout (children gedragen zich
+   als directe kinderen van .section). Geen layout-shift, geen
+   hydration-flash. */
+.desktopTree {
+  display: contents;
+}
+.mobileTree {
+  display: none;
+}
+@media (max-width: 640px) {
+  .desktopTree {
+    display: none;
+  }
+  .mobileTree {
+    display: contents;
+  }
+}

@@ -1,0 +1,864 @@
+/* ─── LeadOfferteMobile ──────────────────────────────────────────────────
+   Mobile-only weergave van de offerte-pagina binnen lead-detail.
+   Parent (page) controleert breakpoint via JS — deze component wordt
+   alleen onder 640px gerenderd, dus géén media-queries hier.
+   Doel: rustige, tap-vriendelijke kaarten + sticky action-bar onderaan
+   + dichte content binnen bottom-sheets voor edits.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* ─── ROOT + LAYOUT ─────────────────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Bottom-padding moet samen met de buitenste page-paddings (contentInner
+     24px + panel 14px = 38px) ≥ sticky-bar-hoogte zijn (~95px op notched
+     iPhone). 60px container-padding + 38px outer = 98px totaal → laatste
+     kaart eindigt ~3px boven de sticky bar. Geen 'extra' scroll-ruimte
+     waar user "doorheen" kan rubber-banden. */
+  padding: 12px 14px 60px;
+  /* Iets rustiger achtergrond zodat witte kaarten loskomen. */
+  background: var(--surface);
+}
+
+.bottomSpacer {
+  height: 80px;
+  flex-shrink: 0;
+}
+
+/* ─── BRON ROW (top summary card) ───────────────────────────────────── */
+
+.bronRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  /* Subtiele primary-tint — markeert "bron"/context-info zonder hard te schreeuwen. */
+  background: var(--card-hover-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.bronRowIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(26, 86, 255, 0.12);
+  color: var(--primary);
+  border-radius: 8px;
+}
+
+.bronRowContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bronRowLabel {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--fg);
+}
+
+.bronRowDesc {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--fg-muted);
+}
+
+.bronRowEdit {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(26, 86, 255, 0.10);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease;
+}
+
+.bronRowEdit:active {
+  background: rgba(26, 86, 255, 0.18);
+}
+
+/* ─── GROUPS (collapsible kaarten per regel-groep) ──────────────────── */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease;
+}
+
+.groupHeader:active {
+  background: var(--card-hover-bg);
+}
+
+.groupIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  background: rgba(26, 86, 255, 0.10);
+  border-radius: 8px;
+}
+
+.groupTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.groupTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+.groupMeta {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--fg-muted);
+}
+
+.groupTotal {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--fg);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.groupChevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--fg-muted);
+  /* Iets langere duration — chevron is een state-cue, niet snappy hover. */
+  transition: transform 200ms ease;
+}
+
+.groupChevronOpen {
+  transform: rotate(180deg);
+}
+
+.groupItems {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── RULE ITEMS (sub-rijen binnen een group) ───────────────────────── */
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  /* Border-top als rij-separator — overflow:hidden op .group rond de
+     bovenste rule. */
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease;
+}
+
+.rule:active {
+  background: var(--card-hover-bg);
+}
+
+.ruleContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ruleDesc {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.3;
+  /* Lange omschrijvingen mogen wrappen; harde URLs/woorden geforceerd
+     breken zodat ze nooit horizontale scroll triggeren. */
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.ruleMeta {
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ruleAmount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.ruleArrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--fg-muted);
+  opacity: 0.6;
+}
+
+/* ─── ADD CUSTOM BUTTON ─────────────────────────────────────────────── */
+
+.addCustomBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.addCustomBtn:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--primary);
+}
+
+.addCustomBtn:active {
+  background: var(--card-hover-bg);
+}
+
+/* ─── TILES (korting + verzendopties — kleine kaartjes) ─────────────── */
+
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.tile:active {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+}
+
+.tileIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(26, 86, 255, 0.10);
+  color: var(--primary);
+  border-radius: 8px;
+}
+
+.tileContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tileLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+.tileValue {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.2;
+}
+
+.tileArrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--fg-muted);
+  opacity: 0.6;
+}
+
+/* ─── SUBTOTAAL BLOCK ───────────────────────────────────────────────── */
+
+.subtotaal {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.subRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.subLabel {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.subValue {
+  font-size: 13px;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Korting-bedrag: groen om visueel te markeren als positieve waarde
+   voor de klant. Wijkt af van strict blue/cyan-palette — bewuste
+   uitzondering voor financial positives (zie ook .stickySendBtn). */
+.subValueDiscount {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* ─── STICKY BAR (vast onderaan viewport) ───────────────────────────── */
+
+.stickyBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* iOS safe-area inset — voorkomt dat de knoppen onder de home-indicator
+     vallen op iPhone X+. */
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) 14px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  /* Subtiele schaduw "omhoog" — geeft de bar diepte zonder hard te zijn. */
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.06);
+}
+
+.stickyTotal {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+  min-width: 0;
+}
+
+.stickyTotalLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  line-height: 1.2;
+}
+
+.stickyTotalAmount {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--fg);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.stickyActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stickyPdfBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-soft);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.stickyPdfBtn:active {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+}
+
+/* WhatsApp-groen is geen brand-color en zit niet in de strict blue/cyan
+   palette — wel als signal-token `--whatsapp` (#25D366) in tokens.css.
+   Hover gebruikt darkened variant; geen token dus inline hex. */
+.stickySendBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-white);
+  background: var(--whatsapp);
+  border: 1px solid var(--whatsapp);
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.stickySendBtn:hover {
+  background: #1FB855;
+  border-color: #1FB855;
+}
+
+.stickySendBtn:active {
+  background: #1FB855;
+  border-color: #1FB855;
+}
+
+.stickySendBtnDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── SHEET CONTENT (binnen MobileSheet — alleen internals) ─────────── */
+
+.sheetSection {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.sheetField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheetLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+}
+
+.sheetInput {
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sheetInput::placeholder {
+  color: var(--fg-muted);
+}
+
+.sheetInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+
+/* Wrap voor input met euro-prefix — flex met muted prefix-tekst. */
+.sheetInputWithPrefix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sheetInputWithPrefix:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+
+.sheetTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sheetTextarea::placeholder {
+  color: var(--fg-muted);
+}
+
+.sheetTextarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 255, 0.12);
+}
+
+/* Dark preview-kaart binnen sheet — toont "live totaal" tijdens edit.
+   Geen dark token in tokens.css beschikbaar buiten .dark scope; hardcode
+   slate-900 (#0F172A) als deliberate visuele cue (donker tegen lichte sheet). */
+.sheetTotalPreview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  background: #0F172A;
+  color: var(--color-white);
+  border-radius: 12px;
+}
+
+.sheetTotalLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sheetTotalLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sheetTotalAmount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-white);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.sheetTotalMeta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+  align-self: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Light blue info-note — uitleg dat een veld auto-berekend wordt. */
+.sheetAutoNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--fg-soft);
+  background: var(--card-hover-bg);
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+/* Stepper: – | value | + ; grid voor gelijke kolommen. */
+.sheetStepper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.stepperBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease;
+}
+
+.stepperBtn:hover {
+  background: var(--card-hover-bg);
+}
+
+.stepperBtn:active {
+  background: var(--surface-2);
+}
+
+.stepperBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Value-input zit visueel in dezelfde rij als stepperBtns — geen border,
+   geen background, alleen centered text. */
+.stepperValue {
+  width: 100%;
+  padding: 12px 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepperValue:focus {
+  background: var(--card-hover-bg);
+}
+
+/* Presets — chips voor snelle waarde-keuze (10%, 25%, 50%, etc). */
+.sheetPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.presetBtn {
+  flex: 1;
+  min-width: 56px;
+  padding: 10px 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--fg-soft);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.presetBtn:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
+  color: var(--primary);
+}
+
+.presetBtnActive {
+  color: var(--color-white);
+  background: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+/* Actie-rij onderin de sheet — delete + opslaan. */
+.sheetActions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+/* Delete: subtiele rode tint — strict-blue palette uitzondering omdat
+   dit een destructieve actie is. --danger / --danger-bg uit tokens. */
+.sheetActionDelete {
+  flex: 1;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease;
+}
+
+.sheetActionDelete:hover {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+.sheetActionDelete:active {
+  background: rgba(220, 38, 38, 0.18);
+}
+
+.sheetActionSave {
+  flex: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-white);
+  background: var(--primary);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.sheetActionSave:hover {
+  box-shadow: var(--shadow-primary);
+}
+
+.sheetActionSave:active {
+  background: #1448D8;
+}
+
+.sheetActionSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Toggle-rij — label links + iOS-switch rechts. */
+.sheetToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.sheetToggleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* iOS-style switch. Track 42x24, knob 20x20 met 2px padding rondom.
+   Checked-state via :checked sibling pattern werkt niet in modules
+   zonder JS — verwacht dat TSX een .sheetToggleOn modifier toevoegt
+   óf de input[type=checkbox] verbergt en label-tap toggle't.
+   Hier: pure track + ::before knob via data-state, ondersteund via
+   inline ARIA attribuut [aria-checked="true"]. */
+.sheetToggle {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.sheetToggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-white);
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 200ms ease;
+}
+
+.sheetToggle[aria-checked='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.sheetToggle[aria-checked='true']::before {
+  /* 42 (track) - 2 (left) - 18 (knob) - 2 (right) = 20px shift */
+  transform: translateX(18px);
+}
+
+/* Grid voor "AANTAL | EENHEID" side-by-side fields. */
+.sheetGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

@@ -106,5 +106,21 @@
   .card[data-kpi="reactietijd"] {
     display: none;
   }
+  /* Compactere mini-cards op telefoon: minder padding en kleinere getallen
+     zodat de 4-vakjes-grid minder schermhoogte opslokt en er meer ruimte
+     overblijft voor de Activity Feed / trends eronder. Desktop blijft op
+     de ruimere 14/16-padding + 26px-getallen. */
+  .card {
+    padding: 10px 12px;
+  }
+  .label {
+    font-size: 11.5px;
+  }
+  .number {
+    font-size: 22px;
+  }
+  .delta {
+    font-size: 11.5px;
+  }
 }
 

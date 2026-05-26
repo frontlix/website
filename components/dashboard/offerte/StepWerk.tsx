@@ -60,10 +60,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           zich automatisch aan op de keuze. */}
       <div>
         <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>
-          Hoofddienst{' '}
-          <span style={{ color: 'var(--fg-muted)', fontWeight: 400, textTransform: 'none' }}>
-            (meerdere mogelijk)
-          </span>
+          Hoofddienst
         </div>
         <div className={styles.grid2}>
           {HOOFDCATS.map((h) => {
@@ -88,15 +85,15 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
         </div>
       </div>
 
-      {/* Sub-diensten */}
+      {/* Sub-diensten. Op mobile blijft 'ie 2-koloms (i.t.t. de standaard
+          .grid2 die op mobile 1-koloms wordt) zodat het matcht met het
+          design — Invegen / Onkruid / Beschermlaag / Onderhoud in een
+          2×2 tegel-grid. */}
       <div>
         <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>
-          Sub-diensten{' '}
-          <span style={{ color: 'var(--fg-muted)', fontWeight: 400, textTransform: 'none' }}>
-            (meerdere mogelijk)
-          </span>
+          Sub-diensten
         </div>
-        <div className={styles.grid2}>
+        <div className={styles.dienstenGrid}>
           {SUB_OPTIES.filter(
             (d) =>
               d.cat === 'both' ||
@@ -161,12 +158,53 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
       <div className={styles.grid2}>
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Oppervlakte (m²) *</label>
+          {/* Desktop-input. Op mobile verborgen via CSS — daar gebruiken we
+              de stepper + presets eronder voor tap-vriendelijker input. */}
           <input
-            className={`${styles.input} ${styles.numericInput}`}
+            className={`${styles.input} ${styles.numericInput} ${styles.m2InputDesktop}`}
             type="number"
             value={data.m2}
             onChange={(e) => set('m2', Number(e.target.value))}
           />
+          {/* Mobile stepper: −/+ met grote knoppen + grote centrale waarde.
+              Verborgen op desktop. */}
+          <div className={styles.m2Stepper}>
+            <button
+              type="button"
+              className={styles.m2StepperBtn}
+              onClick={() => set('m2', Math.max(0, Number(data.m2) - 5))}
+              aria-label="5 m² minder"
+            >
+              −
+            </button>
+            <input
+              className={styles.m2BigInput}
+              type="number"
+              value={data.m2}
+              onChange={(e) => set('m2', Number(e.target.value))}
+              aria-label="Oppervlakte in m²"
+            />
+            <button
+              type="button"
+              className={styles.m2StepperBtn}
+              onClick={() => set('m2', Number(data.m2) + 5)}
+              aria-label="5 m² meer"
+            >
+              +
+            </button>
+          </div>
+          <div className={styles.m2Presets}>
+            {[40, 60, 80, 100, 150].map((v) => (
+              <button
+                key={v}
+                type="button"
+                className={`${styles.m2Preset} ${Number(data.m2) === v ? styles.m2PresetActive : ''}`}
+                onClick={() => set('m2', v)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
         </div>
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Korstmos aanwezig</label>
@@ -190,7 +228,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
         <div className={styles.voegzandBlock}>
           <div className={styles.voegzandHead}>
             <div style={{ fontSize: 13, fontWeight: 700 }}>Voegzand</div>
-            <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 2 }}>
+            <div className={styles.hideOnMobile} style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 2 }}>
               Kies welke type(s) je wil gebruiken — pas aantal zakken en prijs per zak desgewenst aan
             </div>
           </div>
@@ -242,7 +280,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
                 onToggle={(v) => set('kleur_antraciet', v)}
               />
             </div>
-            <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
+            <div className={styles.hideOnMobile} style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 6 }}>
               Vink beide aan als de klant een mix wil (bijv. naturel op pad + antraciet rond terras)
             </div>
           </div>
@@ -267,7 +305,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             <div className={`${styles.optLabel} ${data.planten_afschermen_actief ? styles.optLabelActive : ''}`}>
               Plantenafscherming nodig
             </div>
-            <div className={styles.optSub}>Afdekfolie voor planten/struiken direct naast bestrating</div>
+            <div className={`${styles.optSub} ${styles.hideOnMobile}`}>Afdekfolie voor planten/struiken direct naast bestrating</div>
           </div>
         </button>
 
