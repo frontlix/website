@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 ENABLED = True
 
-TEMPLATE_NAME = "water_reminder_istanbul"
+TEMPLATE_NAME = "water_reminder"
 
 RECIPIENTS = [
     {"name": "Schatje", "phone": "+31642341226"},
@@ -517,17 +517,15 @@ Doel: vóór deploy verifiëren dat het Meta-template echt werkt met onze parame
 **Files:**
 - Create + delete: `lead-automation/scripts/water_reminder_dryrun.py` (tijdelijk script, wordt na test weer verwijderd)
 
-### - [ ] Step 4.1: Vraag Christiaan om zijn eigen testnummer
+### - [ ] Step 4.1: Testnummer is bekend
 
-Vraag: **"Geef je eigen WhatsApp-nummer voor 1 test-bericht (formaat +316...)"**.
+Christiaan's eigen WhatsApp-nummer voor test: **`0624965270`** (wordt door `normalize_phone()` omgezet naar `31624965270`).
 
-Wacht op nummer voordat je verder gaat. Laat 'm in deze stap nooit naar het Schatje- of Shuul-nummer testen — dat zou een echt bericht naar hen sturen.
+Verstuur **alleen naar dit nummer** in dry-run — niet naar Schatje of Shuul.
 
-### - [ ] Step 4.2: Bevestig dat Meta-template approved is
+### - [ ] Step 4.2: Meta-template approved — bevestigd
 
-Vraag: **"Is het Meta-template `water_reminder_istanbul` (of de naam die jij koos) approved in WhatsApp Manager? Zo nee, wachten tot het approved is — anders faalt de send."**
-
-Als template-naam afwijkt: pas `TEMPLATE_NAME` constant in `services/water_reminder_cron.py` aan.
+Template-naam: **`water_reminder`** (bevestigd approved op 2026-05-26 door Christiaan). Constant in `services/water_reminder_cron.py` is al correct ingesteld.
 
 ### - [ ] Step 4.3: Maak een dry-run-script
 
@@ -583,11 +581,11 @@ if __name__ == "__main__":
 
 ### - [ ] Step 4.4: Run de dry-run
 
-Run (vervang `<TESTNUMMER>` door het nummer uit Step 4.1):
+Run:
 ```bash
 cd "/Users/christiaantromp/Desktop/Frontlix website/lead-automation"
 source venv/bin/activate
-python scripts/water_reminder_dryrun.py <TESTNUMMER>
+python scripts/water_reminder_dryrun.py 0624965270
 ```
 
 Expected: print `OK — send completed without error.` en het bericht arriveert op het testnummer als:
@@ -644,11 +642,11 @@ git push origin main
 
 Vraag Christiaan om toestemming voor SSH-actie (per memory `feedback_vps_ssh_workflow.md`):
 
-> "Mag ik SSHen naar root@72.61.23.186 en `git pull` doen in `/var/www/frontlix-lead-automation` (of het juiste pad)?"
+> "Mag ik SSHen naar root@72.61.23.186 en `git pull` doen in `/var/www/lead-automation` (of het juiste pad)?"
 
 Bij toestemming, run lokaal:
 ```bash
-ssh root@72.61.23.186 "cd /var/www/frontlix-lead-automation && git pull origin main"
+ssh root@72.61.23.186 "cd /var/www/lead-automation && git pull origin main"
 ```
 
 (Pad-locatie checken in [docs/DEPLOY.md](../../DEPLOY.md) als het bovenstaande pad afwijkt.)
@@ -659,7 +657,7 @@ Expected: `Already up to date` of pull-summary met de nieuwe commits.
 
 Vraag Christiaan om toestemming, dan:
 ```bash
-ssh root@72.61.23.186 "pm2 restart frontlix-lead-automation"
+ssh root@72.61.23.186 "pm2 restart lead-automation"
 ```
 
 Expected: `[PM2] Process successfully started`.
@@ -667,7 +665,7 @@ Expected: `[PM2] Process successfully started`.
 ### - [ ] Step 5.5: Verifieer dat de cron is gestart in logs
 
 ```bash
-ssh root@72.61.23.186 "pm2 logs frontlix-lead-automation --lines 100 --nostream | grep -i water_reminder"
+ssh root@72.61.23.186 "pm2 logs lead-automation --lines 100 --nostream | grep -i water_reminder"
 ```
 
 Expected output bevat:
@@ -675,11 +673,11 @@ Expected output bevat:
 water_reminder cron started (24 slots scheduled across 4 days)
 ```
 
-Als die regel ontbreekt → cron is niet gestart. Check `pm2 logs frontlix-lead-automation --lines 200` voor stacktraces.
+Als die regel ontbreekt → cron is niet gestart. Check `pm2 logs lead-automation --lines 200` voor stacktraces.
 
 ### - [ ] Step 5.6: Eindbevestiging
 
-Schrijf naar Christiaan: **"Live op VPS. Eerste bericht: 28 mei 09:00 NL-tijd (= 10:00 Istanbul) naar Schatje + Shuul. Logs zichtbaar via `pm2 logs frontlix-lead-automation`."**
+Schrijf naar Christiaan: **"Live op VPS. Eerste bericht: 28 mei 09:00 NL-tijd (= 10:00 Istanbul) naar Schatje + Shuul. Logs zichtbaar via `pm2 logs lead-automation`."**
 
 ---
 
