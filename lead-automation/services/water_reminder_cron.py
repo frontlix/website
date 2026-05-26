@@ -10,13 +10,10 @@ Zie docs/superpowers/specs/2026-05-26-water-reminder-istanbul-design.md
 from __future__ import annotations
 
 import asyncio
-import logging
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from services.whatsapp import send_template
-
-logger = logging.getLogger(__name__)
 
 ENABLED = True
 
@@ -106,22 +103,16 @@ _sent_indices: set[int] = set()
 
 
 async def _send_to_recipient(recipient: dict, tijdstip: str, joke: str, slot_index: int) -> None:
-    """Send 1 template to 1 recipient. Logs success/failure, never raises."""
+    """Send 1 template to 1 recipient. Prints success/failure, never raises."""
     try:
         await send_template(
             phone=recipient["phone"],
             template_name=TEMPLATE_NAME,
             parameters=[recipient["name"], tijdstip, joke],
         )
-        logger.info(
-            "water_reminder slot=%d sent to name=%s phone=%s",
-            slot_index, recipient["name"], recipient["phone"],
-        )
-    except Exception:
-        logger.exception(
-            "water_reminder slot=%d FAILED for name=%s phone=%s",
-            slot_index, recipient["name"], recipient["phone"],
-        )
+        print(f"[water-reminder] slot={slot_index} sent to name={recipient['name']} phone={recipient['phone']}")
+    except Exception as e:
+        print(f"[water-reminder] slot={slot_index} FAILED for name={recipient['name']} phone={recipient['phone']}: {e}")
 
 
 async def _check_and_send(now: datetime) -> None:
@@ -141,7 +132,7 @@ async def _check_and_send(now: datetime) -> None:
     joke = JOKES[slot_index - 1]
     tijdstip = format_istanbul_time(now)
 
-    logger.info("water_reminder triggering slot=%d (joke=%r, tijdstip=%s)", slot_index, joke, tijdstip)
+    print(f"[water-reminder] triggering slot={slot_index} (tijdstip={tijdstip})")
 
     await asyncio.gather(
         *[_send_to_recipient(r, tijdstip, joke, slot_index) for r in RECIPIENTS],
@@ -152,15 +143,18 @@ async def _check_and_send(now: datetime) -> None:
 async def start() -> None:
     """Entry point. Run as asyncio.create_task() from main.py startup."""
     if not ENABLED:
-        logger.info("water_reminder ENABLED=False; cron task exits immediately")
+        print("[water-reminder] ENABLED=False; cron task exits immediately")
         return
 
-    logger.info("water_reminder cron started (24 slots scheduled across 4 days)")
+    print("[water-reminder] cron started (24 slots scheduled across 4 days)")
 
     while True:
         try:
             now = datetime.now(ISTANBUL_TZ)
             await _check_and_send(now)
-        except Exception:
-            logger.exception("water_reminder loop tick failed (continuing)")
+        except asyncio.CancelledError:
+            print("[water-reminder] cron cancelled")
+            raise
+        except Exception as e:
+            print(f"[water-reminder] iteration error: {e}")
         await asyncio.sleep(LOOP_INTERVAL_S)
