@@ -1,5 +1,24 @@
 /* Overzicht — main two-column grid: trend+widgets (left 2fr) + activity+appts (right 1fr) */
 
+/* ── Desktop / Mobile toggle ──────────────────────────────
+   Zelfde pattern als LeadOfferte.module.css: `display: contents`
+   maakt de wrapper layout-transparant; @media-query bepaalt welke
+   tak zichtbaar is. Geen layout-shift, geen hydration-flash. */
+.desktopTree {
+  display: contents;
+}
+.mobileTree {
+  display: none;
+}
+@media (max-width: 640px) {
+  .desktopTree {
+    display: none;
+  }
+  .mobileTree {
+    display: contents;
+  }
+}
+
 .mainGrid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
