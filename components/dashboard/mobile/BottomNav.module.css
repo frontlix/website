@@ -1,0 +1,79 @@
+/* BottomNav — sticky bottom-tab nav voor mobiele dashboard-shell.
+   Hoogte = --mobile-bottom-nav-h + iOS safe-area inset (home-indicator).
+   z-index 50 zit boven body-content maar onder sheets (200+) en
+   notification-panels. */
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--mobile-bottom-nav-h) + var(--mobile-safe-area-bottom));
+  padding-bottom: var(--mobile-safe-area-bottom);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.tab {
+  /* Tab is óf een <Link> óf een <button>. Beide moeten visueel identiek
+     renderen — daarom resetten we button-defaults (border, background,
+     font) hier i.p.v. via een aparte selector. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: var(--color-text);
+}
+
+.active {
+  color: var(--color-primary);
+}
+
+.label {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.iconWrap {
+  /* Wrapper voor icoon + badge — geeft positioning-context aan badge. */
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
