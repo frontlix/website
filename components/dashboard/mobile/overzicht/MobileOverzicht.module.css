@@ -8,3 +8,19 @@
   background: var(--color-surface);
   min-height: 100%;
 }
+
+/* .base wraps alle widgets zodat we de hele base-content samen kunnen
+   wegschuiven wanneer een drilldown opent. iOS-stijl: kleine slide naar
+   links + scale-down + fade. `pointer-events: none` op collapsed voorkomt
+   dat de base nog tikjes pakt tijdens de uit-animatie. */
+.base {
+  transition:
+    transform var(--dur-drilldown) var(--ease-ios),
+    opacity var(--dur-drilldown) var(--ease-ios);
+}
+
+.base[data-collapsed='true'] {
+  transform: translateX(-20%) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+}
