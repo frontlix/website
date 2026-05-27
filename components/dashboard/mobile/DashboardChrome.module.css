@@ -1,0 +1,25 @@
+/* DashboardChrome — CSS-toggle tussen desktop- en mobile-chrome.
+
+   Mirrors LeadOfferte.module.css:44-57.
+
+   `display: contents` maakt de wrapper-div transparant voor layout —
+   z'n children gedragen zich alsof ze directe kinderen van de parent
+   zijn. Hierdoor blijft de bestaande desktop-shell (grid sidebar+main)
+   intact en kunnen we tóch een aparte mobile-tak hangen onder dezelfde
+   parent. */
+
+.desktopOnly {
+  display: contents;
+}
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: contents;
+  }
+}
