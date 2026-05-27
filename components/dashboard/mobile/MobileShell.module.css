@@ -1,0 +1,62 @@
+/* MobileShell — root container voor de mobiele dashboard-chrome.
+   .shell is flex-column met full viewport height; .main groeit en
+   krijgt onderpadding zodat content niet onder de fixed BottomNav
+   verdwijnt. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* dvh = dynamic viewport height — voorkomt dat de mobile-browserchrome
+     (URL-bar in/uit-faden) layout-shifts veroorzaakt. */
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.main {
+  flex: 1;
+  /* Reserveer ruimte onderaan voor de fixed BottomNav + iOS safe-area
+     (home-indicator). Zonder dit verdwijnt de laatste content-rij onder
+     de nav. */
+  padding-bottom: calc(
+    var(--mobile-bottom-nav-h) + var(--mobile-safe-area-bottom)
+  );
+  overflow-y: auto;
+}
+
+/* Tijdelijke search-overlay — z-index 100 zit boven page-content (1)
+   en BottomNav (50) maar onder MeerSheet (200). Wordt in Phase 4
+   vervangen door MobileSearchSheet. */
+.searchRoot {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  z-index: 100;
+}
+
+.searchBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  padding: var(--space-4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.searchInput {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-base);
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
