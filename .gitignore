@@ -9,7 +9,12 @@ temporary screenshots/
 lead-automation/venv/
 lead-automation/.env
 lead-automation/test-feedback.jsonl
+lead-automation/__pycache__/
+lead-automation/**/__pycache__/
 .claude/scheduled_tasks.lock
+
+# Design handoff (lokale reference, niet bron van waarheid)
+mobile-overzicht-handoff/
 
 # Supabase CLI cache
 supabase/.temp/
