@@ -1,0 +1,74 @@
+/* HeaderActions — gedeelde rechter-acties (🔍/➕/🔔) voor mobile-headers.
+   Wordt door zowel MobileShellHeader als MobileOverzichtHeader hergebruikt. */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Generieke ronde icon-button (zoeken + notificaties). 40×40 voldoet
+   net-niet aan WCAG --tap-min (44px) maar matcht de visuele compactheid
+   van iOS-headers; de hele header-bar zelf is 56px hoog. */
+.iconBtn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.iconBtn:hover,
+.iconBtn:focus-visible {
+  background: var(--color-surface);
+}
+
+.iconBtn:active {
+  transform: scale(0.96);
+}
+
+/* Gradient-CTA voor "nieuwe offerte" — visueel primary in de header. */
+.plusBtn {
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-gradient);
+  color: #ffffff;
+  border: none;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgb(26 86 255 / 0.25);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.plusBtn:hover,
+.plusBtn:focus-visible {
+  box-shadow: 0 6px 18px rgb(26 86 255 / 0.32);
+}
+
+.plusBtn:active {
+  transform: scale(0.96);
+}
+
+/* Rood badge-stipje op de bell wanneer er ongelezen notificaties zijn.
+   Border in --color-bg zodat het stipje "los" lijkt van het surface-vlak. */
+.dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: #ef4444;
+  border: 2px solid var(--color-bg);
+}
