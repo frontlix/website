@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { HeaderActions } from '../HeaderActions'
+import { MobileSearchSheet } from '@/components/dashboard/ui/MobileSearchSheet'
 import type { NotifItem } from '@/components/dashboard/NotificationPanel'
 import styles from './MobileOverzichtHeader.module.css'
 
@@ -22,8 +22,8 @@ type Props = {
  *  - title-row: grote begroeting links, HeaderActions rechts
  *  - subline:   groene status-dot + leads-count vandaag/morgen
  *
- * SearchOverlay is een tijdelijke fallback die in Phase 4 wordt
- * vervangen door de definitieve MobileSearchSheet.
+ * Zoeken gaat via `MobileSearchSheet` in controlled-mode — geen eigen
+ * inline overlay meer; één canonical sheet voor alle mobile entry-points.
  */
 export function MobileOverzichtHeader({
   greeting,
@@ -33,7 +33,6 @@ export function MobileOverzichtHeader({
   notifications,
   unreadCount,
 }: Props) {
-  const router = useRouter()
   const [searchOpen, setSearchOpen] = useState(false)
 
   return (
@@ -55,50 +54,7 @@ export function MobileOverzichtHeader({
         {leadsTomorrow} morgen
       </div>
 
-      {searchOpen && (
-        <SearchOverlay
-          onSubmit={(q) => {
-            setSearchOpen(false)
-            if (q.trim()) router.push(`/leads?q=${encodeURIComponent(q.trim())}`)
-          }}
-          onClose={() => setSearchOpen(false)}
-        />
-      )}
+      <MobileSearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
-  )
-}
-
-// TIJDELIJK — wordt in Phase 4 vervangen door de definitieve MobileSearchSheet.
-function SearchOverlay({
-  onSubmit,
-  onClose,
-}: {
-  onSubmit: (q: string) => void
-  onClose: () => void
-}) {
-  return (
-    <div
-      className={styles.searchRoot}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className={styles.searchBar} onClick={(e) => e.stopPropagation()}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            const q = (new FormData(e.currentTarget).get('q') as string) ?? ''
-            onSubmit(q)
-          }}
-        >
-          <input
-            name="q"
-            autoFocus
-            placeholder="Zoek leads, adressen, telefoon…"
-            className={styles.searchInput}
-          />
-        </form>
-      </div>
-    </div>
   )
 }

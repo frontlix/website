@@ -1,10 +1,11 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { MobileShellHeader } from './MobileShellHeader'
 import { BottomNav } from './BottomNav'
 import { MeerSheet } from './MeerSheet'
+import { MobileSearchSheet } from '@/components/dashboard/ui/MobileSearchSheet'
 import type { NotifItem } from '@/components/dashboard/NotificationPanel'
 import styles from './MobileShell.module.css'
 
@@ -17,8 +18,8 @@ import styles from './MobileShell.module.css'
  *    mounten we hier de dunne default MobileShellHeader.
  *  - Wraps page-content in .main met onderpadding voor de BottomNav.
  *  - Mounts BottomNav (fixed bottom) + MeerSheet (slide-up).
- *  - TIJDELIJKE inline search-overlay — wordt in Phase 4 vervangen door
- *    de uitgebreide MobileSearchSheet.
+ *  - Mounts MobileSearchSheet in controlled-mode (open/onClose) — geen
+ *    eigen trigger, want de zoek-knop zit in HeaderActions.
  */
 
 type Props = {
@@ -41,7 +42,6 @@ export function MobileShell({
   counts,
 }: Props) {
   const pathname = usePathname()
-  const router = useRouter()
   const [meerOpen, setMeerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -72,52 +72,7 @@ export function MobileShell({
         userName={userName}
       />
 
-      {searchOpen && (
-        <SearchOverlay
-          onSubmit={(q) => {
-            setSearchOpen(false)
-            if (q.trim()) router.push(`/leads?q=${encodeURIComponent(q.trim())}`)
-          }}
-          onClose={() => setSearchOpen(false)}
-        />
-      )}
-    </div>
-  )
-}
-
-// TIJDELIJKE inline search-overlay — wordt in Phase 4 vervangen door de
-// bestaande/uitgebreide MobileSearchSheet. Voor nu: full-screen top-input
-// die submit naar /leads?q=.
-function SearchOverlay({
-  onSubmit,
-  onClose,
-}: {
-  onSubmit: (q: string) => void
-  onClose: () => void
-}) {
-  return (
-    <div
-      className={styles.searchRoot}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className={styles.searchBar} onClick={(e) => e.stopPropagation()}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            const q = (new FormData(e.currentTarget).get('q') as string) ?? ''
-            onSubmit(q)
-          }}
-        >
-          <input
-            name="q"
-            autoFocus
-            placeholder="Zoek leads, adressen, telefoon…"
-            className={styles.searchInput}
-          />
-        </form>
-      </div>
+      <MobileSearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }
