@@ -46,7 +46,7 @@ const team = [
   {
     nummer: '01',
     name: 'Christiaan Tromp',
-    role: 'Hoofdontwikkelaar',
+    role: 'Mede-oprichter & ontwikkelaar',
     photo: '/images/christiaan-tromp.png',
     description:
       'Bouwt de systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
@@ -54,10 +54,10 @@ const team = [
   {
     nummer: '02',
     name: 'Georg Tromp',
-    role: 'Design & Strategie',
+    role: 'Mede-oprichter & ontwikkelaar',
     photo: '/images/georg-tromp.png',
     description:
-      'Vertaalt klantbehoeften naar strategie en zorgt dat alles er strak en professioneel uitziet. Kort lijntje, snel schakelen.',
+      'Bouwt de systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
   },
 ]
 
@@ -101,11 +101,11 @@ export default function OverOnsPage() {
                 blijft liggen, of klanten die te lang op een antwoord wachten.
               </p>
               <p className={styles.text}>
-                Als broers vullen wij elkaar perfect aan. Christiaan bouwt de
-                technische oplossingen, Georg zorgt dat alles er strak en
-                professioneel uitziet. Samen maken wij slimme automatisering
-                toegankelijk voor ondernemers die willen groeien, zonder
-                technische kennis nodig te hebben.
+                Als broers werken wij zij aan zij aan elk project. Van eerste
+                gesprek tot oplevering, allebei met de handen aan dezelfde
+                code en dezelfde systemen. Samen maken wij slimme
+                automatisering toegankelijk voor ondernemers die willen
+                groeien, zonder technische kennis nodig te hebben.
               </p>
             </div>
             <div className={styles.storyVisual}>

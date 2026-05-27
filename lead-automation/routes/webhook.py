@@ -479,9 +479,9 @@ async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
         # Still allow naam/email extraction (could come piggybacked).
         if isinstance(analysis.extracted.get("data"), dict):
             analysis.extracted["data"].pop(current_field, None) if current_field else None
-    elif analysis.intent in {"price_question", "process_question", "off_topic",
-                              "gibberish", "is_bot_question", "acknowledgement",
-                              "not_recognized"}:
+    elif analysis.intent in {"price_question", "process_question", "faq_question",
+                              "off_topic", "gibberish", "is_bot_question",
+                              "acknowledgement", "not_recognized"}:
         # No new info on the current field — keep state and re-ask same.
         apply_extracted = False
     elif analysis.intent == "will_provide_later":

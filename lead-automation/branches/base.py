@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import difflib
 import math
 import re
 from typing import Callable
@@ -32,13 +33,22 @@ def parse_number(value: str | None) -> float:
 
 
 def normalize_enum(value: str | None, allowed: list[str]) -> str | None:
-    """Normalize a free LLM output to one of the allowed enum values (case-insensitive)."""
+    """Normalize a free LLM output to one of the allowed enum values.
+
+    Exact case-insensitive match first, then fuzzy fallback (cutoff 0.8) zodat
+    een klant-typo als "schijn" alsnog naar "schuin" resolved als het analyzer-LLM
+    de typo doorliet. Cutoff is bewust streng om distincte enum-waarden niet
+    per ongeluk op elkaar te mappen."""
     if not value:
         return None
     v = str(value).strip().lower()
-    for a in allowed:
-        if a.lower() == v:
-            return a
+    lowered = [a.lower() for a in allowed]
+    for i, a in enumerate(lowered):
+        if a == v:
+            return allowed[i]
+    matches = difflib.get_close_matches(v, lowered, n=1, cutoff=0.8)
+    if matches:
+        return allowed[lowered.index(matches[0])]
     return None
 
 

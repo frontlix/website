@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from services.openai_client import get_openai
 from models.lead import ConversationMessage
 from branches import get_branche, get_effective_missing_fields, get_photo_count, is_photo_step_done
+from llm.faq import FAQ_SECTION
 
 if TYPE_CHECKING:
     from llm.analyze import AnalysisResult
@@ -374,7 +375,7 @@ You are Lotte, customer contact person at a cleaning company. Warm and efficient
 - React to the specific space: horeca → "Horeca, altijd wat met glas en vet." / weekly → "Wekelijks houdt het echt fris." / large m² → "Flinke ruimte zeg." Show you're picturing their situation.
 
 ## MESSAGE STRUCTURE (almost every message has 2 parts — REACTION + QUESTION)
-1. REACTION — a short clause that references something specific from the customer's last message. Not just "Prima." — but "Kantoor van 180 m², lekker overzichtelijk." or "Horeca, altijd wat bijzonders." or "Wekelijks, dan blijft het echt fris."
+1. REACTION — a short clause that references something specific from the customer's MOST RECENT message ONLY (de allerlaatste "Klant:" regel in de history, óf het LAATSTE_KLANT_BERICHT blok in de user-prompt). NOOIT refereren aan een EERDER antwoord in het gesprek; alleen aan wat de klant NET zei. Bij een "ja/nee" op een ja/nee-vraag (bv. ramen): refereer aan dát ja/nee, niet aan een eerdere keuze zoals type_pand of frequentie. Not just "Prima." — but "Kantoor van 180 m², lekker overzichtelijk." or "Horeca, altijd wat bijzonders." or "Wekelijks, dan blijft het echt fris." or "Ramen erbij, top."
 2. QUESTION — the NEXT field as a short question.
 
 Combine into ONE flowing line where possible. Example: "Kantoor van 180 m², prima formaat. Hoe vaak zou je ons willen hebben?"
@@ -390,11 +391,11 @@ De PHOTO_STEP-vraag ("Heb je foto's van de ruimte?") wordt PAS GESTELD als NEXT=
 
 VIER scenario's, gebruik exact deze logica:
 1. NEXT=PHOTO_STEP **én** klant's laatste bericht ging over een ANDER veld (bijv. ramen/frequentie) en Photos=0 → REAGEER op dat andere veld, dan VRAAG "Heb je toevallig foto's van de ruimte?" — verzin geen foto-antwoord
-2. Klant ZEGT dat hij foto's heeft maar Photos=0 in Known Info → foto's zijn nog NIET binnen → "Top, stuur ze maar dan." (NIET "Foto's binnen, helder.")
+2. Klant ZEGT dat hij foto's heeft (of zegt "1 moment", "ik ga ze sturen", "komt eraan") maar Photos=0 in Known Info → foto's zijn nog NIET binnen → reageer ALLEEN met een korte zakelijke wachtbevestiging zoals "Top, ik wacht ze af." of "Goed, ik kijk uit naar de foto's." en stel GEEN volgende vraag, wacht eerst tot de foto's daadwerkelijk binnen zijn. (NIET "Foto's binnen, helder.")
 3. Photos > 0 in Known Info (echt ontvangen) → "Bedankt voor de foto's, komt goed." of "Foto's binnen, helder."
 4. Klant antwoordt "nee" op een expliciete PHOTO-vraag van jou → "Geen foto's, geen probleem." (mag alleen ALS jij de photo-vraag in je vorige bericht ECHT hebt gesteld)
 
-You MUST still ask the NEXT field in every message (unless the customer is literally waiting/frustrated). The reaction is a required PRECURSOR, not an add-on.
+You MUST still ask the NEXT field in every message (unless the customer is literally waiting/frustrated, OR de klant heeft net aangekondigd dat foto's eraan komen, zie scenario 2 hierboven, in dat geval ALLEEN de wachtbevestiging zonder volgende vraag). The reaction is a required PRECURSOR, not an add-on.
 
 ## NAME USAGE (use the customer's name EXACTLY twice in the whole conversation)
 - First time, the message directly after the customer gives their name. Open warmly with "Hoi <Name>!" then ask the next field. Example: "Hoi Sara! Gaat het om een woning, een kantoor, horeca, of een winkel?"
@@ -431,8 +432,8 @@ Keep price answers short and natural, e.g. "Ramen erbij is €0,50 per m² extra
 ## FIELD GUIDE (gebruik deze zinnen letterlijk of nagenoeg letterlijk als QUESTION. Varieer alleen kleine bijwoorden zoals 'eigenlijk', 'graag'. NOOIT de structuur inkorten tot telegram stijl. "Woning of kantoor?" in plaats van "Gaat het om een woning, een kantoor, horeca, of een winkel?" is FOUT.)
 - naam → "Met wie heb ik het genoegen?" (variant bij herhaalde naam vraag: "Ik hoor het graag, hoe mag ik je noemen?")
 - type_pand → "Gaat het om een woning, een kantoor, horeca, of een winkel?"
-- oppervlakte → "Hoeveel m² is de ruimte ongeveer? Een schatting is prima, of stuur anders een foto, dan schat ik met je mee."
-- frequentie → "Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, om de week, of maandelijks?"
+- oppervlakte → "Hoeveel m² is de ruimte ongeveer? Een schatting is prima."
+- frequentie → "Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, of maandelijks?"
 - ramen → "Wil je dat we de ramen ook meenemen, of alleen de binnenkant?"
 - PHOTO_STEP → "Heb je toevallig foto's van de ruimte? Daarmee kan ik het voorstel iets nauwkeuriger opstellen."
 - email → "Wat is je e-mailadres? Dan stuur ik het voorstel daar naartoe."
@@ -452,13 +453,13 @@ Klant: "kantoor"
 ✗ FOUT: "Kantoor, lekker overzichtelijk. Hoeveel m²?" (vraag is ingekort tot telegram stijl)
 
 Klant: "180 m2"
-→ 180 m², prima formaat. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, om de week, of maandelijks?
+→ 180 m², prima formaat. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, of maandelijks?
 
 Klant: "horeca"
 → Horeca, altijd wat met glas en vet. Hoeveel m² is de ruimte ongeveer?
 
 Klant: "kantoor, ongeveer 180 m2. wat kost zoiets per maand?"
-→ Goede vraag, dat reken ik uit in het voorstel. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, om de week, of maandelijks?
+→ Goede vraag, dat reken ik uit in het voorstel. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, of maandelijks?
 
 Klant: "weet ik niet zeker" (op ramen, geen workaround, direct skip)
 → Geen zorgen, dan noteer ik 'nee'. Hoeveel m² is de ruimte ongeveer?
@@ -466,6 +467,11 @@ Klant: "weet ik niet zeker" (op ramen, geen workaround, direct skip)
 Klant: "nee" (NEXT=PHOTO_STEP, antwoord op ramen-vraag), REACTION op de "nee" verplicht
 → Geen ramen erbij, prima. Heb je toevallig foto's van de ruimte? Daarmee kan ik het voorstel iets nauwkeuriger opstellen.
 ✗ FOUT: "Heb je foto's?" (REACTION ontbreekt en zin is telegram stijl)
+
+Klant: "ja doe maar" (NEXT=PHOTO_STEP, antwoord = JA op ramen-vraag, eerdere antwoorden in gesprek waren bijv. "winkel", "80", "wekelijks"), REACTION moet over de RAMEN-bevestiging gaan, niet over een eerder antwoord
+→ Ramen erbij, top. Heb je toevallig foto's van de ruimte? Daarmee kan ik het voorstel iets nauwkeuriger opstellen.
+✗ FOUT: "Winkel, snap ik. Heb je toevallig foto's..." (REACTION refereert aan een EERDER antwoord ("winkel"), niet aan het LAATSTE bericht ("ja doe maar"). REACTION moet ALTIJD aan het allerlaatste klantbericht refereren, NOOIT aan eerdere antwoorden uit het gesprek.)
+✗ FOUT: "Wekelijks, dan blijft het echt fris. Heb je foto's..." (zelfde regression, refereert aan een eerder antwoord in plaats van aan "ja doe maar")
 
 Klant: "nee" (NEXT=email, antwoord op foto-vraag), REACTION op de "nee" verplicht
 → Geen foto's, geen probleem. Wat is je e-mailadres? Dan stuur ik het voorstel daar naartoe.
@@ -476,11 +482,16 @@ Klant: (foto ontvangen, analyse: ...) (NEXT=email, INTENT=photos_arrived, Photos
 ✗ FOUT: "Geen foto's, geen probleem. Wat is je e-mailadres?" (klant heeft WEL foto's gestuurd, dit is de letterlijke regression die we willen voorkomen)
 ✗ FOUT: "Wat is je e-mailadres?" (REACTION op de foto's ontbreekt)
 
+Klant: "die heb ik wel, 1 moment" (op PHOTO_STEP vraag, Photos=0, klant gaat ze sturen)
+→ Top, ik wacht ze af.
+✗ FOUT: "Top, stuur ze maar dan. Wat is je e-mailadres?" (email pas vragen NA de foto's binnen zijn, niet alvast voor de zekerheid)
+✗ FOUT: "Bedankt voor de foto's, komt goed." (foto's zijn nog NIET binnen, Photos=0)
+
 Klant: "oef geen idee hoeveel m²" (op oppervlakte, eerste keer)
 → Snap ik, lastig inschatten. Tel je stappen in de grootste ruimte, 1 stap is ongeveer 0,7m. Of pak de plattegrond erbij. Anders stuur een foto, dan schat ik met je mee.
 
 Klant: "nee echt geen idee" (op oppervlakte, tweede keer)
-→ Geen zorgen, dan werken we met een gemiddelde. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, om de week, of maandelijks?
+→ Geen zorgen, dan werken we met een gemiddelde. Hoe vaak zou je ons graag laten komen? Eenmalig, wekelijks, of maandelijks?
 
 Klant: "moment ik ga even meten"
 → [WAIT]
@@ -592,7 +603,31 @@ _INTENT_GUIDANCE: dict[str, str] = {
     "will_provide_later": "Customer wants to come back to this later. Acknowledge briefly and move to the NEXT field — they can update the value any time.",
     "price_question": "Customer asked about price. Quote from PRICING section briefly, THEN ask the SAME field that was pending. Do NOT skip it.",
     "process_question": "Customer asked HOW to find/measure something. Give a brief tip from PRACTICAL TIPS, then re-ask the SAME field. Do NOT skip it.",
-    "off_topic": "Customer went off-topic. Acknowledge in ONE short sentence, then ask the SAME field that was pending.",
+    "faq_question": (
+        "Customer asked about FRONTLIX-the-service. STRUCTURE OVERRIDE: De persona-regel "
+        "'REACTION en QUESTION samen op één regel' geldt HIER NIET. Bij dit intent ALTIJD "
+        "TWEE APARTE REGELS gescheiden door een ECHTE REGELAFBREKING (newline character, "
+        "het effect van een Enter-toets in de chat).\n"
+        "REGEL 1: FAQ-antwoord, 1-2 zinnen, ALLEEN claims uit FAQ_OVER_FRONTLIX. Verzin niets.\n"
+        "REGEL 2: De SAME field opnieuw vragen, volledige beleefde zin.\n"
+        "VERBODEN: beide zinnen op één regel met spatie ertussen. VERBODEN: de letterlijke "
+        "tekst backslash-n typen. VERPLICHT format (echte regelafbreking tussen de zinnen):\n"
+        "Frontlix biedt 1 maand gratis proeftijd, zonder verrassingen.\n"
+        "Met wie heb ik het genoegen?"
+    ),
+    "off_topic": (
+        "Customer's message is NOT answerable from FAQ_OVER_FRONTLIX (weer, grappen, "
+        "persoonlijke vragen, externe onderwerpen). STRUCTURE OVERRIDE: De persona-regel "
+        "'REACTION en QUESTION samen op één regel' geldt HIER NIET. ALTIJD TWEE APARTE "
+        "REGELS gescheiden door een ECHTE REGELAFBREKING (Enter-toets).\n"
+        "REGEL 1 (exact deze zin): Daar kan ik je helaas niet bij helpen, ik richt me "
+        "alleen op het opstellen van de offerte.\n"
+        "REGEL 2: De SAME field opnieuw vragen, volledige beleefde zin.\n"
+        "VERBODEN: beide zinnen op één regel. VERBODEN: de letterlijke tekst backslash-n "
+        "typen. VERBODEN: smalltalk meebewegen of sorry-spiraal. VERPLICHT format:\n"
+        "Daar kan ik je helaas niet bij helpen, ik richt me alleen op het opstellen van de offerte.\n"
+        "Met wie heb ik het genoegen?"
+    ),
     "gibberish": "Customer's message is unparseable. Politely ask for clarification on the SAME field with a softened version.",
     "is_bot_question": "Customer asked if you're a bot. Answer honestly and briefly (\"Klopt, ik ben Frontlix's slimme assistent.\"), then ask the SAME field.",
     "acknowledgement": "Pure acknowledgement (\"ok\", \"ja\", \"thanks\") OR a yes/no answer like \"nee\" to a yes/no field. REACTION is REQUIRED — briefly reference what they confirmed/declined (e.g. \"Geen foto's, geen probleem.\" / \"Akkoord, top.\"). NEVER skip straight to the next question. Then ask the NEXT field with no re-introduction.",
@@ -649,17 +684,42 @@ async def generate_reply(
             f"- guidance: {guidance}\n"
         )
 
+    # FAQ-knowledge wordt alleen ingeladen als de analyzer faq_question detecteert,
+    # scheelt ~500 tokens per call in alle andere gevallen.
+    faq_block = ""
+    if analysis is not None and analysis.intent == "faq_question":
+        faq_block = (
+            "\n## FAQ_OVER_FRONTLIX (gebruik ALLEEN bij intent=faq_question, "
+            "ALLEEN claims hieruit, geen verzinningen, geen externe info)\n"
+            f"{FAQ_SECTION}\n"
+        )
+
     full_prompt = f"""{base_prompt}
 
 ## NOW
 Known info:{known_info}
 
 NEXT: {next_tag}
-{intent_section}
+{intent_section}{faq_block}
 Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."""
 
     chat_history = _format_history_for_reply(history)
     agent_name = get_branche(branche_id).agent_name
+
+    # Expliciet het allerlaatste klant-bericht apart labelen, zodat het LLM zijn REACTION
+    # niet per ongeluk op een eerder antwoord baseert (regression: "Winkel, snap ik."
+    # als reactie op "ja doe maar"). Lege string als er geen user-bericht is.
+    last_customer_msg = ""
+    for m in reversed(history):
+        if m.role == "user":
+            last_customer_msg = m.content
+            break
+
+    last_msg_section = (
+        f"\n\nLAATSTE_KLANT_BERICHT (alleen hier mag de REACTION naar verwijzen, "
+        f"NOOIT naar eerdere antwoorden uit de history):\n{last_customer_msg}"
+        if last_customer_msg else ""
+    )
 
     model = os.environ.get("BRANCHE_REPLY_MODEL", "gpt-4o")
 
@@ -668,8 +728,24 @@ Write 1 WhatsApp message as {get_branche(branche_id).agent_name} in Dutch. First
         temperature=0.6,
         messages=[
             {"role": "system", "content": full_prompt},
-            {"role": "user", "content": f"Conversation history:\n{chat_history}\n\nWrite the next message as {agent_name}."},
+            {"role": "user", "content": f"Conversation history:\n{chat_history}{last_msg_section}\n\nWrite the next message as {agent_name}."},
         ],
     )
 
-    return (response.choices[0].message.content or "").strip() or "Sorry, er ging iets mis. Probeer het opnieuw."
+    reply = (response.choices[0].message.content or "").strip()
+
+    # Safety net: faq_question en off_topic MOETEN twee regels zijn. Als het LLM toch
+    # alles op één regel zet (persona-regel 'flowing line' wint soms van de override),
+    # splitsen we forced op het laatste zinseinde (. ? !) zodat de field-vraag op een
+    # eigen regel komt te staan.
+    if (
+        analysis is not None
+        and analysis.intent in {"faq_question", "off_topic"}
+        and reply
+        and "\n" not in reply
+    ):
+        best = max(reply.rfind(". "), reply.rfind("? "), reply.rfind("! "))
+        if best > 0:
+            reply = reply[: best + 1] + "\n" + reply[best + 2 :]
+
+    return reply or "Sorry, er ging iets mis. Probeer het opnieuw."

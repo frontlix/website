@@ -161,8 +161,8 @@ async def send_approval_email(
         # opent het originele Supabase-storage-bestand op full-size.
         blocks = "".join(
             f'<a href="{escape(url)}" target="_blank" style="display:inline-block;margin:0 8px 8px 0;text-decoration:none">'
-            f'<img src="{escape(url)}" alt="Foto van klant" width="200" '
-            f'style="display:block;width:200px;height:auto;border-radius:12px;border:1px solid #E5E7EB" />'
+            f'<img src="{escape(url)}" alt="Foto van klant" width="200" height="200" '
+            f'style="display:block;width:200px;height:200px;object-fit:cover;border-radius:12px;border:1px solid #E5E7EB" />'
             f'</a>'
             for url in photo_urls[:6]
         )
