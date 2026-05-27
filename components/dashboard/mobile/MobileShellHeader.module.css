@@ -1,0 +1,30 @@
+/* MobileShellHeader — dunne sticky header (56px) voor non-/dashboard
+   mobile-routes. z-index 30: boven page-content, onder BottomNav (50)
+   en sheets (200). */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: var(--mobile-header-h);
+  padding: 0 var(--mobile-content-pad);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  /* Voorkomt dat een lange titel rechts in HeaderActions duwt; lange
+     page-titles worden afgekapt i.p.v. te wrappen. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
