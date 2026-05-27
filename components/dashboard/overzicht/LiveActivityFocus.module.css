@@ -63,34 +63,3 @@
      pakt in plaats van een rechter-kolom. */
   width: 100%;
 }
-
-@media (max-width: 640px) {
-  /* Title en close-knop naast elkaar. Title krimpt mee met ellipsis als
-     de breedte krap wordt; close-knop blijft compact en zichtbaar. */
-  .head {
-    gap: 8px;
-    padding-bottom: 12px;
-  }
-  .title {
-    flex: 1;
-    min-width: 0;
-  }
-  .titleText {
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  /* Tijd verbergen — staat al in de status-bar van de telefoon. */
-  .titleSep,
-  .titleTime {
-    display: none;
-  }
-  .closeBtn {
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 6px 10px;
-    font-size: 12px;
-    gap: 5px;
-  }
-}

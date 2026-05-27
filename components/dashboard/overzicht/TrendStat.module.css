@@ -24,19 +24,3 @@
   font-size: 11px;
   color: var(--fg-muted);
 }
-
-/* Mobile: padding kleiner, value-getal iets kleiner. Vakjes komen
-   daardoor minder hoog/breed op elkaar te liggen. */
-@media (max-width: 640px) {
-  .trendStat {
-    padding: 10px 12px;
-  }
-  .trendStatValue {
-    font-size: 19px;
-    margin-top: 1px;
-  }
-  .trendStatLabel,
-  .trendStatSub {
-    font-size: 10.5px;
-  }
-}
