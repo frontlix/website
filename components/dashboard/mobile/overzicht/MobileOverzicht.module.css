@@ -1,0 +1,10 @@
+/* Composer voor de mobile /dashboard view — stapelt alle widgets in
+   één scroll-kolom. `padding-top` is klein omdat MobileShell zelf al
+   een sticky topbar heeft; we hoeven alleen wat lucht erna. */
+.root {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-2);
+  background: var(--color-surface);
+  min-height: 100%;
+}
