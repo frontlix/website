@@ -21,7 +21,11 @@ export type NotifItem = {
   unread?: boolean
 }
 
-const KIND_ICON = {
+/**
+ * Icon-map per NotifItem.kind. Geëxporteerd zodat ook MobileNotificationsSheet
+ * dezelfde mapping kan hergebruiken zonder duplicatie.
+ */
+export const NOTIF_KIND_ICON = {
   lead:   Inbox,
   wa:     MessageCircle,
   review: Star,
@@ -142,7 +146,7 @@ export function NotificationPanel({
               <div className={styles.empty}>Nog geen meldingen — alles is bijgewerkt.</div>
             ) : (
               items.map((item) => {
-                const Icon = KIND_ICON[item.kind]
+                const Icon = NOTIF_KIND_ICON[item.kind]
                 return (
                   <Link
                     key={item.id}

@@ -1,42 +1,76 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { MobileSheet } from './MobileSheet'
 import styles from './MobileSearchSheet.module.css'
 
-export function MobileSearchSheet() {
-  const [open, setOpen] = useState(false)
+/**
+ * MobileSearchSheet — mobile zoek-sheet die submit naar `/leads?q=…`.
+ *
+ * Werkt in twee modes:
+ *  1. **Uncontrolled** (default, geen props): rendert z'n eigen
+ *     trigger-knop + sheet. Topbar gebruikt deze mode.
+ *  2. **Controlled** (`open` + `onClose` props): rendert alleen de
+ *     sheet — de parent levert de trigger. MobileShell en
+ *     MobileOverzichtHeader gebruiken deze mode want zij hebben hun
+ *     eigen knop in HeaderActions.
+ *
+ * De router-push gaat naar `/leads` (niet `/dashboard/leads`); de
+ * dashboard-host middleware doet de prefix-rewrite.
+ */
+type Props = {
+  /** Wanneer geleverd, draait de component in "controlled" mode: geen eigen trigger-knop, alleen de sheet. */
+  open?: boolean
+  /** Required als `open` geleverd is. */
+  onClose?: () => void
+}
+
+export function MobileSearchSheet({ open: openProp, onClose: onCloseProp }: Props = {}) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+
+  const isControlled = openProp !== undefined
+  const open = isControlled ? openProp : internalOpen
+  const handleClose = isControlled
+    ? (onCloseProp ?? (() => {}))
+    : () => setInternalOpen(false)
+
+  // Auto-focus de input wanneer de sheet opent — voor zowel controlled
+  // als uncontrolled mode. Setimeout zodat de focus pas na de slide-in
+  // gebeurt (anders pakt de browser 'm niet betrouwbaar op mobile).
+  useEffect(() => {
+    if (!open) return
+    const t = setTimeout(() => inputRef.current?.focus(), 50)
+    return () => clearTimeout(t)
+  }, [open])
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const q = (new FormData(e.currentTarget).get('q') as string ?? '').trim()
-    setOpen(false)
+    handleClose()
     const params = new URLSearchParams()
     if (q) params.set('q', q)
-    router.push(`/dashboard/leads${params.toString() ? `?${params.toString()}` : ''}`)
+    router.push(`/leads${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
   return (
     <>
-      <button
-        type="button"
-        className={styles.searchBtn}
-        onClick={() => {
-          setOpen(true)
-          // Focus na render-tick zodat keyboard direct opent op mobile.
-          setTimeout(() => inputRef.current?.focus(), 50)
-        }}
-        aria-label="Zoek"
-      >
-        <Search size={18} />
-      </button>
+      {!isControlled && (
+        <button
+          type="button"
+          className={styles.searchBtn}
+          onClick={() => setInternalOpen(true)}
+          aria-label="Zoek"
+        >
+          <Search size={18} />
+        </button>
+      )}
       <MobileSheet
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         title="Zoeken"
         anchor="top"
       >

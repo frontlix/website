@@ -1,0 +1,112 @@
+/* UrgentBlock — "Wat nu" preview (top-3) op mobile Overzicht. */
+
+.block {
+  margin: 0 var(--mobile-content-pad) var(--space-4);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0;
+}
+
+.allLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-4);
+  text-align: center;
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card-mobile);
+  overflow: hidden;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  min-height: 56px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Laatste rij krijgt geen border zodat de card-rand mooi sluit. */
+.row:last-child {
+  border-bottom: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.badge[data-tone='amber'] {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge[data-tone='red'] {
+  background: #fee2e2;
+  color: #b91c1c;
+}

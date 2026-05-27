@@ -1,0 +1,143 @@
+/* VandaagBlock — "Vandaag" preview met totaal-kaart + top-3 stops. */
+
+.block {
+  margin: 0 var(--mobile-content-pad) var(--space-4);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0;
+}
+
+.allLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-4);
+  text-align: center;
+  margin: 0;
+}
+
+/* Totaal-kaart bovenaan: één regel met label links + waarde rechts. */
+.totalCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card-mobile);
+  background: var(--color-bg);
+  margin-bottom: var(--space-3);
+}
+
+.totalLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.totalValue {
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card-mobile);
+  overflow: hidden;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  min-height: 56px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.tijdCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.tijd {
+  font-weight: 700;
+  font-size: var(--text-base);
+}
+
+.duur {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.adres {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Status-tag — kleine uppercase chip linksboven in de text-kolom. */
+.statusTag {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.statusTag[data-status='NU'] {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.statusTag[data-status='VOLGENDE'] {
+  background: #dbeafe;
+  color: var(--color-primary);
+}
+
+.statusTag[data-status='LATER'] {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+}

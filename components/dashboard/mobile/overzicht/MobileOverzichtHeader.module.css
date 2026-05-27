@@ -1,0 +1,42 @@
+/* MobileOverzichtHeader — rijke header bovenaan /dashboard op mobile.
+ * Grote begroeting, HeaderActions rechts, subline met groene status-dot. */
+
+.header {
+  padding: var(--space-4) var(--mobile-content-pad) var(--space-3);
+  background: var(--color-bg);
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+/* 32px hero-titel — letter-spacing -0.02em geeft 'm de premium look */
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.subline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Groene status-dot — geen passend success-token, dus hardcoded green-500 */
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: #22c55e;
+  flex-shrink: 0;
+}

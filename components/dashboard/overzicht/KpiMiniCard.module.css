@@ -94,33 +94,3 @@
 .card[data-active="true"] {
   display: none;
 }
-
-@media (max-width: 640px) {
-  /* Toon active KPI ook als mini-card op telefoon — geeft een vaste
-     4-vakjes overview (Omzet, Leads, Conversie, Offertes open). */
-  .card[data-active="true"] {
-    display: flex;
-  }
-  /* Reactietijd-mini verbergen op telefoon — past bij de tab-hide in
-     KpiTabs (Reactietijd is minder relevant in mobile-context). */
-  .card[data-kpi="reactietijd"] {
-    display: none;
-  }
-  /* Compactere mini-cards op telefoon: minder padding en kleinere getallen
-     zodat de 4-vakjes-grid minder schermhoogte opslokt en er meer ruimte
-     overblijft voor de Activity Feed / trends eronder. Desktop blijft op
-     de ruimere 14/16-padding + 26px-getallen. */
-  .card {
-    padding: 10px 12px;
-  }
-  .label {
-    font-size: 11.5px;
-  }
-  .number {
-    font-size: 22px;
-  }
-  .delta {
-    font-size: 11.5px;
-  }
-}
-

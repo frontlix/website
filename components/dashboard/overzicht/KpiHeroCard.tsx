@@ -44,17 +44,6 @@ export function KpiHeroCard({ metric }: { metric: KpiMetric }) {
             {prefix && <span className={styles.valueAffix}>{prefix}</span>}
             <span className={styles.valueNumber}>{number}</span>
             {suffix && <span className={styles.valueAffixSuffix}>{suffix}</span>}
-            {/* Mobile-only kopie van de uitschieter-badge — verschijnt naast het
-                getal i.p.v. naast het label, zodat de hero-card op telefoon
-                één regel minder hoog wordt. Op desktop verborgen via CSS
-                (.badgeUitschieterMobile { display: none } in default).
-                De badge in .headRow blijft 1-op-1 actief voor desktop. */}
-            {delta.uitschieter && (
-              <span className={styles.badgeUitschieterMobile}>
-                <Flame size={11} strokeWidth={2.5} />
-                Uitschieter
-              </span>
-            )}
           </div>
 
           <div className={styles.deltaRow}>

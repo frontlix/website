@@ -135,13 +135,3 @@
   color: var(--fg-muted);
   white-space: nowrap;
 }
-
-/* Op mobile geen geneste vertical-scroller in de feed — die "vangt"
-   swipes en geeft een scroll-vastloop-gevoel midden op de pagina.
-   Laat de feed gewoon meegroeien; de pagina-scroll doet de rest. */
-@media (max-width: 640px) {
-  .feed {
-    max-height: none;
-    overflow-y: visible;
-  }
-}

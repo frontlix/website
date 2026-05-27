@@ -12,6 +12,7 @@ import { Lock } from 'lucide-react'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { TenantBaseForm } from '@/components/dashboard/instellingen/TenantBaseForm'
+import { OmzetDoelForm } from '@/components/dashboard/instellingen/OmzetDoelForm'
 import { ServiceOfferingToggle } from '@/components/dashboard/instellingen/ServiceOfferingToggle'
 import { TagsManager } from '@/components/dashboard/instellingen/TagsManager'
 import { PrijzenEditor } from '@/components/dashboard/instellingen/PrijzenEditor'
@@ -48,6 +49,7 @@ export type TenantSettings = {
   base_lat: number | null
   base_lng: number | null
   daily_digest_tijd: string | null
+  omzet_doel_maand: number | null
 }
 
 export type PricingRule = {
@@ -169,6 +171,24 @@ export function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
             currentLat={tenant?.base_lat ?? null}
             currentLng={tenant?.base_lng ?? null}
           />
+        </div>
+      </div>
+
+      {/* Maand-omzetdoel — voedt de Hero KPI goal-ring op de mobiele
+          Overzicht-pagina. NULL = geen doel ingesteld (placeholder elders). */}
+      <div className="dash-card" style={{ marginTop: 16 }}>
+        <div className="dash-card-head">
+          <div>
+            <div className="dash-card-title">Maand-omzetdoel</div>
+            <div className="dash-card-sub">
+              Stel een omzetdoel in voor deze maand — de voortgangsring op je
+              mobiele Overzicht volgt automatisch. Laat leeg om geen doel te
+              tonen.
+            </div>
+          </div>
+        </div>
+        <div className={styles.sectionBody}>
+          <OmzetDoelForm initialValue={tenant?.omzet_doel_maand ?? null} />
         </div>
       </div>
     </>

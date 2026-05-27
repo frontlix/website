@@ -184,6 +184,54 @@ export async function getLeadsList(
 }
 
 /**
+ * Telt leads die vandaag binnen zijn gekomen en die morgen verwacht zijn,
+ * voor de subline op MobileOverzichtHeader ("14 leads vandaag · 4 morgen").
+ *
+ * Gebruikt `created_at` als binnenkomst-tijdstip. Dag-grens via lokale
+ * datum (Date-constructor zonder timezone-arg = lokale tijd van de Node-
+ * server, in productie = NL). Voor strict-NL bij UTC-server zou je
+ * Europe/Amsterdam moeten forceren; volstaat voor nu.
+ */
+export async function leadsArrivedTodayAndTomorrow(): Promise<{
+  today: number
+  tomorrow: number
+}> {
+  const supabase = await getDashboardSupabase()
+
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfTomorrow = new Date(startOfToday)
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1)
+  const startOfDayAfterTomorrow = new Date(startOfTomorrow)
+  startOfDayAfterTomorrow.setDate(startOfDayAfterTomorrow.getDate() + 1)
+
+  const [todayRes, tomorrowRes] = await Promise.all([
+    supabase
+      .from('leads')
+      .select('lead_id', { count: 'exact', head: true })
+      .gte('created_at', startOfToday.toISOString())
+      .lt('created_at', startOfTomorrow.toISOString()),
+    supabase
+      .from('leads')
+      .select('lead_id', { count: 'exact', head: true })
+      .gte('created_at', startOfTomorrow.toISOString())
+      .lt('created_at', startOfDayAfterTomorrow.toISOString()),
+  ])
+
+  if (todayRes.error) {
+    console.error('[leadsArrivedTodayAndTomorrow] today query failed:', todayRes.error)
+  }
+  if (tomorrowRes.error) {
+    console.error('[leadsArrivedTodayAndTomorrow] tomorrow query failed:', tomorrowRes.error)
+  }
+
+  return {
+    today: todayRes.count ?? 0,
+    tomorrow: tomorrowRes.count ?? 0,
+  }
+}
+
+/**
  * Telt het totaal aantal niet-gearchiveerde leads (zonder filters).
  * Gebruikt voor de "X gevonden van Y totaal"-tekst.
  */

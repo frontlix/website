@@ -5,6 +5,7 @@ import { TopbarServer } from '@/components/dashboard/TopbarServer'
 import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { ExportsModal } from '@/components/dashboard/ExportsModal'
+import { DashboardChrome } from '@/components/dashboard/mobile/DashboardChrome'
 import styles from './layout.module.css'
 // Globale dashboard design-system classes — alleen actief in deze layout.
 import '@/styles/dashboard.css'
@@ -46,7 +47,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     // toon geen badge zolang we niet weten wat er actief is.
   }
 
-  return (
+  // Desktop-chrome: bestaande sidebar+topbar+main structure ongewijzigd.
+  // Wordt via DashboardChrome alleen op ≥641px gerenderd.
+  const desktopChrome = (
     <div className={`${styles.shell} density-cozy`}>
       <Sidebar
         bedrijfsnaam={bedrijfsnaam}
@@ -59,9 +62,33 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className={styles.contentInner}>{children}</div>
         </main>
       </div>
+    </div>
+  )
+
+  // User-display deriveren voor mobile MeerSheet. `dashboard_user_profiles`
+  // heeft (nog) geen naam/display_name kolom, dus we vallen terug op de
+  // email-prefix. Voorbeeld: 'frontlixx@gmail.com' → userName 'Frontlixx',
+  // userInitials 'FR'. Wordt later vervangen zodra profile.naam bestaat.
+  const emailPrefix = (user.email ?? '').split('@')[0] || 'Gebruiker'
+  const userName =
+    emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase()
+  // Eerste 1-2 letters van de prefix; uppercase voor avatar-look.
+  const userInitials = emailPrefix.slice(0, 2).toUpperCase() || 'U'
+
+  return (
+    <>
+      <DashboardChrome
+        desktop={desktopChrome}
+        bedrijfsnaam={bedrijfsnaam}
+        userInitials={userInitials}
+        userName={userName}
+        counts={{ leads: counts.leads }}
+      >
+        {children}
+      </DashboardChrome>
       <ManualOfferteController />
       <ExportsModal />
       {!profile.onboarding_voltooid_op && <OnboardingWizard />}
-    </div>
+    </>
   )
 }

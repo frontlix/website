@@ -78,6 +78,23 @@
   --radius-xl:  24px;
   --radius-full: 9999px;
 
+  /* Mobile-specifieke radii — iets ronder dan desktop voor "phone-feel". */
+  --radius-card-mobile: 16px;
+  --radius-sheet:       20px;
+
+  /* ─────────────────────────────────────────────────────────
+     Mobile shell (heights, safe-area, ease, durations)
+     ───────────────────────────────────────────────────────── */
+  --mobile-header-h:        56px;
+  --mobile-bottom-nav-h:    56px;
+  --mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-content-pad:     var(--space-4);
+
+  /* iOS-stijl easing voor sheets en drilldown-transities. */
+  --ease-ios:        cubic-bezier(.32, .72, 0, 1);
+  --dur-drilldown:   280ms;
+  --dur-sheet:       320ms;
+
   /* ─────────────────────────────────────────────────────────
      Layout
      ───────────────────────────────────────────────────────── */

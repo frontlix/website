@@ -1,0 +1,26 @@
+/* MobileShell — root container voor de mobiele dashboard-chrome.
+   .shell is flex-column met full viewport height; .main groeit en
+   krijgt onderpadding zodat content niet onder de fixed BottomNav
+   verdwijnt. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* dvh = dynamic viewport height — voorkomt dat de mobile-browserchrome
+     (URL-bar in/uit-faden) layout-shifts veroorzaakt. */
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.main {
+  flex: 1;
+  /* Reserveer ruimte onderaan voor de fixed BottomNav + iOS safe-area
+     (home-indicator). Zonder dit verdwijnt de laatste content-rij onder
+     de nav. */
+  padding-bottom: calc(
+    var(--mobile-bottom-nav-h) + var(--mobile-safe-area-bottom)
+  );
+  overflow-y: auto;
+}
