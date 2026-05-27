@@ -53,8 +53,8 @@
 - `components/dashboard/mobile/drilldowns/WatNuView.tsx` + `.module.css`
 - `components/dashboard/mobile/drilldowns/VandaagView.tsx` + `.module.css`
 - `components/dashboard/mobile/drilldowns/ActiviteitView.tsx` + `.module.css`
-- `hooks/useIsMobile.ts` + `useIsMobile.test.ts`
 - `hooks/useBodyScrollLock.ts` + `useBodyScrollLock.test.ts`
+- (`lib/dashboard/use-is-mobile.ts` bestaat al uit commit 0fb272e — niet opnieuw maken)
 - `lib/dashboard/surface-summary.ts` + `surface-summary.test.ts` (extract uit `SurfaceDailySummary.tsx`)
 - Supabase migratie: `tenant_settings.omzet_doel_maand numeric NULL`
 
@@ -131,88 +131,11 @@ git commit -m "chore(db): add tenant_settings.omzet_doel_maand"
 
 ---
 
-### Task 0b: `useIsMobile` hook + test
+### Task 0b: (geschrapt — `useIsMobile` bestaat al)
 
-**Files:**
-- Create: `hooks/useIsMobile.ts`
-- Create: `hooks/useIsMobile.test.ts`
+Commit `0fb272e mobiel app` heeft al `lib/dashboard/use-is-mobile.ts` met een tristate-pattern (`boolean | undefined`). Voor de shell-toggle gebruiken we CSS (zie Task 1e, `DashboardChrome.module.css`); de hook is beschikbaar als JS-mount-state ergens anders nodig is.
 
-- [ ] **Step 1: Schrijf de failing test**
-
-```ts
-// hooks/useIsMobile.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
-import { useIsMobile } from './useIsMobile'
-
-describe('useIsMobile', () => {
-  let listeners: Array<(e: MediaQueryListEvent) => void> = []
-
-  beforeEach(() => {
-    listeners = []
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: query.includes('640') && (window.innerWidth ?? 1024) <= 640,
-      media: query,
-      addEventListener: (_: string, cb: any) => listeners.push(cb),
-      removeEventListener: (_: string, cb: any) => {
-        listeners = listeners.filter((l) => l !== cb)
-      },
-      dispatchEvent: () => true,
-      addListener: () => {},
-      removeListener: () => {},
-      onchange: null,
-    }))
-  })
-
-  it('returns false initially (SSR-safe)', () => {
-    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true })
-    const { result } = renderHook(() => useIsMobile())
-    // useEffect zet 'm direct na mount op de echte waarde — die is false op 1024px.
-    expect(result.current).toBe(false)
-  })
-
-  it('returns true op <=640px', () => {
-    Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true })
-    const { result } = renderHook(() => useIsMobile())
-    expect(result.current).toBe(true)
-  })
-})
-```
-
-- [ ] **Step 2: Run test om te falen**
-
-```bash
-npx vitest run hooks/useIsMobile.test.ts
-```
-
-Expected: FAIL — file niet gevonden.
-
-- [ ] **Step 3: Schrijf minimale implementatie**
-
-```ts
-// hooks/useIsMobile.ts
-'use client'
-import { useMediaQuery } from './useMediaQuery'
-
-export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 640px)')
-}
-```
-
-- [ ] **Step 4: Run test om te passen**
-
-```bash
-npx vitest run hooks/useIsMobile.test.ts
-```
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add hooks/useIsMobile.ts hooks/useIsMobile.test.ts
-git commit -m "feat(mobile): useIsMobile hook (≤640px)"
-```
+Geen actie. Skip deze task.
 
 ---
 

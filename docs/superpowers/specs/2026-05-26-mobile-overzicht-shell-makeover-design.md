@@ -34,16 +34,16 @@ Het bestaande dashboard rendert `<Sidebar>` + `<Topbar>` + `<main>{children}</ma
 
 ## 2. Breakpoint
 
-**640px** (project-conform met bestaande responsive CSS). De `useIsMobile` hook wrapt `useMediaQuery('(max-width: 640px)')`.
+**640px** (project-conform met bestaande responsive CSS én commit `0fb272e mobiel app` waar al een `desktopTree`/`mobileTree`-toggle in LeadOfferte gebruikt wordt).
+
+Het project heeft al een hook `lib/dashboard/use-is-mobile.ts`:
 
 ```ts
-// hooks/useIsMobile.ts
-'use client'
-import { useMediaQuery } from './useMediaQuery'
-export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 640px)')
-}
+// bestaand, tristate-pattern (boolean | undefined tijdens SSR)
+export function useIsMobile(maxWidthPx = 640): boolean | undefined { ... }
 ```
+
+**Belangrijke architectuur-keuze:** `DashboardChrome` gebruikt **CSS-driven** zichtbaarheid (zoals `LeadOfferte` al doet met `.desktopTree`/`.mobileTree` + `display: contents`/`@media`). De tristate hook is niet nodig voor de shell zelf — wel beschikbaar voor sheet-componenten waar JS-mount-state nodig is.
 
 ---
 
@@ -93,8 +93,10 @@ components/dashboard/mobile/
     └── ActiviteitView.module.css
 
 hooks/
-├── useIsMobile.ts                   ← nieuw, wrappert useMediaQuery
 └── useBodyScrollLock.ts             ← nieuw, hergebruikt door alle sheets
+
+lib/dashboard/
+└── use-is-mobile.ts                 ← BESTAAND (uit commit 0fb272e), beschikbaar waar JS-mount-state nodig is
 ```
 
 **Bestaande code die wijzigt:**
