@@ -1,0 +1,81 @@
+.layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--mobile-bottom-nav-h); /* bottom-nav blijft zichtbaar */
+  background: var(--color-surface);
+  z-index: 40;
+  transform: translateX(100%);
+  transition: transform var(--dur-drilldown) var(--ease-ios);
+  display: flex;
+  flex-direction: column;
+  /* Wanneer dicht: pointer-events uit zodat tikken door de drilldown heen naar
+     base-layer kan tijdens de uit-animatie. */
+  pointer-events: none;
+}
+
+.layer.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  height: var(--mobile-header-h);
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--text-base);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.titleBlock {
+  text-align: center;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.rightSlot {
+  min-width: 28px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3) var(--mobile-content-pad);
+  /* iOS rubber-band containment binnen drilldown */
+  overscroll-behavior-y: contain;
+}
