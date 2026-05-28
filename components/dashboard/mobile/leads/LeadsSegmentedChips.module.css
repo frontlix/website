@@ -1,0 +1,76 @@
+/* LeadsSegmentedChips — sticky horizontale pill-rij.
+ * Spec: height 34px, radius 9999px, 8px 13px padding, 13px/600 font.
+ * Port van LeadsScreen.jsx (segmented-chip blok). */
+
+/* Horizontaal scrollbare rij zonder scrollbalk */
+.row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Chip basis ─────────────────────────────────────────────────────────────── */
+.chip {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  /* Afmetingen */
+  min-height: 34px;
+  padding: 8px 13px;
+  border-radius: 9999px;
+  border: none;
+  /* Typografie */
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  /* Inactieve staat standaard */
+  background: var(--surface-2);
+  color: var(--fg);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Actieve chip: --fg achtergrond, --bg tekst */
+.chip[data-active='true'] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* ── Tone dot (6px, alleen bij inactieve chips) ──────────────────────────────── */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Dot-kleuren per tone — zelfde palet als LeadCard stagePill */
+.dot[data-tone='blue']   { background: var(--primary); }
+.dot[data-tone='amber']  { background: #d97706; }
+.dot[data-tone='violet'] { background: #7C3AED; }
+.dot[data-tone='green']  { background: #10B981; }
+.dot[data-tone='gray']   { background: var(--fg-muted); }
+
+/* ── Count suffix ────────────────────────────────────────────────────────────── */
+.label {
+  /* Gewoon tekst-node — geen extra stijl nodig */
+}
+
+.count {
+  opacity: 0.55;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Actieve chip: count iets doorzichtiger op donkere achtergrond */
+.chip[data-active='true'] .count {
+  opacity: 0.6;
+}
