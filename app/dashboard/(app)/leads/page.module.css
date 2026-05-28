@@ -51,3 +51,14 @@
   max-width: 400px;
   margin: 0 auto;
 }
+
+/* ── Desktop / mobile tree toggle ────────────────────────────────────────────
+   Desktop tree: altijd zichtbaar boven 640px.
+   Mobile tree: alleen zichtbaar op ≤ 640px (neemt de volledige mobiele shell in). */
+.desktopTree { display: block; }
+.mobileTree  { display: none; }
+
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree  { display: block; }
+}

@@ -9,6 +9,8 @@ import { WebChatToggle } from '@/components/dashboard/leads/WebChatToggle'
 import { MobileFiltersSheet } from '@/components/dashboard/leads/MobileFiltersSheet'
 import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
+import { MobileLeads } from '@/components/dashboard/mobile/leads/MobileLeads'
+import { mapLeadToCard } from '@/components/dashboard/mobile/leads/lead-mappers'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -122,79 +124,107 @@ export default async function LeadsPage({
 
   const actief = allLeads.filter((l) => l.dashboard_status !== 'afgehandeld').length
 
+  // chatbotNaam: default 'Surface' (geen extra query om race-conditions te vermijden;
+  // de naam is puur cosmetic in de mobile UI)
+  const chatbotNaam = 'Surface'
+
   return (
     <>
-      <div className="dash-section-head">
-        <div>
-          <div className="dash-section-title">Leads</div>
-          <div className="dash-section-sub">
-            <LiveDot />
-            <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {actief} actief · {total} totaal
-            </span>
+      {/* ── Desktop tree (verborgen op ≤ 640px) ──────────────────────────── */}
+      <div className={styles.desktopTree}>
+        <div className="dash-section-head">
+          <div>
+            <div className="dash-section-title">Leads</div>
+            <div className="dash-section-sub">
+              <LiveDot />
+              <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+                {actief} actief · {total} totaal
+              </span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <a
+              href="/leads?export=1"
+              className="dash-btn dash-btn-secondary"
+            >
+              <FileText size={13} />
+              Export
+            </a>
+            <button
+              type="button"
+              className="dash-btn dash-btn-secondary"
+              disabled
+              title="Filters — binnenkort beschikbaar"
+              aria-label="Filters — binnenkort beschikbaar"
+            >
+              <Filter size={13} />
+              Filters
+            </button>
+            <a
+              href="/leads?nieuwe-offerte=1"
+              className="dash-btn dash-btn-primary"
+            >
+              <Plus size={13} />
+              Nieuwe offerte
+            </a>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <a
-            href="/leads?export=1"
-            className="dash-btn dash-btn-secondary"
-          >
-            <FileText size={13} />
-            Export
-          </a>
-          <button
-            type="button"
-            className="dash-btn dash-btn-secondary"
-            disabled
-            title="Filters — binnenkort beschikbaar"
-            aria-label="Filters — binnenkort beschikbaar"
-          >
-            <Filter size={13} />
-            Filters
-          </button>
-          <a
-            href="/leads?nieuwe-offerte=1"
-            className="dash-btn dash-btn-primary"
-          >
-            <Plus size={13} />
-            Nieuwe offerte
-          </a>
+
+        {/* Filter-tabs bovenin */}
+        <div className={styles.filterRow}>
+          {/* Desktop-filters: verborgen op ≤ 640px; mobiel toont MobileFiltersSheet */}
+          <div className={styles.desktopFilters}>
+            <LeadsFilterTabs counts={counts} />
+            <WebChatToggle count={webCount} />
+          </div>
+          {/* Mobile-only filter-trigger */}
+          <MobileFiltersSheet
+            filterTabs={{ counts }}
+            webChat={{ count: webCount }}
+          />
+          <SearchBar initial={search} />
         </div>
+
+        {displayed.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyTitle}>Geen leads gevonden</div>
+            <div className={styles.emptySub}>
+              {search || activeFilter !== 'all'
+                ? 'Wis filters of search om alle leads te zien.'
+                : "Zodra een aanvraag binnenkomt verschijnt 'ie hier in de pipeline."}
+            </div>
+          </div>
+        ) : view === 'tabel' ? (
+          <LeadsTable leads={displayed} />
+        ) : view === 'kaarten' ? (
+          <LeadsKaarten leads={displayed} />
+        ) : (
+          <LeadsPipeline leads={displayed} />
+        )}
+
+        <LeadsRealtimeToast />
       </div>
 
-      {/* Filter-tabs bovenin */}
-      <div className={styles.filterRow}>
-        {/* Desktop-filters: verborgen op ≤ 640px; mobiel toont MobileFiltersSheet */}
-        <div className={styles.desktopFilters}>
-          <LeadsFilterTabs counts={counts} />
-          <WebChatToggle count={webCount} />
-        </div>
-        {/* Mobile-only filter-trigger */}
-        <MobileFiltersSheet
-          filterTabs={{ counts }}
-          webChat={{ count: webCount }}
+      {/* ── Mobile tree (alleen zichtbaar op ≤ 640px) ─────────────────────── */}
+      <div className={styles.mobileTree}>
+        <MobileLeads
+          data={{
+            cards: displayed.map((l) => mapLeadToCard(l)),
+            telefoonById: Object.fromEntries(
+              displayed.map((l) => [l.lead_id, l.telefoon ?? '']),
+            ),
+            counts: {
+              all:     counts.all,
+              gesprek: counts.in_gesprek,
+              review:  counts.review,
+              uit:     counts.offerte_uit,
+              gepland: counts.ingepland,
+              klaar:   counts.afgerond,
+            },
+            chatbotNaam,
+          }}
         />
-        <SearchBar initial={search} />
       </div>
-
-      {displayed.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyTitle}>Geen leads gevonden</div>
-          <div className={styles.emptySub}>
-            {search || activeFilter !== 'all'
-              ? 'Wis filters of search om alle leads te zien.'
-              : "Zodra een aanvraag binnenkomt verschijnt 'ie hier in de pipeline."}
-          </div>
-        </div>
-      ) : view === 'tabel' ? (
-        <LeadsTable leads={displayed} />
-      ) : view === 'kaarten' ? (
-        <LeadsKaarten leads={displayed} />
-      ) : (
-        <LeadsPipeline leads={displayed} />
-      )}
-
-      <LeadsRealtimeToast />
     </>
   )
 }

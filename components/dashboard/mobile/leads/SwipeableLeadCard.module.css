@@ -1,0 +1,79 @@
+/* SwipeableLeadCard — drag-to-reveal wrapper rondom LeadCard.
+ * Actie-lanes zitten absoluut gepositioneerd achter de card;
+ * de card schuift over de lanes heen met translateX(dx). */
+
+/* Root: position:relative zodat de lanes absoluut kunnen staan */
+.root {
+  position: relative;
+}
+
+/* ── Actie-lanes ───────────────────────────────────────────────────────────── */
+
+/* Basis voor beide lanes: abs, full-height, flex, overflow hidden */
+.laneLeft,
+.laneRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 144px; /* = REVEAL px */
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.laneLeft  { left: 0; }
+.laneRight { right: 0; }
+
+/* ── Action buttons ────────────────────────────────────────────────────────── */
+.actionBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-radius: 14px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  /* Tik-target is goed omdat flex-stretch de volledige hoogte vult */
+}
+
+/* Bel — accent gradient */
+.actionBtn[data-action='bel'] {
+  background: linear-gradient(135deg, var(--primary), #5B6CFF);
+}
+
+/* WhatsApp — whatsapp-groen */
+.actionBtn[data-action='wa'] {
+  background: var(--whatsapp);
+}
+
+/* Archief — danger rood */
+.actionBtn[data-action='archief'] {
+  background: var(--danger);
+}
+
+/* ── Card slider ────────────────────────────────────────────────────────────── */
+/* position:relative zodat het boven de lanes ligt (geen explicit z-index nodig
+   omdat het later in de DOM staat — maar we zetten 'm voor de veiligheid). */
+.cardSlider {
+  position: relative;
+  z-index: 1;
+  touch-action: pan-y; /* laat verticaal scrollen door; horizontale swipe pakken we zelf */
+  user-select: none;
+  cursor: pointer;
+  outline: none; /* visuele focus wordt via :focus-visible gegeven */
+}
+
+.cardSlider:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 14px;
+}

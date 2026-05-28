@@ -1,0 +1,234 @@
+/* MobileLeads — mobile /leads scherm composer.
+ * Structuur: sticky header → sticky chips → optionele filter-strip → lijst.
+ * position:relative zodat de LeadsFilterSheet (absolute) correct gepositioneerd is. */
+
+.root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  position: relative; /* anker voor filter-sheet absolute positioning */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Sticky header ─────────────────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 8px 16px 14px;
+}
+
+/* Normale (niet-zoek) header: titel links, knoppen rechts */
+.headerInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+/* Subtitle: LiveDot + "X van Y zichtbaar" */
+.subtitle {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Action-knoppen rechts */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Circulaire chip-knop (search / filter) */
+.actionBtn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-2);
+  color: var(--fg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Filter-badge: kleine teller rechtsboven de knop */
+.filterBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  line-height: 16px;
+  text-align: center;
+  border: 2px solid var(--bg);
+}
+
+/* Primaire actie-knop: accent gradient */
+.actionBtnPrimary {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #5B6CFF);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(26, 86, 255, 0.30);
+  text-decoration: none;
+}
+
+/* ── Zoek-bar (als searchOpen) ─────────────────────────────────────────────── */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: lhFade 0.2s ease-out both;
+}
+
+@keyframes lhFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.searchInput {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.searchInputEl {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.searchInputEl::placeholder {
+  color: var(--fg-muted);
+}
+
+.searchClear {
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.searchClose {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+
+/* ── Sticky segmented chips ────────────────────────────────────────────────── */
+.chipsWrap {
+  position: sticky;
+  top: 0; /* sluit aan op de sticky header */
+  z-index: 5;
+  background: var(--bg);
+  padding: 2px 16px 10px;
+}
+
+/* ── Actieve-filter strip ───────────────────────────────────────────────────── */
+.filterStripWrap {
+  padding: 0 16px 10px;
+}
+
+.filterStrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(26, 86, 255, 0.06);
+  border: 1px solid rgba(26, 86, 255, 0.14);
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.filterStripText {
+  flex: 1;
+}
+
+.filterStripWis {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px;
+  cursor: pointer;
+}
+
+/* ── Lead-lijst ─────────────────────────────────────────────────────────────── */
+.list {
+  flex: 1;
+  padding: 4px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Lege staat */
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--surface);
+  border-radius: 14px;
+  color: var(--fg-muted);
+  font-size: 13px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyIcon {
+  font-size: 24px;
+  opacity: 0.6;
+}

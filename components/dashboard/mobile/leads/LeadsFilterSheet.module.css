@@ -1,0 +1,292 @@
+/* LeadsFilterSheet — bottom-sheet filter UI.
+ * Port van LeadsFilterSheet.jsx. Animaties: backdrop fade .2s, sheet slide .3s.
+ * Overlay = fixed inset-0 z-50 (past op top van MobileShell). */
+
+@keyframes lasFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lasSlide {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Overlay (backdrop + sheet) ────────────────────────────────────────────── */
+.overlay {
+  /* Absoluut t.o.v. de mobile-shell container */
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+}
+
+/* Backdrop */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  animation: lasFade 0.2s ease-out both;
+}
+
+/* ── Sheet ─────────────────────────────────────────────────────────────────── */
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 8px 0 26px;
+  z-index: 60;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+  max-height: 88%;
+  overflow-y: auto;
+  animation: lasSlide 0.3s var(--ease-ios) both;
+}
+
+/* Drag handle */
+.handle {
+  width: 38px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.5); /* fg-muted + 50% opacity */
+  margin: 6px auto 14px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+.header {
+  padding: 0 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitle {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px;
+  cursor: pointer;
+}
+
+/* ── Sectie ─────────────────────────────────────────────────────────────────── */
+.section {
+  padding: 0 20px 18px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.sectionSub {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  margin: -4px 0 8px;
+  line-height: 1.4;
+}
+
+/* ── Fase chips ─────────────────────────────────────────────────────────────── */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.faseChip {
+  padding: 8px 12px;
+  min-height: 36px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  /* Off-state */
+  background: var(--surface-2);
+  color: var(--fg-soft);
+  border: 1px solid transparent;
+}
+
+/* On-state: per tone kleur + lichte achtergrond */
+.faseChip[data-on='true'][data-tone='blue']   { background: rgba(26, 86, 255, 0.12); color: var(--primary); border-color: rgba(26, 86, 255, 0.50); }
+.faseChip[data-on='true'][data-tone='amber']  { background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.50); }
+.faseChip[data-on='true'][data-tone='violet'] { background: rgba(124, 58, 237, 0.12); color: #7C3AED; border-color: rgba(124, 58, 237, 0.50); }
+.faseChip[data-on='true'][data-tone='green']  { background: rgba(16, 185, 129, 0.12); color: #10B981; border-color: rgba(16, 185, 129, 0.50); }
+.faseChip[data-on='true'][data-tone='gray']   { background: rgba(148, 163, 184, 0.12); color: var(--fg-muted); border-color: rgba(148, 163, 184, 0.50); }
+
+/* ── Bron ────────────────────────────────────────────────────────────────────── */
+.bronRow {
+  display: flex;
+  gap: 6px;
+}
+
+.bronBtn {
+  flex: 1;
+  padding: 10px 12px;
+  min-height: 42px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  /* Off-state */
+  background: var(--surface-2);
+  color: var(--fg-soft);
+  border: 1px solid transparent;
+}
+
+/* On-state per tone */
+.bronBtn[data-on='true'][data-tone='wa']   {
+  background: rgba(37, 211, 102, 0.12);
+  color: #10B981; /* closest green token */
+  border-color: rgba(37, 211, 102, 0.50);
+}
+.bronBtn[data-on='true'][data-tone='blue'] {
+  background: rgba(26, 86, 255, 0.12);
+  color: var(--primary);
+  border-color: rgba(26, 86, 255, 0.50);
+}
+
+/* ── Urgent toggle ──────────────────────────────────────────────────────────── */
+.urgentBtn {
+  width: 100%;
+  padding: 12px 14px;
+  min-height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  /* Off-state */
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  color: var(--fg);
+}
+
+.urgentBtn[data-on='true'] {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.30);
+  color: var(--danger);
+}
+
+.urgentLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Toggle switch 40×24 */
+.toggle {
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.15s;
+  /* Off-state */
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.toggle[data-on='true'] {
+  background: var(--danger);
+}
+
+/* Knob 20×20 */
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: left 0.15s linear;
+}
+
+.toggleKnob[data-on='true'] {
+  left: 18px;
+}
+
+/* ── Sorteer grid ────────────────────────────────────────────────────────────── */
+.sortGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.sortBtn {
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  /* Off-state */
+  background: var(--surface-2);
+  color: var(--fg-soft);
+  border: 1px solid transparent;
+}
+
+.sortBtn[data-on='true'] {
+  background: rgba(26, 86, 255, 0.08);
+  color: var(--primary);
+  border-color: rgba(26, 86, 255, 0.40);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────────── */
+.footer {
+  padding: 8px 20px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.footerWis {
+  padding: 12px 16px;
+  min-height: 48px;
+  background: var(--surface-2);
+  color: var(--fg);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.footerApply {
+  flex: 1;
+  padding: 12px 16px;
+  min-height: 48px;
+  background: linear-gradient(135deg, var(--primary), #5B6CFF);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(26, 86, 255, 0.25);
+  cursor: pointer;
+}

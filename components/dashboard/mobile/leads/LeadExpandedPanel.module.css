@@ -1,0 +1,223 @@
+/* LeadExpandedPanel — inline drilldown onder SwipeableLeadCard.
+ * Port van ExpandedPanel uit LeadsCardInteractive.jsx.
+ *
+ * Reveal-animatie: laExpand @keyframes — opacity + translateY(-6px) → 0
+ * in 0.25s var(--ease-ios). */
+
+@keyframes laExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Panel shell ───────────────────────────────────────────────────────────── */
+.panel {
+  margin-top: 6px;
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  animation: laExpand 0.25s var(--ease-ios) both;
+}
+
+/* Stage-gekleurde outline per tone */
+.panel[data-tone='blue']   { border: 1px solid rgba(26, 86, 255, 0.30); }
+.panel[data-tone='amber']  { border: 1px solid rgba(245, 158, 11, 0.30); }
+.panel[data-tone='violet'] { border: 1px solid rgba(124, 58, 237, 0.30); }
+.panel[data-tone='green']  { border: 1px solid rgba(16, 185, 129, 0.30); }
+.panel[data-tone='gray']   { border: 1px solid var(--border); }
+
+/* ── Kleurstrip header ─────────────────────────────────────────────────────── */
+.strip {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* Gradient achtergrond per tone: kleur + '1A' (~10%) → kleur + '06' (~2%) */
+.strip[data-tone='blue']   { background: linear-gradient(135deg, rgba(26, 86, 255, 0.10), rgba(26, 86, 255, 0.02)); }
+.strip[data-tone='amber']  { background: linear-gradient(135deg, rgba(245, 158, 11, 0.10), rgba(245, 158, 11, 0.02)); }
+.strip[data-tone='violet'] { background: linear-gradient(135deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.02)); }
+.strip[data-tone='green']  { background: linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(16, 185, 129, 0.02)); }
+.strip[data-tone='gray']   { background: linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(148, 163, 184, 0.02)); }
+
+/* Stage-label: uppercase 11px/700/.06em */
+.stageLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stageLabel[data-tone='blue']   { color: var(--primary); }
+.stageLabel[data-tone='amber']  { color: #d97706; }
+.stageLabel[data-tone='violet'] { color: #7C3AED; }
+.stageLabel[data-tone='green']  { color: #10B981; }
+.stageLabel[data-tone='gray']   { color: var(--fg-muted); }
+
+/* Sluit-knop */
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ── Stats-grid ─────────────────────────────────────────────────────────────── */
+/* 3 kolommen (Foto's weggelaten); border-bottom scheidt van de rest */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 14px;
+  gap: 8px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Geaccentueerde waarde (offerte prijs aanwezig) per tone */
+.statValue[data-hi='true'][data-tone='blue']   { color: var(--primary); }
+.statValue[data-hi='true'][data-tone='amber']  { color: #d97706; }
+.statValue[data-hi='true'][data-tone='violet'] { color: #7C3AED; }
+.statValue[data-hi='true'][data-tone='green']  { color: #10B981; }
+.statValue[data-hi='true'][data-tone='gray']   { color: var(--fg-muted); }
+
+.statLabel {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* ── Generieke content-sectie ─────────────────────────────────────────────── */
+.section {
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.sectionBody {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-soft);
+  line-height: 1.4;
+}
+
+/* ── Surface-context row ────────────────────────────────────────────────────── */
+.surfaceRow {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+/* 22×22 accent-gradient sparkle-tegel */
+.sparkTile {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--primary), #5B6CFF);
+  display: grid;
+  place-items: center;
+}
+
+/* ── Actie-knoppen ──────────────────────────────────────────────────────────── */
+/* Grid: primaire knop vol-breedte (1/-1), 2 secundaire naast elkaar */
+.actionsGrid {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.btnPrimary {
+  /* Vol breedte over beide kolommen */
+  grid-column: 1 / -1;
+  min-height: 42px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, var(--primary), #5B6CFF);
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(26, 86, 255, 0.25);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btnSecondary {
+  min-height: 42px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  color: var(--fg);
+  border: none;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* ── Open volledig dossier ──────────────────────────────────────────────────── */
+.dossierWrap {
+  padding: 0 14px 14px;
+}
+
+.btnDossier {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--fg-soft);
+  font-size: 12.5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
