@@ -147,7 +147,7 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
           <div className={styles.actiesGrid}>
             {/* Primaire actie: stuur offerte → leads-pagina */}
             <Link
-              href="/dashboard/leads?nieuwe-offerte=1"
+              href="/leads?nieuwe-offerte=1"
               className={`${styles.actionBtn} ${styles.actionPrimary}`}
               onClick={onClose}
             >

@@ -64,7 +64,7 @@ export function MobileInboxList({
           </div>
           {/* Zoek-knop → /inbox?q= */}
           <Link
-            href="/dashboard/inbox?q="
+            href="/inbox?q="
             className={styles.searchBtn}
             aria-label="Zoek in inbox"
           >

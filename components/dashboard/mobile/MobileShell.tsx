@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { MobileShellHeader } from './MobileShellHeader'
 import { BottomNav } from './BottomNav'
 import { MeerSheet } from './MeerSheet'
@@ -42,6 +42,7 @@ export function MobileShell({
   counts,
 }: Props) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [meerOpen, setMeerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -50,9 +51,14 @@ export function MobileShell({
   // default header.
   const isOverzicht = pathname === '/dashboard' || pathname === '/'
 
+  // Fullscreen chat-detail (/inbox?lead=ID): MobileChatDetail levert z'n
+  // eigen WA-header + is full-bleed, dus de shell-header én bottom-nav
+  // worden verborgen zodat de chat het hele scherm vult.
+  const isChatDetail = pathname === '/inbox' && !!searchParams.get('lead')
+
   return (
     <div className={styles.shell}>
-      {!isOverzicht && (
+      {!isOverzicht && !isChatDetail && (
         <MobileShellHeader
           notifications={notifications}
           unreadCount={unreadCount}
@@ -62,7 +68,9 @@ export function MobileShell({
 
       <main className={styles.main}>{children}</main>
 
-      <BottomNav counts={counts} onOpenMeer={() => setMeerOpen(true)} />
+      {!isChatDetail && (
+        <BottomNav counts={counts} onOpenMeer={() => setMeerOpen(true)} />
+      )}
 
       <MeerSheet
         open={meerOpen}

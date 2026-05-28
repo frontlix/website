@@ -120,7 +120,7 @@ export function MobileChatDetail({
       <header className={styles.header}>
         {/* Terug-knop */}
         <Link
-          href="/dashboard/inbox"
+          href="/inbox"
           className={styles.backBtn}
           aria-label="Terug naar inbox"
         >

@@ -24,6 +24,11 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
   const { dx, dragging, moved, bind, reset } = useSwipeReveal()
 
   const tel = convo.telefoon
+  // WhatsApp-link: strip non-cijfers; NL-nummers (leidende 0) → 31-prefix
+  const waTel = (() => {
+    const d = (tel ?? '').replace(/\D/g, '')
+    return d.startsWith('0') ? `31${d.slice(1)}` : d
+  })()
 
   function handleTap() {
     // useSwipeReveal.moved is de huidige waarde — als de vinger bewogen heeft
@@ -65,7 +70,7 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
           <span className={styles.actionLabel}>Bel</span>
         </a>
         <a
-          href={`https://wa.me/${tel.replace(/[^0-9+]/g, '')}`}
+          href={`https://wa.me/${waTel}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`${styles.actionBtn} ${styles.actionWa}`}
