@@ -148,6 +148,8 @@ export function MobileLeads({ data }: Props) {
   function handleArchive(id: string) {
     startTransition(async () => {
       await archiveLead(id)
+      // Server-data herladen zodat de gearchiveerde lead uit de lijst valt
+      router.refresh()
     })
   }
 
@@ -279,7 +281,9 @@ export function MobileLeads({ data }: Props) {
       <div className={styles.list}>
         {visible.length === 0 ? (
           <div className={styles.empty}>
-            <span className={styles.emptyIcon} aria-hidden="true">🔎</span>
+            <svg className={styles.emptyIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <p>Geen leads die matchen — wis filters of zoekterm.</p>
           </div>
         ) : (
