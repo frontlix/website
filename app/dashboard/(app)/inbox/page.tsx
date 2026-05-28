@@ -7,6 +7,9 @@ import {
   type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
 import { botStatusForFase } from '@/lib/dashboard/fase-labels'
+import { MobileChatDetail } from '@/components/dashboard/mobile/inbox/MobileChatDetail'
+import { MobileInboxList } from '@/components/dashboard/mobile/inbox/MobileInboxList'
+import { bucketFor } from '@/components/dashboard/mobile/inbox/inbox-mappers'
 import { InboxBotToggle } from '@/components/dashboard/inbox/InboxBotToggle'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
@@ -86,11 +89,16 @@ export default async function InboxPage({
   if (sp.q) preservedParams.set('q', sp.q)
   const preservedQuery = preservedParams.toString()
 
+  // chatbotNaam: default 'Surface' (uitbreidbaar via tenant_settings later)
+  const chatbotNaam = 'Surface'
+
   return (
     <div className={styles.fullBleed}>
       {/* Live-subscription: refresht inbox-lijst zodra een nieuw bericht binnenkomt */}
       <InboxRealtime />
 
+      {/* ── Desktop tree (> 640px) ─────────────────────── */}
+      <div className={styles.desktopTree}>
       <div className={styles.grid} data-pane={selectedLeadId ? 'detail' : 'list'}>
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
@@ -197,6 +205,26 @@ export default async function InboxPage({
             </div>
           )}
         </aside>
+      </div>
+      </div>
+      {/* ── Mobile tree (≤ 640px) ─────────────────────── */}
+      <div className={styles.mobileTree}>
+        {selectedLeadId && leadContext ? (
+          <MobileChatDetail
+            leadId={selectedLeadId}
+            messages={messages}
+            lead={leadContext}
+            chatbotNaam={chatbotNaam}
+          />
+        ) : (
+          <MobileInboxList
+            conversations={conversations}
+            ongelezenCount={counts.unread}
+            liveCount={conversations.filter(
+              (c) => bucketFor(c.laatsteBericht.timestamp) === 'live',
+            ).length}
+          />
+        )}
       </div>
     </div>
   )
