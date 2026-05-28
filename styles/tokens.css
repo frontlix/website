@@ -150,6 +150,19 @@
   --danger-bg:       var(--color-danger-bg);
   --whatsapp:        var(--color-whatsapp);
   --backdrop:        var(--color-backdrop);
+
+  /* WhatsApp chat-palette (alleen mobiele Inbox-chat) — light */
+  --wa-header:        #075E54;
+  --wa-brand:         #25D366;
+  --wa-chat-bg:       #ECE5DD;
+  --wa-in-bg:         #FFFFFF;
+  --wa-in-fg:         #111B21;
+  --wa-out-bg:        #DCF8C6;
+  --wa-surface-bg:    #D7EEFB;
+  --wa-surface-fg:    #0B3F5C;
+  --wa-surface-accent:#0C7AB8;
+  --wa-tick-blue:     #53BDEB;
+  --wa-meta:          #667781;
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -175,6 +188,15 @@
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.25), 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.5);
   --color-backdrop:  rgba(0, 0, 0, 0.6);  /* iets dieper in dark mode */
+
+  --wa-header:        #1F2C33;
+  --wa-chat-bg:       #0B141A;
+  --wa-in-bg:         #1F2C33;
+  --wa-in-fg:         #E9EDEF;
+  --wa-out-bg:        #005C4B;
+  --wa-surface-bg:    #103E5C;
+  --wa-surface-fg:    #A9D6F5;
+  --wa-meta:          #8696A0;
 }
 
 /* ─────────────────────────────────────────────────────────
