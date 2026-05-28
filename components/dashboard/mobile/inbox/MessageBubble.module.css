@@ -1,0 +1,192 @@
+/* MessageBubble, DaySeparator en SystemBanner — WhatsApp-stijl chat-atoms */
+
+/* ── Outer wrapper ────────────────────────────────────── */
+.outer {
+  display: flex;
+  padding: 1px 8px;
+}
+
+.outerLeft {
+  justify-content: flex-start;
+}
+
+.outerRight {
+  justify-content: flex-end;
+}
+
+/* ── Bubble basisstijl ────────────────────────────────── */
+.bubble {
+  max-width: 78%;
+  padding: 6px 9px 7px;
+  border-radius: 7.5px;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+  font-size: 14.5px;
+  line-height: 1.34;
+  word-break: break-word;
+  position: relative;
+  overflow: hidden; /* Fotos mogen niet uit de bubbel steken */
+}
+
+/* Klant-bubbel: wit / donkere tekst */
+.bubbleKlant {
+  background: var(--wa-in-bg);
+  color: var(--wa-in-fg);
+}
+
+/* Surface-bubbel: WA-blauw */
+.bubbleSurface {
+  background: var(--wa-surface-bg);
+  color: var(--wa-surface-fg);
+}
+
+/* Tail-cut: hoek afsnijden voor de eerste van een reeks
+   (top-left 0 = klant links, top-right 0 = surface rechts) */
+.tailLeft {
+  border-top-left-radius: 0;
+}
+
+.tailRight {
+  border-top-right-radius: 0;
+}
+
+/* ── Surface-label (boven bubbel) ─────────────────────── */
+.surfaceLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wa-surface-accent);
+  margin-bottom: 3px;
+}
+
+.surfaceIcon {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  /* Authentiek blauw gradient-icoon */
+  background: linear-gradient(135deg, #0C7AB8, #074F77);
+  color: white;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Tekst ───────────────────────────────────────────── */
+.text {
+  white-space: pre-wrap;
+  display: block;
+}
+
+/* ── Foto ────────────────────────────────────────────── */
+.photo {
+  display: block;
+  max-width: 100%;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+/* ── Voice-bericht ───────────────────────────────────── */
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  padding: 2px 0;
+}
+
+.voicePlay {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--wa-in-fg);
+}
+
+/* Op surface-bubbel iets lichter overlay */
+.voicePlaySurface {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--wa-surface-fg);
+}
+
+.waveform {
+  flex: 1;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.waveBar {
+  width: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.55;
+  display: inline-block;
+}
+
+/* ── Tijdstempel ─────────────────────────────────────── */
+.meta {
+  /* Float-right truc: stempel zweeft rechtsonder, tekst omhult hem niet */
+  float: right;
+  margin-left: 8px;
+  margin-top: 1px;
+  margin-bottom: -2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--wa-meta);
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* ── DaySeparator ────────────────────────────────────── */
+.daySepOuter {
+  display: flex;
+  justify-content: center;
+  padding: 14px 8px 8px;
+}
+
+.daySepPill {
+  font-size: 12px;
+  font-weight: 500;
+  color: #54656F;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 5px 13px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  /* Dark mode override */
+}
+
+.dark .daySepPill {
+  color: #8696A0;
+  background: rgba(11, 20, 26, 0.4);
+}
+
+/* ── SystemBanner ────────────────────────────────────── */
+.bannerOuter {
+  display: flex;
+  justify-content: center;
+  padding: 6px 16px;
+}
+
+.bannerPill {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #54656F;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 11px;
+  border-radius: 8px;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.dark .bannerPill {
+  color: #8696A0;
+  background: rgba(11, 20, 26, 0.4);
+}

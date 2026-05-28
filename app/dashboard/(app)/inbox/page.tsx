@@ -6,6 +6,10 @@ import {
   getInboxLeadContext,
   type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
+import { botStatusForFase } from '@/lib/dashboard/fase-labels'
+import { MobileChatDetail } from '@/components/dashboard/mobile/inbox/MobileChatDetail'
+import { MobileInboxList } from '@/components/dashboard/mobile/inbox/MobileInboxList'
+import { bucketFor } from '@/components/dashboard/mobile/inbox/inbox-mappers'
 import { InboxBotToggle } from '@/components/dashboard/inbox/InboxBotToggle'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
@@ -85,11 +89,16 @@ export default async function InboxPage({
   if (sp.q) preservedParams.set('q', sp.q)
   const preservedQuery = preservedParams.toString()
 
+  // chatbotNaam: default 'Surface' (uitbreidbaar via tenant_settings later)
+  const chatbotNaam = 'Surface'
+
   return (
     <div className={styles.fullBleed}>
       {/* Live-subscription: refresht inbox-lijst zodra een nieuw bericht binnenkomt */}
       <InboxRealtime />
 
+      {/* ── Desktop tree (> 640px) ─────────────────────── */}
+      <div className={styles.desktopTree}>
       <div className={styles.grid} data-pane={selectedLeadId ? 'detail' : 'list'}>
         {/* Linkerkolom — conversaties-lijst */}
         <aside className={styles.colList}>
@@ -197,17 +206,27 @@ export default async function InboxPage({
           )}
         </aside>
       </div>
+      </div>
+      {/* ── Mobile tree (≤ 640px) ─────────────────────── */}
+      <div className={styles.mobileTree}>
+        {selectedLeadId && leadContext ? (
+          <MobileChatDetail
+            leadId={selectedLeadId}
+            messages={messages}
+            lead={leadContext}
+            chatbotNaam={chatbotNaam}
+          />
+        ) : (
+          <MobileInboxList
+            conversations={conversations}
+            ongelezenCount={counts.unread}
+            liveCount={conversations.filter(
+              (c) => bucketFor(c.laatsteBericht.timestamp) === 'live',
+            ).length}
+          />
+        )}
+      </div>
     </div>
   )
 }
 
-function botStatusForFase(fase: string | null | undefined): string {
-  const labels: Record<string, string> = {
-    info_verzamelen:    'Verzamelt info — wacht op klant-antwoord',
-    offerte_besproken:  'Offerte verstuurd — wacht op reactie',
-    onderhandelen:      'Onderhandelt — owner-aandacht mogelijk nodig',
-    datum_kiezen:       'Datum kiezen — klant kiest afspraak',
-    afspraak_bevestigd: 'Afspraak bevestigd — wacht op afronding',
-  }
-  return fase ? labels[fase] ?? 'Actief in gesprek' : 'Actief in gesprek'
-}

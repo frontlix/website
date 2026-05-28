@@ -1,0 +1,191 @@
+/* MobileInboxList — tijdlijn-gegroepeerde inbox (Screen A) */
+
+/* ── Root ───────────────────────────────────────────── */
+.root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Safe-area padding bovenaan (status-bar) en onderaan (bottom-nav) */
+  padding-top: 54px;
+  padding-bottom: 86px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.header {
+  padding: 8px 20px 14px;
+  flex-shrink: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin: 5px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Zoek-knop 40×40 */
+.searchBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--card-bg);
+  border: none;
+  color: var(--fg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.searchBtn:hover {
+  background: var(--card-hover-bg);
+}
+
+/* ── Secties-container ──────────────────────────────── */
+.sections {
+  padding: 0 16px 18px;
+  flex: 1;
+}
+
+/* ── Sectie ─────────────────────────────────────────── */
+.section {
+  margin-bottom: 18px;
+}
+
+/* Sectie-header rij */
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 10px;
+}
+
+/* 22×22 icon-tile */
+.sectionIconTile {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.sectionHeadText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+}
+
+.sectionCount {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  background: var(--card-bg);
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.sectionSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-left: 2px;
+}
+
+/* Pulserende stip voor live-sectie */
+.livePulse {
+  margin-left: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.14);
+  display: inline-block;
+  animation: icPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes icPulse {
+  50% { transform: scale(1.4); opacity: 0.55; }
+}
+
+/* "Markeer gelezen" knop */
+.markRead {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+/* ── Card-groep: surface-kaart rondom de rijen ──────── */
+.cardGroup {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  /* Subtiele schaduw (alleen light mode) */
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Lege staat ─────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.emptyIcon {
+  color: var(--fg-muted);
+  opacity: 0.35;
+  margin-bottom: 16px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0 0 8px;
+}
+
+.emptySub {
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+  margin: 0;
+}

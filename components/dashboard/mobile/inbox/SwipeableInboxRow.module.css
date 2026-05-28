@@ -1,0 +1,95 @@
+/* SwipeableInboxRow — swipe-container rondom InboxRow */
+
+.wrapper {
+  position: relative;
+  overflow: hidden;
+  /* touch-action: pan-y zodat verticaal scrollen altijd werkt */
+  touch-action: pan-y;
+}
+
+/* Scheidingslijn tussen rijen (0.5px zoals in WA) */
+.divider {
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* ── Actie-laden ─────────────────────────────────────────── */
+/* Gedeelde positie voor links/rechts lade */
+.leftActions,
+.rightActions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 144px; /* REVEAL = 144 */
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  /* Verberg wanneer niet in gebruik via pointer-events (parent koppelt dit) */
+}
+
+.leftActions {
+  left: 0;
+}
+
+.rightActions {
+  right: 0;
+}
+
+/* ── Actie-knoppen ─────────────────────────────────────── */
+.actionBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  /* Zacht fade-in wanneer de lade zichtbaar wordt */
+  transition: opacity 0.15s;
+}
+
+.actionLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Bel — accent-blauw gradient */
+.actionBel {
+  background: linear-gradient(135deg, var(--color-primary), #5B6CFF);
+}
+
+/* WhatsApp — WA-groen */
+.actionWa {
+  background: var(--color-whatsapp);
+}
+
+/* Archief — rood/danger */
+.actionArchief {
+  background: var(--color-danger);
+  width: 100%;
+}
+
+/* ── De kaart zelf (translateX) ─────────────────────────── */
+.card {
+  position: relative;
+  background: var(--surface);
+  /* touch-action: pan-y erft van .wrapper; hier zorgen we dat de kaart
+     zelf klikbaar is zonder dat de browser de pointer steelt */
+  user-select: none;
+  cursor: pointer;
+  /* Focusring voor toetsenbord-navigatie */
+  outline: none;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}

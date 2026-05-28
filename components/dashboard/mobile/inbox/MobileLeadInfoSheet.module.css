@@ -1,0 +1,234 @@
+/* MobileLeadInfoSheet — bottom-sheet met lead-details */
+
+/* ── Backdrop ──────────────────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-backdrop);
+  z-index: 50;
+  animation: lisFade 0.2s ease-out both;
+  cursor: pointer;
+}
+
+@keyframes lisFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Sheet ─────────────────────────────────────────── */
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  color: var(--fg);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 8px 0 calc(26px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+  animation: lisSlide 0.3s var(--ease-ios) both;
+  max-height: 88%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes lisSlide {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Drag-handle ────────────────────────────────────── */
+.handle {
+  width: 38px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--fg-muted);
+  opacity: 0.3;
+  margin: 6px auto 14px;
+}
+
+/* ── Identiteit ─────────────────────────────────────── */
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px 14px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--color-primary), #5B6CFF);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.identityText {
+  flex: 1;
+  min-width: 0;
+}
+
+.identityNaam {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityMeta {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* Fase-pill rechtsboven */
+.stagePill {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: white;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ── Stats-grid (4 kolommen) ───────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin: 0 16px 14px;
+  padding: 14px 4px;
+}
+
+.statCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.statValueHi {
+  color: var(--color-primary);
+}
+
+.statLabel {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* ── Dienst-sectie ──────────────────────────────────── */
+.dienstSection {
+  padding: 0 20px 16px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.dienstText {
+  font-size: 14px;
+  color: var(--fg);
+  line-height: 1.4;
+}
+
+/* ── Acties-sectie ──────────────────────────────────── */
+.actiesSection {
+  padding: 0 16px 0;
+}
+
+.actiesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+.actionBtn {
+  min-height: 44px;
+  padding: 10px 12px;
+  background: var(--card-bg);
+  color: var(--fg);
+  border: none;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.actionBtn:active:not(:disabled) {
+  opacity: 0.75;
+}
+
+/* Primaire actie: accent-gradient + schaduw */
+.actionPrimary {
+  background: linear-gradient(135deg, var(--color-primary), #5B6CFF);
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 86, 255, 0.4);
+}
+
+/* Sluit-knop — volle breedte onderaan */
+.sluitBtn {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 44px;
+  background: var(--card-bg);
+  color: var(--fg);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.sluitBtn:active {
+  opacity: 0.75;
+}

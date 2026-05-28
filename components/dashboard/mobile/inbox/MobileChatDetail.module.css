@@ -1,0 +1,255 @@
+/* MobileChatDetail — volledig-scherm WhatsApp-stijl chat */
+
+/* ── Root ───────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* Chat-achtergrond: WA-beige met subtiel doodle-patroon */
+  background: var(--wa-chat-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Header (WA-groen) ──────────────────────────────── */
+.header {
+  /* WA-header-groen token */
+  background: var(--wa-header);
+  color: white;
+  padding: 6px 8px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Terug-pijl */
+.backBtn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Identiteits-button (flex 1 — pakt resterende ruimte) */
+.identityBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+  min-width: 0;
+  text-align: left;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.identityBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 36×36 avatar in de header */
+.headerAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.headerIdentityText {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerNaam {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.005em;
+}
+
+.headerSub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bel / Menu icoon-knoppen */
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Surface-toggle banner ──────────────────────────── */
+.banner {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ON: lichtblauw */
+.bannerOn {
+  background: #E1F1FB;
+}
+
+/* OFF: warm beige */
+.bannerOff {
+  background: #F5EDE3;
+}
+
+/* Icoon-tile 26×26 */
+.bannerIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.bannerIconOn {
+  /* Blauw gradient voor ON-staat */
+  background: linear-gradient(135deg, #0C7AB8, #074F77);
+  box-shadow: 0 2px 6px rgba(12, 122, 184, 0.25);
+}
+
+.bannerIconOff {
+  background: #FBE4C4;
+  color: #D97706;
+}
+
+.bannerText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.bannerTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+.bannerTitleOn {
+  color: #0C7AB8;
+}
+
+.bannerTitleOff {
+  color: #8B5A2B;
+}
+
+.bannerSub {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+/* Toggle-schakelaar 42×24 */
+.toggle {
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  padding: 0;
+}
+
+.toggleOn {
+  background: #0C7AB8;
+}
+
+.toggleOff {
+  background: #C7CBCF;
+}
+
+.toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Knob */
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s;
+}
+
+.knobOn {
+  left: 20px;
+}
+
+.knobOff {
+  left: 2px;
+}
+
+/* ── Chat-area ──────────────────────────────────────── */
+.chatArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* WA-beige achtergrond met subtiel SVG-doodle pattern */
+  background-color: var(--wa-chat-bg);
+  /* Subtiele cirkels en driehoekjes overlay op 0.04 opacity */
+  background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'180'%20height%3D'180'%20viewBox%3D'0%200%20180%20180'%3E%3Cg%20fill%3D'none'%20stroke%3D'rgba(0%2C0%2C0%2C0.04)'%20stroke-width%3D'1.2'%3E%3Ccircle%20cx%3D'20'%20cy%3D'30'%20r%3D'8'%2F%3E%3Cpath%20d%3D'M50%2060l8%2014h-16z'%2F%3E%3Ccircle%20cx%3D'100'%20cy%3D'40'%20r%3D'6'%2F%3E%3Cpath%20d%3D'M150%2025l6%2010-12%200z'%2F%3E%3Ccircle%20cx%3D'70'%20cy%3D'110'%20r%3D'10'%2F%3E%3Cpath%20d%3D'M120%20100h14v14h-14z'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: 180px 180px;
+  padding: 8px 0 6px;
+}

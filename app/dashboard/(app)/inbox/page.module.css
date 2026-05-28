@@ -283,3 +283,29 @@
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* ── Mobile / Desktop tree-toggle ──────────────────────
+   Op desktop: toon de bestaande 3-koloms layout.
+   Op mobile (≤ 640px): verberg desktop, toon mobiele inbox.
+   ────────────────────────────────────────────────────── */
+.desktopTree {
+  display: block;
+  flex: 1;
+  min-height: 0;
+}
+
+.mobileTree {
+  display: none;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .desktopTree {
+    display: none;
+  }
+  .mobileTree {
+    display: flex;
+    flex-direction: column;
+  }
+}
