@@ -1,0 +1,141 @@
+/* MobileChatComposer — WhatsApp-stijl input-rij onderaan ChatDetail */
+
+.root {
+  flex-shrink: 0;
+  /* WA-lichtgrijs composer-balk */
+  background: #F0F0F0;
+  /* Respecteer safe-area-inset-bottom (notch/home-bar op iPhone) */
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Hint-balk wanneer Surface actief is */
+.hint {
+  padding: 6px 12px 4px;
+  font-size: 11.5px;
+  color: #8B5A2B;
+  text-align: center;
+  background: #F5EDE3;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Foutmelding */
+.errorBanner {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #c33;
+  background: rgba(255, 60, 60, 0.08);
+  border-bottom: 1px solid rgba(255, 60, 60, 0.18);
+  line-height: 1.4;
+}
+
+/* Horizontale rij: pill + send-knop */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 6px 6px 8px;
+}
+
+/* ── Input-pill ──────────────────────────────────────── */
+.pill {
+  flex: 1;
+  min-width: 0;
+  background: #FFFFFF;
+  border-radius: 22px;
+  padding: 4px 4px 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #111B21;
+  font-size: 16px;
+  padding: 8px 4px;
+  font-family: inherit;
+  line-height: 1.3;
+}
+
+.input::placeholder {
+  color: #8696A0;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Icoon-knoppen in de pill */
+.sideBtn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #54656F;
+  padding: 0;
+}
+
+.sideBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ── Send / Mic-knop ─────────────────────────────────── */
+.sendBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  /* WA-header-groen token */
+  background: var(--wa-header);
+  border: none;
+  color: white;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.sendBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.sendBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Dark mode ───────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .root {
+    background: #1F2C33;
+  }
+  .pill {
+    background: #2A3942;
+    box-shadow: none;
+  }
+  .input {
+    color: #E9EDEF;
+  }
+  .input::placeholder {
+    color: #8696A0;
+  }
+  .sideBtn {
+    color: #8696A0;
+  }
+  .hint {
+    background: rgba(255, 255, 255, 0.05);
+    color: #F0B36B;
+  }
+}
