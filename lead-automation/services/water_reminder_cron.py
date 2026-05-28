@@ -102,6 +102,11 @@ def format_istanbul_time(now: datetime) -> str:
 _sent_indices: set[int] = set()
 
 
+def _log(msg: str) -> None:
+    # flush=True: stdout is block-buffered onder PM2, anders blijven logs hangen tot de buffer vol is.
+    print(msg, flush=True)
+
+
 async def _send_to_recipient(recipient: dict, tijdstip: str, joke: str, slot_index: int) -> None:
     """Send 1 template to 1 recipient. Prints success/failure, never raises."""
     try:
@@ -110,9 +115,9 @@ async def _send_to_recipient(recipient: dict, tijdstip: str, joke: str, slot_ind
             template_name=TEMPLATE_NAME,
             parameters=[recipient["name"], tijdstip, joke],
         )
-        print(f"[water-reminder] slot={slot_index} sent to name={recipient['name']} phone={recipient['phone']}")
+        _log(f"[water-reminder] slot={slot_index} sent to name={recipient['name']} phone={recipient['phone']}")
     except Exception as e:
-        print(f"[water-reminder] slot={slot_index} FAILED for name={recipient['name']} phone={recipient['phone']}: {e}")
+        _log(f"[water-reminder] slot={slot_index} FAILED for name={recipient['name']} phone={recipient['phone']}: {e}")
 
 
 async def _check_and_send(now: datetime) -> None:
@@ -132,7 +137,7 @@ async def _check_and_send(now: datetime) -> None:
     joke = JOKES[slot_index - 1]
     tijdstip = format_istanbul_time(now)
 
-    print(f"[water-reminder] triggering slot={slot_index} (tijdstip={tijdstip})")
+    _log(f"[water-reminder] triggering slot={slot_index} (tijdstip={tijdstip})")
 
     await asyncio.gather(
         *[_send_to_recipient(r, tijdstip, joke, slot_index) for r in RECIPIENTS],
@@ -143,18 +148,18 @@ async def _check_and_send(now: datetime) -> None:
 async def start() -> None:
     """Entry point. Run as asyncio.create_task() from main.py startup."""
     if not ENABLED:
-        print("[water-reminder] ENABLED=False; cron task exits immediately")
+        _log("[water-reminder] ENABLED=False; cron task exits immediately")
         return
 
-    print("[water-reminder] cron started (24 slots scheduled across 4 days)")
+    _log("[water-reminder] cron started (24 slots scheduled across 4 days)")
 
     while True:
         try:
             now = datetime.now(ISTANBUL_TZ)
             await _check_and_send(now)
         except asyncio.CancelledError:
-            print("[water-reminder] cron cancelled")
+            _log("[water-reminder] cron cancelled")
             raise
         except Exception as e:
-            print(f"[water-reminder] iteration error: {e}")
+            _log(f"[water-reminder] iteration error: {e}")
         await asyncio.sleep(LOOP_INTERVAL_S)
