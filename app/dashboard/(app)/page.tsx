@@ -49,6 +49,7 @@ import { KpiModule, parseKpiKey } from '@/components/dashboard/overzicht/KpiModu
 import { type KpiKey } from '@/components/dashboard/overzicht/kpi-types'
 import { LiveActivityFocus } from '@/components/dashboard/overzicht/LiveActivityFocus'
 import { TrendStat } from '@/components/dashboard/overzicht/TrendStat'
+import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 
 import { MobileOverzicht, type MobileOverzichtData } from '@/components/dashboard/mobile/overzicht/MobileOverzicht'
 import type { UrgentItem } from '@/components/dashboard/mobile/overzicht/UrgentBlock'
@@ -689,23 +690,4 @@ function mapLiveActivityToMobile(items: LiveActivityItem[]): MobileActivityItem[
     description: item.text,
     timeAgo: shortTimeAgo(item.timestamp),
   }))
-}
-
-/**
- * Korte relative-time formatter — "2m", "12m", "3u", "1d". Verschilt van
- * `formatRelative` (lange Nederlandse vorm) doordat de mobile feed-rij
- * krap is. Bij ongeldige/lege timestamp → "—".
- */
-function shortTimeAgo(iso: string | null | undefined): string {
-  if (!iso) return '—'
-  const ms = Date.now() - new Date(iso).getTime()
-  if (!Number.isFinite(ms) || ms < 0) return 'nu'
-  const sec = Math.floor(ms / 1000)
-  if (sec < 60) return 'nu'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min}m`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr}u`
-  const day = Math.floor(hr / 24)
-  return `${day}d`
 }
