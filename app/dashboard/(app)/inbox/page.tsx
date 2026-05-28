@@ -6,6 +6,7 @@ import {
   getInboxLeadContext,
   type ConversationPreview,
 } from '@/lib/dashboard/inbox-queries'
+import { botStatusForFase } from '@/lib/dashboard/fase-labels'
 import { InboxBotToggle } from '@/components/dashboard/inbox/InboxBotToggle'
 import { ConversationsList } from '@/components/dashboard/inbox/ConversationsList'
 import { LeadContextPane } from '@/components/dashboard/inbox/LeadContextPane'
@@ -201,13 +202,3 @@ export default async function InboxPage({
   )
 }
 
-function botStatusForFase(fase: string | null | undefined): string {
-  const labels: Record<string, string> = {
-    info_verzamelen:    'Verzamelt info — wacht op klant-antwoord',
-    offerte_besproken:  'Offerte verstuurd — wacht op reactie',
-    onderhandelen:      'Onderhandelt — owner-aandacht mogelijk nodig',
-    datum_kiezen:       'Datum kiezen — klant kiest afspraak',
-    afspraak_bevestigd: 'Afspraak bevestigd — wacht op afronding',
-  }
-  return fase ? labels[fase] ?? 'Actief in gesprek' : 'Actief in gesprek'
-}
