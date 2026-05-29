@@ -1,0 +1,159 @@
+/* AgendaEventRow — medium-density afspraak-rij.
+ * Port van ABShared.jsx `ABEventRow`. Inline styles → tokens.
+ * Per-event kleur via --tone (custom property, gezet door de component) +
+ * color-mix voor getinte achtergronden/badges. data-state stuurt now/done. */
+
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 14px 12px 12px;
+  border-bottom: 0.5px solid var(--color-border-soft);
+  cursor: pointer;
+  background: transparent;
+  /* --tone wordt per rij gezet via inline style (eventTone) */
+}
+.row[data-last='true'] {
+  border-bottom: none;
+}
+
+/* now → subtiele tint van de event-kleur (handoff: c + '08' ≈ 3%). */
+.row[data-state='now'] {
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
+}
+
+/* done → gedempt + doorgestreepte naam. */
+.row[data-state='done'] {
+  opacity: 0.55;
+}
+.row[data-state='done'] .naam {
+  text-decoration: line-through;
+}
+
+/* ── Tijd-kolom ──────────────────────────────────────────────────────────── */
+.timeCol {
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.timeStart {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.timeEnd {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Kleur-rail (3px) ────────────────────────────────────────────────────── */
+.rail {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 3px;
+  background: var(--tone);
+  flex-shrink: 0;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Type-badge: tekst = --tone, achtergrond = --tone 15%. */
+.kindBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 15%, transparent);
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.m2 {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Bezig"-badge — rood (danger), witte tekst + pulserende stip. */
+.bezig {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-danger);
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.bezigDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: bezigPulse 1.4s infinite;
+}
+@keyframes bezigPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.naam {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.adres {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.adres svg {
+  flex-shrink: 0;
+}
+.adresText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  align-self: center;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}

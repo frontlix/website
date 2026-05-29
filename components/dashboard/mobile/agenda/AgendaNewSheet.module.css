@@ -1,0 +1,308 @@
+/* AgendaNewSheet — bottom-sheet om een nieuwe afspraak te plannen.
+ * Port van src/agenda-b/ABNew.jsx. Backdrop fade .2s, sheet slide via
+ * --ease-ios/--dur-sheet (zelfde patroon als LeadsFilterSheet).
+ * Overlay = absolute inset-0 binnen de mobile-shell container. */
+
+@keyframes ansFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ansSlide {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Overlay (backdrop + sheet) ────────────────────────────────────────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  animation: ansFade 0.2s ease-out both;
+}
+
+/* ── Sheet ─────────────────────────────────────────────────────────────────── */
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 8px 0 0;
+  z-index: 60;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+  max-height: 88%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: ansSlide var(--dur-sheet) var(--ease-ios) both;
+}
+
+/* Grabber */
+.handle {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--color-border-soft);
+  margin: 6px auto 8px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px 12px;
+}
+
+.cancelBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.headerTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+.saveBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── FieldGroup ────────────────────────────────────────────────────────────── */
+.fieldGroup {
+  margin: 0 16px 14px;
+}
+
+.fieldGroupLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 4px 6px;
+}
+
+.fieldGroupBody {
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-soft);
+}
+
+/* ── FieldRow ──────────────────────────────────────────────────────────────── */
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.fieldRow[data-last='true'] {
+  border-bottom: none;
+}
+
+/* ── FieldLabel ────────────────────────────────────────────────────────────── */
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-soft);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.fieldLabelIcon {
+  display: inline-flex;
+  color: var(--fg-muted);
+}
+
+/* ── Value-zijde van een rij ───────────────────────────────────────────────── */
+.valueRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.valueRow[data-clamp='true'] {
+  max-width: 60%;
+}
+
+.valueChip {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  padding: 5px 10px;
+  background: var(--color-chip-bg);
+  border-radius: 8px;
+}
+
+.valueChip[data-num='true'] {
+  font-variant-numeric: tabular-nums;
+}
+
+.plus {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.valueText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.dienstValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chev {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+/* ── Klant-rij ─────────────────────────────────────────────────────────────── */
+.klantInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.klantText {
+  flex: 1;
+  min-width: 0;
+}
+
+.klantName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.klantMeta {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Type-chips ────────────────────────────────────────────────────────────── */
+.typeChips {
+  padding: 10px 14px 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.typeChip {
+  padding: 7px 12px;
+  min-height: 32px;
+  background: var(--color-chip-bg);
+  color: var(--fg);
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Geselecteerd type — eventTone-achtergrond via --tone */
+.typeChip[data-on='true'] {
+  background: var(--tone);
+  color: #fff;
+}
+
+/* ── Adres-rij ─────────────────────────────────────────────────────────────── */
+.adresText {
+  flex: 1;
+  min-width: 0;
+}
+
+.adresMain {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.adresSub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-top: 1px;
+}
+
+/* ── Notitie-textarea ──────────────────────────────────────────────────────── */
+.notaWrap {
+  padding: 8px 14px 14px;
+}
+
+.nota {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--color-chip-bg);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--fg);
+  min-height: 60px;
+  line-height: 1.4;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.nota::placeholder {
+  color: var(--fg-muted);
+}
+
+.nota:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  outline-offset: 1px;
+}
+
+/* Onderste padding zodat de laatste sectie niet aan de rand plakt */
+.bottomSpacer {
+  height: 22px;
+}

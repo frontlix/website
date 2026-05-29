@@ -1,0 +1,111 @@
+/* AgendaDayGroup — dag-sectie met header-tegel + card-list.
+ * Port van ABShared.jsx `ABDayGroup` / `AgCardList`. Inline styles → tokens. */
+
+.group {
+  margin-bottom: 14px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  padding: 4px 16px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 46×50 datum-pill — today = primary vlak, past = chip, future = surface. */
+.datePill {
+  width: 46px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.datePill[data-state='today'] {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+}
+.datePill[data-state='past'] {
+  background: var(--color-chip-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-soft);
+}
+.datePill[data-state='future'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-soft);
+}
+
+.pillWday {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+.pillDay {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+.label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.summary {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Uren-blok (rechts). */
+.hours {
+  text-align: right;
+}
+.hoursValue {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.hoursLabel {
+  display: block;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+/* ── Card-list shell (rijen) ─────────────────────────────────────────────── */
+.cardList {
+  margin: 0 16px;
+  background: var(--color-surface);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Lege dag — gestippeld vlak. */
+.empty {
+  margin: 0 16px;
+  padding: 16px;
+  text-align: center;
+  border: 1px dashed var(--color-border-soft);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

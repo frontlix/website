@@ -1,0 +1,191 @@
+/* ── FlowPlaatsbezoek.module.css ───────────────────────────────────────────
+   Plaatsbezoek-detail als drilldown-content. De MobileDrilldownLayer levert
+   header + scroll-container + padding; dit bestand stylet alleen de body.
+   Maten 1-op-1 uit de handoff. Theming via tokens; geen inline kleuren.
+   --tone (door FlowPlaatsbezoek.tsx gezet → warning) draagt de event-kleur door.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* De FlowAtoms (hero/card) dragen zelf hun 16px-gutter; de drilldown-laag voegt
+   óók 16px content-padding toe. We annuleren de horizontale + onderste padding
+   van de laag zodat de atoms exact op de handoff-gutter (16px) uitkomen en de
+   sticky footer edge-to-edge faded. */
+.root {
+  display: flex;
+  flex-direction: column;
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--mobile-content-pad)) calc(-1 * var(--space-3));
+}
+
+/* ── Hero-badge: intake/nieuwe klant (warning-getint) ──────────────────── */
+
+.intakeBadge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  padding: 3px 9px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Klant-kaart ───────────────────────────────────────────────────────── */
+
+.klantRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Initialen-avatar — tone-getint (warning bij plaatsbezoek). */
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.klantMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.klantNaam {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.klantTel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+.leadChip {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* WA-context callout: chip-achtergrond, WA-getint icoon. */
+.waCallout {
+  margin-top: 12px;
+  padding: 10px;
+  background: var(--color-chip-bg);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--color-text-soft);
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+}
+
+.waIcon {
+  flex-shrink: 0;
+  color: var(--color-whatsapp);
+}
+
+.waStrong {
+  color: var(--color-text);
+}
+
+/* ── Adres ─────────────────────────────────────────────────────────────── */
+
+.adres {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Intake-checklist ──────────────────────────────────────────────────── */
+
+.progress {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aftik-knop wikkelt elke FCheckRow; reset native button-styling. */
+.checkBtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* ── Surface-tip (accent-callout) ──────────────────────────────────────── */
+
+.tip {
+  font-size: 13px;
+  color: var(--color-text-soft);
+  line-height: 1.5;
+  padding: 10px;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* ── Sticky footer-acties ──────────────────────────────────────────────── */
+
+/* Sticky onderaan de scroll-container. .root annuleert al de content-padding,
+   dus de footer loopt edge-to-edge; eigen padding herstelt de 16px-gutter.
+   Fade naar de container-achtergrond (drilldown-laag = --color-surface). */
+.footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px var(--mobile-content-pad) 28px;
+  background: linear-gradient(to top, var(--color-surface) 75%, transparent);
+  display: flex;
+  gap: 6px;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  min-height: 44px;
+  border: none;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Primaire actie = accent (offerte starten), niet success. */
+.btnPrimary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 14px;
+  min-height: 44px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 31%, transparent);
+}

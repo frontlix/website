@@ -1,0 +1,236 @@
+/* ── FlowKlus.module.css ───────────────────────────────────────────────────
+   Klus-detail als drilldown-content. De MobileDrilldownLayer levert header +
+   scroll-container + padding; dit bestand stylet alleen de body-blokken.
+   Maten 1-op-1 uit de handoff. Theming via tokens; geen inline kleuren.
+   --tone (door FlowKlus.tsx gezet) draagt de event-kleur door.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Verticale stack. De FlowAtoms (hero/card) dragen zelf hun 16px-gutter; de
+   drilldown-laag voegt óók 16px content-padding toe. We annuleren de
+   horizontale + onderste content-padding van de laag zodat de atoms exact op
+   de handoff-gutter (16px) uitkomen en de sticky footer edge-to-edge faded. */
+.root {
+  display: flex;
+  flex-direction: column;
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--mobile-content-pad)) calc(-1 * var(--space-3));
+}
+
+/* ── Badges in de hero ─────────────────────────────────────────────────── */
+
+/* Live "bezig"-badge: danger achtergrond, witte tekst + pulserende dot. */
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--color-white);
+  background: var(--color-danger);
+  padding: 3px 9px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.liveDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-white);
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Gepland-badge: tone-getint (color-mix op --tone). */
+.plannedBadge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  padding: 3px 9px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Tijd-tracking strip ───────────────────────────────────────────────── */
+
+.trackStrip {
+  margin: 0 0 14px;
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  box-shadow: var(--shadow-card);
+}
+
+.trackCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 0;
+}
+
+/* Verticale scheiding tussen de eerste twee cellen (data-divider). */
+.trackCell[data-divider] {
+  border-right: 0.5px solid var(--color-border-soft);
+}
+
+.trackHead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trackIcon {
+  color: var(--color-text-muted);
+}
+
+.trackLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.trackValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ── Quick-action grid ─────────────────────────────────────────────────── */
+
+.actionRow {
+  margin: 0 0 14px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ── Voortgang-teller (right slot van FDetailCard) ─────────────────────── */
+
+.progress {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Klant + adres ─────────────────────────────────────────────────────── */
+
+.klantRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Initialen-avatar — tone-getint zodat hij bij het event-type past. */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.klantMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.klantNaam {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.klantTel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+.leadChip {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.adres {
+  font-size: 13px;
+  color: var(--color-text-soft);
+  margin-top: 10px;
+}
+
+/* ── Sticky footer-acties ──────────────────────────────────────────────── */
+
+/* Sticky onderaan de scroll-container. .root annuleert al de content-padding,
+   dus de footer loopt edge-to-edge; eigen padding herstelt de 16px-gutter. */
+.footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px var(--mobile-content-pad) 28px;
+  /* Fade naar de container-achtergrond (drilldown-laag = --color-surface). */
+  background: linear-gradient(to top, var(--color-surface) 75%, transparent);
+  display: flex;
+  gap: 6px;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  min-height: 44px;
+  border: none;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 14px;
+  min-height: 44px;
+  border: none;
+  background: var(--color-success);
+  color: var(--color-white);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-success) 31%, transparent);
+}

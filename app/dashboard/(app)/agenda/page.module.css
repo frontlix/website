@@ -22,3 +22,13 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ── Desktop / mobile split (inbox full-height pattern) ── */
+.desktopTree { display: block; flex: 1; min-height: 0; }
+.mobileTree  { display: none;  flex: 1; min-height: 0; }
+
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  /* week-list scrolls full-height — use flex column to fill the shell */
+  .mobileTree  { display: flex; flex-direction: column; }
+}

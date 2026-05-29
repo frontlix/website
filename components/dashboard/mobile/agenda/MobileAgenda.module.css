@@ -1,0 +1,9 @@
+/* MobileAgenda root — fills the mobileTree flex container.
+   Uses the same full-height pattern as the inbox mobile tree:
+   flex:1 + min-height:0 ensures the inner week-list can overflow-y:auto. */
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}

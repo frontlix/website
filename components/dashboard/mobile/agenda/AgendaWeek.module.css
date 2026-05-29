@@ -1,0 +1,76 @@
+/* AgendaWeek — week-lijst container.
+ * Port van agenda-b/ABMain.jsx + LargeTitle (AgendaShared). Inline styles → tokens.
+ * Scrollt full-height binnen de .mobileTree (flex:1; min-height:0). */
+
+.root {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 4px;
+  padding-bottom: 12px;
+}
+
+/* ── Grote titel (iOS large-title) ───────────────────────────────────────── */
+.titleBar {
+  padding: 4px 18px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.titleCol {
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--color-text);
+}
+.subtitle {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ── Acties (search + nieuw) ─────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.addBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  /* Subtiele primary-glow (handoff: accent + '40'). */
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.tailSpace {
+  height: 12px;
+}

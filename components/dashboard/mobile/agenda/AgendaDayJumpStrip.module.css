@@ -1,0 +1,77 @@
+/* AgendaDayJumpStrip — mini week-strip (7 kolommen).
+ * Port van ABMain `DayJumpStrip` (inline → module + tokens). */
+
+.strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0 16px 12px;
+}
+
+/* ── Dag-cel ──────────────────────────────────────────────────────────────── */
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0 5px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Vandaag: subtiele accent-tint (handoff t.accent + '12' ≈ 7% alpha) */
+.cell[data-today='true'] {
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+}
+
+/* Verleden: gedimd */
+.cell[data-past='true'] {
+  opacity: 0.5;
+}
+
+/* ── Weekdag-label (9/700 uppercase) ──────────────────────────────────────── */
+.wday {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+}
+.cell[data-today='true'] .wday {
+  color: var(--color-primary);
+}
+
+/* ── Dag-nummer (15/800 tabular) ──────────────────────────────────────────── */
+.day {
+  margin-top: 1px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.cell[data-today='true'] .day {
+  color: var(--color-primary);
+}
+
+/* ── Event-dots (tot 3, 4px) ──────────────────────────────────────────────── */
+.dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
+  height: 4px;
+}
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  /* --tone per event via eventTone(kind); color-mix maakt onnodig harde kleur zacht */
+  background: var(--tone, var(--color-text-muted));
+}
+.dotEmpty {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}

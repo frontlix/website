@@ -1,0 +1,40 @@
+/* AgendaFilterPills — segmented pill-rij.
+ * Port van ABShared `ABFilterPills` (inline → module + tokens).
+ * Spec: min-height 32px, radius 9999px, 7px 14px padding, 13px/600. */
+
+/* Horizontaal scrollbare rij zonder zichtbare scrollbalk */
+.row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 16px 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Pill ─────────────────────────────────────────────────────────────────── */
+.pill {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 32px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  /* Inactieve staat standaard */
+  background: var(--color-chip-bg);
+  color: var(--fg);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Actieve pill: --fg achtergrond, --bg tekst */
+.pill[data-active='true'] {
+  background: var(--fg);
+  color: var(--bg);
+}

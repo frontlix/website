@@ -1,3 +1,4 @@
+import React from 'react'
 import Link from 'next/link'
 import { Calendar, CalendarDays, MapPin, Plus } from 'lucide-react'
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/components/dashboard/agenda/AgendaUpcomingList'
 import { AgendaRouteMap } from '@/components/dashboard/agenda/AgendaRouteMap'
 import { getTenantBase, DEFAULT_TENANT_BASE } from '@/lib/dashboard/tenant-base'
+import { MobileAgenda } from '@/components/dashboard/mobile/agenda/MobileAgenda'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -41,9 +43,19 @@ export default async function AgendaPage({
         ? 'routekaart'
         : 'week'
 
-  if (view === 'maand') return <MonthView sp={sp} />
-  if (view === 'routekaart') return <RouteView sp={sp} />
-  return <WeekView sp={sp} />
+  let desktopContent: React.ReactNode
+  if (view === 'maand') desktopContent = <MonthView sp={sp} />
+  else if (view === 'routekaart') desktopContent = <RouteView sp={sp} />
+  else desktopContent = <WeekView sp={sp} />
+
+  return (
+    <>
+      <div className={styles.desktopTree}>{desktopContent}</div>
+      <div className={styles.mobileTree}>
+        <MobileAgenda />
+      </div>
+    </>
+  )
 }
 
 /* ── Week-view (primair) ─────────────────────────────── */
