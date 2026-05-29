@@ -40,3 +40,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Desktop / mobile tree toggle (mirror leads/page.module.css) ──────────── */
+.desktopTree { display: block; }
+.mobileTree { display: none; }
+
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree { display: block; }
+}

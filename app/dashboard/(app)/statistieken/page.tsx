@@ -3,13 +3,19 @@ import { parsePeriod, periodToRange, periodLabel } from '@/lib/dashboard/period'
 import {
   countLeads,
   countConverted,
+  countOffertesVerstuurd,
   avgOfferteWaarde,
   avgReactietijdMs,
   statusVerdeling,
   categorieVerdeling,
   leadsPerDag,
   topTags,
+  omzetTotaal,
+  omzetPerCategorie,
+  omzetTrendMaandelijks,
+  getOmzetDoelMaand,
 } from '@/lib/dashboard/stats-queries'
+import { MobileAnalyses } from '@/components/dashboard/mobile/analyses/MobileAnalyses'
 import { dashboardStatusLabel } from '@/lib/dashboard/format'
 import { PeriodSelector } from '@/components/dashboard/stats/PeriodSelector'
 import { KpiCard } from '@/components/dashboard/stats/KpiCard'
@@ -43,76 +49,105 @@ export default async function StatistiekenPage({
   const [
     total,
     converted,
+    offertesVerstuurd,
     avgOfferte,
     avgReactie,
     statusRows,
     categorieRows,
     perDag,
     tagRows,
+    omzet,
+    omzetDoelMaand,
+    omzetTrend,
+    omzetDiensten,
   ] = await Promise.all([
     countLeads(range),
     countConverted(range),
+    countOffertesVerstuurd(range),
     avgOfferteWaarde(range),
     avgReactietijdMs(range),
     statusVerdeling(range),
     categorieVerdeling(range),
     leadsPerDag(),
     topTags(range, 10),
+    omzetTotaal(range),
+    getOmzetDoelMaand(),
+    omzetTrendMaandelijks(),
+    omzetPerCategorie(range),
   ])
 
   const conversiePct = total > 0 ? Math.round((converted / total) * 100) : 0
 
   return (
-    <div>
-      <div className={styles.header}>
-        <div>
-          <h1>Statistieken</h1>
-          <p className={styles.subtitle}>Periode: {periodLabel(periodKey)}</p>
+    <>
+      <div className={styles.desktopTree}>
+        <div className={styles.header}>
+          <div>
+            <h1>Statistieken</h1>
+            <p className={styles.subtitle}>Periode: {periodLabel(periodKey)}</p>
+          </div>
+          <Suspense fallback={null}>
+            <PeriodSelector value={periodKey} />
+          </Suspense>
         </div>
-        <Suspense fallback={null}>
-          <PeriodSelector value={periodKey} />
-        </Suspense>
+
+        <div className={styles.kpiGrid}>
+          <KpiCard label="Totaal leads" value={String(total)} />
+          <KpiCard
+            label="Conversie"
+            value={total > 0 ? `${conversiePct}%` : '—'}
+            hint={total > 0 ? `${converted} van ${total}` : undefined}
+          />
+          <KpiCard
+            label="⌀ Offerte"
+            value={avgOfferte !== null ? formatEuro(avgOfferte) : '—'}
+          />
+          <KpiCard
+            label="⌀ Reactietijd"
+            value={avgReactie !== null ? formatDuration(avgReactie) : '—'}
+          />
+        </div>
+
+        <div className={styles.twoCol}>
+          <DistributionBars
+            title="Verdeling per status"
+            rows={statusRows.map((r) => ({
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              label: dashboardStatusLabel(r.status as any),
+              count: r.count,
+            }))}
+          />
+          <DistributionBars
+            title="Verdeling per categorie"
+            rows={categorieRows.map((r) => ({
+              label: r.categorie,
+              count: r.count,
+            }))}
+          />
+        </div>
+
+        <div className={styles.twoCol}>
+          <TrendLineChart title="Leads per dag (30d)" points={perDag} />
+          <TopTagsList rows={tagRows} />
+        </div>
       </div>
 
-      <div className={styles.kpiGrid}>
-        <KpiCard label="Totaal leads" value={String(total)} />
-        <KpiCard
-          label="Conversie"
-          value={total > 0 ? `${conversiePct}%` : '—'}
-          hint={total > 0 ? `${converted} van ${total}` : undefined}
-        />
-        <KpiCard
-          label="⌀ Offerte"
-          value={avgOfferte !== null ? formatEuro(avgOfferte) : '—'}
-        />
-        <KpiCard
-          label="⌀ Reactietijd"
-          value={avgReactie !== null ? formatDuration(avgReactie) : '—'}
-        />
-      </div>
-
-      <div className={styles.twoCol}>
-        <DistributionBars
-          title="Verdeling per status"
-          rows={statusRows.map((r) => ({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            label: dashboardStatusLabel(r.status as any),
-            count: r.count,
-          }))}
-        />
-        <DistributionBars
-          title="Verdeling per categorie"
-          rows={categorieRows.map((r) => ({
-            label: r.categorie,
-            count: r.count,
-          }))}
+      <div className={styles.mobileTree}>
+        <MobileAnalyses
+          data={{
+            periodKey,
+            omzet,
+            omzetDoelMaand,
+            trend: omzetTrend,
+            leadsTotaal: total,
+            offertesVerstuurd,
+            converted,
+            avgOfferte,
+            avgReactieMs: avgReactie,
+            diensten: omzetDiensten,
+          }}
         />
       </div>
-
-      <div className={styles.twoCol}>
-        <TrendLineChart title="Leads per dag (30d)" points={perDag} />
-        <TopTagsList rows={tagRows} />
-      </div>
-    </div>
+    </>
   )
 }

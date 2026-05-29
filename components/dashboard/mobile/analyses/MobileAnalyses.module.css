@@ -1,0 +1,11 @@
+.root {
+  padding-top: var(--space-3);
+  /* Onderpadding voor de bottom-nav levert MobileShell .main al;
+     hier alleen wat extra ademruimte onder de laatste kaart. */
+  padding-bottom: var(--space-4);
+}
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}

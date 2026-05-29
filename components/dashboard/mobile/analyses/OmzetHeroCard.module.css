@@ -1,0 +1,42 @@
+.card {
+  margin: 0 var(--mobile-content-pad) var(--space-3);
+  padding: 18px;
+  background: var(--color-elev);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 18px;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.kicker {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.amount {
+  margin: 5px 0 0;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--color-text);
+}
+.ringPct {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+.chart {
+  margin-top: 14px;
+}
+.months {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}

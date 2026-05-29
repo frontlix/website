@@ -1,0 +1,24 @@
+.toggle {
+  display: flex;
+  gap: 6px;
+  margin: 0 var(--mobile-content-pad) var(--space-3);
+  padding: 3px;
+  background: var(--color-chip-bg);
+  border-radius: 10px;
+}
+.btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn[data-active='true'] {
+  background: var(--color-elev);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}

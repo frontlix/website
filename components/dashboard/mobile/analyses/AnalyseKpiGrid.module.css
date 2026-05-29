@@ -1,0 +1,29 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 var(--mobile-content-pad) var(--space-4);
+}
+.tile {
+  padding: 13px;
+  background: var(--color-elev);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+}
+.value {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 9px;
+}
+.label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}

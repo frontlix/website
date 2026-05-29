@@ -1,0 +1,29 @@
+.card {
+  margin: 0 var(--mobile-content-pad) var(--space-4);
+  padding: 16px;
+  background: var(--color-elev);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 16px;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
