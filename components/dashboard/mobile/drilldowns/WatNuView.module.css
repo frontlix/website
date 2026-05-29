@@ -67,14 +67,16 @@
 
 .cardHead {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  /* Compacter gemaakt op verzoek (on-device feedback): avatar-kolom 40px → 36px */
+  grid-template-columns: 36px 1fr auto;
   gap: var(--space-3);
   align-items: center;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  /* Compacter gemaakt op verzoek (on-device feedback): 40px → 36px */
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   background: var(--color-surface-2);
   display: grid;
@@ -119,7 +121,8 @@
 .context {
   font-size: var(--text-sm);
   color: var(--color-text);
-  padding: var(--space-3) 0;
+  /* Compacter gemaakt op verzoek (on-device feedback): verticale padding 12px → 8px */
+  padding: var(--space-2) 0;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -127,7 +130,8 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--space-2);
-  padding-top: var(--space-3);
+  /* Compacter gemaakt op verzoek (on-device feedback): padding-top 12px → 8px */
+  padding-top: var(--space-2);
 }
 
 .primary {
@@ -135,10 +139,11 @@
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  /* Compacter gemaakt op verzoek (on-device feedback): vert. padding 12px → 8px, hoogte 40 → 36 (blijft tikbaar) */
+  padding: var(--space-2) var(--space-3);
   font-weight: 500;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 36px;
 }
 
 .secondary {
@@ -149,8 +154,9 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  /* Compacter gemaakt op verzoek (on-device feedback): vert. padding 12px → 8px, hoogte 40 → 36 (blijft tikbaar) */
+  padding: var(--space-2) var(--space-3);
   font-weight: 500;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 36px;
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import type { ComponentType } from 'react'
+import Link from 'next/link'
 import {
   Calendar,
   ChevronRight,
@@ -14,6 +15,7 @@ export type ActivityType = 'WHATSAPP' | 'NIEUWE_LEAD' | 'AFSPRAAK' | 'OFFERTE'
 
 export type ActivityItem = {
   id: string
+  leadId: string // lead-dossier-id voor navigatie naar /leads/<leadId>
   type: ActivityType
   naam: string
   description: string
@@ -69,8 +71,9 @@ export function ActivityFeedBlock({ items, onOpenAll }: Props) {
         <ul className={styles.list}>
           {items.slice(0, 3).map((item) => {
             const Icon = ICONS[item.type]
-            return (
-              <li key={item.id} className={styles.row}>
+            // Gedeelde rij-inhoud — identiek voor de link- en fallback-variant.
+            const content = (
+              <>
                 <span className={styles.iconBox} data-type={item.type}>
                   <Icon size={18} />
                 </span>
@@ -82,6 +85,21 @@ export function ActivityFeedBlock({ items, onOpenAll }: Props) {
                   </span>
                 </span>
                 <span className={styles.time}>{item.timeAgo}</span>
+              </>
+            )
+            // Guard: zonder leadId geen (kapotte) link, dan de oude statische rij.
+            if (!item.leadId) {
+              return (
+                <li key={item.id} className={styles.row}>
+                  {content}
+                </li>
+              )
+            }
+            return (
+              <li key={item.id} className={styles.li}>
+                <Link href={`/leads/${item.leadId}`} className={styles.row}>
+                  {content}
+                </Link>
               </li>
             )
           })}

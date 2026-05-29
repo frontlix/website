@@ -64,6 +64,11 @@
   border-bottom: 0;
 }
 
+/* Tik-feedback — de rij navigeert nu direct naar het lead-dossier */
+.row:active {
+  background: var(--color-surface);
+}
+
 .avatar {
   width: 36px;
   height: 36px;

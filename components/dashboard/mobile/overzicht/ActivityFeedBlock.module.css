@@ -48,6 +48,12 @@
   overflow: hidden;
 }
 
+/* .li — pure wrapper rond de (nu mogelijk anchor-)rij; geen extra styling. */
+.li {
+  display: block;
+  list-style: none;
+}
+
 .row {
   display: grid;
   grid-template-columns: 40px 1fr auto;
@@ -56,10 +62,19 @@
   min-height: 56px;
   align-items: center;
   border-bottom: 1px solid var(--color-border);
+  /* Anchor-reset: rij kan nu een <Link> zijn maar moet als rij blijven ogen. */
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .row:last-child {
   border-bottom: 0;
+}
+
+/* Subtiele tik-feedback op de klikbare rij. */
+.row:active {
+  background: var(--color-surface);
 }
 
 /* Icon-box met type-gekleurde tint — pastel achtergrond + dezelfde tint als label. */

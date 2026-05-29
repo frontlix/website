@@ -1,16 +1,23 @@
 'use client'
 
-// v1 — UI met lokale state; opslaan nog niet gekoppeld aan server-actions.
-// Zie plan § Context: "wiring to real settings server-actions is deferred".
+// v1 — bedrijfsvelden draaien nog op lokale state (mock; opslaan niet gekoppeld).
+// Het Maanddoel-blok is WEL echt gekoppeld aan saveOmzetDoelMaand, zodat de
+// "Stel je maanddoel in"-CTA op het Overzicht een werkende bestemming heeft.
 
+import { useState, useTransition } from 'react'
+import { Check, AlertTriangle, Target } from 'lucide-react'
+import { saveOmzetDoelMaand } from '@/lib/dashboard/omzet-doel-actions'
 import { InstField, InstGroupCard, InstPrimaryBtn } from './InstAtoms'
 import styles from './InstBedrijf.module.css'
 
 /** Bedrijfsgegevens-detailscherm. Plain content — drilldown layer levert header. */
-export function InstBedrijf() {
+export function InstBedrijf({ omzetDoel = null }: { omzetDoel?: number | null }) {
   return (
     <div className={styles.container}>
-      {/* Surface card met alle velden */}
+      {/* Maanddoel — echt gekoppeld; bovenaan zodat de deeplink-CTA er direct op landt. */}
+      <MaanddoelCard initial={omzetDoel} />
+
+      {/* Surface card met alle (mock) bedrijfsvelden */}
       <InstGroupCard>
         <div className={styles.fields}>
           <InstField label="Bedrijfsnaam" value="Schoon Straatje" />
@@ -27,5 +34,104 @@ export function InstBedrijf() {
       </InstGroupCard>
       <InstPrimaryBtn>Opslaan</InstPrimaryBtn>
     </div>
+  )
+}
+
+/**
+ * MaanddoelCard — maand-omzetdoel (`tenant_settings.omzet_doel_maand`).
+ * Lege input → NULL (= geen doel; Overzicht toont placeholder). Niet-leeg →
+ * integer euros. Opslaan gaat via de echte server-action (laag risico, geen
+ * bot/mail). Volgt het patroon van de desktop OmzetDoelForm.
+ */
+function MaanddoelCard({ initial }: { initial: number | null }) {
+  const [raw, setRaw] = useState<string>(
+    initial === null || initial === undefined ? '' : String(initial),
+  )
+  const [status, setStatus] = useState<
+    | { kind: 'idle' }
+    | { kind: 'success'; value: number | null }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' })
+  const [pending, startTransition] = useTransition()
+
+  function submit() {
+    setStatus({ kind: 'idle' })
+    const trimmed = raw.trim()
+    const value = trimmed === '' ? null : Number(trimmed)
+
+    // Client-side guard — de server valideert ook.
+    if (value !== null && (!Number.isFinite(value) || value < 0)) {
+      setStatus({ kind: 'error', message: 'Voer een geldig, niet-negatief getal in.' })
+      return
+    }
+
+    startTransition(async () => {
+      const result = await saveOmzetDoelMaand(value)
+      if (result.ok) setStatus({ kind: 'success', value: result.value })
+      else setStatus({ kind: 'error', message: result.error })
+    })
+  }
+
+  return (
+    <InstGroupCard>
+      <div className={styles.goalBox}>
+        {/* Kop met icoon zodat het blok als een duidelijke instelling leest */}
+        <div className={styles.goalHead}>
+          <span className={styles.goalIcon} aria-hidden="true">
+            <Target size={16} />
+          </span>
+          <div>
+            <div className={styles.goalTitle}>Maanddoel</div>
+            <div className={styles.goalSub}>Voortgangsring op je Overzicht</div>
+          </div>
+        </div>
+
+        {/* Eén schoon €-veld (prefix binnen het veld, geen losse cel) */}
+        <label className={styles.goalRow} htmlFor="inst-maanddoel">
+          <span className={styles.goalPrefix} aria-hidden="true">
+            €
+          </span>
+          <input
+            id="inst-maanddoel"
+            type="number"
+            inputMode="numeric"
+            step={100}
+            min={0}
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder="bv. 25000"
+            className={styles.goalInput}
+            disabled={pending}
+          />
+        </label>
+        <p className={styles.goalHelp}>Laat leeg om geen doel te tonen.</p>
+
+        {status.kind === 'success' && (
+          <div className={`${styles.goalStatus} ${styles.goalOk}`}>
+            <Check size={14} aria-hidden="true" />
+            <span>
+              {status.value === null
+                ? 'Doel gewist — er wordt geen ring meer getoond.'
+                : `Opgeslagen: € ${status.value.toLocaleString('nl-NL')} per maand.`}
+            </span>
+          </div>
+        )}
+        {status.kind === 'error' && (
+          <div className={`${styles.goalStatus} ${styles.goalErr}`}>
+            <AlertTriangle size={14} aria-hidden="true" />
+            <span>{status.message}</span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={submit}
+          disabled={pending}
+          className={styles.goalBtn}
+        >
+          {pending ? 'Opslaan…' : 'Maanddoel opslaan'}
+        </button>
+      </div>
+    </InstGroupCard>
   )
 }

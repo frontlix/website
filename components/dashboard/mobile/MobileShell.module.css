@@ -6,23 +6,35 @@
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  /* dvh = dynamic viewport height — voorkomt dat de mobile-browserchrome
-     (URL-bar in/uit-faden) layout-shifts veroorzaakt. */
-  min-height: 100dvh;
+  /* VASTE viewport-hoogte i.p.v. min-height. Hierdoor scrollt de BODY niet
+     meer (de shell vult exact de viewport) en is .main de enige scroller.
+     Dit fixt twee iOS-symptomen tegelijk:
+       1. de bottom-nav (fixed) die meebewoog met de in/uit-fadende URL-balk
+          tijdens body-scroll;
+       2. de drilldown-laag (position:fixed + transform) die op iOS desyncte
+          bij body-scroll waardoor 'm niet bovenaan begon.
+     dvh = dynamic viewport height → geen layout-shift bij de URL-balk. */
+  height: 100dvh;
+  overflow: hidden;
   background: var(--color-bg);
   color: var(--color-text);
 }
 
 .main {
   flex: 1;
+  /* min-height:0 is cruciaal: zonder dit weigert een flex-child te krimpen
+     onder z'n contenthoogte en scrollt overflow-y niet. */
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* iOS rubber-band binnen .main houden i.p.v. de body laten meeveren. */
+  overscroll-behavior-y: contain;
   /* Reserveer ruimte onderaan voor de fixed BottomNav + iOS safe-area
      (home-indicator). Zonder dit verdwijnt de laatste content-rij onder
      de nav. */
   padding-bottom: calc(
     var(--mobile-bottom-nav-h) + var(--mobile-safe-area-bottom)
   );
-  overflow-y: auto;
 }
 
 /* Full-bleed routes (chat-detail, lead-dossier): geen bottom-nav, dus geen

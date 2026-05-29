@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import {
   Calendar,
   FileText,
@@ -146,8 +147,9 @@ function Chip({
 
 function Row({ item }: { item: ActivityItem }) {
   const Icon = ICONS[item.type]
-  return (
-    <article className={styles.row}>
+  // Gedeelde kaart-inhoud — identiek voor de link- en fallback-variant.
+  const content = (
+    <>
       <span className={styles.iconBox} data-type={item.type}>
         <Icon size={18} />
       </span>
@@ -159,6 +161,15 @@ function Row({ item }: { item: ActivityItem }) {
         </div>
       </div>
       <span className={styles.time}>{item.timeAgo}</span>
-    </article>
+    </>
+  )
+  // Guard: zonder leadId geen (kapotte) link, dan de statische <article>.
+  if (!item.leadId) {
+    return <article className={styles.row}>{content}</article>
+  }
+  return (
+    <Link href={`/leads/${item.leadId}`} className={styles.row}>
+      {content}
+    </Link>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { MobileOverzichtHeader } from './MobileOverzichtHeader'
 import { AiBriefCard } from './AiBriefCard'
 import { HeroKpiCard } from './HeroKpiCard'
@@ -67,9 +68,13 @@ type SubView = 'watnu' | 'vandaag' | 'feed'
  * (translate + fade) en mount de juiste DrilldownLayer overheen.
  */
 export function MobileOverzicht({ data }: Props) {
+  const router = useRouter()
   const [sub, setSub] = useState<SubView | null>(null)
   const openDrilldown = (view: SubView) => setSub(view)
   const closeDrilldown = () => setSub(null)
+  // Tik op een "Wat nu"-melding (preview-rij óf drilldown-kaart) → direct naar
+  // het lead-dossier; geen tussenstap via "Alles" meer nodig.
+  const openLead = (id: string) => router.push(`/leads/${id}`)
 
   // MiniKpiGrid eist een tuple van exact 4 tiles. Casten naar de
   // tuple-type i.p.v. een runtime-array zodat TypeScript de length-
@@ -139,6 +144,7 @@ export function MobileOverzicht({ data }: Props) {
           items={data.urgent.items}
           totalCount={data.urgent.totalCount}
           onOpenAll={() => openDrilldown('watnu')}
+          onOpenItem={openLead}
         />
 
         <VandaagBlock
@@ -158,6 +164,7 @@ export function MobileOverzicht({ data }: Props) {
         open={sub === 'watnu'}
         onClose={closeDrilldown}
         items={data.urgent.items}
+        onOpenItem={openLead}
         counts={{
           alle: data.urgent.totalCount,
           urgent: data.urgent.items.filter((i) => i.badge?.tone === 'red').length,

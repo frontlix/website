@@ -685,6 +685,7 @@ function mapLiveActivityToMobile(items: LiveActivityItem[]): MobileActivityItem[
   }
   return items.slice(0, 6).map((item) => ({
     id: `${item.kind}-${item.leadId}-${item.timestamp}`,
+    leadId: item.leadId, // doorgeven voor navigatie naar /leads/<leadId>
     type: KIND_TO_TYPE[item.kind],
     naam: item.naam,
     description: item.text,

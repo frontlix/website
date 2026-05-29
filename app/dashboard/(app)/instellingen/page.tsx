@@ -146,7 +146,12 @@ export default async function InstellingenPage({
       </div>
 
       <div className={styles.mobileTree}>
-        <MobileInstellingen />
+        {/* omzet_doel_maand voedt het echte Maanddoel-veld in mobiel Bedrijfsgegevens.
+            sp.section (rauw) opent het juiste detail bij een deeplink (bv. ?section=bedrijf). */}
+        <MobileInstellingen
+          omzetDoel={tenant?.omzet_doel_maand ?? null}
+          initialSection={sp.section}
+        />
       </div>
     </>
   )

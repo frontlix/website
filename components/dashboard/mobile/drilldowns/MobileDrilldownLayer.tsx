@@ -40,7 +40,14 @@ export function MobileDrilldownLayer({
 }: Props) {
   useEffect(() => {
     if (!open) return
-    history.pushState({ drilldown: true }, '', window.location.href)
+    // Push precies ÉÉN drilldown-history-entry. Guard tegen dubbele entries:
+    // React Strict-Mode (dev) dubbel-mount, een instabiele onClose-identiteit,
+    // of een deep-link (?section=…) waarbij de laag al open mount. Zonder guard
+    // ontstaan meerdere drilldown-entries en sluit één history.back() de drilldown
+    // niet — dan landt 'm op de andere drilldown-entry en lijkt "Terug" dood.
+    if (!history.state?.drilldown) {
+      history.pushState({ drilldown: true }, '', window.location.href)
+    }
 
     const onPop = (e: PopStateEvent) => {
       // State zonder drilldown-vlag = user navigeerde "weg" van de drilldown.
