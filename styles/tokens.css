@@ -38,6 +38,12 @@
   --color-elev: #FFFFFF;
   --color-chip-bg: rgba(0, 0, 0, 0.04);
   --color-border-soft: rgba(0, 0, 0, 0.06);
+  /* Reviews — Google-merk-accenten (los van het thema). */
+  --google-blue: #4285F4;
+  --google-blue-disabled: #A9C4F7;
+  --review-star: #FBBC04;
+  --review-star-empty: #E3E5E8;
+  --color-toast-bg: #202124;
 
   /* Shadows / elevation */
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
@@ -203,6 +209,9 @@
   --color-elev: #161B25;
   --color-chip-bg: rgba(255, 255, 255, 0.06);
   --color-border-soft: rgba(255, 255, 255, 0.05);
+  --review-star-empty: rgba(255, 255, 255, 0.18);
+  --google-blue-disabled: rgba(66, 133, 244, 0.4);
+  --color-toast-bg: #2C2C2E;
 
   --wa-header:        #1F2C33;
   --wa-chat-bg:       #0B141A;
