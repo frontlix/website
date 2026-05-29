@@ -340,3 +340,107 @@ export async function topTags(
     .sort((a, b) => b.count - a.count)
     .slice(0, limit)
 }
+
+/**
+ * Totale omzet in de periode = som van totaal_prijs over leads die
+ * akkoord gaven (akkoord_op binnen het venster). Negeert null-prijzen.
+ */
+export async function omzetTotaal(period: StatsPeriod): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  let query = supabase.from('leads').select('totaal_prijs').not('akkoord_op', 'is', null)
+  if (period.from) query = query.gte('akkoord_op', period.from)
+  if (period.to) query = query.lt('akkoord_op', period.to)
+  const { data, error } = await query
+  if (error) {
+    console.error('[omzetTotaal] failed:', error)
+    return 0
+  }
+  type Row = { totaal_prijs: number | null }
+  return ((data as Row[] | null) ?? []).reduce((sum, r) => sum + (r.totaal_prijs ?? 0), 0)
+}
+
+/**
+ * Omzet per hoofdcategorie in de periode (som totaal_prijs over akkoord-leads).
+ * NULL-categorie wordt "Onbekend". DESC op omzet.
+ */
+export async function omzetPerCategorie(
+  period: StatsPeriod,
+): Promise<Array<{ categorie: string; omzet: number }>> {
+  const supabase = await getDashboardSupabase()
+  let query = supabase
+    .from('leads')
+    .select('hoofdcategorie, totaal_prijs')
+    .not('akkoord_op', 'is', null)
+  if (period.from) query = query.gte('akkoord_op', period.from)
+  if (period.to) query = query.lt('akkoord_op', period.to)
+  const { data, error } = await query
+  if (error) {
+    console.error('[omzetPerCategorie] failed:', error)
+    return []
+  }
+  type Row = { hoofdcategorie: string | null; totaal_prijs: number | null }
+  const sums = new Map<string, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    const key = row.hoofdcategorie ?? 'Onbekend'
+    sums.set(key, (sums.get(key) ?? 0) + (row.totaal_prijs ?? 0))
+  }
+  return [...sums.entries()]
+    .map(([categorie, omzet]) => ({ categorie, omzet }))
+    .sort((a, b) => b.omzet - a.omzet)
+}
+
+/**
+ * Maandelijkse omzet-reeks voor de laatste N maanden (default 12), ASC.
+ * Buckets op akkoord_op-maand; lege maanden krijgen 0. Voor de area-chart.
+ */
+export async function omzetTrendMaandelijks(
+  now: Date = new Date(),
+  months: number = 12,
+): Promise<Array<{ maand: string; omzet: number }>> {
+  const supabase = await getDashboardSupabase()
+  const span = Math.max(1, Math.floor(months))
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (span - 1), 1))
+  const startISO = start.toISOString()
+
+  const { data, error } = await supabase
+    .from('leads')
+    .select('akkoord_op, totaal_prijs')
+    .not('akkoord_op', 'is', null)
+    .gte('akkoord_op', startISO)
+  if (error) {
+    console.error('[omzetTrendMaandelijks] failed:', error)
+    return []
+  }
+  type Row = { akkoord_op: string; totaal_prijs: number | null }
+  const sums = new Map<string, number>()
+  for (const row of (data as Row[] | null) ?? []) {
+    const key = row.akkoord_op.slice(0, 7) // YYYY-MM
+    sums.set(key, (sums.get(key) ?? 0) + (row.totaal_prijs ?? 0))
+  }
+  const out: Array<{ maand: string; omzet: number }> = []
+  for (let i = 0; i < span; i++) {
+    const d = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1))
+    const key = d.toISOString().slice(0, 7)
+    out.push({ maand: key, omzet: sums.get(key) ?? 0 })
+  }
+  return out
+}
+
+/**
+ * Maandelijks omzet-doel uit tenant_settings (of null als niet ingesteld).
+ * Reader-tegenhanger van saveOmzetDoelMaand in omzet-doel-actions.ts.
+ */
+export async function getOmzetDoelMaand(): Promise<number | null> {
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('tenant_settings')
+    .select('omzet_doel_maand')
+    .limit(1)
+    .maybeSingle()
+  if (error) {
+    console.error('[getOmzetDoelMaand] failed:', error)
+    return null
+  }
+  const row = data as { omzet_doel_maand: number | null } | null
+  return row?.omzet_doel_maand ?? null
+}
