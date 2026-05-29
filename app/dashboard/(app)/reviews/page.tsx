@@ -13,6 +13,7 @@ import {
   ReviewsFilterTabs,
   type ReviewsFilter,
 } from '@/components/dashboard/reviews/ReviewsFilterTabs'
+import { MobileReviews } from '@/components/dashboard/mobile/reviews/MobileReviews'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -143,6 +144,7 @@ export default async function ReviewsPage({
 
   return (
     <>
+      <div className={styles.desktopTree}>
       <div className="dash-section-head">
         <div>
           <div className="dash-section-title">Reviews & klanttevredenheid</div>
@@ -229,6 +231,11 @@ export default async function ReviewsPage({
           ))}
         </div>
       )}
+      </div>
+
+      <div className={styles.mobileTree}>
+        <MobileReviews />
+      </div>
     </>
   )
 }

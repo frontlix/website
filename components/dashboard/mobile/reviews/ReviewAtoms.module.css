@@ -1,0 +1,31 @@
+.gMark {
+  width: var(--g-size, 20px);
+  height: var(--g-size, 20px);
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.gLetter {
+  font-family: Arial, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(var(--g-size, 20px) * 0.62);
+  line-height: 1;
+  color: var(--google-blue);
+  margin-top: -1px;
+}
+.avatar {
+  width: var(--avatar-size, 38px);
+  height: var(--avatar-size, 38px);
+  border-radius: 50%;
+  background: var(--avatar-bg, var(--color-primary));
+  color: #fff;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--avatar-size, 38px) * 0.42);
+  font-weight: 600;
+  font-family: Arial, system-ui, sans-serif;
+}

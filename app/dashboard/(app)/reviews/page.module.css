@@ -21,3 +21,12 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* ── Desktop / mobile tree toggle (mirror statistieken/leads) ─────────────── */
+.desktopTree { display: block; }
+.mobileTree { display: none; }
+
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree { display: block; }
+}
