@@ -26,8 +26,12 @@ export function LeadsRealtimeToast() {
 
   useEffect(() => {
     const supabase = getDashboardSupabaseBrowser()
+    // Unieke topic per effect-run — voorkomt de StrictMode-hergebruik-race
+    // (zie InboxRealtime). Math.random i.p.v. crypto.randomUUID i.v.m.
+    // insecure context bij testen via http://LAN-IP.
+    const topic = `leads-list-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const channel = supabase
-      .channel('leads-list-rt')
+      .channel(topic)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'leads' },
@@ -49,7 +53,9 @@ export function LeadsRealtimeToast() {
       .subscribe()
 
     return () => {
-      channel.unsubscribe()
+      // removeChannel (i.p.v. alleen unsubscribe) haalt het kanaal uit de
+      // client-lijst, zodat unieke-naam-kanalen niet opstapelen.
+      void supabase.removeChannel(channel)
     }
   }, [router])
 

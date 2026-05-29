@@ -55,8 +55,11 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
         console.warn('[realtime] NO session/token → RLS zal alle events filteren')
       }
 
+      // Unieke topic-suffix per effect-run — voorkomt de StrictMode-
+      // hergebruik-race (zie InboxRealtime). Math.random i.v.m. insecure
+      // context bij testen via http://LAN-IP (geen crypto.randomUUID).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      channel = (supabase.channel(`lead-${leadId}`) as any)
+      channel = (supabase.channel(`lead-${leadId}-${Date.now()}-${Math.random().toString(36).slice(2)}`) as any)
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'berichten' },

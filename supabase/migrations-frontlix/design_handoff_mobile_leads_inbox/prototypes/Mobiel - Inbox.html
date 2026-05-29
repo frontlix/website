@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mobiel · Inbox — werkende versie</title>
+<link rel="icon" type="image/png" href="assets/frontlix-logo.png" />
+<style>
+  html, body { margin: 0; padding: 0; background: #ECECEE; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: #1A1A1A; }
+  * { box-sizing: border-box; }
+  .intro {
+    padding: 28px 40px 6px;
+    max-width: 1080px;
+  }
+  .intro h1 {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  .intro p {
+    font-size: 14px; color: #555; line-height: 1.55; margin: 0 0 4px;
+    max-width: 760px;
+  }
+  .intro .pill {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 9999px;
+    background: rgba(7,94,84,.12); color: #075E54;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .try {
+    margin-top: 14px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .try .item {
+    background: white; border-radius: 12px;
+    padding: 12px 14px; border: 1px solid rgba(0,0,0,.06);
+  }
+  .try h3 {
+    font-size: 12px; margin: 0 0 4px; font-weight: 700; color: #000;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .try h3 .kbd {
+    font-size: 9.5px; font-weight: 700; color: #075E54;
+    background: rgba(7,94,84,.10); padding: 2px 6px; border-radius: 5px;
+  }
+  .try p { font-size: 12px; color: #555; line-height: 1.4; margin: 0; }
+  @media (max-width: 1100px) {
+    .try { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <span class="pill">Werkend prototype · Variant C</span>
+  <h1>Inbox op mobiel — interactief</h1>
+  <p>Tijdlijn-gegroepeerde lijst met WhatsApp-DNA voor de chat-detail. Klant in wit, jij in WA-groen, Surface in teal — duidelijk wie wat zegt.</p>
+
+  <div class="try">
+    <div class="item">
+      <h3>Tik rij <span class="kbd">tap</span></h3>
+      <p>Opent de chat met bubbles, day-separators en typing-indicator.</p>
+    </div>
+    <div class="item">
+      <h3>Veeg ← → <span class="kbd">drag</span></h3>
+      <p>← Bellen + WA · → Snooze + Archief. Zelfde patroon als leads.</p>
+    </div>
+    <div class="item">
+      <h3>Tap header <span class="kbd">in chat</span></h3>
+      <p>Opent een bottom-sheet met lead-info: oppervlak, foto's, prijs, acties.</p>
+    </div>
+    <div class="item">
+      <h3>Zoek <span class="kbd">in berichten</span></h3>
+      <p>Zoekt in alle conversatie-tekst, niet alleen namen. Highlights de match.</p>
+    </div>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Frame + canvas -->
+<script type="text/babel" data-presets="env,react" src="lib/ios-frame.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="design-canvas.jsx"></script>
+
+<!-- Shared primitives -->
+<script type="text/babel" data-presets="env,react" src="src/optie-a/AShared.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/mobile-leads/MLShared.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/leads-a/LAShared.jsx"></script>
+
+<!-- Inbox shared -->
+<script type="text/babel" data-presets="env,react" src="src/mobile-inbox/IBShared.jsx"></script>
+
+<!-- Inbox C -->
+<script type="text/babel" data-presets="env,react" src="src/inbox-c/ICShared.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/inbox-c/InboxC.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/inbox-c/ChatDetail.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/inbox-c/InboxSearch.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/inbox-c/InboxFlow.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const W = 402, H = 874;
+
+function Phone({ children, dark }) {
+  return (
+    <IOSDevice width={W} height={H} dark={dark}>
+      {children}
+    </IOSDevice>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas style={{ minHeight: '100vh' }}>
+      <DCSection
+        id="werkend"
+        title="Inbox C — werkend prototype"
+        subtitle="Tijdlijn-grouped · tap rij → chat · tap header → lead-sheet · ← contact → admin · zoek in berichten"
+      >
+        <DCArtboard id="light" label="Licht" width={W} height={H}>
+          <Phone><InboxFlow dark={false}/></Phone>
+        </DCArtboard>
+        <DCArtboard id="dark" label="Donker" width={W} height={H}>
+          <Phone dark><InboxFlow dark={true}/></Phone>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+</body>
+</html>
