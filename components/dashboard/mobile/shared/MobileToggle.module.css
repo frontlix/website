@@ -1,0 +1,32 @@
+.toggle {
+  --w: calc(40px * var(--tg-scale, 1));
+  --h: calc(24px * var(--tg-scale, 1));
+  --k: calc(18px * var(--tg-scale, 1));
+  width: var(--w);
+  height: var(--h);
+  flex-shrink: 0;
+  border: none;
+  border-radius: 99px;
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+  background: rgba(120, 120, 128, 0.32);
+  transition: background 0.2s;
+}
+.toggle[data-on='true'] {
+  background: var(--color-success);
+}
+.knob {
+  position: absolute;
+  top: calc((var(--h) - var(--k)) / 2);
+  left: calc((var(--h) - var(--k)) / 2);
+  width: var(--k);
+  height: var(--k);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toggle[data-on='true'] .knob {
+  left: calc(var(--w) - var(--k) - (var(--h) - var(--k)) / 2);
+}
