@@ -56,9 +56,13 @@ export function MobileShell({
   // worden verborgen zodat de chat het hele scherm vult.
   const isChatDetail = pathname === '/inbox' && !!searchParams.get('lead')
 
+  // Lead-dossier (/leads/<id>, niet de lijst /leads): full-bleed zoals chat-detail.
+  const isLeadDossier = /^\/leads\/[^/]+$/.test(pathname)
+  const isFullBleed = isChatDetail || isLeadDossier
+
   return (
     <div className={styles.shell}>
-      {!isOverzicht && !isChatDetail && (
+      {!isOverzicht && !isFullBleed && (
         <MobileShellHeader
           notifications={notifications}
           unreadCount={unreadCount}
@@ -66,9 +70,9 @@ export function MobileShell({
         />
       )}
 
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main} data-fullbleed={isFullBleed || undefined}>{children}</main>
 
-      {!isChatDetail && (
+      {!isFullBleed && (
         <BottomNav counts={counts} onOpenMeer={() => setMeerOpen(true)} />
       )}
 

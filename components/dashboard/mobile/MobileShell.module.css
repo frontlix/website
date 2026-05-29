@@ -24,3 +24,9 @@
   );
   overflow-y: auto;
 }
+
+/* Full-bleed routes (chat-detail, lead-dossier): geen bottom-nav, dus geen
+   gereserveerde onderruimte — het scherm vult tot de echte onderkant. */
+.main[data-fullbleed] {
+  padding-bottom: 0;
+}
