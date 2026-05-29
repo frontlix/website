@@ -350,3 +350,11 @@
     min-width: var(--tap-min);
   }
 }
+
+/* ── Desktop / mobile tree split ─────────────────────── */
+.desktopTree { display: block; }
+.mobileTree { display: none; }
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree { display: block; }
+}

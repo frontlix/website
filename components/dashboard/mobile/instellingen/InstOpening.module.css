@@ -1,0 +1,108 @@
+/* Openingsbericht — WhatsApp-template-editor + live preview.
+   Geen position:absolute wrapper: de drilldown-layer levert scroll + header. */
+
+.wrap {
+  padding: 8px 16px 24px;
+}
+
+/* Amber waarschuwingsbanner (Meta-goedkeuring) */
+.banner {
+  background: var(--color-warning-bg);
+  /* color-mix geeft de subtiele amber rand zonder los rand-token */
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-warning);
+  margin-bottom: 14px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  margin-bottom: 6px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  font-family: inherit;
+  background: var(--color-surface);
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Variabele-pills: monospace blauwe chips */
+.pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0 16px;
+}
+
+.pill {
+  padding: 5px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+}
+
+/* WhatsApp-chatpaneel */
+.chat {
+  background: var(--wa-chat-bg);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.datePill {
+  width: fit-content;
+  margin: 0 auto 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 8px;
+  /* WA-datumpil is chat-chrome, geen thema-token: vaste WhatsApp-stijl */
+  background: rgba(255, 255, 255, 0.85);
+  color: #54656f;
+}
+
+/* Uitgaande (rechts uitgelijnde) bubble */
+.outBubble {
+  background: var(--wa-out-bg);
+  border-radius: 8px;
+  border-top-right-radius: 2px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--wa-in-fg);
+  white-space: pre-wrap;
+  margin-left: auto;
+  max-width: 92%;
+  width: fit-content;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+}
+
+.meta {
+  font-size: 9px;
+  color: var(--wa-meta);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.tick {
+  color: var(--wa-tick-blue);
+}

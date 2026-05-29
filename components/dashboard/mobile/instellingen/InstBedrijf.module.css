@@ -1,0 +1,24 @@
+/* InstBedrijf detail screen — plain content voor MobileDrilldownLayer */
+
+.container {
+  /* Padding: 8px boven (aansluiting op drilldown-header), 16px zijkant, 24px onder */
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Wrapper binnenin InstGroupCard voor de velden-gap */
+.fields {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Postcode (110px vast) + Plaats (vult rest) naast elkaar */
+.postcodePlaats {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
+}

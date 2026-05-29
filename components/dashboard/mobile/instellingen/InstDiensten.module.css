@@ -1,0 +1,33 @@
+/* InstDiensten — diensten-lijst met toggles */
+
+.wrap {
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  /* 0.5px separator between rows */
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+/* remove border on last row */
+.row[data-last='true'] {
+  border-bottom: none;
+}
+
+.label {
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.footer {
+  margin-top: 14px;
+}

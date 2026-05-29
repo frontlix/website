@@ -1,0 +1,79 @@
+/* InstReminders — reminder-kaarten met tinted nummer-badge */
+
+.wrap {
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.intro {
+  font-size: 12.5px;
+  color: var(--color-text-soft);
+  line-height: 1.45;
+  padding: 0 4px 2px;
+  margin: 0;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+
+/* Tinted circle badge — bg 12% tint, fg 100% tint.
+   --tint is a hex string injected per reminder via style prop. */
+.badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  /* color-mix applies 20% tint against transparent to mimic hex+'20' alpha trick */
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  color: var(--tint);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  margin-top: 1px;
+}
+
+.dayCol {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dayValue {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.dayMeta {
+  font-size: 10.5px;
+  color: var(--color-text-muted);
+}
+
+.chev {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}

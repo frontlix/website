@@ -1,0 +1,159 @@
+/* InstPrijzen — prijzenscherm met steppers + wat-als-simulator.
+   Handoff lines 195-252, vertaald naar tokens (geen inline theme-styles). */
+
+.wrap {
+  /* Handoff: padding '8px 16px 24px'. */
+  padding: 8px 16px 24px;
+}
+
+.intro {
+  margin: 0;
+  padding: 0 4px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-soft);
+}
+
+/* --- prijs-rij --- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  /* 0.5px scheidingslijn, behalve op de laatste rij (data-last). */
+  border-bottom: 0.5px solid var(--color-border);
+}
+.row[data-last] {
+  border-bottom: none;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.delta {
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.delta[data-dir='up'] {
+  color: var(--color-success);
+}
+.delta[data-dir='down'] {
+  color: var(--color-danger);
+}
+
+/* --- stepper --- */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stepBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.value {
+  min-width: 80px;
+  text-align: center;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* --- simulator-kaart --- */
+
+.sim {
+  margin: 14px 0;
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.sim[data-changed] {
+  /* Gradient + witte tekst zodra er iets gewijzigd is. */
+  background: linear-gradient(135deg, var(--color-primary), var(--accent-2));
+  color: #fff;
+}
+
+.simHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.simIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  color: var(--color-text-soft);
+  display: grid;
+  place-items: center;
+}
+.sim[data-changed] .simIcon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.simHeadText {
+  flex: 1;
+}
+
+.simTitle {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.simSub {
+  margin-top: 1px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+.sim[data-changed] .simSub {
+  opacity: 0.9;
+}
+
+.simStats {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.statLabel {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.statValue {
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 800;
+}

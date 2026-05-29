@@ -25,6 +25,7 @@ import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queri
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import { getAllPrefs } from '@/lib/dashboard/notifications/queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
+import { MobileInstellingen } from '@/components/dashboard/mobile/instellingen/MobileInstellingen'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -103,43 +104,49 @@ export default async function InstellingenPage({
 
   return (
     <>
-      <div className="dash-section-head">
-        <div>
-          <div className="dash-section-title">Instellingen</div>
-          <div className="dash-section-sub">
-            Bedrijf · Prijzen · Diensten · Openingsbericht · Reminders · Team
+      <div className={styles.desktopTree}>
+        <div className="dash-section-head">
+          <div>
+            <div className="dash-section-title">Instellingen</div>
+            <div className="dash-section-sub">
+              Bedrijf · Prijzen · Diensten · Openingsbericht · Reminders · Team
+            </div>
+          </div>
+          <BotRefreshButton />
+        </div>
+
+        <div className={styles.layout}>
+          <SettingsNav />
+          <div className={styles.content}>
+            {section === 'bedrijf' && <BedrijfSection tenant={tenant} />}
+            {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baselineRaw} />}
+            {section === 'diensten' && <DienstenSection services={services} />}
+            {section === 'tags' && <TagsSection tags={tags} />}
+            {section === 'opening' && (
+              <OpeningSection
+                bedrijfsnaam={tenant?.bedrijfsnaam ?? 'Schoon Straatje'}
+                chatbot={tenant?.chatbot_naam ?? 'Surface'}
+                aanvragen={templateAanvragen}
+              />
+            )}
+            {section === 'reminders' && (
+              <RemindersSection tenant={tenant} aanvragen={templateAanvragen} />
+            )}
+            {section === 'notificaties' && (
+              <NotificatiesSection
+                prefs={notifPrefs}
+                digestTijd={tenant?.daily_digest_tijd ?? '08:00'}
+              />
+            )}
+            {section === 'team' && <TeamSection members={team} />}
+            {section === 'account' && <AccountWrapper email={user?.email ?? ''} />}
+            {section === 'avg' && <AvgWrapper />}
           </div>
         </div>
-        <BotRefreshButton />
       </div>
 
-      <div className={styles.layout}>
-        <SettingsNav />
-        <div className={styles.content}>
-          {section === 'bedrijf' && <BedrijfSection tenant={tenant} />}
-          {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baselineRaw} />}
-          {section === 'diensten' && <DienstenSection services={services} />}
-          {section === 'tags' && <TagsSection tags={tags} />}
-          {section === 'opening' && (
-            <OpeningSection
-              bedrijfsnaam={tenant?.bedrijfsnaam ?? 'Schoon Straatje'}
-              chatbot={tenant?.chatbot_naam ?? 'Surface'}
-              aanvragen={templateAanvragen}
-            />
-          )}
-          {section === 'reminders' && (
-            <RemindersSection tenant={tenant} aanvragen={templateAanvragen} />
-          )}
-          {section === 'notificaties' && (
-            <NotificatiesSection
-              prefs={notifPrefs}
-              digestTijd={tenant?.daily_digest_tijd ?? '08:00'}
-            />
-          )}
-          {section === 'team' && <TeamSection members={team} />}
-          {section === 'account' && <AccountWrapper email={user?.email ?? ''} />}
-          {section === 'avg' && <AvgWrapper />}
-        </div>
+      <div className={styles.mobileTree}>
+        <MobileInstellingen />
       </div>
     </>
   )

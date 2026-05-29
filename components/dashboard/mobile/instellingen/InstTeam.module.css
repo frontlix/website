@@ -1,0 +1,74 @@
+/* InstTeam detail screen — plain content voor MobileDrilldownLayer */
+
+.container {
+  /* Padding: 8px boven, 16px zijkant, 24px onder — zelfde ritme als InstBedrijf */
+  padding: 8px 16px 24px;
+}
+
+/* Teamlid-rij binnenin InstGroupCard */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  /* 0.5px scheidingslijn behalve laatste rij */
+  border-bottom: 0.5px solid var(--color-border);
+}
+.row[data-last] {
+  border-bottom: none;
+}
+
+/* Ronde avatar-cirkel (40×40) met tinted achtergrond via --tint */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  /* Zachte tint-achtergrond: zelfde color-mix-techniek als tintIcon in InstAtoms */
+  background: color-mix(in srgb, var(--tint) 13%, transparent);
+  color: var(--tint);
+}
+
+/* Naam + e-mail kolom */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.naam {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  font-size: 12px;
+  color: var(--color-text-soft, var(--color-text-muted));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* Rol-pill: tinted via --tint (padding 3/9, radius 99) */
+.rolePill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--tint) 13%, transparent);
+  color: var(--tint);
+}
+
+/* Ruimte boven de uitnodigingsknop */
+.btnWrap {
+  margin-top: 14px;
+}

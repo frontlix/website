@@ -1,0 +1,123 @@
+/* ── InstAtoms.module.css ──────────────────────────────────────────────────
+   Shared atoms for the mobile Instellingen screen.
+   All sizes match the handoff exactly (padding, radius, font sizes).
+   Theming via CSS custom properties only — no inline colors.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* ── InstSectionIcon ───────────────────────────────────────────────────── */
+
+/* Base icon container — tint injected via --tint custom property.
+   Background: 12% tint over transparent (replaces handoff's tint+'20' alpha-hex).
+   Foreground: full tint color. */
+.tintIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  /* bg: color-mix with transparency is the contract-prescribed technique */
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  color: var(--tint);
+}
+
+/* Default size: hub cards — 38×38, radius 11 */
+.tintIconDefault {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+}
+
+/* Small size: search rows — 30×30, radius 8 */
+.tintIconSmall {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+/* ── InstField ─────────────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14.5px;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  /* Subtle focus ring using primary color */
+  transition: border-color 0.15s;
+}
+
+.fieldInput:focus {
+  border-color: var(--color-primary);
+}
+
+/* ── InstGroupCard ─────────────────────────────────────────────────────── */
+
+/* Surface card: radius 14, overflow hidden so child rows get clipped borders */
+.groupCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* ── InstPrimaryBtn ────────────────────────────────────────────────────── */
+
+.primaryBtn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+/* Disabled: fade the primary color to ~40% via color-mix
+   (replaces handoff's rgba(26,86,255,.4)) */
+.primaryBtn:disabled {
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  cursor: default;
+}
+
+/* ── InstGhostBtn ──────────────────────────────────────────────────────── */
+
+.ghostBtn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  /* 1px primary border per contract */
+  border: 1px solid var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.15s;
+}
+
+.ghostBtn:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
