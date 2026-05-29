@@ -1,0 +1,78 @@
+/* ── DossInfo.module.css ───────────────────────────────────────────────────
+   Info-tab van het lead-dossier. Theming via tokens; geen inline kleuren.
+   Maten 1-op-1 uit de handoff (padding, radius, font-sizes).
+   ────────────────────────────────────────────────────────────────────── */
+
+/* Verticale stack van de vier secties. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Surface-kaart die de rijen omsluit; overflow hidden clipt de rij-randen. */
+.card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* ── Dienst-kaart ──────────────────────────────────────────────────────── */
+
+.serviceCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.serviceTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* Oppervlakte-pill — surface-2 achtergrond, zachte tekst (handoff regel 113). */
+.m2Pill {
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: var(--color-surface-2);
+  color: var(--color-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Surface-uitvraag ──────────────────────────────────────────────────── */
+
+.questionCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.questionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Afgevinkt → zachte tekst, normaal gewicht; openstaand → fg, gewicht 600. */
+.questionText {
+  font-size: 13.5px;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.questionText[data-done] {
+  color: var(--color-text-soft);
+  font-weight: 400;
+}

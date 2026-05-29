@@ -1,0 +1,11 @@
+/* ── DossActiviteit.module.css ─────────────────────────────────────────────
+   Activiteit-tab van het lead-dossier. Surface-kaart die de tijdlijn omsluit.
+   Verticale padding 4px zodat de eerste/laatste item-rij iets ademruimte heeft
+   (handoff: padding '4px 14px').
+   ────────────────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 4px 14px;
+}

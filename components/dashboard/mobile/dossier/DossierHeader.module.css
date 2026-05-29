@@ -1,0 +1,84 @@
+/* Handoff: padding '6px 16px 14px' op de header-wrapper. */
+.header {
+  padding: 6px 16px 14px;
+}
+
+/* Terug-knop: primary tekst + ChevronLeft, lichte negatieve marge zodat het
+   icoon optisch op de rooster-rand uitlijnt (handoff marginLeft -4). */
+.back {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: -4px;
+  padding: 4px 4px 10px;
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+/* 50×50 ronde avatar met accent-getinte vulling (handoff: accent + '24' = 14%). */
+.avatar {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+/* Stage-pill: primary dot + tekst op een 12%-primary getinte achtergrond. */
+.stagePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stageDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

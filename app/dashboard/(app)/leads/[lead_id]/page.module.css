@@ -84,3 +84,14 @@
     display: none;
   }
 }
+
+/* Desktop/mobile split voor de lead-detail pagina. Mirror't het inbox-patroon:
+   .mobileTree moet flex:1 / min-height:0 + display:flex zijn zodat het full-bleed
+   dossier (height:100% + sticky action-bar) de volle shell-hoogte vult i.p.v.
+   te collapsen tot content-hoogte. */
+.desktopTree { display: block; flex: 1; min-height: 0; }
+.mobileTree { display: none; flex: 1; min-height: 0; }
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree { display: flex; flex-direction: column; }
+}

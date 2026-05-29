@@ -1,0 +1,215 @@
+/* ── DossAtoms.module.css ──────────────────────────────────────────────────
+   Shared atoms for the mobile Lead-dossier screen.
+   All sizes match the handoff exactly (padding, radius, font sizes).
+   Theming via tokens + per-item --tone custom property + color-mix only —
+   no inline colors.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* ── DossLabel ─────────────────────────────────────────────────────────── */
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 4px 8px;
+}
+
+/* ── DossRow (contact row) ─────────────────────────────────────────────── */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+/* Last row in a card carries no divider. */
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.rowValue {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* 30×30 tinted action button — tint via --tone (replaces handoff tone+'22'). */
+.rowAction {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tone) 13%, transparent);
+  color: var(--tone);
+}
+
+/* ── DossPhoto ─────────────────────────────────────────────────────────── */
+
+.photo {
+  position: relative;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  /* 135° diagonal stripes using the photo-stripe tokens. */
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-photo-stripe-a) 0 9px,
+    var(--color-photo-stripe-b) 9px 18px
+  );
+}
+
+.photoTag {
+  position: absolute;
+  left: 7px;
+  bottom: 7px;
+  font-size: 9.5px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: var(--color-text-soft);
+  background: var(--color-glass-bg);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* ── DossCheckPill ─────────────────────────────────────────────────────── */
+
+.checkPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── DossDotRow (bijzonderheden) ───────────────────────────────────────── */
+
+.dotRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+.dotRow:last-child {
+  border-bottom: none;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--tone);
+  flex-shrink: 0;
+}
+
+.dotLabel {
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+.dotValue {
+  font-size: 12.5px;
+  color: var(--color-text-soft);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* ── DossCheckbox (vragen) ─────────────────────────────────────────────── */
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  /* Pending: 1.5px border, transparent fill. */
+  border: 1.5px solid var(--color-border);
+  background: transparent;
+  color: #fff;
+}
+
+/* Done: success fill, no border, white check. */
+.checkbox[data-done] {
+  background: var(--color-success);
+  border: none;
+}
+
+/* ── DossTimelineItem ──────────────────────────────────────────────────── */
+
+.timelineItem {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.timelineRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 28×28 tinted bubble — bg color-mix 14% (replaces handoff tone+'24'), fg = tone. */
+.timelineBubble {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--tone);
+}
+
+.timelineConnector {
+  flex: 1;
+  width: 2px;
+  background: var(--color-border);
+  margin-top: 2px;
+  min-height: 14px;
+}
+
+.timelineBody {
+  flex: 1;
+  padding-bottom: 4px;
+}
+
+.timelineText {
+  font-size: 13.5px;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.timelineTime {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}

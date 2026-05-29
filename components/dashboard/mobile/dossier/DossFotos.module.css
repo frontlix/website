@@ -1,0 +1,9 @@
+/* ── DossFotos.module.css ──────────────────────────────────────────────────
+   Foto's-tab van het lead-dossier. 2-koloms grid van DossPhoto-placeholders.
+   ────────────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
