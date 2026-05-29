@@ -29,6 +29,16 @@
   --color-danger-bg:         rgba(220, 38, 38, 0.08);
   --color-whatsapp:          #25D366;
 
+  /* Mobiele app — aanvullende tokens (Fase 0).
+     --color-elev: verhoogd oppervlak t.o.v. --color-surface (sheets, hero-cards).
+     --accent-2:   tweede gradient-stop (primary → accent-2). */
+  --accent-2: #00CFFF;
+  --color-warning: #F59E0B;
+  --color-warning-bg: rgba(245, 158, 11, 0.10);
+  --color-elev: #FFFFFF;
+  --color-chip-bg: rgba(0, 0, 0, 0.04);
+  --color-border-soft: rgba(0, 0, 0, 0.06);
+
   /* Shadows / elevation */
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
   --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(0, 0, 0, 0.10);
@@ -188,6 +198,11 @@
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.25), 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.5);
   --color-backdrop:  rgba(0, 0, 0, 0.6);  /* iets dieper in dark mode */
+  --color-warning: #FBBF24;
+  --color-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-elev: #161B25;
+  --color-chip-bg: rgba(255, 255, 255, 0.06);
+  --color-border-soft: rgba(255, 255, 255, 0.05);
 
   --wa-header:        #1F2C33;
   --wa-chat-bg:       #0B141A;
