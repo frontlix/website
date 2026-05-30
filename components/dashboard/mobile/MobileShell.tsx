@@ -51,6 +51,12 @@ export function MobileShell({
   // default header.
   const isOverzicht = pathname === '/dashboard' || pathname === '/'
 
+  // Routes die hun EIGEN volwaardige header renderen (grote titel + acties):
+  // daar zou de dunne shell-header de titel dubbel tonen. Sluit ze uit.
+  // (Sub-routes als /leads/:id en /inbox?lead= zijn al full-bleed → geen header.)
+  const OWN_HEADER_ROUTES = ['/leads', '/inbox', '/agenda']
+  const hasOwnHeader = isOverzicht || OWN_HEADER_ROUTES.includes(pathname)
+
   // Fullscreen chat-detail (/inbox?lead=ID): MobileChatDetail levert z'n
   // eigen WA-header + is full-bleed, dus de shell-header én bottom-nav
   // worden verborgen zodat de chat het hele scherm vult.
@@ -62,7 +68,7 @@ export function MobileShell({
 
   return (
     <div className={styles.shell}>
-      {!isOverzicht && !isFullBleed && (
+      {!hasOwnHeader && !isFullBleed && (
         <MobileShellHeader
           notifications={notifications}
           unreadCount={unreadCount}
@@ -70,7 +76,13 @@ export function MobileShell({
         />
       )}
 
-      <main className={styles.main} data-fullbleed={isFullBleed || undefined}>{children}</main>
+      <main
+        className={styles.main}
+        data-fullbleed={isFullBleed || undefined}
+        data-scroll-root
+      >
+        {children}
+      </main>
 
       {!isFullBleed && (
         <BottomNav counts={counts} onOpenMeer={() => setMeerOpen(true)} />

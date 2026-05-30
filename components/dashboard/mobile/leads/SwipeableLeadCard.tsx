@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useSwipeReveal, REVEAL, THRESHOLD } from '@/components/dashboard/mobile/useSwipeReveal'
+import { useCallback, useEffect } from 'react'
+import { useSwipeReveal, type SwipeOpen } from '@/components/dashboard/mobile/useSwipeReveal'
 import type { MobileLeadCard } from './lead-mappers'
 import { LeadCard } from './LeadCard'
 import styles from './SwipeableLeadCard.module.css'
@@ -14,6 +14,10 @@ interface SwipeableLeadCardProps {
   expanded: boolean
   onToggleExpand: (id: string) => void
   onArchive: (id: string) => void
+  /** Id van de kaart die momenteel open-geveegd is (gedeeld via de parent). */
+  swipeOpenId: string | null
+  /** Meld dat DEZE kaart open-veegt — parent sluit dan de andere. */
+  onSwipeOpen: (id: string) => void
 }
 
 /**
@@ -32,20 +36,37 @@ export function SwipeableLeadCard({
   expanded,
   onToggleExpand,
   onArchive,
+  swipeOpenId,
+  onSwipeOpen,
 }: SwipeableLeadCardProps) {
-  // Swipe disabled wanneer expanded — geen actie-lanes, geen drag
-  const { dx, dragging, moved, bind, reset } = useSwipeReveal(!expanded)
+  // Meld SYNCHROON (in de pointer-up) zodra DEZE kaart open-veegt → de parent
+  // zet swipeOpenId in dezelfde render-batch, zodat Effect2 hieronder géén stale
+  // waarde leest en de net-geopende kaart zichzelf niet meteen weer sluit.
+  const handleSettle = useCallback(
+    (o: SwipeOpen) => {
+      if (o !== 0) onSwipeOpen(lead.id)
+    },
+    [onSwipeOpen, lead.id],
+  )
 
-  // Reset dx zodra de kaart expandeert (zodat hij niet verschoven blijft staan)
+  // Swipe disabled wanneer expanded — geen actie-lanes, geen drag
+  const { ref, open, reset, movedRef } = useSwipeReveal(!expanded, handleSettle)
+
+  // Reset zodra de kaart expandeert (zodat hij niet verschoven blijft staan)
   useEffect(() => {
     if (expanded) reset()
   }, [expanded, reset])
 
+  // Sluit deze kaart zodra een ÁNDERE kaart de open-stand claimt.
+  useEffect(() => {
+    if (swipeOpenId !== null && swipeOpenId !== lead.id && open !== 0) reset()
+  }, [swipeOpenId, lead.id, open, reset])
+
   function handleClick() {
     // Als er bewogen is tijdens de drag: niet tappen
-    if (moved) return
-    // Als de card zijwaarts staat: snap terug, geen tap
-    if (Math.abs(dx) > 4) {
+    if (movedRef.current) return
+    // Als de kaart open-geveegd staat: snap terug i.p.v. expanderen
+    if (open !== 0) {
       reset()
       return
     }
@@ -62,10 +83,13 @@ export function SwipeableLeadCard({
       {/* ── Actie-lanes — alleen renderen als NIET expanded ─────────────── */}
       {!expanded && (
         <>
-          {/* Linker lane (Bel + WA) — verschijnt bij veeg → */}
+          {/* Linker lane (Bel + WA) — verschijnt bij veeg →.
+              Altijd zichtbaar: de kaart schuift eroverheen en bedekt de
+              inactieve lane, dus geen opacity-toggle per frame nodig. */}
           <div
             className={styles.laneLeft}
-            style={{ opacity: dx > 0 ? 1 : 0, pointerEvents: dx > 0 ? 'auto' : 'none' }}
+            style={{ pointerEvents: open === 1 ? 'auto' : 'none' }}
+            aria-hidden={open !== 1}
           >
             <a
               href={`tel:${telefoon}`}
@@ -98,7 +122,8 @@ export function SwipeableLeadCard({
           {/* Rechter lane (Archief) — verschijnt bij veeg ← */}
           <div
             className={styles.laneRight}
-            style={{ opacity: dx < 0 ? 1 : 0, pointerEvents: dx < 0 ? 'auto' : 'none' }}
+            style={{ pointerEvents: open === -1 ? 'auto' : 'none' }}
+            aria-hidden={open !== -1}
           >
             <button
               type="button"
@@ -121,16 +146,11 @@ export function SwipeableLeadCard({
         </>
       )}
 
-      {/* ── De card zelf — verschuift met dx ──────────────────────────────── */}
+      {/* ── De card zelf — schuift via directe DOM-transform (hook, geen state) ── */}
       <div
-        {...bind}
+        ref={ref}
         onClick={handleClick}
         className={styles.cardSlider}
-        style={{
-          transform: `translateX(${dx}px)`,
-          /* Alleen een transitie tijdens snap (niet tijdens drag) */
-          transition: dragging ? 'none' : 'transform 0.25s var(--ease-ios)',
-        }}
         /* Zorgt dat verticaal scrollen niet geblokkeerd wordt door horizontaal slepen */
         role="button"
         tabIndex={0}

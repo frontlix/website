@@ -4,7 +4,7 @@
  * LeadOfferteMobile — mobile-only variant van de Offerte-tab in lead-detail.
  *
  * Volledig parallelle render-tree naast de desktop (OfferteRegelsTable + OfferteSidebar).
- * Parent (LeadOfferte) bepaalt welke tree mount via useIsMobile-hook — beide
+ * Parent (LeadOfferte) bepaalt welke tree mount op basis van viewport — beide
  * delen geen state.
  *
  * Layout:

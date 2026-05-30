@@ -81,8 +81,11 @@
 .card {
   position: relative;
   background: var(--surface);
-  /* touch-action: pan-y erft van .wrapper; hier zorgen we dat de kaart
-     zelf klikbaar is zonder dat de browser de pointer steelt */
+  /* Eigen compositor-laag → GPU-composited translateX tijdens slepen. */
+  will-change: transform;
+  /* touch-action MOET expliciet op de kaart staan (érft niet): pan-y laat de
+     browser verticaal scrollen, terwijl wij de horizontale swipe zelf pakken. */
+  touch-action: pan-y;
   user-select: none;
   cursor: pointer;
   /* Focusring voor toetsenbord-navigatie */

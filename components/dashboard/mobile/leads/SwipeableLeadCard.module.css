@@ -66,6 +66,12 @@
 .cardSlider {
   position: relative;
   z-index: 1;
+  /* Dekkende achtergrond (= kaartkleur) zodat de actie-lanes in rust volledig
+     bedekt zijn — ook op de hoeken. Bij swipe schuift dit mee en onthult de lane. */
+  background: var(--surface);
+  /* Eigen compositor-laag → de translateX tijdens slepen is GPU-composited
+     i.p.v. een repaint van de hele kaart per frame (voorkomt haperen). */
+  will-change: transform;
   touch-action: pan-y; /* laat verticaal scrollen door; horizontale swipe pakken we zelf */
   user-select: none;
   cursor: pointer;

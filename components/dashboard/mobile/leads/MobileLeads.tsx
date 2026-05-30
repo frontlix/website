@@ -1,11 +1,11 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { archiveLead } from '@/lib/dashboard/lead-actions'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
-import { mapLeadToCard, type MobileLeadCard, type MobileLeadStage } from './lead-mappers'
+import { type MobileLeadCard, type MobileLeadStage } from './lead-mappers'
 import { LeadsSegmentedChips, type SegmentedChip } from './LeadsSegmentedChips'
 import { SwipeableLeadCard } from './SwipeableLeadCard'
 import { LeadExpandedPanel } from './LeadExpandedPanel'
@@ -75,6 +75,9 @@ export function MobileLeads({ data }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [sheetOpen,  setSheetOpen]  = useState(false)
   const [advFilter,  setAdvFilter]  = useState<AdvFilter>(DEFAULT_ADV_FILTER)
+  // Welke kaart momenteel open-geveegd is — zodat een nieuwe veeg de vorige sluit.
+  const [swipeOpenId, setSwipeOpenId] = useState<string | null>(null)
+  const handleSwipeOpen = useCallback((id: string) => setSwipeOpenId(id), [])
 
   // ── Verwerkte chips met live counts ──────────────────────────────────────────
   const chips: SegmentedChip[] = CHIPS.map((c) => ({
@@ -135,6 +138,7 @@ export function MobileLeads({ data }: Props) {
   function handleFilter(key: string) {
     setFilter(key)
     setExpandedId(null)
+    setSwipeOpenId(null)
   }
 
   function handleToggleExpand(id: string) {
@@ -295,6 +299,8 @@ export function MobileLeads({ data }: Props) {
                 expanded={expandedId === lead.id}
                 onToggleExpand={handleToggleExpand}
                 onArchive={handleArchive}
+                swipeOpenId={swipeOpenId}
+                onSwipeOpen={handleSwipeOpen}
               />
               {expandedId === lead.id && (
                 <LeadExpandedPanel

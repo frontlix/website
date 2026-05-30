@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { type ConversationPreview } from '@/lib/dashboard/inbox-queries'
 import { archiveLead } from '@/lib/dashboard/lead-actions'
-import { useSwipeReveal, REVEAL } from '@/components/dashboard/mobile/useSwipeReveal'
+import { useSwipeReveal } from '@/components/dashboard/mobile/useSwipeReveal'
 import { InboxRow } from './InboxRow'
 import styles from './SwipeableInboxRow.module.css'
 
@@ -21,7 +21,7 @@ interface SwipeableInboxRowProps {
 export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowProps) {
   const router = useRouter()
   const [archivePending, startArchive] = useTransition()
-  const { dx, dragging, moved, bind, reset } = useSwipeReveal()
+  const { ref, open, reset, movedRef } = useSwipeReveal()
 
   const tel = convo.telefoon
   // WhatsApp-link: strip non-cijfers; NL-nummers (leidende 0) → 31-prefix
@@ -31,10 +31,9 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
   })()
 
   function handleTap() {
-    // useSwipeReveal.moved is de huidige waarde — als de vinger bewogen heeft
-    // of de kaart uitgeschoven staat, geen navigatie maar terugsnappen.
-    if (moved) { reset(); return }
-    if (Math.abs(dx) > 4) { reset(); return }
+    // Bewogen tijdens drag, of rij staat uitgeschoven → terugsnappen i.p.v. navigeren.
+    if (movedRef.current) { reset(); return }
+    if (open !== 0) { reset(); return }
     router.push(`/inbox?lead=${convo.leadId}`)
   }
 
@@ -53,13 +52,13 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
       {/* Linker actie-lade: Bel + WhatsApp (verschijnt bij swipe rechts) */}
       <div
         className={styles.leftActions}
-        style={{ pointerEvents: dx > 0 ? 'auto' : 'none' }}
-        aria-hidden={dx <= 0}
+        style={{ pointerEvents: open === 1 ? 'auto' : 'none' }}
+        aria-hidden={open !== 1}
       >
         <a
           href={`tel:${tel}`}
           className={`${styles.actionBtn} ${styles.actionBel}`}
-          tabIndex={dx > 0 ? 0 : -1}
+          tabIndex={open === 1 ? 0 : -1}
           aria-label={`Bel ${convo.naam}`}
         >
           {/* Telefoon-icoon */}
@@ -74,7 +73,7 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
           target="_blank"
           rel="noopener noreferrer"
           className={`${styles.actionBtn} ${styles.actionWa}`}
-          tabIndex={dx > 0 ? 0 : -1}
+          tabIndex={open === 1 ? 0 : -1}
           aria-label={`WhatsApp ${convo.naam}`}
         >
           {/* WhatsApp-icoon */}
@@ -88,15 +87,15 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
       {/* Rechter actie-lade: Archief (verschijnt bij swipe links) */}
       <div
         className={styles.rightActions}
-        style={{ pointerEvents: dx < 0 ? 'auto' : 'none' }}
-        aria-hidden={dx >= 0}
+        style={{ pointerEvents: open === -1 ? 'auto' : 'none' }}
+        aria-hidden={open !== -1}
       >
         <button
           type="button"
           className={`${styles.actionBtn} ${styles.actionArchief}`}
           onClick={handleArchive}
           disabled={archivePending}
-          tabIndex={dx < 0 ? 0 : -1}
+          tabIndex={open === -1 ? 0 : -1}
           aria-label={`Archiveer gesprek met ${convo.naam}`}
         >
           {/* Archief-icoon */}
@@ -110,15 +109,11 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
         </button>
       </div>
 
-      {/* De rij zelf — schuift mee met dx */}
+      {/* De rij zelf — schuift via directe DOM-transform (hook, geen state) */}
       <div
-        {...bind}
+        ref={ref}
         onClick={handleTap}
         className={styles.card}
-        style={{
-          transform: `translateX(${dx}px)`,
-          transition: dragging ? 'none' : 'transform .25s cubic-bezier(.32,.72,0,1)',
-        }}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleTap()}

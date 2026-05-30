@@ -14,7 +14,6 @@
   --color-border:            rgba(0, 0, 0, 0.10);
   --color-border-strong:     rgba(0, 0, 0, 0.16);
   --color-white:             #FFFFFF;
-  --color-black:             #000000;
 
   /* Semi-transparent card variants */
   --color-card-bg:           #F5F7FA;
@@ -53,7 +52,6 @@
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
   --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(0, 0, 0, 0.10);
   --shadow-primary:  0 4px 24px rgba(26, 86, 255, 0.30);
-  --shadow-glow:     0 0 40px rgba(26, 86, 255, 0.15);
   --shadow-nav:      0 12px 40px rgba(0, 0, 0, 0.12);
 
   /* Backdrop voor modals/sheets/drawers — uniforme overlay-kleur. */
@@ -173,7 +171,6 @@
 
   /* WhatsApp chat-palette (alleen mobiele Inbox-chat) — light */
   --wa-header:        #075E54;
-  --wa-brand:         #25D366;
   --wa-chat-bg:       #ECE5DD;
   --wa-in-bg:         #FFFFFF;
   --wa-in-fg:         #111B21;
