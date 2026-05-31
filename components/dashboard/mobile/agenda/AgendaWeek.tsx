@@ -8,8 +8,7 @@
 
 import { useMemo, useState } from 'react'
 import { Plus, Search } from 'lucide-react'
-import { AG_EVENTS, NOW_ID } from './agenda-mock'
-import type { AgendaEvent } from './agenda-mock'
+import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import { minutesBetween } from './agenda-mobile-helpers'
 import { AgendaFilterPills } from './AgendaFilterPills'
 import { AgendaDayJumpStrip } from './AgendaDayJumpStrip'
@@ -74,6 +73,14 @@ function dayLabel(date: string, todayDate: string): string {
 
 interface AgendaWeekProps {
   events: AgendaEvent[]
+  /** Vandaag (Europe/Amsterdam) als 'YYYY-MM-DD' — bepaalt Vandaag/Morgen-labels. */
+  todayDate: string
+  /** Huidige tijd 'HH:MM' (Amsterdam) voor de live-banner resterende-tijd. */
+  nowTime: string
+  /** 7 week-dagen voor de day-jump-strip. */
+  weekDays: AgendaWeekDay[]
+  /** Subtitle, bv. "Week 20 · 11 t/m 17 mei 2026". */
+  weekLabel: string
   onOpenEvent?: (ev: AgendaEvent) => void
   onNew?: () => void
   onOpenSearch?: () => void
@@ -81,15 +88,21 @@ interface AgendaWeekProps {
   onAfrondenLive?: (ev: AgendaEvent) => void
 }
 
-export function AgendaWeek({ events, onOpenEvent, onNew, onOpenSearch, onAfrondenLive }: AgendaWeekProps) {
+export function AgendaWeek({
+  events,
+  todayDate,
+  nowTime,
+  weekDays,
+  weekLabel,
+  onOpenEvent,
+  onNew,
+  onOpenSearch,
+  onAfrondenLive,
+}: AgendaWeekProps) {
   const [filter, setFilter] = useState('week')
 
-  // "Vandaag" = de datum van het live (NOW_ID) event; valt terug op AG_EVENTS.
-  const nowEvent = useMemo(
-    () => events.find((e) => e.id === NOW_ID) ?? AG_EVENTS.find((e) => e.id === NOW_ID),
-    [events],
-  )
-  const todayDate = nowEvent?.date ?? events[0]?.date ?? ''
+  // Live event = de afspraak die nu loopt (current=true uit de mapper).
+  const nowEvent = useMemo(() => events.find((e) => e.current), [events])
 
   // Groepeer per dag (gesorteerd op start) → buckets met label/summary/hours.
   const days = useMemo<DayBucket[]>(() => {
@@ -123,15 +136,8 @@ export function AgendaWeek({ events, onOpenEvent, onNew, onOpenSearch, onAfronde
       })
   }, [events, todayDate])
 
-  // Week-totalen voor de subtitle.
+  // Week-totaal voor de subtitle.
   const totalEv = events.length
-  const totalHrs = useMemo(
-    () =>
-      Math.round(
-        (events.reduce((s, e) => s + minutesBetween(e.start, e.end), 0) / 60) * 10,
-      ) / 10,
-    [events],
-  )
 
   return (
     <div className={styles.root}>
@@ -140,7 +146,7 @@ export function AgendaWeek({ events, onOpenEvent, onNew, onOpenSearch, onAfronde
         <div className={styles.titleCol}>
           <h1 className={styles.title}>Agenda</h1>
           <p className={styles.subtitle}>
-            Week 20 · {totalEv} afspraken · {totalHrs}u werk
+            {weekLabel} · {totalEv} {totalEv === 1 ? 'afspraak' : 'afspraken'}
           </p>
         </div>
         <div className={styles.actions}>
@@ -167,18 +173,24 @@ export function AgendaWeek({ events, onOpenEvent, onNew, onOpenSearch, onAfronde
       <AgendaFilterPills active={filter} onPick={setFilter} items={FILTER_ITEMS} />
 
       {/* Mini-week day-jump strip */}
-      <AgendaDayJumpStrip />
+      <AgendaDayJumpStrip days={weekDays} events={events} todayDate={todayDate} />
 
       {/* Live "bezig"-banner */}
       {nowEvent && (
         <AgendaLiveBanner
           ev={nowEvent}
+          nowTime={nowTime}
           onOpen={() => onOpenEvent?.(nowEvent)}
           onAfronden={() => onAfrondenLive?.(nowEvent)}
           // TODO: functional pass — server actions voor foto/WA
           onFoto={() => {}}
           onWhatsApp={() => {}}
         />
+      )}
+
+      {/* Lege staat als de week geen afspraken bevat */}
+      {days.length === 0 && (
+        <p className={styles.empty}>Geen afspraken deze week.</p>
       )}
 
       {/* Dag-groepen */}
@@ -197,7 +209,7 @@ export function AgendaWeek({ events, onOpenEvent, onNew, onOpenSearch, onAfronde
                 <AgendaEventRow
                   key={ev.id}
                   ev={ev}
-                  state={ev.id === NOW_ID ? 'now' : 'idle'}
+                  state={ev.current ? 'now' : 'idle'}
                   last={i === d.events.length - 1}
                   onClick={() => onOpenEvent?.(ev)}
                 />

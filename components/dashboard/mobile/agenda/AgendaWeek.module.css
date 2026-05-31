@@ -71,6 +71,18 @@
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
+/* Lege staat — geen afspraken in de week. */
+.empty {
+  margin: 20px 18px;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card-mobile, 14px);
+}
+
 .tailSpace {
   height: 12px;
 }

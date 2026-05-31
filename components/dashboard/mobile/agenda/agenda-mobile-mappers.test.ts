@@ -1,0 +1,113 @@
+import { describe, it, expect } from 'vitest'
+import type { Appointment } from '@/lib/dashboard/agenda-queries'
+import {
+  amsterdamTime,
+  amsterdamDayKey,
+  addMinutes,
+  appointmentAdres,
+  buildMobileWeekDays,
+  mapAppointmentsToAgendaEvents,
+  DEFAULT_DURATION_MIN,
+} from './agenda-mobile-mappers'
+
+// Minimale Appointment-factory voor de tests (alleen velden die de mapper raakt).
+// `over` is bewust losjes getypeerd zodat we ook randgevallen (bv. ontbrekend
+// tijdstip) kunnen forceren die het strikte Appointment-type niet toelaat.
+function appt(over: Record<string, unknown>): Appointment {
+  return {
+    lead_id: 'L1',
+    naam: 'Test',
+    telefoon: null,
+    afspraak_geboekt_op: '2026-05-13T07:00:00.000Z',
+    dashboard_status: null,
+    status: null,
+    plaats: null,
+    postcode: null,
+    straat: null,
+    huisnummer: null,
+    m2: null,
+    afstand_km: null,
+    hoofdcategorie: null,
+    lat: null,
+    lng: null,
+    ...over,
+  } as unknown as Appointment
+}
+
+describe('amsterdamTime / amsterdamDayKey', () => {
+  it('rekent UTC om naar Amsterdam-tijd (CEST = UTC+2 in mei)', () => {
+    expect(amsterdamTime('2026-05-13T07:00:00.000Z')).toBe('09:00')
+  })
+  it('schuift de dagkey door bij late UTC-avond', () => {
+    expect(amsterdamDayKey('2026-05-13T22:30:00.000Z')).toBe('2026-05-14')
+  })
+})
+
+describe('addMinutes', () => {
+  it('telt minuten op', () => {
+    expect(addMinutes('09:00', 90)).toBe('10:30')
+  })
+  it('clampt op 23:59', () => {
+    expect(addMinutes('23:30', 90)).toBe('23:59')
+  })
+})
+
+describe('appointmentAdres', () => {
+  it('combineert straat + huisnummer + plaats', () => {
+    expect(appointmentAdres({ straat: 'Kerkstraat', huisnummer: '8', plaats: 'Bilthoven' })).toBe(
+      'Kerkstraat 8 · Bilthoven',
+    )
+  })
+  it('valt terug op — bij ontbrekende delen', () => {
+    expect(appointmentAdres({ straat: null, huisnummer: null, plaats: null })).toBe('—')
+  })
+})
+
+describe('mapAppointmentsToAgendaEvents', () => {
+  it('mapt een afspraak naar een AgendaEvent met geschatte eindtijd', () => {
+    const now = new Date('2026-05-13T06:00:00.000Z') // ruim vóór de afspraak
+    const [ev] = mapAppointmentsToAgendaEvents(
+      [appt({ lead_id: 'L9', naam: 'Marieke', m2: 62, hoofdcategorie: 'oprit' })],
+      now,
+    )
+    expect(ev.id).toBe('L9')
+    expect(ev.lead).toBe('L9')
+    expect(ev.kind).toBe('klus')
+    expect(ev.start).toBe('09:00')
+    expect(ev.end).toBe('10:30')
+    expect(ev.date).toBe('2026-05-13')
+    expect(ev.m2).toBe(62)
+    expect(ev.dienst).toBe('oprit')
+    expect(ev.current).toBe(false)
+  })
+
+  it('markeert current wanneer NU binnen [start, start+duur] valt', () => {
+    const startIso = '2026-05-13T07:00:00.000Z'
+    const during = new Date(new Date(startIso).getTime() + 30 * 60_000)
+    const after = new Date(new Date(startIso).getTime() + (DEFAULT_DURATION_MIN + 5) * 60_000)
+    expect(mapAppointmentsToAgendaEvents([appt({ afspraak_geboekt_op: startIso })], during)[0].current).toBe(true)
+    expect(mapAppointmentsToAgendaEvents([appt({ afspraak_geboekt_op: startIso })], after)[0].current).toBe(false)
+  })
+
+  it('negeert afspraken zonder tijdstip en sorteert op datum+tijd', () => {
+    const now = new Date('2026-05-13T06:00:00.000Z')
+    const out = mapAppointmentsToAgendaEvents(
+      [
+        appt({ lead_id: 'late', afspraak_geboekt_op: '2026-05-13T10:00:00.000Z' }),
+        appt({ lead_id: 'none', afspraak_geboekt_op: null }),
+        appt({ lead_id: 'early', afspraak_geboekt_op: '2026-05-13T07:00:00.000Z' }),
+      ],
+      now,
+    )
+    expect(out.map((e) => e.id)).toEqual(['early', 'late'])
+  })
+})
+
+describe('buildMobileWeekDays', () => {
+  it('bouwt ma–zo vanaf de maandag-key', () => {
+    const days = buildMobileWeekDays('2026-05-11')
+    expect(days).toHaveLength(7)
+    expect(days[0]).toEqual({ date: '2026-05-11', wday: 'ma', day: 11 })
+    expect(days[6]).toEqual({ date: '2026-05-17', wday: 'zo', day: 17 })
+  })
+})

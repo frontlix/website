@@ -5,15 +5,11 @@ import { durStr } from './agenda-mobile-helpers'
 import type { AgendaEvent } from './agenda-mock'
 import styles from './AgendaLiveBanner.module.css'
 
-/**
- * Gesimuleerde "nu"-tijd uit de handoff (C1 loopt 09:00–12:00, nu 10:42).
- * MOCK v1 — in de functionele pass vervangen door echte klok / time-tracking.
- */
-const SIM_NOW = '10:42'
-
 interface AgendaLiveBannerProps {
   /** Het actieve (NOW) event. */
   ev: AgendaEvent
+  /** Huidige tijd 'HH:MM' (Amsterdam) — voor "nu …" + resterende tijd. */
+  nowTime: string
   onOpen?: () => void
   onAfronden?: () => void
   onFoto?: () => void
@@ -28,8 +24,8 @@ interface AgendaLiveBannerProps {
  * "BEZIG · NU {tijd}" + resterende tijd; naam · adres; dienst · m² · €prijs;
  * mini actie-knoppen (Afronden / Foto / WA).
  */
-export function AgendaLiveBanner({ ev, onOpen, onAfronden, onFoto, onWhatsApp }: AgendaLiveBannerProps) {
-  const remaining = durStr(SIM_NOW, ev.end)
+export function AgendaLiveBanner({ ev, nowTime, onOpen, onAfronden, onFoto, onWhatsApp }: AgendaLiveBannerProps) {
+  const remaining = durStr(nowTime, ev.end)
 
   // Meta-regel: dienst · m² · €prijs (alleen aanwezige velden)
   const metaParts: string[] = []
@@ -54,7 +50,7 @@ export function AgendaLiveBanner({ ev, onOpen, onAfronden, onFoto, onWhatsApp }:
         {/* Status-regel: pulserende dot + label + resterend */}
         <div className={styles.statusRow}>
           <span className={styles.pulseDot} aria-hidden="true" />
-          <span className={styles.statusLabel}>Bezig · nu {SIM_NOW}</span>
+          <span className={styles.statusLabel}>Bezig · nu {nowTime}</span>
           <span className={styles.remaining}>nog {remaining}</span>
         </div>
 

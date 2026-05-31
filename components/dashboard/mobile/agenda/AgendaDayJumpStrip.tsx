@@ -1,10 +1,16 @@
 'use client'
 
 import { eventTone } from './agenda-mobile-helpers'
-import { AG_WEEK_DAYS, AG_TODAY_DATE, eventsOnDate } from './agenda-mock'
+import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import styles from './AgendaDayJumpStrip.module.css'
 
 interface AgendaDayJumpStripProps {
+  /** 7 week-dagen (ma–zo). */
+  days: AgendaWeekDay[]
+  /** Alle week-events — voor de dot-indicatoren per dag. */
+  events: AgendaEvent[]
+  /** Vandaag ('YYYY-MM-DD', Amsterdam). */
+  todayDate: string
   /** Tik op een dag → scroll-jump naar de bijbehorende day-group (functionele pass). */
   onJump?: (date: string) => void
 }
@@ -12,20 +18,29 @@ interface AgendaDayJumpStripProps {
 /**
  * AgendaDayJumpStrip — mini horizontale week (7 kolommen).
  *
- * Port van ABMain `DayJumpStrip`.
- * Per dag: wday (9/700 uppercase) + day (15/800 tabular) + tot 3 event-dots.
- * data-today (accent-tint + accent-tekst) / data-past (gedimd).
- * Dot-kleur via --tone (eventTone(kind)) + color-mix in CSS.
+ * Per dag: wday + day + tot 3 event-dots (kleur via eventTone(kind)).
+ * data-today (accent) / data-past (gedimd). Data komt nu van de echte
+ * afspraken (props) i.p.v. de AG_EVENTS-mock.
  */
-export function AgendaDayJumpStrip({ onJump }: AgendaDayJumpStripProps) {
-  const today = new Date(AG_TODAY_DATE + 'T00:00:00')
+export function AgendaDayJumpStrip({ days, events, todayDate, onJump }: AgendaDayJumpStripProps) {
+  const today = new Date(`${todayDate}T00:00:00`)
+
+  // Events per dag, voor de dots.
+  const byDate = new Map<string, AgendaEvent[]>()
+  for (const ev of events) {
+    const arr = byDate.get(ev.date) ?? []
+    arr.push(ev)
+    byDate.set(ev.date, arr)
+  }
 
   return (
     <div className={styles.strip}>
-      {AG_WEEK_DAYS.map((d) => {
-        const isToday = d.date === AG_TODAY_DATE
-        const isPast = new Date(d.date + 'T00:00:00') < today
-        const evs = eventsOnDate(d.date)
+      {days.map((d) => {
+        const isToday = d.date === todayDate
+        const isPast = new Date(`${d.date}T00:00:00`) < today
+        const evs = (byDate.get(d.date) ?? [])
+          .slice()
+          .sort((a, b) => a.start.localeCompare(b.start))
 
         return (
           <button

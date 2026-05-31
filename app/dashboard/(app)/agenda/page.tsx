@@ -19,7 +19,13 @@ import {
 } from '@/components/dashboard/agenda/AgendaUpcomingList'
 import { AgendaRouteMap } from '@/components/dashboard/agenda/AgendaRouteMap'
 import { getTenantBase, DEFAULT_TENANT_BASE } from '@/lib/dashboard/tenant-base'
-import { MobileAgenda } from '@/components/dashboard/mobile/agenda/MobileAgenda'
+import { MobileAgenda, type MobileAgendaData } from '@/components/dashboard/mobile/agenda/MobileAgenda'
+import {
+  mapAppointmentsToAgendaEvents,
+  buildMobileWeekDays,
+  amsterdamDayKey,
+  amsterdamTime,
+} from '@/components/dashboard/mobile/agenda/agenda-mobile-mappers'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -48,11 +54,28 @@ export default async function AgendaPage({
   else if (view === 'routekaart') desktopContent = <RouteView sp={sp} />
   else desktopContent = <WeekView sp={sp} />
 
+  // ── Mobiele agenda: echte afspraken van de (huidige) week ──
+  // Eigen fetch los van de desktop-view zodat de mobiele tak altijd de
+  // week-lijst toont, ongeacht de gekozen desktop-view (week/maand/routekaart).
+  const mobileWeek = parseWeekParam(sp)
+  const mobileAppointments = await getAppointmentsForRange(
+    mobileWeek.queryStart,
+    mobileWeek.queryEnd,
+  )
+  const mobileNow = new Date()
+  const mobileData: MobileAgendaData = {
+    events: mapAppointmentsToAgendaEvents(mobileAppointments, mobileNow),
+    todayDate: amsterdamDayKey(mobileNow.toISOString()),
+    nowTime: amsterdamTime(mobileNow.toISOString()),
+    weekDays: buildMobileWeekDays(mobileWeek.mondayKey),
+    weekLabel: `Week ${mobileWeek.weekNumber} · ${mobileWeek.rangeLabel}`,
+  }
+
   return (
     <>
       <div className={styles.desktopTree}>{desktopContent}</div>
       <div className={styles.mobileTree}>
-        <MobileAgenda />
+        <MobileAgenda data={mobileData} />
       </div>
     </>
   )

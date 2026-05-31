@@ -8,11 +8,23 @@ import { FlowPlaatsbezoek } from './FlowPlaatsbezoek'
 import { FlowAfronden } from './FlowAfronden'
 import { AgendaHerplanSheet } from './AgendaHerplanSheet'
 import { AgendaNewSheet } from './AgendaNewSheet'
-import { AG_EVENTS } from './agenda-mock'
-import type { AgendaEvent } from './agenda-mock'
+import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import styles from './MobileAgenda.module.css'
 
-export function MobileAgenda() {
+export type MobileAgendaData = {
+  /** Echte afspraken van de week, gemapt naar AgendaEvent. */
+  events: AgendaEvent[]
+  /** Vandaag ('YYYY-MM-DD', Amsterdam). */
+  todayDate: string
+  /** Huidige tijd 'HH:MM' (Amsterdam). */
+  nowTime: string
+  /** 7 week-dagen voor de day-jump-strip. */
+  weekDays: AgendaWeekDay[]
+  /** Subtitle, bv. "Week 20 · 11 t/m 17 mei 2026". */
+  weekLabel: string
+}
+
+export function MobileAgenda({ data }: { data: MobileAgendaData }) {
   const [detail, setDetail] = useState<AgendaEvent | null>(null)
   const [herplan, setHerplan] = useState<AgendaEvent | null>(null)
   const [afronden, setAfronden] = useState<AgendaEvent | null>(null)
@@ -24,7 +36,11 @@ export function MobileAgenda() {
   return (
     <div className={styles.root}>
       <AgendaWeek
-        events={AG_EVENTS}
+        events={data.events}
+        todayDate={data.todayDate}
+        nowTime={data.nowTime}
+        weekDays={data.weekDays}
+        weekLabel={data.weekLabel}
         onOpenEvent={(ev) => setDetail(ev)}
         onNew={() => setNewOpen(true)}
         onAfrondenLive={(ev) => setAfronden(ev)}
