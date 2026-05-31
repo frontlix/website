@@ -15,9 +15,9 @@ const STAGE_META: Record<MobileLeadStage, { label: string; tone: string }> = {
 
 // ── Primaire actie per stage ───────────────────────────────────────────────────
 const PRIMARY_ACTION: Record<MobileLeadStage, { label: string; href: (id: string) => string }> = {
-  gesprek: { label: 'Stuur offerte',    href: () => '/leads?nieuwe-offerte=1' },
+  gesprek: { label: 'Stuur offerte',    href: (id) => `/leads/${id}` },
   review:  { label: 'Goedkeuren',       href: (id) => `/leads/${id}` },
-  uit:     { label: 'WhatsApp opvolgen',href: (id) => `/leads/${id}` },
+  uit:     { label: 'WhatsApp opvolgen',href: (id) => `/inbox?lead=${id}` },
   gepland: { label: 'Open afspraak',    href: (id) => `/leads/${id}` },
   klaar:   { label: 'Vraag review',     href: (id) => `/leads/${id}` },
 }
@@ -137,9 +137,8 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         </div>
       </div>
 
-      {/* 5. Actie-knoppen */}
+      {/* 5. Hoofdactie — vol breedte, accent gradient (label is stage-afhankelijk) */}
       <div className={styles.actionsGrid}>
-        {/* Primaire actie — vol breedte, accent gradient */}
         <Link
           href={primary.href(lead.id)}
           className={styles.btnPrimary}
@@ -147,24 +146,6 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         >
           {primary.label}
         </Link>
-        {/* Secundaire acties */}
-        <Link
-          href={`/leads/${lead.id}`}
-          className={styles.btnSecondary}
-          onClick={(e) => e.stopPropagation()}
-        >
-          Dossier
-        </Link>
-        <button
-          type="button"
-          className={styles.btnSecondary}
-          onClick={(e) => {
-            e.stopPropagation()
-            // WhatsApp opvolgen via tel-link (v1 placeholder)
-          }}
-        >
-          WhatsApp
-        </button>
       </div>
 
       {/* 6. Open volledig dossier */}

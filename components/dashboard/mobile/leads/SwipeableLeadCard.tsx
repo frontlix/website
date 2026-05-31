@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect } from 'react'
 import { useSwipeReveal, type SwipeOpen } from '@/components/dashboard/mobile/useSwipeReveal'
 import type { MobileLeadCard } from './lead-mappers'
@@ -8,7 +9,7 @@ import styles from './SwipeableLeadCard.module.css'
 
 interface SwipeableLeadCardProps {
   lead: MobileLeadCard
-  /** Telefoonnummer voor "Bel" en "WA" acties */
+  /** Telefoonnummer voor de "Bel"-actie (WA opent het in-app gesprek) */
   telefoon: string
   /** Of de expanded panel open is voor dit kaartje */
   expanded: boolean
@@ -73,11 +74,6 @@ export function SwipeableLeadCard({
     onToggleExpand(lead.id)
   }
 
-  // Telefoonnummer: verwijder niet-cijfer tekens voor de tel/wa links
-  const tel = telefoon.replace(/\D/g, '')
-  // WhatsApp-link: NL-nummers beginnen altijd met 0 → vervang door 31
-  const waTel = tel.startsWith('0') ? `31${tel.slice(1)}` : tel
-
   return (
     <article className={styles.root}>
       {/* ── Actie-lanes — alleen renderen als NIET expanded ─────────────── */}
@@ -103,20 +99,19 @@ export function SwipeableLeadCard({
               </svg>
               <span>Bel</span>
             </a>
-            <a
-              href={`https://wa.me/${waTel}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/inbox?lead=${lead.id}`}
               className={styles.actionBtn}
               data-action="wa"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* WhatsApp icon */}
+              {/* WhatsApp icon → opent het in-app gesprek met de lead (inbox-thread),
+                  niet de externe WhatsApp-app. */}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2z" />
               </svg>
               <span>WA</span>
-            </a>
+            </Link>
           </div>
 
           {/* Rechter lane (Archief) — verschijnt bij veeg ← */}

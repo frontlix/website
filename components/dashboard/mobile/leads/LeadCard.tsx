@@ -135,7 +135,7 @@ export function LeadCard({ lead }: LeadCardProps) {
       {/* Bottom row: stage pill + time */}
       <div className={styles.bottomRow}>
         <LAStagePill stage={lead.stage} />
-        <time className={styles.binnen} dateTime={lead.binnen}>
+        <time className={styles.binnen}>
           {lead.binnen}
         </time>
       </div>

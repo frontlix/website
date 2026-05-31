@@ -154,18 +154,15 @@
   place-items: center;
 }
 
-/* ── Actie-knoppen ──────────────────────────────────────────────────────────── */
-/* Grid: primaire knop vol-breedte (1/-1), 2 secundaire naast elkaar */
+/* ── Hoofdactie ─────────────────────────────────────────────────────────────── */
+/* Eén vol-breedte knop; secundaire acties zijn bewust weggelaten — onder dit
+ * blok staat altijd "Open volledig dossier" als enige dossier-ingang. */
 .actionsGrid {
   padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
 }
 
 .btnPrimary {
-  /* Vol breedte over beide kolommen */
-  grid-column: 1 / -1;
+  width: 100%;
   min-height: 42px;
   padding: 10px 12px;
   background: linear-gradient(135deg, var(--primary), #5B6CFF);
@@ -179,23 +176,6 @@
   justify-content: center;
   gap: 6px;
   box-shadow: 0 4px 12px rgba(26, 86, 255, 0.25);
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btnSecondary {
-  min-height: 42px;
-  padding: 10px 12px;
-  background: var(--surface-2);
-  color: var(--fg);
-  border: none;
-  border-radius: 11px;
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   cursor: pointer;
   text-decoration: none;
 }
