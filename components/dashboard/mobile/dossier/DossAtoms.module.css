@@ -80,10 +80,16 @@
   );
 }
 
+/* Echte foto vult de tegel; de tag-chip ligt eroverheen (z-index). */
+.photoImg {
+  object-fit: cover;
+}
+
 .photoTag {
   position: absolute;
   left: 7px;
   bottom: 7px;
+  z-index: 1;
   font-size: 9.5px;
   font-weight: 600;
   font-family: ui-monospace, monospace;

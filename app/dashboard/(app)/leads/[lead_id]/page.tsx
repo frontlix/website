@@ -17,6 +17,7 @@ import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
 import { LeadActivityTimeline } from '@/components/dashboard/leads/LeadActivityTimeline'
 import { LeadDangerZone } from '@/components/dashboard/leads/LeadDangerZone'
 import { MobileLeadDossier } from '@/components/dashboard/mobile/dossier/MobileLeadDossier'
+import { mapLeadDetailToDossier } from '@/components/dashboard/mobile/dossier/dossier-mappers'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -146,10 +147,10 @@ export default async function LeadDetailPage({
           </div>
         </div>
       </div>
-      {/* Mobile-only: volledig scherm lead-dossier (mock v1 — wiren aan
-          getLeadDetail in de functionele eindpass). */}
+      {/* Mobile-only: volledig scherm lead-dossier, gevoed met echte
+          getLeadDetail-data via de dossier-mapper. */}
       <div className={styles.mobileTree}>
-        <MobileLeadDossier />
+        <MobileLeadDossier data={mapLeadDetailToDossier(detail)} />
       </div>
     </>
   )

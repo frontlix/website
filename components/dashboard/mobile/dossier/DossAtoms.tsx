@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import {
   ChevronLeft,
   MapPin,
@@ -86,11 +87,25 @@ export function DossRow({ icon, label, value, action }: DossRowProps) {
 // tokens) with a monospace tag chip bottom-left.
 type DossPhotoProps = {
   tag: string
+  /** Echte foto-URL (Supabase public_url); ontbreekt → gestreepte placeholder. */
+  url?: string | null
 }
 
-export function DossPhoto({ tag }: DossPhotoProps) {
+export function DossPhoto({ tag, url }: DossPhotoProps) {
   return (
     <div className={styles.photo}>
+      {url && (
+        // unoptimized: zelfde aanpak als de desktop LeadPhotos — geen
+        // next/image domain-config of optimalisatie nodig voor Supabase-URLs.
+        <Image
+          src={url}
+          alt={tag}
+          fill
+          sizes="50vw"
+          unoptimized
+          className={styles.photoImg}
+        />
+      )}
       <span className={styles.photoTag}>{tag}</span>
     </div>
   )

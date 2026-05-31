@@ -32,8 +32,7 @@ export function DossierHeader({ lead, onBack }: DossierHeaderProps) {
           <div className={styles.metaRow}>
             <span className={styles.stagePill}>
               <span className={styles.stageDot} aria-hidden="true" />
-              {/* v1 mock: hardcoded label. Functionele pass: map lead.stage → weergavelabel. */}
-              In gesprek
+              {lead.stage}
             </span>
             <span className={styles.sub}>
               {lead.plaats} · {lead.id}

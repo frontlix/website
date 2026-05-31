@@ -2,15 +2,18 @@
 
 import { Pencil, FileText } from 'lucide-react'
 import { dossEur } from './dossier-helpers'
-import { DOSS } from './dossier-mock'
+import type { DossRegel } from './dossier-mock'
 import styles from './DossOfferte.module.css'
 
 // ── DossOfferte ──
-// Offerte-tab: amber status-badge, regelkaart met subtotaal/btw/totaal en
-// twee actie-knoppen (Aanpassen / PDF-preview). Knoppen zijn in v1 visueel-only.
-// (Port van handoff DossOfferte, regels 146–177.)
-export function DossOfferte() {
-  const o = DOSS.offerte
+// Offerte-tab: status-badge, regelkaart met subtotaal/btw/totaal en twee
+// actie-knoppen (Aanpassen / PDF-preview, nog visueel-only). Gevoed met echte
+// offerte-regels (props) i.p.v. de DOSS-mock.
+type DossOfferteProps = {
+  offerte: { status: string; regels: DossRegel[]; subtotaal: number; btw: number; totaal: number }
+}
+
+export function DossOfferte({ offerte: o }: DossOfferteProps) {
   return (
     <div className={styles.wrap}>
       {/* Amber status-badge: warning-tint bg + warning-strong tekst. */}
@@ -20,8 +23,8 @@ export function DossOfferte() {
 
       {/* Regelkaart met de offerte-regels en de totalen. */}
       <div className={styles.card}>
-        {o.regels.map((r) => (
-          <div key={r.l} className={styles.regelRow}>
+        {o.regels.map((r, i) => (
+          <div key={i} className={styles.regelRow}>
             <div className={styles.regelText}>
               <div className={styles.regelLabel}>{r.l}</div>
               <div className={styles.regelDetail}>{r.detail}</div>

@@ -1,0 +1,229 @@
+// Mapt een echte LeadDetail (getLeadDetail) naar de vorm die het mobiele
+// lead-dossier verwacht (mirror van de DOSS/DOSS_LEAD-mock). Vervangt de mock
+// op de lees-kant; write-acties (offerte versturen) blijven via de bestaande UI.
+
+import {
+  aggregateActivityTimeline,
+  type LeadDetail,
+  type ActivityEvent,
+} from '@/lib/dashboard/lead-queries'
+import { shortTimeAgo } from '@/lib/dashboard/relative-time'
+import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/leads/lead-mappers'
+import type {
+  DossierLead,
+  DossBijzonder,
+  DossVraag,
+  DossRegel,
+  DossActity,
+} from './dossier-mock'
+
+const TONE = {
+  blue: '#1A56FF',
+  green: '#16A34A',
+  amber: '#F59E0B',
+  red: '#DC2626',
+  wa: '#25D366',
+  neutral: '#9CA3AF',
+}
+
+const STAGE_LABEL: Record<MobileLeadStage, string> = {
+  gesprek: 'In gesprek',
+  review: 'Owner-review',
+  uit: 'Offerte uit',
+  gepland: 'Ingepland',
+  klaar: 'Afgerond',
+}
+
+/** Eén foto in de foto-tab: echte URL (indien beschikbaar) + label. */
+export type DossPhotoItem = { url: string | null; tag: string }
+
+/** De volledige data-blob die MobileLeadDossier aan z'n children doorgeeft. */
+export type MobileDossierData = {
+  lead: DossierLead
+  telefoonRaw: string // ruwe cijfers voor tel:
+  waTel: string // 31-prefixed voor wa.me
+  contact: { telefoon: string; email: string; adres: string; afstand: number | null }
+  dienst: { hoofd: string; sub: string[] }
+  bijzonderheden: DossBijzonder[]
+  vragen: DossVraag[]
+  surface: { fase: string; message: string }
+  offerte: {
+    status: string
+    regels: DossRegel[]
+    subtotaal: number
+    btw: number
+    totaal: number
+  }
+  fotos: DossPhotoItem[]
+  activity: DossActity[]
+}
+
+/** Adres uit straat/huisnummer + postcode/plaats (alleen aanwezige delen). */
+function buildAdres(l: LeadDetail['lead']): string {
+  const line1 = [l.straat, l.huisnummer].filter(Boolean).join(' ')
+  const line2 = [l.postcode, l.plaats].filter(Boolean).join(' ')
+  return [line1, line2].filter(Boolean).join(', ') || '—'
+}
+
+/** Bijzonderheden uit losse lead-velden (alleen ingevulde tonen). */
+function buildBijzonderheden(l: LeadDetail['lead']): DossBijzonder[] {
+  const rows: DossBijzonder[] = []
+  if (l.planten) {
+    rows.push({
+      l: 'Planten langs de rand',
+      v: l.planten_afschermen ? `${l.planten} — afschermen` : l.planten,
+      tone: TONE.amber,
+    })
+  }
+  if (l.groene_aanslag) {
+    rows.push({ l: 'Groene aanslag', v: l.groene_aanslag, tone: TONE.amber })
+  }
+  if (l.korstmos) {
+    const nee = l.korstmos.trim().toLowerCase().startsWith('nee')
+    rows.push({ l: 'Korstmos', v: l.korstmos, tone: nee ? TONE.neutral : TONE.amber })
+  }
+  if (l.voegzand_type) {
+    rows.push({
+      l: 'Voegzand',
+      v: [l.voegzand_type, l.zand_kleur].filter(Boolean).join(' · '),
+      tone: TONE.blue,
+    })
+  }
+  return rows
+}
+
+/** Surface-uitvraag — done-status afgeleid uit lead-velden. */
+function buildVragen(l: LeadDetail['lead'], fotoCount: number): DossVraag[] {
+  return [
+    { q: "Foto's ontvangen", done: fotoCount > 0 },
+    { q: 'Voegkleur gekozen', done: Boolean(l.zand_kleur || l.voegzand_type) },
+    { q: 'Planten afgestemd', done: !l.planten || Boolean(l.planten_afschermen) },
+    { q: 'Oppervlakte bevestigd', done: l.m2_bevestigd === true },
+  ]
+}
+
+/** Korte surface-statusregel op basis van de lead-stand. */
+function buildSurfaceMessage(l: LeadDetail['lead']): string {
+  if (!l.m2_bevestigd) return 'Vraagt om bevestiging van de m²'
+  if (!l.offerte_verstuurd) return 'Offerte wordt voorbereid'
+  return 'Offerte verstuurd — wacht op reactie'
+}
+
+/** 'HH:MM' (Amsterdam) of 'nu' bij <2 min geleden. */
+function activityTime(iso: string, now: number): string {
+  if (!iso) return ''
+  const ms = new Date(iso).getTime()
+  if (!Number.isFinite(ms)) return '' // ongeldige timestamp → Intl.format zou gooien
+  if (now - ms < 2 * 60_000) return 'nu'
+  return new Intl.DateTimeFormat('nl-NL', {
+    timeZone: 'Europe/Amsterdam',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(ms))
+}
+
+const ACT_ICON: Record<ActivityEvent['type'], { icon: DossActity['icon']; tone: string }> = {
+  lead_aangemaakt: { icon: 'doc', tone: TONE.neutral },
+  bericht_in: { icon: 'wa', tone: TONE.wa },
+  bericht_uit: { icon: 'spark', tone: TONE.blue },
+  foto_geupload: { icon: 'cam', tone: TONE.wa },
+  offerte_verstuurd: { icon: 'doc', tone: TONE.blue },
+  akkoord: { icon: 'doc', tone: TONE.green },
+  afspraak_geboekt: { icon: 'doc', tone: TONE.blue },
+  notitie_toegevoegd: { icon: 'doc', tone: TONE.neutral },
+  status_gewijzigd: { icon: 'doc', tone: TONE.neutral },
+}
+
+function buildActivity(detail: LeadDetail, now: number): DossActity[] {
+  return aggregateActivityTimeline(detail)
+    .filter((e) => e.timestamp)
+    .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+    .map((e) => {
+      const m = ACT_ICON[e.type] ?? { icon: 'doc' as const, tone: TONE.neutral }
+      // Voor berichten tonen we de tekst zelf; anders het label.
+      const isMsg = e.type === 'bericht_in' || e.type === 'bericht_uit'
+      return {
+        icon: m.icon,
+        tone: m.tone,
+        t: isMsg && e.details ? e.details : e.label,
+        time: activityTime(e.timestamp, now),
+      }
+    })
+}
+
+/** Offerte-blok: regels uit prijsregels, totalen uit de laatste offerte. */
+function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
+  const l = detail.lead
+  const regels: DossRegel[] = detail.prijsregels.map((r) => ({
+    l: r.omschrijving ?? 'Regel',
+    detail: [r.aantal != null ? `${r.aantal} ${r.eenheid ?? ''}`.trim() : null, r.stukprijs != null ? `× € ${r.stukprijs.toLocaleString('nl-NL')}` : null]
+      .filter(Boolean)
+      .join(' '),
+    bedrag: r.totaal ?? 0,
+  }))
+
+  const latest = detail.offertes[0] // gesorteerd op versie desc
+  let totaal: number
+  let subtotaal: number
+  if (latest && typeof latest.totaal_incl === 'number') {
+    totaal = latest.totaal_incl
+    subtotaal = totaal / 1.21
+  } else {
+    subtotaal = regels.reduce((s, r) => s + r.bedrag, 0)
+    totaal = subtotaal * 1.21
+  }
+  const btw = totaal - subtotaal
+
+  let status: string
+  if (l.offerte_verstuurd) {
+    const op = l.offerte_verstuurd_op
+      ? new Date(l.offerte_verstuurd_op).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
+      : null
+    status = op ? `Verstuurd op ${op}` : 'Verstuurd'
+  } else if (regels.length > 0) {
+    status = 'Concept — nog niet verstuurd'
+  } else {
+    status = 'Nog geen offerte'
+  }
+
+  return { status, regels, subtotaal, btw, totaal }
+}
+
+export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.now()): MobileDossierData {
+  const l = detail.lead
+  const fotoCount = detail.fotos.length
+  const stage = leadStage(l)
+  const prijs = l.totaal_prijs ?? (detail.offertes[0]?.totaal_incl ?? null)
+  const telefoonRaw = (l.telefoon ?? '').replace(/\D/g, '')
+
+  const lead: DossierLead = {
+    id: l.lead_id,
+    naam: l.naam ?? 'Onbekend',
+    plaats: l.plaats ?? '—',
+    m2: l.m2 ?? 0,
+    fotos: fotoCount,
+    prijs,
+    stage: STAGE_LABEL[stage],
+    binnen: l.aangemaakt ? shortTimeAgo(l.aangemaakt) : '—',
+  }
+
+  return {
+    lead,
+    telefoonRaw,
+    waTel: telefoonRaw.startsWith('0') ? `31${telefoonRaw.slice(1)}` : telefoonRaw,
+    contact: {
+      telefoon: l.telefoon ?? '—',
+      email: l.email ?? '—',
+      adres: buildAdres(l),
+      afstand: l.afstand_km ?? null,
+    },
+    dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
+    bijzonderheden: buildBijzonderheden(l),
+    vragen: buildVragen(l, fotoCount),
+    surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
+    offerte: buildOfferte(detail),
+    fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
+    activity: buildActivity(detail, now),
+  }
+}
