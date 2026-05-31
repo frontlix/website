@@ -63,6 +63,8 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--tone) 13%, transparent);
   color: var(--tone);
+  /* Kan een <a> zijn (tel:/wa.me/maps) → geen onderstreping. */
+  text-decoration: none;
 }
 
 /* ── DossPhoto ─────────────────────────────────────────────────────────── */

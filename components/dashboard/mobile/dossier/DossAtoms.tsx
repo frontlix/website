@@ -57,7 +57,9 @@ type DossRowProps = {
   icon: DossIconName
   label: string
   value: string
-  action?: { icon: DossIconName; tone: string }
+  // `href` gezet → het actie-icoon wordt een echte link (tel:/wa.me/maps);
+  // anders blijft het een niet-interactief gekleurd icoon (huidig gedrag).
+  action?: { icon: DossIconName; tone: string; href?: string }
 }
 
 export function DossRow({ icon, label, value, action }: DossRowProps) {
@@ -71,12 +73,24 @@ export function DossRow({ icon, label, value, action }: DossRowProps) {
         <div className={styles.rowValue}>{value}</div>
       </div>
       {action && ActionIcon && (
-        <span
-          className={styles.rowAction}
-          style={{ '--tone': action.tone } as React.CSSProperties}
-        >
-          <ActionIcon size={15} aria-hidden="true" />
-        </span>
+        action.href ? (
+          <a
+            className={styles.rowAction}
+            href={action.href}
+            target={action.href.startsWith('http') ? '_blank' : undefined}
+            rel="noopener noreferrer"
+            style={{ '--tone': action.tone } as React.CSSProperties}
+          >
+            <ActionIcon size={15} aria-hidden="true" />
+          </a>
+        ) : (
+          <span
+            className={styles.rowAction}
+            style={{ '--tone': action.tone } as React.CSSProperties}
+          >
+            <ActionIcon size={15} aria-hidden="true" />
+          </span>
+        )
       )}
     </div>
   )

@@ -40,6 +40,7 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
             <DossInfo
               lead={lead}
               contact={data.contact}
+              waTel={data.waTel}
               dienst={data.dienst}
               bijzonderheden={data.bijzonderheden}
               vragen={data.vragen}

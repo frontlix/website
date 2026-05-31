@@ -16,12 +16,19 @@ import styles from './DossInfo.module.css'
 type DossInfoProps = {
   lead: Pick<DossierLead, 'm2'>
   contact: { telefoon: string; email: string; adres: string; afstand: number | null }
+  /** Genormaliseerd WhatsApp-nummer (0→31, alleen cijfers); leeg → geen WA-link. */
+  waTel: string
   dienst: { hoofd: string; sub: string[] }
   bijzonderheden: DossBijzonder[]
   vragen: DossVraag[]
 }
 
-export function DossInfo({ lead, contact, dienst, bijzonderheden, vragen }: DossInfoProps) {
+export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen }: DossInfoProps) {
+  // Echte maps-link op het adres (alleen als er een adres is; mapper geeft '—').
+  const heeftAdres = contact.adres !== '—' && contact.adres.trim() !== ''
+  const mapsHref = heeftAdres
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.adres)}`
+    : undefined
   return (
     <div className={styles.wrap}>
       {/* Contact-kaart: telefoon + e-mail + adres met getinte actie-knop. */}
@@ -32,14 +39,15 @@ export function DossInfo({ lead, contact, dienst, bijzonderheden, vragen }: Doss
             icon="phone"
             label="Telefoon"
             value={contact.telefoon}
-            action={{ icon: 'wa', tone: 'var(--color-whatsapp)' }}
+            // WhatsApp-icoon → echt in-app/extern gesprek; geen link zonder nummer.
+            action={{ icon: 'wa', tone: 'var(--color-whatsapp)', href: waTel ? `https://wa.me/${waTel}` : undefined }}
           />
           <DossRow icon="mail" label="E-mail" value={contact.email} />
           <DossRow
             icon="pin"
             label={contact.afstand != null ? `Adres · ${contact.afstand} km` : 'Adres'}
             value={contact.adres}
-            action={{ icon: 'pin', tone: 'var(--color-primary)' }}
+            action={{ icon: 'pin', tone: 'var(--color-primary)', href: mapsHref }}
           />
         </div>
       </section>

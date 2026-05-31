@@ -253,7 +253,9 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     klant,
     m2: l.m2 ?? 0,
     voornaam,
-    korstmos: l.korstmos === 'ja',
+    // Tolerante match (spiegel van buildBijzonderheden): kolom is string|null
+    // met varianten als 'Ja' / 'ja, lichte aanslag' → normaliseer en check 'ja'-prefix.
+    korstmos: (l.korstmos ?? '').trim().toLowerCase().startsWith('ja'),
     kortingPct: l.korting_percentage ?? 0,
     kortingNote: l.korting_omschrijving ?? '',
     seedRegels,
