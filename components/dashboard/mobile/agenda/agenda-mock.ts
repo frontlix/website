@@ -17,6 +17,7 @@ export interface AgendaEvent {
   lead?: string        // leadId
   materialen?: string[]
   current?: boolean    // live / bezig event
+  done?: boolean       // afgehandeld (dashboard_status === 'afgehandeld')
 }
 
 // ── Kind mapping: handoff tone-field → typed kind ─────────────────────────

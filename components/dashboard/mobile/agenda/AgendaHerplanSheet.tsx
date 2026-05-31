@@ -1,107 +1,148 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Clock, MessageCircle, Flame } from 'lucide-react'
 import { MobileToggle } from '../shared/MobileToggle'
-import { durStr, minutesBetween, slotConflict, dateLabel } from './agenda-mobile-helpers'
+import { durStr, minutesBetween, slotConflict } from './agenda-mobile-helpers'
 import type { TimeBlock } from './agenda-mobile-helpers'
 import type { AgendaEvent } from './agenda-mock'
-import { AG_EVENTS } from './agenda-mock'
+import { rescheduleAppointment } from '@/lib/dashboard/agenda-actions'
 import styles from './AgendaHerplanSheet.module.css'
 
 interface AgendaHerplanSheetProps {
   ev: AgendaEvent
+  /** Alle week-events — voor bezet-niveau per dag + conflict-detectie. */
+  events: AgendaEvent[]
   open: boolean
   onClose: () => void
-  /** Bevestig herplanning. v1: no-op (functionele pass koppelt server-action). */
+  /** Sluit de sheet (parent). De write + refresh doet de sheet zelf. */
   onConfirm: () => void
 }
 
-// ── Mini-week dagen (5 dagen vooruit) — busy-niveau bepaalt dot-tone ──────────
-// busy: 'full' → danger, 'mid' → warning, 'open' → success (via --tone)
-type DayBusy = 'full' | 'mid' | 'open'
-const DAYS: { date: string; wday: string; day: number; busy: DayBusy; label: string }[] = [
-  { date: '2026-05-13', wday: 'wo', day: 13, busy: 'full', label: 'Vandaag' },
-  { date: '2026-05-14', wday: 'do', day: 14, busy: 'mid', label: 'Morgen' },
-  { date: '2026-05-15', wday: 'vr', day: 15, busy: 'full', label: '15 mei' },
-  { date: '2026-05-16', wday: 'za', day: 16, busy: 'open', label: '16 mei' },
-  { date: '2026-05-17', wday: 'zo', day: 17, busy: 'open', label: '17 mei' },
+const NL_WDAY = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
+const NL_MONTH = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
+
+// Kandidaat-tijdslots (08:00–16:30, halfuur). Bezet-status komt uit de echte
+// afspraken van de gekozen dag.
+const SLOT_TIMES = [
+  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
 ]
 
-// Per busy-niveau het kleur-token voor de dot (geleverd via --tone).
+type DayBusy = 'full' | 'mid' | 'open'
 const BUSY_TONE: Record<DayBusy, string> = {
   full: 'var(--color-danger)',
   mid: 'var(--color-warning)',
   open: 'var(--color-success)',
 }
 
-// ── Tijd-slots voor de geselecteerde dag ──────────────────────────────────────
-// `busy`-slots zijn al geboekt (niet kiesbaar); de overige zijn vrij. De
-// conflict-banner wordt berekend met slotConflict() i.p.v. een hardcoded vlag.
-type SlotStatus = 'free' | 'busy'
-const SLOTS: { time: string; status: SlotStatus; label?: string }[] = [
-  { time: '08:00', status: 'free' },
-  { time: '08:30', status: 'free' },
-  { time: '09:00', status: 'free' },
-  { time: '09:30', status: 'free' },
-  { time: '10:00', status: 'busy', label: 'VVE intake' },
-  { time: '10:30', status: 'busy' },
-  { time: '11:00', status: 'busy' },
-  { time: '11:30', status: 'free' },
-  { time: '13:00', status: 'busy', label: 'Inkoop' },
-  { time: '14:00', status: 'free' },
-  { time: '14:30', status: 'free' },
-  { time: '15:00', status: 'free' },
-]
+function ymd(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
-// Bezet-blokken voor conflictdetectie (afgeleid uit de busy-slots; demo).
-const BUSY_BLOCKS: TimeBlock[] = [
-  { start: '10:00', end: '11:30' },
-  { start: '13:00', end: '14:00' },
-]
+/** Relatief datumlabel t.o.v. de ECHTE vandaag. */
+function dayLabelReal(date: string): string {
+  const d = new Date(`${date}T00:00:00`)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.round((d.getTime() - today.getTime()) / 86_400_000)
+  if (diff === 0) return 'Vandaag'
+  if (diff === 1) return 'Morgen'
+  if (diff === -1) return 'Gisteren'
+  return `${cap(NL_WDAY[d.getDay()])} ${d.getDate()} ${NL_MONTH[d.getMonth()]}`
+}
 
 /**
- * AgendaHerplanSheet — bottom-sheet (backdrop + slide-up) om een afspraak te
- * verzetten. Toont het huidige slot, een 5-daagse mini-kalender, een 3-koloms
- * tijd-slot-grid en een live conflict-banner (berekend via slotConflict uit
- * agenda-mobile-helpers). De Bevestig-knop is disabled zolang het gekozen slot
- * botst met een bestaande afspraak. Onderaan een WhatsApp-notify toggle.
- *
- * v1: alle keuzes in lokale state; geen persistente write (zie onConfirm).
+ * AgendaHerplanSheet — bottom-sheet om een afspraak te verzetten. De dagen zijn
+ * de 7 komende dagen (echt), de bezet-blokken + slot-status komen uit de echte
+ * week-afspraken, en Bevestig slaat het nieuwe tijdstip op via
+ * rescheduleAppointment (afspraak_geboekt_op).
  */
-export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerplanSheetProps) {
-  // Fallback naar het live-event (C1) als ev ontbreekt — matcht handoff-gedrag.
-  const orig = ev ?? AG_EVENTS.find((e) => e.id === 'C1')!
+export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: AgendaHerplanSheetProps) {
+  const router = useRouter()
+  const [saving, startSaving] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
-  // Geselecteerde dag (default: morgen, 2e item).
-  const [activeDay, setActiveDay] = useState<string>(DAYS[1].date)
-  // Geselecteerd vrij tijdslot (start 'HH:MM'); null = nog niets gekozen.
+  // 7 komende dagen vanaf vandaag (lokale tz = Amsterdam voor de gebruiker).
+  const days = useMemo(() => {
+    const base = new Date()
+    base.setHours(0, 0, 0, 0)
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(base)
+      d.setDate(d.getDate() + i)
+      const date = ymd(d)
+      const count = events.filter((e) => e.date === date).length
+      const busy: DayBusy = count >= 4 ? 'full' : count >= 2 ? 'mid' : 'open'
+      const label = i === 0 ? 'Vandaag' : i === 1 ? 'Morgen' : `${d.getDate()} ${NL_MONTH[d.getMonth()]}`
+      return { date, wday: NL_WDAY[d.getDay()], day: d.getDate(), month: d.getMonth(), busy, label }
+    })
+  }, [events])
+
+  const [activeDay, setActiveDay] = useState<string>(() => days[1]?.date ?? days[0]?.date ?? '')
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
-  // WhatsApp-klant-informeren — standaard aan.
   const [notifyWa, setNotifyWa] = useState(true)
+
+  // Bezet-blokken voor de gekozen dag uit de echte afspraken.
+  const busyBlocks = useMemo<TimeBlock[]>(
+    () => events.filter((e) => e.date === activeDay).map((e) => ({ start: e.start, end: e.end })),
+    [events, activeDay],
+  )
 
   if (!open) return null
 
-  // Duur van de te verzetten klus in minuten (voor conflict-berekening).
+  const orig = ev
   const durMin = minutesBetween(orig.start, orig.end)
 
-  // Conflict-status van het gekozen slot t.o.v. de bezet-blokken.
   const conflict = selectedSlot
-    ? slotConflict(selectedSlot, durMin, BUSY_BLOCKS)
+    ? slotConflict(selectedSlot, durMin, busyBlocks)
     : { conflict: false as const }
-
   const hasConflict = conflict.conflict
-  // Eindtijd van het gekozen slot (voor de banner-tekst).
   const conflictEnd =
     hasConflict && selectedSlot
       ? minToHHMM(minutesBetween('00:00', selectedSlot) + durMin)
       : ''
 
-  // Slot-titel volgt de gekozen dag i.p.v. een hardcoded label.
-  const activeDayEntry = DAYS.find((d) => d.date === activeDay)
-  const slotsTitle = activeDayEntry
-    ? `Beschikbare tijden — ${activeDayEntry.wday.charAt(0).toUpperCase()}${activeDayEntry.wday.slice(1)} ${activeDayEntry.day} mei`
+  const activeEntry = days.find((d) => d.date === activeDay)
+  const slotsTitle = activeEntry
+    ? `Beschikbare tijden — ${cap(activeEntry.wday)} ${activeEntry.day} ${NL_MONTH[activeEntry.month]}`
     : 'Beschikbare tijden'
+  const monthLabel = activeEntry
+    ? `${cap(NL_MONTH[activeEntry.month])} ${new Date(`${activeDay}T00:00:00`).getFullYear()}`
+    : ''
+
+  // Slot bezet als de start binnen een bestaand blok van de gekozen dag valt.
+  function slotBusy(time: string): boolean {
+    const s = minutesBetween('00:00', time)
+    return busyBlocks.some(
+      (b) => s >= minutesBetween('00:00', b.start) && s < minutesBetween('00:00', b.end),
+    )
+  }
+
+  function handleConfirm() {
+    const leadId = orig.lead ?? orig.id
+    if (!leadId || !selectedSlot || !activeDay) return
+    // Lokale (Amsterdam) datum+tijd → ISO/UTC. De gebruiker zit in NL, dus
+    // new Date('YYYY-MM-DDTHH:MM:00') interpreteert correct als Amsterdam-tijd.
+    const local = new Date(`${activeDay}T${selectedSlot}:00`)
+    if (!Number.isFinite(local.getTime())) {
+      setError('Ongeldige datum/tijd.')
+      return
+    }
+    setError(null)
+    startSaving(async () => {
+      const res = await rescheduleAppointment(leadId, local.toISOString())
+      if (res.ok) {
+        router.refresh() // agenda herladen → afspraak staat op de nieuwe tijd
+        onConfirm()
+      } else {
+        setError(res.error)
+      }
+    })
+  }
 
   return (
     <div className={styles.overlay}>
@@ -122,13 +163,10 @@ export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerpl
           <button
             type="button"
             className={styles.confirmBtn}
-            disabled={hasConflict || selectedSlot === null}
-            onClick={() => {
-              // TODO: functional pass — reschedule server action
-              onConfirm()
-            }}
+            disabled={hasConflict || selectedSlot === null || saving}
+            onClick={handleConfirm}
           >
-            Bevestig
+            {saving ? 'Bezig…' : 'Bevestig'}
           </button>
         </div>
 
@@ -141,24 +179,22 @@ export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerpl
             <div className={styles.currentBody}>
               <div className={styles.currentLabel}>NU GEPLAND</div>
               <div className={styles.currentValue}>
-                {dateLabel(orig.date)} · {orig.start} — {orig.end}
+                {dayLabelReal(orig.date)} · {orig.start} — {orig.end}
               </div>
             </div>
             <div className={styles.currentName}>{orig.naam}</div>
           </div>
         </div>
 
-        {/* Dag-label + maand-knop */}
+        {/* Dag-label + maand */}
         <div className={styles.dayHeader}>
           <span className={styles.dayHeaderTitle}>Kies een nieuwe dag</span>
-          <button type="button" className={styles.monthBtn}>
-            Mei 2026
-          </button>
+          <span className={styles.monthBtn}>{monthLabel}</span>
         </div>
 
-        {/* DayPicker — 5-daagse mini-kalender */}
+        {/* DayPicker — 7 komende dagen */}
         <div className={styles.dayPicker}>
-          {DAYS.map((d) => {
+          {days.map((d) => {
             const on = d.date === activeDay
             return (
               <button
@@ -187,21 +223,20 @@ export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerpl
         <div className={styles.slotsWrap}>
           <div className={styles.slotsTitle}>{slotsTitle}</div>
           <div className={styles.slotsGrid}>
-            {SLOTS.map((s) => {
-              const busy = s.status === 'busy'
-              const sel = s.time === selectedSlot
+            {SLOT_TIMES.map((time) => {
+              const busy = slotBusy(time)
+              const sel = time === selectedSlot
               return (
                 <button
-                  key={s.time}
+                  key={time}
                   type="button"
                   className={styles.slot}
                   data-busy={busy ? 'true' : undefined}
                   data-selected={sel ? 'true' : undefined}
                   disabled={busy}
-                  onClick={() => setSelectedSlot(s.time)}
+                  onClick={() => setSelectedSlot(time)}
                 >
-                  <span className={styles.slotTime}>{s.time}</span>
-                  {s.label && <span className={styles.slotLabel}>{s.label}</span>}
+                  <span className={styles.slotTime}>{time}</span>
                   {sel && hasConflict && <span className={styles.slotConflictTag}>botst</span>}
                 </button>
               )
@@ -228,7 +263,10 @@ export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerpl
           </div>
         )}
 
-        {/* WhatsApp-notify toggle */}
+        {/* Foutmelding bij opslaan */}
+        {error && <div className={styles.saveError}>{error}</div>}
+
+        {/* WhatsApp-notify toggle — UI; automatische WA-notificatie is nog niet ingericht. */}
         <div className={styles.notifyRow}>
           <MessageCircle size={18} className={styles.notifyIcon} aria-hidden="true" />
           <div className={styles.notifyBody}>
@@ -245,7 +283,7 @@ export function AgendaHerplanSheet({ ev, open, onClose, onConfirm }: AgendaHerpl
   )
 }
 
-// ── Helpers (lokaal — geen herbruik elders nodig) ─────────────────────────────
+// ── Helpers (lokaal) ──────────────────────────────────────────────────────────
 
 /** Minuten-since-middernacht → 'HH:MM'. */
 function minToHHMM(total: number): string {

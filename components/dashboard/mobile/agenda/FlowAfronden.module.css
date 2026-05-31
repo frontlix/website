@@ -244,7 +244,17 @@
   /* Fade vanaf de bg naar transparant zodat content netjes onderdoor scrollt. */
   background: linear-gradient(to top, var(--color-bg) 75%, transparent);
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Inline foutmelding boven de afrond-knop. */
+.footerError {
+  font-size: 12.5px;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  padding: 8px 10px;
+  border-radius: 8px;
 }
 
 .doneBtn {

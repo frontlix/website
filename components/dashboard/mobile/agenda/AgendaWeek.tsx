@@ -101,8 +101,8 @@ export function AgendaWeek({
 }: AgendaWeekProps) {
   const [filter, setFilter] = useState('week')
 
-  // Live event = de afspraak die nu loopt (current=true uit de mapper).
-  const nowEvent = useMemo(() => events.find((e) => e.current), [events])
+  // Live event = de afspraak die nu loopt (en niet al afgehandeld is).
+  const nowEvent = useMemo(() => events.find((e) => e.current && !e.done), [events])
 
   // Groepeer per dag (gesorteerd op start) → buckets met label/summary/hours.
   const days = useMemo<DayBucket[]>(() => {
@@ -209,7 +209,7 @@ export function AgendaWeek({
                 <AgendaEventRow
                   key={ev.id}
                   ev={ev}
-                  state={ev.current ? 'now' : 'idle'}
+                  state={ev.done ? 'done' : ev.current ? 'now' : 'idle'}
                   last={i === d.events.length - 1}
                   onClick={() => onOpenEvent?.(ev)}
                 />

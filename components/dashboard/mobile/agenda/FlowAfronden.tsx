@@ -9,9 +9,11 @@
 // foto-upload, notitie-edit, materiaal-edit en de vervolgstap-toggles
 // bewaren niets server-side. Zie de // TODO's voor de functionele pass.
 
-import { useState } from 'react'
-import { Check, Plus, Camera, FileText, Zap, Sparkles, Euro, Star, Bell } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { Check, Plus, Camera, Sparkles, Euro, Star, Bell } from 'lucide-react'
 import type { AgendaEvent } from './agenda-mock'
+import { completeAppointment } from '@/lib/dashboard/agenda-actions'
 import { FNav, FDetailCard, FKV } from './FlowAtoms'
 import { MobileToggle } from '../shared/MobileToggle'
 import styles from './FlowAfronden.module.css'
@@ -75,6 +77,10 @@ const DEFAULT_NOTE =
   'Voegen invegen netjes gelukt, beschermlaag aangebracht. Niet 48u betreden met natte voeten — drogen volledig binnen 24u.'
 
 export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
+  const router = useRouter()
+  const [saving, startSaving] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
   // Klantnaam + plaats afgeleid uit het event (fallback = handoff-voorbeeld).
   const naam = ev?.naam ?? 'Marieke v.d. Heijden'
   const plaats = ev?.adres ? ev.adres.split(' · ').slice(-1)[0] : 'Utrecht'
@@ -96,8 +102,22 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
   }
 
   function handleDone() {
-    // TODO: functional pass — complete-job server action + photo upload.
-    onDone()
+    const leadId = ev?.lead ?? ev?.id
+    if (!leadId) {
+      onDone()
+      return
+    }
+    setError(null)
+    startSaving(async () => {
+      const res = await completeAppointment(leadId)
+      if (res.ok) {
+        router.refresh() // agenda herladen → afspraak toont als afgerond
+        onDone()
+      } else {
+        setError(res.error)
+      }
+    })
+    // Foto's / notitie / vervolgstappen blijven v1 (geen persistence).
   }
 
   if (!open) return null
@@ -191,8 +211,15 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
 
       {/* Footer: markeer als afgerond */}
       <div className={styles.footer}>
-        <button type="button" className={styles.doneBtn} onClick={handleDone}>
-          <Check size={18} strokeWidth={2.4} aria-hidden="true" /> Markeer als afgerond
+        {error && <div className={styles.footerError}>{error}</div>}
+        <button
+          type="button"
+          className={styles.doneBtn}
+          onClick={handleDone}
+          disabled={saving}
+        >
+          <Check size={18} strokeWidth={2.4} aria-hidden="true" />{' '}
+          {saving ? 'Bezig…' : 'Markeer als afgerond'}
         </button>
       </div>
     </div>

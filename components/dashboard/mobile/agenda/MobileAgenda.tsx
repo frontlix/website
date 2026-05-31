@@ -55,7 +55,15 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
         )}
       </MobileDrilldownLayer>
 
-      {herplan && <AgendaHerplanSheet ev={herplan} open onClose={() => setHerplan(null)} onConfirm={() => setHerplan(null)} />}
+      {herplan && (
+        <AgendaHerplanSheet
+          ev={herplan}
+          events={data.events}
+          open
+          onClose={() => setHerplan(null)}
+          onConfirm={() => setHerplan(null)}
+        />
+      )}
       {afronden && (
         <FlowAfronden ev={afronden} open onClose={() => setAfronden(null)} onDone={() => { setAfronden(null); setDetail(null) }} />
       )}
