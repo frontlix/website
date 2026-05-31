@@ -48,7 +48,7 @@ export function LeadBotStatus({ lead }: { lead: Lead }) {
         <span className={styles.description}>
           {paused ? 'Gepauzeerd — owner antwoordt handmatig' : description}
         </span>
-        {error && <span style={{ color: '#c33', fontSize: 'var(--text-xs)', marginLeft: 8 }}>{error}</span>}
+        {error && <span style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)', marginLeft: 8 }}>{error}</span>}
       </div>
       <div className={styles.right}>
         <span className={styles.metaPair}>

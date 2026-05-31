@@ -104,7 +104,7 @@ export default function DienstenPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
       {/* Hero */}
-      <section className={styles.hero}>
+      <section id="diensten-hero" className={styles.hero}>
         <div className={styles.heroInner}>
           <span className={styles.label}>In 6 stappen</span>
           <h1 className={styles.heroHeading}>

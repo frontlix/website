@@ -226,6 +226,15 @@
   transform: translateY(0);
 }
 
+/* Disabled-staat: geen hover-lift en niet klikbaar (consistent met Button). */
+.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  animation: none;
+  pointer-events: none;
+}
+
 /* Succesbericht */
 .success {
   text-align: center;

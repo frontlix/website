@@ -60,20 +60,7 @@ export function WhatsAppComposer({
   return (
     <>
       {error && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 8,
-            padding: '10px 14px',
-            margin: 0,
-            background: 'rgba(255, 60, 60, 0.08)',
-            borderTop: '1px solid rgba(255, 60, 60, 0.2)',
-            color: '#c33',
-            fontSize: 'var(--text-xs)',
-            lineHeight: 1.4,
-          }}
-        >
+        <div className={styles.errorBanner}>
           <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>{error}</span>
         </div>

@@ -260,11 +260,12 @@
   font-style: normal;
 }
 
+/* Mobile-first: één kolom; vanaf 768px twee kolommen (zie media-query) */
 .teamGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--space-6);
-  max-width: 860px;
+  max-width: 400px;
   margin: 0 auto;
   align-items: start;
 }
@@ -276,8 +277,9 @@
   background: var(--color-surface);
 }
 
+/* Mobile-first: geen offset; op desktop verspringt de tweede kaart (zie media-query) */
 .teamCardOffset {
-  margin-top: 40px;
+  margin-top: 0;
 }
 
 /* Foto wrapper met overlay-elementen */
@@ -292,22 +294,6 @@
 .teamPhotoImg {
   object-fit: cover;
   object-position: top center;
-}
-
-/* Nummer-badge linksboven op de foto */
-.teamNumBadge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 4px 10px;
-  backdrop-filter: blur(6px);
 }
 
 /* Blauwe hoek rechtsonder op de foto */
@@ -361,15 +347,6 @@
 
 /* Mobile */
 @media (max-width: 767px) {
-  .teamGrid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-  }
-
-  .teamCardOffset {
-    margin-top: 0;
-  }
-
   .valuesSection {
     padding-top: var(--space-12);
     padding-bottom: var(--space-16);
@@ -397,6 +374,15 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
+  /* Vanaf tablet/desktop: twee kolommen + verspringende tweede kaart */
+  .teamGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 860px;
+  }
+
+  .teamCardOffset {
+    margin-top: 40px;
+  }
 }
 
 @media (min-width: 1024px) {

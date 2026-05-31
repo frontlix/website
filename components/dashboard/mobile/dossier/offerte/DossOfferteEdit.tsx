@@ -263,9 +263,14 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
       })
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up, { once: true })
+    // Ook 'pointercancel' afronden: op touch kan een gesture onderbroken raken
+    // (scroll-overname, telefoontje) zonder dat 'pointerup' vuurt — zonder deze
+    // cleanup zou de lijst dan in drag-state blijven hangen.
+    window.addEventListener('pointercancel', up, { once: true })
     return () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
     }
     // Alleen opnieuw binden bij een nieuwe drag-id (niet bij elke delta-tick).
     // eslint-disable-next-line react-hooks/exhaustive-deps

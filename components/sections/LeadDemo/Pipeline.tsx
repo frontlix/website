@@ -108,7 +108,18 @@ export default function Pipeline({ currentStep, showComplete, onStepClick }: Pip
             <div
               key={step.id}
               className={styles.stepRow}
+              role="button"
+              tabIndex={0}
+              aria-label={`Stap ${step.id}: ${step.title}`}
+              aria-current={isActive ? 'step' : undefined}
               onClick={() => onStepClick?.(step.id)}
+              /* Toetsenbordbediening: Enter/Space activeert de stap zoals een echte knop. */
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onStepClick?.(step.id)
+                }
+              }}
             >
               {/* Circle indicator */}
               <div

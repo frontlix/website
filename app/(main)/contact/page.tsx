@@ -33,7 +33,7 @@ export default function ContactPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       {/* Hero */}
-      <section className={styles.hero}>
+      <section id="contact-hero" className={styles.hero}>
         <div className={styles.heroInner}>
           <span className={styles.label}>Contact</span>
           <h1 className={styles.heroHeading}>Laten we jouw project bespreken</h1>
@@ -44,7 +44,7 @@ export default function ContactPage() {
       </section>
 
       {/* Form section */}
-      <section className={styles.formSection}>
+      <section id="contactformulier" className={styles.formSection}>
         <ContactForm />
       </section>
     </>

@@ -47,12 +47,18 @@ export function MobileChatDetail({
   const [surfaceOn, setSurfaceOn] = useState(!lead.botGepauzeerd)
   const [togglePending, startToggle] = useTransition()
 
-  // Scroll naar het nieuwste bericht bij mount
+  // Scroll naar het nieuwste bericht bij mount én wanneer er een nieuw bericht
+  // binnenkomt. Na router.refresh() (bv. na verzenden/bot-toggle) komen nieuwe
+  // berichten binnen via de props; deps op aantal + laatste id zorgen dat we
+  // dan opnieuw naar onderen scrollen i.p.v. boven blijven hangen.
+  // (Laatste-id apart uitgepakt — exhaustive-deps wil geen complexe expressie
+  // in de dep-array.)
+  const lastMessageId = messages[messages.length - 1]?.id
   useEffect(() => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight
     }
-  }, [])
+  }, [messages.length, lastMessageId])
 
   function handleSurfaceToggle() {
     const nextPaused = surfaceOn // surfaceOn true → we gaan pauzeren

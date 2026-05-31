@@ -44,7 +44,6 @@ const values = [
 
 const team = [
   {
-    nummer: '01',
     name: 'Christiaan Tromp',
     role: 'Mede-oprichter & ontwikkelaar',
     photo: '/images/christiaan-tromp.png',
@@ -52,7 +51,6 @@ const team = [
       'Bouwt de systemen en automatiseringen die Frontlix laten draaien. Van WhatsApp workflows tot geïntegreerde offerte-engines.',
   },
   {
-    nummer: '02',
     name: 'Georg Tromp',
     role: 'Mede-oprichter & ontwikkelaar',
     photo: '/images/georg-tromp.png',
@@ -74,7 +72,7 @@ export default function OverOnsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       {/* Hero */}
-      <section className={styles.hero}>
+      <section id="over-ons-hero" className={styles.hero}>
         <div className={styles.heroInner}>
           <span className={styles.label}>Over ons</span>
           <h1 className={styles.heroHeading}>Twee broers, één missie</h1>
@@ -86,7 +84,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Story */}
-      <section className={styles.section}>
+      <section id="ons-verhaal" className={styles.section}>
         <div className={styles.inner}>
           <div className={styles.storyGrid}>
             <div className={styles.storyText}>
@@ -131,7 +129,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Mission */}
-      <section className={styles.missionSection}>
+      <section id="onze-missie" className={styles.missionSection}>
         <div className={styles.inner}>
           <div className={styles.missionCard}>
             <span className={styles.sectionLabel}>Onze missie</span>
@@ -149,7 +147,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Team */}
-      <section className={styles.teamSection}>
+      <section id="ons-team" className={styles.teamSection}>
         <div className={styles.inner}>
           <div className={styles.teamHeader}>
             <span className={styles.sectionLabel}>Ons team</span>
@@ -191,7 +189,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Values */}
-      <section className={styles.valuesSection}>
+      <section id="onze-waarden" className={styles.valuesSection}>
         <div className={styles.inner}>
           <div className={styles.valuesHeader}>
             <span className={styles.sectionLabel}>Onze waarden</span>

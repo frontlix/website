@@ -123,7 +123,13 @@ const structuredData = {
       description:
         'Automatische leadopvolging via WhatsApp voor MKB-bedrijven in Nederland.',
       foundingDate: '2024',
-      taxID: '90193695',
+      // KvK-nummer hoort als identifier (PropertyValue), niet als taxID (taxID = btw/fiscaal nr.)
+      identifier: {
+        '@type': 'PropertyValue',
+        propertyID: 'KvK',
+        name: 'KvK-nummer',
+        value: '90193695',
+      },
       parentOrganization: { '@id': 'https://frontlix.com/#organization' },
     },
     {

@@ -1,3 +1,7 @@
+'use client'
+
+import { useId } from 'react'
+
 /**
  * SVG donut-progress met brand-gradient. Geclamped op 0–100% voor
  * de visuele boog; de getoonde percentage-tekst kan boven de 100% gaan
@@ -18,7 +22,8 @@ export function Donut({
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const dash = (clamped / 100) * circumference
-  const gradientId = 'donut-grad-' + Math.round(Math.random() * 1e9)
+  // useId() levert een stabiele id op server + client → geen hydration-mismatch.
+  const gradientId = `donut-grad-${useId()}`
 
   // CSS-variabelen-fallback voor responsive sizing: desktop pakt de
    // `size` prop, mobile-CSS kan via --donut-size kleiner maken zonder

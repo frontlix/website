@@ -25,6 +25,15 @@
   transform: translateY(0);
 }
 
+/* Disabled-staat: geen hover-lift, geen glow-animatie en niet klikbaar. */
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  animation: none;
+  pointer-events: none;
+}
+
 /* Primary */
 .primary {
   background: var(--color-gradient);

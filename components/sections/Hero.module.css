@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex;
   align-items: center;
-  background: #FFFFFF;
+  background: var(--color-bg);
   overflow: clip;
   overflow-clip-margin: 120px;
   padding: var(--space-8) var(--space-6) 0;
@@ -17,7 +17,7 @@
   left: 0;
   right: 0;
   height: 200px;
-  background: linear-gradient(to bottom, transparent, #FFFFFF);
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
   pointer-events: none;
   z-index: 1;
 }
@@ -54,17 +54,17 @@
   letter-spacing: -0.03em;
   line-height: 1.08;
   margin-bottom: var(--space-6);
-  color: #1A1A1A;
+  color: var(--color-text);
 }
 
 .headingBlue {
-  color: #1A56FF;
+  color: var(--color-primary);
   display: inline;
 }
 
 .subtext {
   font-size: var(--text-base);
-  color: #444444;
+  color: var(--color-text-soft);
   line-height: 1.7;
   margin-bottom: var(--space-4);
   max-width: 560px;
@@ -109,7 +109,7 @@
   background: transparent;
   border: none;
   border-radius: 10px 0 0 10px;
-  color: #1A1A1A;
+  color: var(--color-text);
   font-size: 16px; /* ≥16px prevents iOS Safari auto-zoom on focus */
   outline: none;
 }
@@ -130,7 +130,7 @@
 .phoneButton {
   padding: 10px 16px;
   background: transparent;
-  color: #1A56FF;
+  color: var(--color-primary);
   font-weight: 600;
   font-size: var(--text-xs);
   border: none;
@@ -143,7 +143,7 @@
 
 .phoneButton:hover {
   background: rgba(26, 86, 255, 0.1);
-  color: #00CFFF;
+  color: var(--color-accent);
 }
 
 .phoneButton:disabled {
@@ -153,10 +153,10 @@
 
 .successMessage {
   font-size: var(--text-sm);
-  color: #16a34a;
+  color: var(--color-success);
   font-weight: 600;
   padding: 12px 20px;
-  background: rgba(22, 163, 74, 0.08);
+  background: var(--color-success-bg);
   border-radius: 8px;
   border: 1px solid rgba(22, 163, 74, 0.2);
 }
@@ -164,7 +164,7 @@
 .errorMessage {
   width: 100%;
   font-size: var(--text-xs);
-  color: #dc2626;
+  color: var(--color-danger);
   margin-top: var(--space-1);
   text-align: center;
 }
@@ -181,12 +181,12 @@
 
 .proofItem {
   font-size: var(--text-sm);
-  color: #555555;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .check {
-  color: #25d366;
+  color: var(--color-whatsapp);
   font-weight: 700;
 }
 

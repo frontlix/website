@@ -60,7 +60,7 @@ export function WhatsAppPane({
               </>
             )}
           </span>
-          {error && <span style={{ color: '#c33', fontSize: 12 }}>{error}</span>}
+          {error && <span style={{ color: 'var(--color-danger)', fontSize: 12 }}>{error}</span>}
         </div>
         <button
           type="button"

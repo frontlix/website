@@ -8,6 +8,21 @@
   flex-shrink: 0;
 }
 
+/* Foutmelding boven de composer (bv. WhatsApp 24u-window gesloten).
+   Palet-conform via danger-tokens i.p.v. hardgecodeerd rood. */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  background: var(--color-danger-bg);
+  border-top: 1px solid var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
 .attachBtn,
 .sendBtn {
   display: grid;

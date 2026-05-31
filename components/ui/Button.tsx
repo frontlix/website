@@ -36,9 +36,11 @@ export default function Button({
     className
   )
 
-  if (href) {
+  // Link-tak alleen voor niet-disabled href-knoppen; respecteer onClick.
+  // Een disabled href valt door naar de <button> zodat disabled werkelijk geldt.
+  if (href && !disabled) {
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={classes} onClick={onClick}>
         {children}
       </Link>
     )

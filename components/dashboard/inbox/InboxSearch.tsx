@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Search } from 'lucide-react'
 
 /** Search-input voor inbox-conversaties — sync via ?q=. */
@@ -9,12 +9,13 @@ export function InboxSearch({ initial }: { initial: string }) {
   const [value, setValue] = useState(initial)
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
 
   useEffect(() => {
     const t = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString())
+      // Lees de LIVE URL-params (niet de stale closure): een filter-/kanaal-
+      // wijziging tijdens een pending debounce blijft zo behouden.
+      const params = new URLSearchParams(window.location.search)
       if (value.trim()) params.set('q', value.trim())
       else params.delete('q')
       const qs = params.toString()

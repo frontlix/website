@@ -146,6 +146,12 @@
   background: rgba(0, 0, 0, 0.03);
 }
 
+/* Zichtbare focus-indicator voor toetsenbordnavigatie (a11y). */
+.stepRow:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ─── Step circle ────────────────────────────────────────────────────────────── */
 
 .circle {

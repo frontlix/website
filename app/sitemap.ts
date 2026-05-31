@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://frontlix.com'
+  // Gebruik env-var indien gezet; val anders terug op de productie-URL (gedrag identiek)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://frontlix.com'
 
   return [
     {

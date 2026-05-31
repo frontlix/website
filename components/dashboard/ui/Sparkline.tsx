@@ -1,3 +1,7 @@
+'use client'
+
+import { useId } from 'react'
+
 type Props = {
   data: number[]
   width?: number
@@ -9,7 +13,8 @@ type Props = {
  * Inline mini-area-chart (SVG, geen library). Wordt rechtsonder in een
  * KPI-card geplaatst. Gradient-fill matcht --primary; lijn is solid.
  *
- * Pure render — geen state, geen client-only. Server-component-veilig.
+ * Gebruikt useId() voor de gradient-id zodat server en client dezelfde
+ * id renderen (geen hydration-mismatch).
  */
 export function Sparkline({
   data,
@@ -17,6 +22,11 @@ export function Sparkline({
   height = 36,
   color = 'var(--primary)',
 }: Props) {
+  // Unieke gradient-id per Sparkline-instance vermijdt SVG-defs-clashes;
+  // useId() blijft stabiel tussen server en client. Als hook moet deze call
+  // onvoorwaardelijk vóór elke early return staan (React Rules of Hooks).
+  const gradientId = `dash-spark-${useId()}`
+
   if (!data.length) return null
 
   const min = Math.min(...data)
@@ -33,9 +43,6 @@ export function Sparkline({
     .map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`)
     .join(' ')
   const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`
-
-  // Unieke gradient-id per Sparkline-instance vermijdt SVG-defs-clashes.
-  const gradientId = `dash-spark-${Math.random().toString(36).slice(2, 9)}`
 
   return (
     <svg className="dash-kpi-spark" width={width} height={height}>

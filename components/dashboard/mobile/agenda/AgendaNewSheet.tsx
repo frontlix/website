@@ -8,6 +8,7 @@ import {
   Zap,
   ChevronRight,
 } from 'lucide-react'
+import { useModalSheet } from '@/hooks/useModalSheet'
 import styles from './AgendaNewSheet.module.css'
 
 interface AgendaNewSheetProps {
@@ -44,6 +45,10 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
   const [kind, setKind] = useState<Kind>('Klus')
   const [note, setNote] = useState('')
 
+  // Scroll-lock + Escape + focus-move/-restore (vóór de early return, zodat de
+  // hook-volgorde stabiel blijft). Ref komt op de role="dialog"-div.
+  const dialogRef = useModalSheet<HTMLDivElement>(open, onClose)
+
   if (!open) return null
 
   // Hardcoded geselecteerde waarden (statisch ontwerp; later koppelen).
@@ -56,7 +61,14 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
       {/* Sheet */}
-      <div role="dialog" aria-modal="true" aria-label="Nieuwe afspraak" className={styles.sheet}>
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Nieuwe afspraak"
+        className={styles.sheet}
+      >
         {/* Grabber */}
         <div className={styles.handle} aria-hidden="true" />
 

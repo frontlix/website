@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useModalSheet } from '@/hooks/useModalSheet'
 import type { MobileLeadStage } from './lead-mappers'
 import styles from './LeadsFilterSheet.module.css'
 
@@ -58,7 +59,15 @@ export function LeadsFilterSheet({
   const [urgentOnly, setUrgent]   = useState(value.urgentOnly)
   const [sort, setSort]           = useState<AdvFilter['sort']>(value.sort)
 
-  // Sync draft wanneer sheet opent met nieuwe value
+  // Scroll-lock + Escape + focus-move/-restore (vóór de early return, zodat de
+  // hook-volgorde stabiel blijft). Ref komt op de role="dialog"-div.
+  const dialogRef = useModalSheet<HTMLDivElement>(open, onClose)
+
+  // Sync draft wanneer sheet opent met nieuwe value.
+  // De weglating van value.* in de deps is BEWUST: we willen de draft alleen
+  // resetten op het open-event (false→true), niet bij elke value-mutatie van de
+  // parent. Zou value wél in de deps staan, dan zouden we de lopende keuzes van
+  // de gebruiker overschrijven zodra de gefilterde lijst (en dus value) verandert.
   useEffect(() => {
     if (open) {
       setStages(value.stages)
@@ -66,7 +75,8 @@ export function LeadsFilterSheet({
       setUrgent(value.urgentOnly)
       setSort(value.sort)
     }
-  }, [open]) // value niet in deps — alleen syncen bij open-event
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bewust alleen op open-event syncen (zie comment hierboven)
+  }, [open])
 
   if (!open) return null
 
@@ -97,6 +107,8 @@ export function LeadsFilterSheet({
 
       {/* Sheet */}
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Filters"

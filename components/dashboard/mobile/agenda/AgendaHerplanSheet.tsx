@@ -8,6 +8,7 @@ import { durStr, minutesBetween, slotConflict } from './agenda-mobile-helpers'
 import type { TimeBlock } from './agenda-mobile-helpers'
 import type { AgendaEvent } from './agenda-mock'
 import { rescheduleAppointment } from '@/lib/dashboard/agenda-actions'
+import { useModalSheet } from '@/hooks/useModalSheet'
 import styles from './AgendaHerplanSheet.module.css'
 
 interface AgendaHerplanSheetProps {
@@ -92,6 +93,10 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
     [events, activeDay],
   )
 
+  // Scroll-lock + Escape + focus-move/-restore (vóór de early return, zodat de
+  // hook-volgorde stabiel blijft). Ref komt op de role="dialog"-div.
+  const dialogRef = useModalSheet<HTMLDivElement>(open, onClose)
+
   if (!open) return null
 
   const orig = ev
@@ -150,7 +155,14 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
       {/* Sheet */}
-      <div role="dialog" aria-modal="true" aria-label="Herplannen" className={styles.sheet}>
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Herplannen"
+        className={styles.sheet}
+      >
         {/* Grabber */}
         <div className={styles.handle} aria-hidden="true" />
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getSupabase } from '@/lib/supabase'
 import PersonalizedDemoPage from '@/components/personalized-demo/PersonalizedDemoPage'
@@ -14,7 +15,8 @@ interface DemoData {
   expires_at: string | null
 }
 
-async function getDemo(slug: string): Promise<DemoData | null> {
+// cache() dedupliceert de Supabase-fetch tussen generateMetadata en de page-render
+const getDemo = cache(async (slug: string): Promise<DemoData | null> => {
   const { data, error } = await getSupabase()
     .from('personalized_demos')
     .select('id, slug, naam, bedrijf, branche, briefing, is_active, expires_at')
@@ -23,7 +25,7 @@ async function getDemo(slug: string): Promise<DemoData | null> {
 
   if (error || !data) return null
   return data as DemoData
-}
+})
 
 export async function generateMetadata({
   params,
