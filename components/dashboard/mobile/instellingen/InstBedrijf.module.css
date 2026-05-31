@@ -23,6 +23,14 @@
   gap: 10px;
 }
 
+/* Eerlijke read-only hint onder de bedrijfsvelden (geen dode opslaan-knop). */
+.readonlyHint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
 /* ── Maanddoel-blok (echt gekoppeld aan saveOmzetDoelMaand) ─────────────── */
 .goalBox {
   padding: 16px;

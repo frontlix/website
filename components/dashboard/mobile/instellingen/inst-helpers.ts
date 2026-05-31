@@ -5,9 +5,14 @@ const OPENING_DEMO: Record<string, string> = {
   '{hoofddienst}': 'oprit', '{m2}': '145', '{plaats}': 'Delft',
 }
 
-/** Vult de demo-variabelen in voor de WA-preview. */
-export function fillOpening(txt: string): string {
-  return Object.entries(OPENING_DEMO).reduce((a, [k, v]) => a.split(k).join(v), txt)
+/**
+ * Vult de variabelen in voor de WA-preview. `overrides` mag de demo-waardes
+ * vervangen door echte tenant-data (bv. {bedrijf} en {bot_naam}); de overige
+ * variabelen blijven demo-voorbeelden omdat ze per lead verschillen.
+ */
+export function fillOpening(txt: string, overrides: Record<string, string> = {}): string {
+  const map = { ...OPENING_DEMO, ...overrides }
+  return Object.entries(map).reduce((a, [k, v]) => a.split(k).join(v), txt)
 }
 
 /** Afgerond %-verschil van cur t.o.v. base (0 als base 0). */

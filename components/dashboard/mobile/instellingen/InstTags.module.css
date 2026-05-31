@@ -59,6 +59,59 @@
   flex-shrink: 0;
 }
 
+/* Inline fout-melding bij mislukte create/delete. */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
 .footer {
   margin-top: 14px;
+}
+
+/* Inline "nieuwe tag"-form: tekst-input + bevestig-knop. */
+.addRow {
+  display: flex;
+  gap: 8px;
+}
+
+.addInput {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.addInput:focus {
+  border-color: var(--color-primary);
+}
+
+.addConfirm {
+  width: 44px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.addConfirm:disabled {
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  cursor: default;
 }

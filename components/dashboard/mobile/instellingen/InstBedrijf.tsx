@@ -1,38 +1,53 @@
 'use client'
 
-// v1 — bedrijfsvelden draaien nog op lokale state (mock; opslaan niet gekoppeld).
-// Het Maanddoel-blok is WEL echt gekoppeld aan saveOmzetDoelMaand, zodat de
-// "Stel je maanddoel in"-CTA op het Overzicht een werkende bestemming heeft.
+// Bedrijfsvelden tonen de echte tenant_settings-data, read-only: er is (nog)
+// geen save-action voor bedrijfsnaam/chatbot/adres/e-mail/WhatsApp, dus we laten
+// geen dode "Opslaan"-knop achter. Het Maanddoel-blok is WEL echt gekoppeld aan
+// saveOmzetDoelMaand (laag risico, geen bot/mail) zodat de "Stel je maanddoel
+// in"-CTA op het Overzicht een werkende bestemming heeft.
 
 import { useState, useTransition } from 'react'
 import { Check, AlertTriangle, Target } from 'lucide-react'
 import { saveOmzetDoelMaand } from '@/lib/dashboard/omzet-doel-actions'
-import { InstField, InstGroupCard, InstPrimaryBtn } from './InstAtoms'
+import type { TenantSettings } from '@/components/dashboard/instellingen/SettingSections'
+import { InstField, InstGroupCard } from './InstAtoms'
 import styles from './InstBedrijf.module.css'
 
 /** Bedrijfsgegevens-detailscherm. Plain content — drilldown layer levert header. */
-export function InstBedrijf({ omzetDoel = null }: { omzetDoel?: number | null }) {
+export function InstBedrijf({
+  tenant,
+  omzetDoel = null,
+}: {
+  tenant: TenantSettings | null
+  omzetDoel?: number | null
+}) {
   return (
     <div className={styles.container}>
       {/* Maanddoel — echt gekoppeld; bovenaan zodat de deeplink-CTA er direct op landt. */}
       <MaanddoelCard initial={omzetDoel} />
 
-      {/* Surface card met alle (mock) bedrijfsvelden */}
+      {/* Surface card met de echte bedrijfsvelden (read-only). */}
       <InstGroupCard>
         <div className={styles.fields}>
-          <InstField label="Bedrijfsnaam" value="Schoon Straatje" />
-          <InstField label="Chatbot-naam" value="Surface" />
-          <InstField label="Adres" value="Achterweg 23" />
+          <InstField label="Bedrijfsnaam" value={tenant?.bedrijfsnaam} />
+          <InstField label="Chatbot-naam" value={tenant?.chatbot_naam} />
+          <InstField label="Adres" value={tenant?.adres} />
           {/* Postcode/Plaats naast elkaar: vaste 110px kolom + 1fr */}
           <div className={styles.postcodePlaats}>
-            <InstField label="Postcode" value="4521 CB" />
-            <InstField label="Plaats" value="Biervliet" />
+            <InstField label="Postcode" value={tenant?.postcode} />
+            <InstField label="Plaats" value={tenant?.plaats} />
           </div>
-          <InstField label="E-mail" value="info@schoonstraatje.nl" />
-          <InstField label="WhatsApp" value="+31 6 24965270" />
+          <InstField label="E-mail" value={tenant?.eigenaar_email} />
+          <InstField label="WhatsApp" value={tenant?.eigenaar_whatsapp} />
         </div>
       </InstGroupCard>
-      <InstPrimaryBtn>Opslaan</InstPrimaryBtn>
+
+      {/* Eerlijke hint i.p.v. een dode opslaan-knop: deze velden zijn (nog) niet
+          zelf te bewerken; wijzigingen lopen via Frontlix-support. */}
+      <p className={styles.readonlyHint}>
+        Bedrijfsgegevens wijzig je via Frontlix-support — neem contact op om deze
+        aan te passen.
+      </p>
     </div>
   )
 }

@@ -1,15 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Search, X, ChevronRight } from 'lucide-react'
 import { InstGroupCard, InstSectionIcon } from './InstAtoms'
 import { matchSections } from './inst-helpers'
-import { INST_GROUPS, INST_ALL, type InstSection } from './instellingen-mock'
+import { type InstSection, type InstGroup } from './instellingen-mock'
 import styles from './InstellingenHub.module.css'
 
-export function InstellingenHub({ onOpen }: { onOpen: (key: string) => void }) {
+/**
+ * Mobiele Instellingen-hub. `groups` bevat de gegroepeerde secties (met echte
+ * counts in de subtitels) — die voedt zowel het zoekresultaat als de grid.
+ */
+export function InstellingenHub({
+  groups,
+  onOpen,
+}: {
+  groups: InstGroup[]
+  onOpen: (key: string) => void
+}) {
   const [q, setQ] = useState('')
-  const matches = matchSections(INST_ALL, q)
+  // Platte lijst voor de zoekfilter (alle secties over alle groepen heen).
+  const allSections = useMemo<InstSection[]>(
+    () => groups.flatMap((g) => g.items),
+    [groups],
+  )
+  const matches = matchSections(allSections, q)
 
   return (
     <div className={styles.hub}>
@@ -40,7 +55,7 @@ export function InstellingenHub({ onOpen }: { onOpen: (key: string) => void }) {
           </InstGroupCard>
         </div>
       ) : (
-        INST_GROUPS.map((g) => (
+        groups.map((g) => (
           <section key={g.group} className={styles.group}>
             <h2 className={styles.groupLabel}>{g.group}</h2>
             <div className={styles.grid}>

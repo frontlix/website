@@ -16,6 +16,10 @@
 .toggle[data-on='true'] {
   background: var(--color-success);
 }
+.toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .knob {
   position: absolute;
   top: calc((var(--h) - var(--k)) / 2);

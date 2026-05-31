@@ -65,6 +65,15 @@
   border-color: var(--color-primary);
 }
 
+/* Read-only velden: geen edit-affordance (er is nog geen save-action). */
+.fieldInput:read-only {
+  cursor: default;
+  color: var(--color-text-muted);
+}
+.fieldInput:read-only:focus {
+  border-color: var(--color-border);
+}
+
 /* ── InstGroupCard ─────────────────────────────────────────────────────── */
 
 /* Surface card: radius 14, overflow hidden so child rows get clipped borders */
@@ -118,6 +127,13 @@
   transition: background 0.15s;
 }
 
-.ghostBtn:hover {
+.ghostBtn:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
+
+/* Disabled ghost: gedempt + niet klikbaar (feature nog niet beschikbaar). */
+.ghostBtn:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
 }

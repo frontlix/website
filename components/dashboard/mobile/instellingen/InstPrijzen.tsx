@@ -1,29 +1,73 @@
 'use client'
 
-import { useState } from 'react'
-import { Sparkles, Minus, Plus } from 'lucide-react'
+// Echte prijsregels uit pricing_rules (rule_key/label/waarde/eenheid). De
+// stepper past de waarde aan; "Tarieven opslaan" stuurt de gewijzigde regels in
+// één batch naar updatePricingRulesBatch — de rule_keys komen rechtstreeks uit
+// de DB, dus de mapping is betrouwbaar.
+//
+// De wat-als-simulator toont GEEN verzonnen omzet/conversie-cijfers: de
+// impact-baseline wordt op mobiel niet opgehaald, dus we laten een neutrale
+// notitie zien i.p.v. placeholder-getallen (zie UITGESTELD in de PR-notitie).
+
+import { useState, useTransition } from 'react'
+import { Sparkles, Minus, Plus, Check, AlertTriangle } from 'lucide-react'
+import { updatePricingRulesBatch } from '@/lib/dashboard/pricing-actions'
+import type { PricingRule } from '@/components/dashboard/instellingen/SettingSections'
 import { InstGroupCard, InstPrimaryBtn } from './InstAtoms'
-import { stepPrice, deltaPct } from './inst-helpers'
-import { INST_PRICE } from './instellingen-mock'
+import { deltaPct } from './inst-helpers'
 import styles from './InstPrijzen.module.css'
 
-/** Prijzen-detailscherm met wat-als-simulator.
- *  v1: lokale state + placeholder simulator-stats (zie TODO). */
-export function InstPrijzen() {
-  // Lokale prijs-state: { [k]: number }, geseed vanuit de mock-basis.
-  const [vals, setVals] = useState<Record<string, number>>(() =>
-    Object.fromEntries(INST_PRICE.map((p) => [p.k, p.v])),
-  )
-  // Basisprijzen blijven constant — vergelijkingsbron voor delta + "changed".
-  // Vergelijk op 2 decimalen: stepPrice kan float-drift geven (bv. 3.9500000000000002),
-  // waardoor een +/- round-trip anders ten onrechte "changed" blijft.
-  const base = Object.fromEntries(INST_PRICE.map((p) => [p.k, p.v]))
-  const changed = INST_PRICE.some((p) => vals[p.k].toFixed(2) !== p.v.toFixed(2))
+/**
+ * Stap-grootte afgeleid van de huidige waarde. Kleine bedragen (tarieven per
+ * m²/km/minuut, doorgaans < €10) stappen fijn met 0,05; grotere waarden
+ * (prijs per zak, verhoudingen, drempel-km) stappen met 1 zodat de stepper
+ * voor elk rule-type bruikbaar blijft zonder eindeloos tikken.
+ */
+function stepFor(waarde: number): number {
+  return waarde < 10 ? 0.05 : 1
+}
 
-  const step = (k: string, dir: 1 | -1) => {
-    const item = INST_PRICE.find((x) => x.k === k)
-    if (!item) return
-    setVals((v) => ({ ...v, [k]: stepPrice(v[k], item.step, dir) }))
+/** Waarde ±step, gesnapt op 2 decimalen, niet onder 0. */
+function stepValue(current: number, step: number, dir: 1 | -1): number {
+  return Math.max(0, +(current + dir * step).toFixed(2))
+}
+
+/** Prijzen-detailscherm met steppers + echte batch-save. */
+export function InstPrijzen({ rules }: { rules: PricingRule[] }) {
+  // Lokale prijs-state: { [rule_key]: number }, geseed uit de echte regels.
+  const [vals, setVals] = useState<Record<string, number>>(() =>
+    Object.fromEntries(rules.map((r) => [r.rule_key, r.waarde])),
+  )
+  const [error, setError] = useState<string | null>(null)
+  const [savedFlash, setSavedFlash] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  // Basisprijzen blijven constant — vergelijkingsbron voor delta + "changed".
+  const base = Object.fromEntries(rules.map((r) => [r.rule_key, r.waarde]))
+  const changedKeys = rules
+    .filter((r) => vals[r.rule_key].toFixed(2) !== r.waarde.toFixed(2))
+    .map((r) => r.rule_key)
+  const changed = changedKeys.length > 0
+
+  const step = (key: string, dir: 1 | -1) => {
+    setVals((v) => ({ ...v, [key]: stepValue(v[key], stepFor(v[key]), dir) }))
+    setError(null)
+    setSavedFlash(false)
+  }
+
+  const handleSave = () => {
+    if (!changed) return
+    const changes = changedKeys.map((rule_key) => ({ rule_key, waarde: vals[rule_key] }))
+    setError(null)
+    startTransition(async () => {
+      const res = await updatePricingRulesBatch(changes)
+      if (res.ok) {
+        setSavedFlash(true)
+        setTimeout(() => setSavedFlash(false), 2000)
+      } else {
+        setError(res.error)
+      }
+    })
   }
 
   return (
@@ -33,18 +77,17 @@ export function InstPrijzen() {
       </p>
 
       <InstGroupCard>
-        {INST_PRICE.map((p, i) => {
-          const pct = deltaPct(vals[p.k], base[p.k])
+        {rules.map((r, i) => {
+          const pct = deltaPct(vals[r.rule_key], base[r.rule_key])
           return (
             <div
-              key={p.k}
+              key={r.rule_key}
               className={styles.row}
-              data-last={i === INST_PRICE.length - 1 || undefined}
+              data-last={i === rules.length - 1 || undefined}
             >
               <div className={styles.rowText}>
-                <div className={styles.rowLabel}>{p.l}</div>
+                <div className={styles.rowLabel}>{r.label}</div>
                 {pct !== 0 && (
-                  // data-dir kleurt de delta-regel (groen omhoog / rood omlaag).
                   <div className={styles.delta} data-dir={pct > 0 ? 'up' : 'down'}>
                     {pct > 0 ? '+' : ''}
                     {pct}% vs nu
@@ -56,20 +99,20 @@ export function InstPrijzen() {
                 <button
                   type="button"
                   className={styles.stepBtn}
-                  onClick={() => step(p.k, -1)}
-                  aria-label={`Verlaag ${p.l}`}
+                  onClick={() => step(r.rule_key, -1)}
+                  aria-label={`Verlaag ${r.label}`}
                 >
                   <Minus size={14} aria-hidden="true" />
                 </button>
                 <div className={styles.value}>
-                  €{vals[p.k].toFixed(2)}
-                  <span className={styles.unit}>{p.unit}</span>
+                  {vals[r.rule_key].toFixed(2)}
+                  {r.eenheid && <span className={styles.unit}> {r.eenheid}</span>}
                 </div>
                 <button
                   type="button"
                   className={styles.stepBtn}
-                  onClick={() => step(p.k, 1)}
-                  aria-label={`Verhoog ${p.l}`}
+                  onClick={() => step(r.rule_key, 1)}
+                  aria-label={`Verhoog ${r.label}`}
                 >
                   <Plus size={14} aria-hidden="true" />
                 </button>
@@ -77,10 +120,17 @@ export function InstPrijzen() {
             </div>
           )
         })}
+        {rules.length === 0 && (
+          <div className={styles.row} data-last>
+            <div className={styles.rowText}>
+              <div className={styles.rowLabel}>Geen prijsregels gevonden.</div>
+            </div>
+          </div>
+        )}
       </InstGroupCard>
 
-      {/* Simulator-kaart: gradient + witte tekst zodra er iets gewijzigd is. */}
-      <div className={styles.sim} data-changed={changed || undefined}>
+      {/* Neutrale notitie i.p.v. verzonnen simulator-getallen. */}
+      <div className={styles.sim}>
         <div className={styles.simHead}>
           <div className={styles.simIcon}>
             <Sparkles size={16} aria-hidden="true" />
@@ -89,28 +139,28 @@ export function InstPrijzen() {
             <div className={styles.simTitle}>Wat-als simulator</div>
             <div className={styles.simSub}>
               {changed
-                ? 'Op basis van je laatste 30 leads'
-                : 'Pas een prijs aan om het effect te zien'}
+                ? `${changedKeys.length} tarief${changedKeys.length === 1 ? '' : 'fen'} aangepast — bekijk het omzet-effect in het dashboard op desktop`
+                : 'Het geschatte omzet-effect zie je in het dashboard op desktop'}
             </div>
           </div>
         </div>
-
-        {changed && (
-          // TODO: wire to pricing-impact (computeRevenueDelta / getPricingImpactBaseline)
-          <div className={styles.simStats}>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Omzet-effect</div>
-              <div className={styles.statValue}>+€1.240</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Gesch. conversie</div>
-              <div className={styles.statValue}>61%</div>
-            </div>
-          </div>
-        )}
       </div>
 
-      <InstPrimaryBtn disabled={!changed}>Tarieven opslaan</InstPrimaryBtn>
+      {error && (
+        <div className={styles.error} role="status">
+          <AlertTriangle size={13} aria-hidden="true" />
+          <span>{error}</span>
+        </div>
+      )}
+      {savedFlash && !error && (
+        <div className={styles.savedFlash}>
+          <Check size={13} aria-hidden="true" /> Opgeslagen
+        </div>
+      )}
+
+      <InstPrimaryBtn disabled={!changed || isPending} onClick={handleSave}>
+        {isPending ? 'Opslaan…' : 'Tarieven opslaan'}
+      </InstPrimaryBtn>
     </div>
   )
 }

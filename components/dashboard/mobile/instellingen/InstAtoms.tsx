@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Building2,
   Euro,
@@ -62,15 +61,15 @@ export function InstSectionIcon({ name, tint, size = 19, small = false }: InstSe
 }
 
 // ── InstField ──
-// Controlled text input with a floating label.
-// Uses local state seeded from the `value` prop (v1 mock — not wired to server actions).
+// Text input with a floating label. Standaard read-only: er is (nog) geen
+// save-action voor de bedrijfsvelden, dus we tonen de echte tenant-waarde
+// zonder een dode "opslaan"-belofte. Een leeg veld toont een em-dash.
 type InstFieldProps = {
   label: string
-  value: string
+  value: string | null | undefined
 }
 
 export function InstField({ label, value }: InstFieldProps) {
-  const [v, setV] = useState(value)
   // Koppel label aan input zodat tikken op het label de input focust (a11y + autofill).
   const id = `inst-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
   return (
@@ -79,8 +78,8 @@ export function InstField({ label, value }: InstFieldProps) {
       <input
         id={id}
         className={styles.fieldInput}
-        value={v}
-        onChange={(e) => setV(e.target.value)}
+        value={value || '—'}
+        readOnly
       />
     </div>
   )
@@ -101,11 +100,12 @@ export function InstGroupCard({ children }: InstGroupCardProps) {
 type InstPrimaryBtnProps = {
   children: React.ReactNode
   disabled?: boolean
+  onClick?: () => void
 }
 
-export function InstPrimaryBtn({ children, disabled = false }: InstPrimaryBtnProps) {
+export function InstPrimaryBtn({ children, disabled = false, onClick }: InstPrimaryBtnProps) {
   return (
-    <button type="button" disabled={disabled} className={styles.primaryBtn}>
+    <button type="button" disabled={disabled} onClick={onClick} className={styles.primaryBtn}>
       {children}
     </button>
   )
@@ -116,11 +116,13 @@ export function InstPrimaryBtn({ children, disabled = false }: InstPrimaryBtnPro
 // Children typically include a lucide icon + label text with a gap.
 type InstGhostBtnProps = {
   children: React.ReactNode
+  disabled?: boolean
+  onClick?: () => void
 }
 
-export function InstGhostBtn({ children }: InstGhostBtnProps) {
+export function InstGhostBtn({ children, disabled = false, onClick }: InstGhostBtnProps) {
   return (
-    <button type="button" className={styles.ghostBtn}>
+    <button type="button" disabled={disabled} onClick={onClick} className={styles.ghostBtn}>
       {children}
     </button>
   )

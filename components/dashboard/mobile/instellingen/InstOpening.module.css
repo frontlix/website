@@ -25,6 +25,11 @@
   margin-bottom: 6px;
 }
 
+/* Extra ruimte boven een tweede veld-label binnen dezelfde sectie. */
+.fieldLabelSpaced {
+  margin-top: 12px;
+}
+
 .textarea {
   width: 100%;
   min-height: 150px;

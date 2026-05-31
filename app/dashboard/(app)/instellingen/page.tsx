@@ -24,7 +24,6 @@ import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import { getAllPrefs } from '@/lib/dashboard/notifications/queries'
-import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
 import { MobileInstellingen } from '@/components/dashboard/mobile/instellingen/MobileInstellingen'
 import styles from './page.module.css'
 
@@ -58,7 +57,13 @@ export default async function InstellingenPage({
   const supabase = await getDashboardSupabase()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch alleen wat de gekozen sectie nodig heeft (kleine optimalisatie).
+  // De desktop-tree rendert alléén de actieve sectie en heeft dus genoeg aan
+  // de sectie-specifieke fetches. De mobiele tree daarentegen toont één hub met
+  // álle secties (de detailschermen worden client-side getoond na een tik), dus
+  // die heeft de volledige dataset nodig. We detecteren mobiel niet server-side;
+  // daarom halen we de data op die óf de desktop-sectie óf de mobiele hub nodig
+  // heeft. De lichte queries (services/team/tags/prefs) draaien altijd zodat de
+  // mobiele schermen echte data + counts krijgen i.p.v. mock.
   const [tenantRaw, pricingRaw, servicesRaw, teamRaw, baselineRaw, tagsRaw, aanvragenRaw, notifPrefs] = await Promise.all([
     supabase
       .from('tenant_settings')
@@ -67,32 +72,27 @@ export default async function InstellingenPage({
       )
       .limit(1)
       .maybeSingle(),
-    section === 'prijzen'
-      ? supabase
-          .from('pricing_rules')
-          .select('rule_key, label, waarde, eenheid, sort_order')
-          .order('sort_order', { ascending: true })
-      : Promise.resolve({ data: [] }),
-    section === 'diensten'
-      ? supabase
-          .from('service_offerings')
-          .select('dienst_key, label, actief, sort_order')
-          .order('sort_order', { ascending: true })
-      : Promise.resolve({ data: [] }),
-    section === 'team'
-      ? supabase
-          .from('dashboard_user_profiles')
-          .select('user_id, bedrijfsnaam, is_owner, tenant_status')
-          .eq('tenant_status', 'approved')
-      : Promise.resolve({ data: [] }),
+    // Prijzen: altijd ophalen — desktop-sectie én mobiele Prijzen-scherm gebruiken ze.
+    supabase
+      .from('pricing_rules')
+      .select('rule_key, label, waarde, eenheid, sort_order')
+      .order('sort_order', { ascending: true }),
+    // Services/Team/Tags/Prefs: altijd ophalen — zowel desktop-sectie als
+    // mobiele hub gebruiken ze.
+    supabase
+      .from('service_offerings')
+      .select('dienst_key, label, actief, sort_order')
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('dashboard_user_profiles')
+      .select('user_id, bedrijfsnaam, is_owner, tenant_status')
+      .eq('tenant_status', 'approved'),
     section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
-    section === 'tags' ? getTagsWithCounts() : Promise.resolve([] as TagWithCount[]),
+    getTagsWithCounts(),
     section === 'opening' || section === 'reminders'
       ? getRecentTemplateAanvragen(20)
       : Promise.resolve([] as TemplateAanvraag[]),
-    section === 'notificaties'
-      ? getAllPrefs()
-      : Promise.resolve([] as NotificationPreferenceRow[]),
+    getAllPrefs(),
   ])
 
   const tenant = tenantRaw.data as TenantSettings | null
@@ -146,10 +146,16 @@ export default async function InstellingenPage({
       </div>
 
       <div className={styles.mobileTree}>
-        {/* omzet_doel_maand voedt het echte Maanddoel-veld in mobiel Bedrijfsgegevens.
-            sp.section (rauw) opent het juiste detail bij een deeplink (bv. ?section=bedrijf). */}
+        {/* Echte Supabase-data wordt doorgesluisd naar elk mobiel detailscherm
+            (geen mock meer). sp.section (rauw) opent het juiste detail bij een
+            deeplink (bv. ?section=bedrijf). */}
         <MobileInstellingen
-          omzetDoel={tenant?.omzet_doel_maand ?? null}
+          tenant={tenant}
+          pricing={pricing}
+          services={services}
+          team={team}
+          tags={tags}
+          notifPrefs={notifPrefs}
           initialSection={sp.section}
         />
       </div>

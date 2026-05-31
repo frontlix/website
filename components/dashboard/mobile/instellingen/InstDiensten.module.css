@@ -31,3 +31,23 @@
 .footer {
   margin-top: 14px;
 }
+
+/* Inline fout-melding bij mislukte toggle-save. */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+/* Subtiele "opslaan…"-indicatie tijdens de write. */
+.saving {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

@@ -57,9 +57,39 @@
   margin-top: 1px;
 }
 
-.dayCol {
-  text-align: right;
+/* Dag-stepper: − / waarde / + */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+.stepBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.stepBtn:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dayCol {
+  text-align: center;
+  flex-shrink: 0;
+  min-width: 44px;
 }
 
 .dayValue {
@@ -73,7 +103,20 @@
   color: var(--color-text-muted);
 }
 
-.chev {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
+/* Inline opslag-feedback onder de reminder-label. */
+.savedFlash {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-success);
+}
+.errFlash {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-danger);
 }
