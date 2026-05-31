@@ -9,7 +9,7 @@
 
 /* ── Avatar ─────────────────────────────────────────────── */
 .avatar {
-  /* 40×40 initialen-cirkel; kleur via gradient op background-clip */
+  /* 40×40 initialen-cirkel */
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -19,8 +19,9 @@
   font-size: 15px;
   font-weight: 700;
   color: #fff;
-  /* Zacht blauw gradient als standaard — geen naam-hash nodig */
-  background: linear-gradient(135deg, var(--color-primary), #5B6CFF);
+  /* Kleur komt via inline style (getAvatarColor, per naam) zodat dezelfde
+     persoon in Leads en Inbox dezelfde kleur heeft. Fallback hieronder. */
+  background: var(--color-primary);
   letter-spacing: -0.01em;
   user-select: none;
 }

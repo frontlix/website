@@ -1,5 +1,6 @@
 'use client'
 
+import { getAvatarColor } from '@/components/dashboard/mobile/shared/avatar-color'
 import type { MobileLeadCard, MobileLeadStage } from './lead-mappers'
 import styles from './LeadCard.module.css'
 
@@ -16,22 +17,11 @@ const STAGE_META: Record<
 }
 
 // ── Avatar: colored circle with 1-2 initials ─────────────────────────────────
-// Tint-index bepaalt welke achtergrondkleur wordt gekozen (stabiel per naam).
-const AVATAR_COLORS = [
-  '#1A56FF', '#0C7AB8', '#7C3AED', '#10B981', '#F59E0B',
-  '#EF4444', '#6366F1', '#EC4899', '#14B8A6', '#F97316',
-]
-
+// Kleur (stabiel per naam) komt uit de gedeelde util zodat Leads + Inbox matchen.
 function getInitials(naam: string): string {
   const parts = naam.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-}
-
-function getAvatarColor(naam: string): string {
-  let hash = 0
-  for (let i = 0; i < naam.length; i++) hash = (hash * 31 + naam.charCodeAt(i)) >>> 0
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
 
 // ── LASource dot: wa=green / form=gray chip ───────────────────────────────────

@@ -2,6 +2,7 @@
 
 import { type ConversationPreview } from '@/lib/dashboard/inbox-queries'
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
+import { getAvatarColor } from '@/components/dashboard/mobile/shared/avatar-color'
 import styles from './InboxRow.module.css'
 
 interface InboxRowProps {
@@ -39,8 +40,12 @@ export function InboxRow({ convo }: InboxRowProps) {
 
   return (
     <div className={styles.row}>
-      {/* Avatar met initialen */}
-      <div className={styles.avatar} aria-hidden="true">
+      {/* Avatar met initialen — kleur per naam (gedeeld met de Leads-kaarten) */}
+      <div
+        className={styles.avatar}
+        style={{ background: getAvatarColor(convo.naam) }}
+        aria-hidden="true"
+      >
         {initials(convo.naam)}
       </div>
 
