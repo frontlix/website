@@ -150,7 +150,10 @@ async def generate_quote_pdf(
         intake_summary=intake_summary,
         aanbod_beschrijving=config.aanbod_beschrijving,
         pricing=pricing,
-        korting_notitie=korting_notitie or "",
+        # Escape user-supplied korting-notitie: env heeft autoescape=False, dus
+        # rauwe HTML/CSS hierin zou anders in de WeasyPrint-render geïnjecteerd worden.
+        # escape("") blijft "", dus de {% if korting_notitie %}-guard werkt door.
+        korting_notitie=escape(korting_notitie or ""),
         logo_data_uri=_logo_data_uri(),
         ref=meta["ref"],
         datum_str=meta["datum_str"],

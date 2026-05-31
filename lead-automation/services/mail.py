@@ -1,6 +1,7 @@
 """Email service — approval emails, customer quote emails, appointment confirmations via SMTP."""
 from __future__ import annotations
 
+import asyncio
 import smtplib
 import ssl
 import uuid
@@ -110,9 +111,10 @@ def _send_email(to: str, subject: str, html_body: str, attachments: list[dict] |
         part["Content-Disposition"] = f'attachment; filename="{att["filename"]}"'
         msg.attach(part)
 
+    # Geverifieerde TLS: create_default_context() doet standaard check_hostname=True
+    # en CERT_REQUIRED, dus het servercertificaat wordt tegen de systeem-CA's
+    # gevalideerd (beschermt tegen MITM op credentials + mailinhoud).
     context = ssl.create_default_context()
-    context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
     with smtplib.SMTP_SSL(s.mail_host, s.mail_port, context=context) as server:
         server.login(s.mail_user, s.mail_pass)
         server.send_message(msg)
@@ -313,7 +315,7 @@ async def send_approval_email(
     attachments = []
     if pdf_url:
         try:
-            pdf_data = httpx.get(pdf_url).content
+            pdf_data = httpx.get(pdf_url, timeout=15.0).content
             attachments.append({
                 "filename": f"Offerte-{branche_label}.pdf",
                 "data": pdf_data,
@@ -322,7 +324,10 @@ async def send_approval_email(
         except Exception as e:
             print(f"[mail] Failed to download PDF for attachment: {e}")
 
-    _send_email(
+    # Blocking smtplib draait in een thread zodat de async event-loop niet
+    # blokkeert; to_thread re-raiset excepties in deze coroutine.
+    await asyncio.to_thread(
+        _send_email,
         to=to_email,
         subject=f"Offerte ter goedkeuring — {naam} ({branche_label})",
         html_body=html,
@@ -402,7 +407,7 @@ async def send_customer_quote_email(
     attachments = []
     if pdf_url:
         try:
-            pdf_data = httpx.get(pdf_url).content
+            pdf_data = httpx.get(pdf_url, timeout=15.0).content
             attachments.append({
                 "filename": f"Offerte-{branche_label}.pdf",
                 "data": pdf_data,
@@ -411,7 +416,10 @@ async def send_customer_quote_email(
         except Exception as e:
             print(f"[mail] Failed to download PDF for customer email attachment: {e}")
 
-    _send_email(
+    # Blocking smtplib draait in een thread zodat de async event-loop niet
+    # blokkeert; to_thread re-raiset excepties in deze coroutine.
+    await asyncio.to_thread(
+        _send_email,
         to=to_email,
         subject=f"Je offerte voor {branche_label}, {voornaam}",
         html_body=html,
@@ -588,7 +596,10 @@ async def send_appointment_confirmation_email(
     """
 
     # Geen attachments: Apple Agenda knop linkt naar /calendar/{token}.ics endpoint.
-    _send_email(
+    # Blocking smtplib draait in een thread zodat de async event-loop niet
+    # blokkeert; to_thread re-raiset excepties in deze coroutine.
+    await asyncio.to_thread(
+        _send_email,
         to=to_email,
         subject=f"Bevestiging: {appointment_label_short} op {datum_label}",
         html_body=html,

@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timezone
+from html import escape  # escape-on-output: voorkomt stored XSS via klant-bestuurde 'naam'
 
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse
@@ -186,13 +187,13 @@ async def approve_quote(request: Request, background: BackgroundTasks):
     status = lead.get("status", "")
 
     if status in ("quote_sent", "scheduling", "appointment_booked"):
-        return HTMLResponse(_success_page(lead.get("naam") or "de klant", already_sent=True))
+        return HTMLResponse(_success_page(escape(lead.get("naam") or "de klant"), already_sent=True))
 
     if status == "quote_processing":
         return HTMLResponse(_error_page("Even geduld", "De offerte wordt op dit moment al verwerkt. Check je WhatsApp over een minuutje."))
 
     if status != "pending_approval":
-        return HTMLResponse(_error_page("Niet beschikbaar", f'Status "{status}" kan niet worden goedgekeurd.'), status_code=400)
+        return HTMLResponse(_error_page("Niet beschikbaar", f'Status "{escape(status)}" kan niet worden goedgekeurd.'), status_code=400)
 
     # Idempotency claim — atomic conditional update voorkomt dubbele verzending
     # bij dubbel-klikken of refresh terwijl de background-task nog loopt.
@@ -210,8 +211,8 @@ async def approve_quote(request: Request, background: BackgroundTasks):
 
     config = get_branche(demo_type)
     if not config:
-        return HTMLResponse(_error_page("Onbekende branche", f'Branche "{demo_type}" is niet bekend.'), status_code=400)
+        return HTMLResponse(_error_page("Onbekende branche", f'Branche "{escape(demo_type)}" is niet bekend.'), status_code=400)
 
     # Schedule heavy work AFTER response is sent; user ziet direct success-page.
     background.add_task(_process_approval, lead, config)
-    return HTMLResponse(_success_page(lead.get("naam") or "klant"))
+    return HTMLResponse(_success_page(escape(lead.get("naam") or "klant")))

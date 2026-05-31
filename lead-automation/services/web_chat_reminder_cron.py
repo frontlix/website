@@ -72,7 +72,10 @@ async def _scan_once() -> int:
             continue
         link = f"{base}/chat/{lead['web_chat_token']}"
         try:
-            _send_email(
+            # Blocking smtplib-send offloaden naar een worker-thread zodat de
+            # async cron-loop niet blokkeert tijdens TLS-handshake + SMTP.
+            await asyncio.to_thread(
+                _send_email,
                 to=lead["email"],
                 subject="Reminder: maak je Frontlix demo af",
                 html_body=_reminder_html(lead.get("naam") or "", link),

@@ -9,6 +9,7 @@ sent. Lets you trial the detection logic in production without spamming.
 """
 from __future__ import annotations
 
+import asyncio
 import uuid
 from datetime import datetime, timezone
 from html import escape
@@ -83,7 +84,10 @@ async def trigger_web_chat_fallback(lead_id: str, *, reason: str = "delivery_fai
 
     if enabled:
         try:
-            _send_email(
+            # Blocking smtplib-send offloaden naar een worker-thread zodat de
+            # async event-loop niet blokkeert tijdens TLS-handshake + SMTP.
+            await asyncio.to_thread(
+                _send_email,
                 to=lead["email"],
                 subject="Maak je Frontlix demo af in je browser",
                 html_body=_email_html(lead.get("naam") or "", link),
