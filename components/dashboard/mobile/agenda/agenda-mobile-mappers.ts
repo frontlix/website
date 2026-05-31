@@ -82,6 +82,8 @@ export function mapAppointmentsToAgendaEvents(
         m2,
         dienst: a.hoofdcategorie ?? undefined,
         lead: a.lead_id,
+        telefoon: a.telefoon ?? undefined,
+        afstandKm: a.afstand_km ?? null,
         done: a.dashboard_status === 'afgehandeld',
         current: startMs <= nowMs && nowMs < startMs + DEFAULT_DURATION_MIN * 60_000,
       }

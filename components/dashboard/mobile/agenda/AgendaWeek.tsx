@@ -18,10 +18,12 @@ import { AgendaEventRow } from './AgendaEventRow'
 import styles from './AgendaWeek.module.css'
 
 // Filter-segmenten (handoff ABMain items).
+// "Volgende week" is bewust weggelaten: de route laadt maar één week, dus die
+// pill zou per definitie altijd leeg zijn (misleidend). De overige pills
+// filteren op echte velden (date / kind).
 const FILTER_ITEMS = [
   { k: 'vandaag', l: 'Vandaag' },
   { k: 'week', l: 'Deze week' },
-  { k: 'next', l: 'Volgende week' },
   { k: 'eigen', l: 'Eigen werk' },
 ]
 
@@ -102,12 +104,21 @@ export function AgendaWeek({
   const [filter, setFilter] = useState('week')
 
   // Live event = de afspraak die nu loopt (en niet al afgehandeld is).
+  // Bewust op ALLE events (niet de gefilterde lijst) zodat de live-banner
+  // zichtbaar blijft ongeacht het actieve filter.
   const nowEvent = useMemo(() => events.find((e) => e.current && !e.done), [events])
+
+  // Filter toepassen op de dag-groepen (echte velden: date / kind).
+  const visibleEvents = useMemo(() => {
+    if (filter === 'vandaag') return events.filter((e) => e.date === todayDate)
+    if (filter === 'eigen') return events.filter((e) => e.kind === 'eigen')
+    return events // 'week'
+  }, [events, filter, todayDate])
 
   // Groepeer per dag (gesorteerd op start) → buckets met label/summary/hours.
   const days = useMemo<DayBucket[]>(() => {
     const byDate = new Map<string, AgendaEvent[]>()
-    for (const ev of events) {
+    for (const ev of visibleEvents) {
       const arr = byDate.get(ev.date) ?? []
       arr.push(ev)
       byDate.set(ev.date, arr)
@@ -134,7 +145,7 @@ export function AgendaWeek({
           events: sorted,
         }
       })
-  }, [events, todayDate])
+  }, [visibleEvents, todayDate])
 
   // Week-totaal voor de subtitle.
   const totalEv = events.length
@@ -182,9 +193,14 @@ export function AgendaWeek({
           nowTime={nowTime}
           onOpen={() => onOpenEvent?.(nowEvent)}
           onAfronden={() => onAfrondenLive?.(nowEvent)}
-          // TODO: functional pass — server actions voor foto/WA
+          // Foto-upload heeft nog geen infra (storage/handler) → no-op.
           onFoto={() => {}}
-          onWhatsApp={() => {}}
+          // WhatsApp opent het echte gesprek met de klant (0→31-normalisatie).
+          onWhatsApp={() => {
+            const d = (nowEvent.telefoon ?? '').replace(/\D/g, '')
+            const wa = d.startsWith('0') ? `31${d.slice(1)}` : d
+            if (wa) window.open(`https://wa.me/${wa}`, '_blank', 'noopener,noreferrer')
+          }}
         />
       )}
 

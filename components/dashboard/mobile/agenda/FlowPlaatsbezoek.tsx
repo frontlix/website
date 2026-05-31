@@ -7,6 +7,7 @@
 // (Port van handoff src/agenda-b/flow/FPlaatsbezoek.jsx.)
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Clock, MessageCircle, FileText } from 'lucide-react'
 import {
   FHero,
@@ -65,10 +66,10 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbe
             <div className={styles.klantNaam}>{ev.naam}</div>
             <div className={styles.klantTel}>Contact: Karin Visser · +31 6 33 02 11 87</div>
           </div>
-          {/* TODO: functional pass — link naar lead-dossier */}
-          <button type="button" className={styles.leadChip}>
+          {/* Echte ingang naar het lead-dossier (ev.lead = lead_id). */}
+          <Link href={`/leads/${ev.lead ?? ev.id}`} className={styles.leadChip}>
             Lead
-          </button>
+          </Link>
         </div>
 
         <div className={styles.waCallout}>

@@ -2,7 +2,6 @@
 // Time / slot helpers (tested) + eventTone / dateLabel ported from ABShared.jsx / AgendaShared.jsx.
 
 import type { AgendaEventKind } from './agenda-mock'
-import { AG_TODAY_DATE } from './agenda-mock'
 
 // ── Time helpers (verbatim from plan, Step 3) ─────────────────────────────
 
@@ -63,7 +62,8 @@ export function eventTone(kind: AgendaEventKind): string {
 
 // ── Date label (ported from AgendaShared.jsx / ABShared.jsx) ──────────────
 // Format: 'Vandaag' | 'Morgen' | 'Gisteren' | 'Maandag 11 mei' etc.
-// Uses AG_TODAY_DATE as the reference point (mock v1; swap for new Date() in the functional pass).
+// Referentiepunt `todayDate` ('YYYY-MM-DD', Amsterdam) wordt door de caller
+// geleverd (geen mock-constante meer).
 
 const NL_WEEKDAY_LONG: Record<number, string> = {
   1: 'maandag',
@@ -84,9 +84,9 @@ const NL_MONTH_SHORT = [
  * Human-friendly date label in Dutch.
  * 'Vandaag' / 'Morgen' / 'Gisteren' / 'Woensdag 13 mei'
  */
-export function dateLabel(date: string): string {
+export function dateLabel(date: string, todayDate: string): string {
   const d = new Date(date + 'T00:00:00')
-  const today = new Date(AG_TODAY_DATE + 'T00:00:00')
+  const today = new Date(todayDate + 'T00:00:00')
   const diff = Math.round((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   if (diff === 0) return 'Vandaag'
   if (diff === 1) return 'Morgen'
