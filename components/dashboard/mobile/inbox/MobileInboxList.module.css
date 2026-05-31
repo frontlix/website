@@ -8,9 +8,10 @@
   background: var(--color-bg);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Safe-area padding bovenaan (status-bar) en onderaan (bottom-nav) */
-  padding-top: 54px;
-  padding-bottom: 86px;
+  /* Geen grote top-padding meer: de shell-header is weg op /inbox (de lijst heeft
+     z'n eigen "Inbox"-header met eigen padding). De bottom-nav-ruimte komt al van
+     .main (shell). Hier alleen nog wat lucht onderaan de scroll. */
+  padding-bottom: 18px;
 }
 
 /* ── Header ─────────────────────────────────────────── */
