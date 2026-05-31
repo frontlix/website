@@ -180,6 +180,12 @@
   --wa-surface-accent:#0C7AB8;
   --wa-tick-blue:     #53BDEB;
   --wa-meta:          #667781;
+
+  /* OClientNote (offerte-editor amber notitie) + OSwitch off-track. */
+  --color-note-bg:        #FFF8EC;
+  --color-note-fg:        #B45309;
+  --color-note-text:      #5A4214;
+  --color-switch-track:   #E4E4EA;
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -226,6 +232,11 @@
   --wa-surface-bg:    #103E5C;
   --wa-surface-fg:    #A9D6F5;
   --wa-meta:          #8696A0;
+
+  --color-note-bg:        rgba(245, 158, 11, 0.14);
+  --color-note-fg:        #F4C36B;
+  --color-note-text:      #E6D6AE;
+  --color-switch-track:   #39393D;
 }
 
 /* ─────────────────────────────────────────────────────────

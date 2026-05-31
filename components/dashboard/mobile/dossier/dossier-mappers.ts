@@ -65,6 +65,10 @@ export type MobileDossierData = {
     kortingNote: string
     seedRegels: SeedRegel[]
     versies: { versie: number; totaalIncl: number; datum: string; verstuurd: boolean }[]
+    // ── extra velden voor de PDF-preview (§4.7 props-contract) ──
+    email?: string       // voor klant-blok in PDF
+    telefoon?: string    // voor klant-blok in PDF
+    dienst: string       // korte dienst-omschrijving (bv. hoofdcategorie)
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
@@ -254,6 +258,10 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     kortingNote: l.korting_omschrijving ?? '',
     seedRegels,
     versies,
+    // Extra velden voor de PDF-preview (§4.7 props-contract).
+    email: l.email ?? undefined,
+    telefoon: l.telefoon ?? undefined,
+    dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
   }
 }
 

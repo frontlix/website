@@ -256,7 +256,8 @@
   flex-shrink: 0;
   border: 1.5px solid var(--color-border);
   background: transparent;
-  color: #fff;
+  /* Token uit tokens.css (--color-white: #FFFFFF) — geen hardcode. */
+  color: var(--color-white);
   display: grid;
   place-items: center;
   cursor: pointer;

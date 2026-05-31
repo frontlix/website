@@ -77,9 +77,12 @@ const TONE_AMBER = 'var(--color-warning)'
 const TONE_SUCCESS = 'var(--color-success)'
 const TONE_PRIMARY = 'var(--color-primary)'
 
+// OffertePdfData (spec §4.7-shape) wordt geïmporteerd uit OffertePdfPreview —
+// dat is de bron-of-truth voor de PDF-render en het props-contract.
+
 type DossOfferteEditProps = {
   offerte: MobileDossierData['offerte']
-  pdfApiRef?: React.MutableRefObject<{ openPdf: () => void } | null>
+  pdfApiRef?: React.RefObject<{ openPdf: () => void } | null>
 }
 
 // Stabiele id-teller voor nieuw toegevoegde regels/toeslagen tijdens een sessie.
@@ -288,11 +291,19 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
     setToeslagen((ts) => [...ts, { ...preset, id: newId('t'), on: true }])
     setAddingToeslag(false)
   }
-  // 'Eigen toeslag': lege custom %-toeslag (gebruiker zet waarde via stepper).
+  // 'Eigen toeslag' — percentage-variant (gebruiker past % aan via stepper).
   const addEigenToeslag = () => {
     setToeslagen((ts) => [
       ...ts,
       { id: newId('t'), key: `custom-${_uid}`, label: 'Eigen toeslag', mode: 'pct', value: 10, on: true },
+    ])
+    setAddingToeslag(false)
+  }
+  // 'Eigen toeslag (vast bedrag)' — bedrag-variant (bv. €25 voorrijkosten).
+  const addEigenToeslagVast = () => {
+    setToeslagen((ts) => [
+      ...ts,
+      { id: newId('t'), key: `custom-bedrag-${_uid}`, label: 'Eigen toeslag', mode: 'bedrag', value: 25, on: true },
     ])
     setAddingToeslag(false)
   }
@@ -314,49 +325,54 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
     setDagen(Math.max(1, diff))
   }
 
-  // ── PDF-data afgeleid van de live editor-state ──
-  // Vorm = het props-contract van OffertePdfPreview (de preview rekent niet zelf,
-  // hij spiegelt het al-uitgerekende totalenblok). We werken alleen met de
-  // editor-velden uit §4.5 (geen lead/dienst/contact op dit prop). Het
-  // offertenummer leiden we af van de hoogste versie + jaar; bij een verse
-  // offerte zonder historie '0001'.
+  // ── PDF-data afgeleid van de live editor-state ───────────────────────────
+  // Vorm = spec §4.7 OffertePdfDataV2-contract. De preview rekent niet zelf;
+  // hij spiegelt het al-uitgerekende totalenblok. Offertenummer afgeleid van
+  // de hoogste versie + het actuele jaar (hydration-veilig via todayMs/today).
   const pdfKlant = afwijkend ? adr : offerte.klant
   const onLines = lines.filter((l) => l.on)
   const nextVersie = (offerte.versies?.reduce((m, v) => Math.max(m, v.versie), 0) ?? 0) + 1
-  // Voorwaarden-regel: bij verlegde/0%-BTW geen percentage, anders 'n% BTW'.
-  const btwTxt = btwKey === 'verlegd' ? 'BTW verlegd' : btwKey === '0' ? 'BTW' : `${btwKey}% BTW`
+  // Jaar dynamisch uit `today` (zelfde lazy-initializer als todayMs — hydration-veilig).
+  // Nooit hardcoded 2026: vanaf 2027 werkt dit dan correct.
   const pdfData: OffertePdfData = {
-    nr: `2026-${String(nextVersie).padStart(4, '0')}`,
+    nr: `${today.getFullYear()}-${String(nextVersie).padStart(4, '0')}`,
     datum: fmtDate(today),
     geldigTot: fmtDate(eind),
+    dienst: offerte.dienst,
+    m2: offerte.m2 > 0 ? offerte.m2 : undefined,
     klant: {
       naam: pdfKlant.naam,
       bedrijf: pdfKlant.bedrijf || undefined,
       straat: pdfKlant.straat,
       pcplaats: pdfKlant.pcplaats,
+      // email/telefoon uit offerte-blok (§4.5); alleen bij niet-afwijkend adres.
+      email: !afwijkend ? offerte.email : undefined,
+      telefoon: !afwijkend ? offerte.telefoon : undefined,
     },
-    bericht: bericht,
-    lines: onLines.map((l) => ({
-      label: l.label || 'Regel',
-      // Aantal-label: bv. '80 m²' of '2 rol'.
-      qtyLabel: `${lineQty(l)} ${l.unit}`,
-      amount: lineAmount(l),
-      note: l.note || undefined,
+    regels: onLines.map((l) => ({
+      omschrijving: l.label || 'Regel',
+      // Aantal-label: bv. '80 m²' of '2 rol'; lege string bij qty 0.
+      aantalLabel: lineQty(l) > 0 ? `${lineQty(l)} ${l.unit}` : '',
+      stukprijs: l.rate,
+      totaal: lineAmount(l),
     })),
+    subtotaal: tt.sub0,
     toeslagen: tt.toeslagRegels,
-    sub0: tt.sub0,
+    kortingPct: pct,
     kortingBedrag: tt.korting,
     kortingNote: kortingNote || undefined,
-    btwLabel: btwLabel(btwKey),
+    totaalExcl: tt.subNet,
+    // btwPct als getal (niet string): '21'→21, 'verlegd'→0.
+    btwPct: btwKey === 'verlegd' || btwKey === '0' ? 0 : Number(btwKey),
     btwBedrag: tt.btw,
-    btwTxt,
-    totaal: tt.totaal,
+    totaalIncl: tt.totaal,
+    toelichting: bericht || undefined,
   }
 
   return (
-    <div className={styles.wrap}>
+    <section className={styles.wrap} aria-label="Offerte bewerken">
       {/* ── 1. Factuuradres ─────────────────────────────────────────────── */}
-      <div className={styles.card} data-pad="md">
+      <section className={styles.card} data-pad="md">
         <div className={styles.factHead}>
           <span className={styles.iconBadge} aria-hidden="true">
             <FileText size={17} />
@@ -419,13 +435,13 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
             </button>
           </div>
         )}
-      </div>
+      </section>
 
       {/* ── 2. Persoonlijk bericht ──────────────────────────────────────── */}
       <BerichtCard value={bericht} onChange={setBericht} />
 
       {/* ── 3. Snel instellen ───────────────────────────────────────────── */}
-      <div className={styles.card} data-pad="md">
+      <section className={styles.card} data-pad="md">
         <div className={styles.snelHead}>
           <span className={styles.iconBadge} aria-hidden="true">
             <Ruler size={17} />
@@ -439,7 +455,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
         <button type="button" className={styles.snelApply} onClick={applyBulk}>
           Toepassen op alle m²-regels
         </button>
-      </div>
+      </section>
 
       {/* ── 4. Regels (kern + sleep) ─────────────────────────────────────── */}
       <div>
@@ -483,9 +499,13 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
                     <GripVertical size={16} aria-hidden="true" />
                   </div>
 
-                  {/* Aan/uit-checkbox — uit = regel telt niet mee. */}
+                  {/* Aan/uit-checkbox — uit = regel telt niet mee.
+                      role="checkbox" + aria-checked geeft schermlezers de juiste
+                      semantiek (toggle, niet push-button). */}
                   <button
                     type="button"
+                    role="checkbox"
+                    aria-checked={l.on}
                     className={styles.regelCheck}
                     data-on={l.on || undefined}
                     onClick={() => patch(l.id, { on: !l.on })}
@@ -642,10 +662,15 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
                     <span className={styles.chipMeta}>· {p.mode === 'pct' ? `${p.value}%` : eur0(p.value)}</span>
                   </button>
                 ))}
-                {/* 'Eigen toeslag': altijd beschikbaar (custom % of vast). */}
+                {/* 'Eigen toeslag (%)': custom percentage-toeslag. */}
                 <button type="button" className={styles.chip} onClick={addEigenToeslag}>
                   <Plus size={13} className={styles.chipPlusAmber} aria-hidden="true" /> Eigen toeslag
                   <span className={styles.chipMeta}>· % naar keuze</span>
+                </button>
+                {/* 'Eigen toeslag (€ vast)': vast-bedrag toeslag (bv. voorrijkosten). */}
+                <button type="button" className={styles.chip} onClick={addEigenToeslagVast}>
+                  <Plus size={13} className={styles.chipPlusAmber} aria-hidden="true" /> Eigen toeslag (vast)
+                  <span className={styles.chipMeta}>· € vast bedrag</span>
                 </button>
               </div>
             </div>
@@ -670,7 +695,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
           <Tag size={16} aria-hidden="true" /> Korting toevoegen
         </button>
       ) : (
-        <div className={styles.card} data-pad="md">
+        <section className={styles.card} data-pad="md">
           <div className={styles.kortingTop}>
             <Tag size={16} className={styles.kortingIcon} aria-hidden="true" />
             <span className={styles.kortingLabel}>Korting</span>
@@ -700,20 +725,20 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
             onChange={setKortingNote}
             placeholder="Bijv. vaste klant, 10% trouwkorting…"
           />
-        </div>
+        </section>
       )}
 
       {/* ── 7. BTW-tarief ────────────────────────────────────────────────── */}
-      <div className={styles.card} data-pad="md">
+      <section className={styles.card} data-pad="md">
         <div className={styles.btwTitle}>BTW-tarief</div>
         <OSegmented value={btwKey} options={BTW_OPTIONS} onChange={(k) => setBtwKey(k as BtwKey)} />
         {btwKey === 'verlegd' && (
           <div className={styles.btwNote}>BTW wordt verlegd naar de klant (zakelijk).</div>
         )}
-      </div>
+      </section>
 
       {/* ── 8. Totalen ───────────────────────────────────────────────────── */}
-      <div className={styles.card} data-pad="lg">
+      <section className={styles.card} data-pad="lg">
         <div className={styles.totals}>
           <TotalRow label="Subtotaal" value={eur(tt.sub0)} />
           {tt.toeslagRegels.map((tr, i) => (
@@ -724,10 +749,10 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
           <div className={styles.totalDivider} />
           <TotalRow label="Totaal" value={eur(tt.totaal)} strong />
         </div>
-      </div>
+      </section>
 
       {/* ── 9. Geldigheid ────────────────────────────────────────────────── */}
-      <div className={styles.card} data-pad="md">
+      <section className={styles.card} data-pad="md">
         <div className={styles.geldigHead}>
           <Calendar size={16} className={styles.geldigIcon} aria-hidden="true" />
           <span className={styles.geldigTitle}>Geldigheid</span>
@@ -760,10 +785,11 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
             aria-label="Kies einddatum"
           />
         </label>
-      </div>
+      </section>
 
       {/* ── 10. Acties (Bekijk PDF / Historie) ───────────────────────────── */}
-      <div className={styles.actions}>
+      {/* footer/div[role=group] is correctere semantiek dan een lege div. */}
+      <div role="group" className={styles.actions}>
         <button type="button" className={styles.actionBtn} onClick={() => setPdfOpen(true)}>
           <Eye size={16} aria-hidden="true" /> Bekijk PDF
         </button>
@@ -773,6 +799,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
       </div>
 
       {/* ── overlays ─────────────────────────────────────────────────────── */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <OffertePdfPreview open={pdfOpen} onClose={() => setPdfOpen(false)} data={pdfData} />
       <OfferteHistorie
         open={histOpen}
@@ -780,7 +807,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
         huidigBedrag={tt.totaal}
         versies={offerte.versies}
       />
-    </div>
+    </section>
   )
 }
 

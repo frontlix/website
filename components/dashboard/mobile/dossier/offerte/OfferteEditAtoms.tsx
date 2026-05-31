@@ -433,7 +433,7 @@ export function OFullSheet({ open, onClose, title, children, foot }: OFullSheetP
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className={styles.sheet} data-open={open} role="dialog" aria-modal={open} aria-label={title}>
+      <div className={styles.sheet} data-open={open} role="dialog" aria-modal={open} aria-label={title} aria-hidden={!open}>
         <div className={styles.sheetHeader}>
           <button type="button" className={styles.sheetClose} onClick={onClose}>
             Sluit

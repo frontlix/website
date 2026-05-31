@@ -1,10 +1,14 @@
 /* ── OfferteEditAtoms.module.css ───────────────────────────────────────────
    Domein-agnostische UI-atomen voor de mobiele offerte-editor.
    Maten 1-op-1 uit de handoff (Q*-atomen): stepper-knop 34×34 (radius 10),
-   groot 46×46 (radius 14); iOS-switch 46×28, knop 24px; kaart-radius 13/14px.
+   groot 46×46 (radius 14); iOS-switch 46×28, knob 24px; kaart-radius 13/14px.
    Theming via tokens + per-atoom --tone custom property + color-mix only —
    geen inline kleuren. Off-state van de switch werkt in light én dark.
    ────────────────────────────────────────────────────────────────────────── */
+
+/* Atoom-specifieke tokens (--color-switch-track, --color-note-bg/-fg/-text)
+   staan in styles/tokens.css onder :root / .dark — niet hier, omdat
+   CSS Modules `:global(:root)` als 'niet-puur' afkeurt. */
 
 /* ── OStepper ──────────────────────────────────────────────────────────────
    Tikbaar getal met ± knoppen. --tone bepaalt de plus-tint + actieve kleur;
@@ -161,15 +165,14 @@
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
-  /* Off-state track — neutraal systeem-grijs (handoff light: #E4E4EA). */
-  background: rgba(120, 120, 128, 0.32);
+  /* Off-state track — handoff light #E4E4EA via --color-switch-track token. */
+  background: var(--color-switch-track);
   transition: background 0.2s;
 }
 
-/* Dark off-track: alpha-wit op de donkere bg (handoff dark: #39393D),
-   in lijn met de .segmented dark-override hieronder. */
+/* Dark off-track: handoff #39393D via --color-switch-track dark-override. */
 :global(.dark) .switch {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--color-switch-track);
 }
 
 .switch[data-on='true'] {
@@ -219,7 +222,8 @@
 /* Open-staat: bewerk-blok. */
 .noteEdit {
   margin-top: 9px;
-  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+  /* Handoff noteBg: light #FFF8EC (warme room), dark rgba(245,158,11,.14). */
+  background: var(--color-note-bg);
   border-radius: 11px;
   padding: 10px 11px;
 }
@@ -230,7 +234,8 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 7px;
-  color: var(--color-warning-strong);
+  /* Handoff noteFg: light #B45309, dark #F4C36B (zachte goudtint). */
+  color: var(--color-note-fg);
 }
 
 .noteEyeLabel {
@@ -270,11 +275,11 @@
   cursor: pointer;
 }
 
-/* Bewaar — gevuld in warning-strong. */
+/* Bewaar — gevuld in note-fg; witte tekst via token. */
 .noteSave {
-  background: var(--color-warning-strong);
+  background: var(--color-note-fg);
   border: none;
-  color: #fff;
+  color: var(--color-white);
   font: inherit;
   font-size: 12.5px;
   font-weight: 800;
@@ -288,7 +293,8 @@
   width: 100%;
   text-align: left;
   margin-top: 9px;
-  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+  /* Handoff noteBg: light #FFF8EC, dark rgba(245,158,11,.14). */
+  background: var(--color-note-bg);
   border-radius: 11px;
   padding: 9px 11px;
   border: none;
@@ -296,7 +302,8 @@
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  color: var(--color-warning-strong);
+  /* Handoff noteFg: light #B45309, dark #F4C36B. */
+  color: var(--color-note-fg);
 }
 
 .noteSavedBody {
@@ -308,7 +315,8 @@
   display: block;
   font-size: 9.5px;
   font-weight: 800;
-  color: var(--color-warning-strong);
+  /* Handoff noteFg: light #B45309, dark #F4C36B. */
+  color: var(--color-note-fg);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 2px;
@@ -318,8 +326,8 @@
 .noteSavedText {
   display: block;
   font-size: 12.5px;
-  /* Iets zachter dan de label-kleur (handoff noteTx). */
-  color: color-mix(in srgb, var(--color-warning-strong) 78%, var(--color-text));
+  /* Handoff noteTx: light #5A4214 (donkerbruin/oker), dark #E6D6AE (warme zand). */
+  color: var(--color-note-text);
   line-height: 1.4;
   font-style: italic;
 }

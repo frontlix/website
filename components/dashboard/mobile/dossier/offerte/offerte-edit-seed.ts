@@ -157,8 +157,9 @@ export function seedOfferteState(input: OfferteSeedInput): OfferteSeed {
   return {
     lines,
     toeslagen,
-    kortingPct: input.kortingPct ?? 0,
-    kortingNote: input.kortingNote ?? '',
+    // kortingPct/kortingNote zijn non-nullable in OfferteSeedInput — geen ?? nodig.
+    kortingPct: input.kortingPct,
+    kortingNote: input.kortingNote,
     btwKey: '21',
     dagen: 14,
     bericht: seedBericht(input.voornaam),

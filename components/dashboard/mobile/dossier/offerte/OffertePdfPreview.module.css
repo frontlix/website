@@ -1,19 +1,25 @@
 /* ── OffertePdfPreview.module.css ──────────────────────────────────────────
-   PDF-preview overlay van de mobiele offerte-editor (port van QPDFPreview).
+   PDF-preview overlay van de mobiele offerte-editor.
+
+   SPIEGEL van renderOffertePDFHtml in lib/dashboard/offerte/pdf-template.ts
+   (de échte Schoon Straatje PDF-template). Wijzigingen aan opmaak: eerst
+   in pdf-template.ts afstemmen, dan hier mirrorren.
 
    BELANGRIJK — papier, niet thema-afhankelijk:
-   het document binnen .paper bootst gedrukt papier na en blijft daarom licht/
-   wit, óók in dark mode. Alle kleuren binnen het papier zijn bewust LETTERLIJKE
-   print-greys (geen tokens, geen color-mix) — exact 1-op-1 uit de handoff.
-   Alleen de chrome buiten het papier (de OFullSheet-shell zelf) is thema-bewust;
+   Het document binnen .paper bootst gedrukt papier na en blijft licht/wit
+   óók in dark mode. Alle kleuren binnen het papier zijn daarom LETTERLIJKE
+   SS-print-kleuren (geen design-tokens, geen color-mix):
+     - #FAFAF0   crème header
+     - #002D63   SS-navy (titels, grand-row, footer-tekst)
+     - #003F8A   SS-navy-2 (meta-labels, section-titles)
+     - #F5C518   SS-goud (accentbalk, footer-border)
+     - #1a1a1a   print-zwart (broodtekst)
+   Alleen de chrome buiten het papier (de OFullSheet-shell) is thema-bewust;
    die wordt geleverd door OfferteEditAtoms.module.css.
-   Maten (font-sizes als 11.5px, radii 10/13px) zijn 1-op-1 uit de handoff.
    ────────────────────────────────────────────────────────────────────────── */
 
 /* ── Voet (sticky) ─────────────────────────────────────────────────────────
-   "Versturen via WhatsApp" is deze ronde VISUEEL/DISABLED: versturen blijft de
-   desktop-flow. Gestyled als disabled (gedempte opacity, niet klikbaar) met een
-   onopvallende helper-noot. */
+   "Versturen via WhatsApp" is VISUEEL/DISABLED: versturen = desktop-flow. */
 
 .footWrap {
   display: flex;
@@ -21,12 +27,12 @@
   gap: 7px;
 }
 
-/* Disabled WhatsApp-knop: WhatsApp-groen is een merk-/print-kleur (geen thema-
-   token), bewust gedempt + niet klikbaar. */
+/* Disabled WhatsApp-knop: WhatsApp-groen is een merk-/print-kleur (geen
+   thema-token), bewust gedempt en niet klikbaar. */
 .sendBtn {
   width: 100%;
   border: none;
-  background: #25d366; /* WhatsApp-groen — merk-kleur, niet thema-afhankelijk */
+  background: #25d366; /* WhatsApp-groen — merkkeur, niet thema-afhankelijk */
   color: #fff;
   font: inherit;
   font-size: 15px;
@@ -37,12 +43,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  /* Disabled-staat: niet klikbaar, gereduceerde opacity. */
+  /* Disabled-staat: niet klikbaar, gereduceerde opacity */
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Onopvallende helper-noot onder de knop. */
+/* Helper-noot onder de knop. */
 .footNote {
   margin: 0;
   text-align: center;
@@ -56,197 +62,370 @@
   padding: 16px;
 }
 
-/* Het witte A4-vel: subtiele schaduw, print-tekstkleur. */
+/* Het witte A4-vel: subtiele schaduw, print-tekstkleur.
+   Spiegelt .page in pdf-template.ts. */
 .paper {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
-  padding: 22px 20px;
+  overflow: hidden; /* crème header loopt tot de randen */
   font-size: 12px;
-  color: #1a1a1a; /* print-tekst */
+  color: #1a1a1a; /* SS-print-zwart */
 }
 
-/* ── Briefhoofd ────────────────────────────────────────────────────────── */
-
+/* ── Briefhoofd — crème header ─────────────────────────────────────────────
+   Spiegelt .header in pdf-template.ts:
+   background #FAFAF0, padding 28px 40px 24px, flex space-between. */
 .head {
+  background: #FAFAF0; /* SS-crème — vaste print-kleur */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 18px;
+  padding: 22px 20px 18px 20px;
 }
 
-/* Afzender-naam — print-blauw (letterlijk; spiegelt de accent uit de handoff,
-   maar als vaste print-kleur omdat dit papier is). */
-.brand {
-  font-size: 17px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #1a56ff; /* print-blauw, niet thema-afhankelijk */
+.headLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.brandSub {
-  font-size: 10px;
-  color: #8a8a8a;
-  margin-top: 2px;
-  line-height: 1.5;
+/* "OFFERTE" — SS-navy, groot, bold. Spiegelt .title in pdf-template.ts
+   (font-size:32px → geschaald naar mobiel-papier 22px). */
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #002D63; /* SS-navy — vaste print-kleur */
+  letter-spacing: 1px;
+  line-height: 1;
 }
 
+/* "Nr. {nr}" — lichtgrijze subtitle. Spiegelt .subtitle in pdf-template.ts. */
+.docNr {
+  margin: 0;
+  font-size: 11px;
+  color: #6b6b6b;
+  letter-spacing: 0.5px;
+}
+
+/* Rechts: bedrijfsnaam als brand-marker. */
 .headRight {
   text-align: right;
 }
 
-.docTitle {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.docMeta {
-  font-size: 10px;
-  color: #8a8a8a;
-  margin-top: 3px;
-  line-height: 1.6;
-}
-
-/* ── Factuuradres ────────────────────────────────────────────────────────── */
-
-.addrLabel {
-  font-size: 10px;
-  color: #8a8a8a;
+.brandName {
+  margin: 0;
+  font-size: 13px;
   font-weight: 700;
+  color: #002D63; /* SS-navy — vaste print-kleur */
+}
+
+/* ── Gouden accentbalk ─────────────────────────────────────────────────────
+   Spiegelt .accent in pdf-template.ts: height 4px, background #F5C518.
+   4px gouden band direct onder de header. */
+.accentBar {
+  height: 4px;
+  background: #F5C518; /* SS-goud — vaste print-kleur */
+}
+
+/* ── Content-wrapper ───────────────────────────────────────────────────────
+   Spiegelt .content in pdf-template.ts: padding 24px 40px 0 40px.
+   Op mobiel reduceren naar 16px zijwaarts. */
+.content {
+  padding: 18px 16px 16px 16px;
+}
+
+/* ── Twee meta-kaarten ─────────────────────────────────────────────────────
+   Spiegelt .meta-grid + .meta-card in pdf-template.ts.
+   Side-by-side; elk met #f9fafb achtergrond + subtiele rand + 8px radius. */
+.metaGrid {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.metaCard {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 12px;
+  min-width: 0; /* voorkomt overflow bij lange namen */
+}
+
+/* Label bovenaan elke kaart — uppercase, #003F8A navy-2.
+   Spiegelt .meta-card .label in pdf-template.ts. */
+.metaLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  color: #003F8A; /* SS-navy-2 — vaste print-kleur */
+  margin-bottom: 8px;
 }
 
-.addr {
-  font-size: 11.5px;
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-
-.addrName {
-  font-weight: 700;
-}
-
-/* ── Persoonlijk bericht ───────────────────────────────────────────────────
-   pre-wrap behoudt de newlines uit de aanhef. */
-.bericht {
-  font-size: 11.5px;
+/* Datarijen in de kaart — klein, compact. */
+.metaRow {
+  font-size: 10px;
+  color: #4b5563;
   line-height: 1.55;
-  margin-bottom: 16px;
-  color: #3a3a3a;
-  white-space: pre-wrap;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
-/* ── Regeltabel ────────────────────────────────────────────────────────────
-   Dikke print-bovenlijn, lichte onderlijn (handoff: #1A1A1A / #E4E4E4). */
+.metaRow strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Klantnaam prominent bovenaan de "Voor"-kaart.
+   Spiegelt .row .name in pdf-template.ts: navy, groter font. */
+.clientName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #002D63; /* SS-navy — vaste print-kleur */
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ── Specificatie-sectietitel ──────────────────────────────────────────────
+   Spiegelt .section-title in pdf-template.ts: uppercase, #003F8A. */
+.sectionTitle {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #003F8A; /* SS-navy-2 — vaste print-kleur */
+  margin: 0 0 10px 0;
+}
+
+/* ── Regeltabel ─────────────────────────────────────────────────────────────
+   Spiegelt table.regels in pdf-template.ts: 4 kolommen, navy thead. */
 .lines {
   width: 100%;
   border-collapse: collapse;
-  border-top: 1.5px solid #1a1a1a;
-  border-bottom: 1px solid #e4e4e4;
+  margin-bottom: 0;
 }
 
-.linesHead {
-  color: #8a8a8a;
-}
-
-.thLabel,
-.thQty,
-.thAmount {
-  font-size: 9.5px;
+/* Navy thead — spiegelt table.regels thead th in pdf-template.ts:
+   background #002D63, kleur #fff, uppercase, letter-spacing. */
+.linesHead th {
+  background: #002D63; /* SS-navy — vaste print-kleur */
+  color: #ffffff;
+  font-size: 9px;
   font-weight: 700;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 6px 0;
+  padding: 10px 10px;
 }
 
-.thLabel {
+/* Omschrijving-kolom links uitlijnen. */
+.thDesc {
   text-align: left;
+  width: 45%;
 }
 
-.thQty,
-.thAmount {
+/* Numerieke kolommen rechts uitlijnen. */
+.thNum {
   text-align: right;
 }
 
-.thAmount {
-  padding-left: 10px;
-}
-
-/* Tabelcellen (PRow). Omschrijving links, aantal + bedrag rechts. */
-.cellLabel {
-  padding: 7px 0;
-  font-size: 11.5px;
-}
-
-.cellQty {
-  padding: 7px 0;
-  font-size: 11px;
-  text-align: right;
-  color: #8a8a8a;
-  white-space: nowrap;
-}
-
-.cellAmount {
-  padding: 7px 0 7px 10px;
-  font-size: 11.5px;
-  text-align: right;
-  font-weight: 700;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Gedempte rij (subtotaal/toeslagen/korting/BTW): label-kleur zachter. */
-.rowMuted .cellLabel {
-  color: #6b6b6b;
-}
-
-/* Cursieve klant-notitie onder een regel (print-amber). */
-.lineNote {
-  padding: 0 0 7px 0;
+/* Tabelcellen (lichter dan thead). */
+.cellDesc {
+  padding: 8px 10px 8px 10px;
   font-size: 10.5px;
-  font-style: italic;
-  color: #8a6a1f;
+  color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cellNum {
+  padding: 8px 10px;
+  font-size: 10.5px;
+  color: #1f2937;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Totaal-kolom (laatste) bold + navy — spiegelt .cell-total. */
+.cellTotal {
+  font-weight: 700;
+  color: #002D63; /* SS-navy — vaste print-kleur */
+}
+
+/* Afwisselende rij-achtergrond (even). */
+.rowAlt td {
+  background: #fafafa;
+}
+
+/* Lege staat van de tabel. */
+.emptyCell {
+  padding: 18px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 10.5px;
 }
 
 /* ── Totalen-blok ──────────────────────────────────────────────────────────
-   Eigen tabel direct onder de regeltabel. */
-.sums {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 4px;
-}
-
-/* ── Grand-totaal ──────────────────────────────────────────────────────────
-   Dikke print-bovenlijn, vetgedrukt eindbedrag. */
-.grand {
+   Spiegelt .totals-wrap + table.totals in pdf-template.ts.
+   Rechts uitlijnen, 60% breedte. */
+.totalsWrap {
   display: flex;
-  justify-content: space-between;
-  border-top: 1.5px solid #1a1a1a;
-  margin-top: 6px;
-  padding-top: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
-.grandLabel {
-  font-size: 13px;
-  font-weight: 800;
+.totals {
+  width: 65%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.grandValue {
-  font-size: 13px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
+.totals td {
+  padding: 7px 10px;
+  font-size: 10.5px;
+  color: #4b5563;
+  vertical-align: top;
+  word-wrap: break-word;
 }
 
-/* ── Voorwaarden-voettekst ─────────────────────────────────────────────────
-   Lichte print-grijs met dunne scheidingslijn erboven. */
-.terms {
-  font-size: 9.5px;
-  color: #a0a0a0;
-  margin-top: 18px;
-  line-height: 1.5;
-  border-top: 1px solid #eee;
+.totalsLabel {
+  /* Links: omschrijving */
+}
+
+.totalsAmount {
+  text-align: right;
+  color: #1a1a1a;
+  white-space: nowrap;
+  width: 40%;
+}
+
+/* Toeslag-rijen (amber kleur, ná subtotaal).
+   Spiegelt toeslag-styling uit de totalen van de SS-template. */
+.rowToeslag td {
+  color: #92400e; /* amber-text — vaste print-kleur */
+}
+
+/* Actiekorting — groen, negatief.
+   Spiegelt table.totals tr.korting in pdf-template.ts. */
+.rowKorting td {
+  color: #15803d; /* SS-groen — vaste print-kleur */
+  font-weight: 600;
+}
+
+/* Totaal excl. BTW: subtotaal-rij met bovenrand.
+   Spiegelt table.totals tr.subtotal in pdf-template.ts. */
+.rowSubtotal td {
+  border-top: 1px solid #e5e7eb;
   padding-top: 10px;
+}
+
+/* Grand-row: Totaal incl. BTW — navy achtergrond, witte tekst.
+   Spiegelt table.totals tr.grand in pdf-template.ts. */
+.rowGrand td {
+  padding: 12px 10px;
+}
+
+.grandCell {
+  background: #002D63; /* SS-navy — vaste print-kleur */
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Afgeronde hoeken op de eerste en laatste cel van de grand-row. */
+.rowGrand td:first-child .grandCell,
+.rowGrand td:first-child {
+  border-radius: 6px 0 0 6px;
+  background: #002D63;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rowGrand td:last-child {
+  border-radius: 0 6px 6px 0;
+  background: #002D63;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.grandAmount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Toelichting (optioneel) ───────────────────────────────────────────────
+   Amber blok ná de totalen (= persoonlijk bericht).
+   Spiegelt .toelichting in pdf-template.ts:
+   #fffbeb bg, #fde68a rand, 8px radius. */
+.toelichting {
+  margin-top: 14px;
+  padding: 14px 14px;
+  background: #fffbeb; /* amber-licht — vaste print-kleur */
+  border: 1px solid #fde68a; /* amber-rand — vaste print-kleur */
+  border-radius: 8px;
+}
+
+/* Label bovenaan het toelichting-blok.
+   Spiegelt .toelichting .label: uppercase, #92400e. */
+.toelichtingLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #92400e; /* amber-dark — vaste print-kleur */
+  margin-bottom: 5px;
+}
+
+/* Toelichting-tekst — donker amber, lineair.
+   Spiegelt .toelichting .text: #78350f, font-size 11px. */
+.toelichtingText {
+  font-size: 10.5px;
+  color: #78350f; /* amber-darker — vaste print-kleur */
+  line-height: 1.6;
+  white-space: pre-wrap; /* behoudt enters uit de aanhef */
+}
+
+/* ── Voorwaarden ─────────────────────────────────────────────────────────────
+   Spiegelt .voorwaarden in pdf-template.ts: 10px, #6b7280.
+   Heeft een label uppercase #003F8A bovenaan. */
+.voorwaarden {
+  margin-top: 14px;
+  padding: 0 16px 12px 16px;
+  font-size: 9.5px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+.voorwaardenLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #003F8A; /* SS-navy-2 — vaste print-kleur */
+  margin-bottom: 5px;
+}
+
+/* ── Document-footer ─────────────────────────────────────────────────────────
+   Spiegelt .footer in pdf-template.ts:
+   3px #F5C518 bovenrand, #f9fafb achtergrond, gecentreerd, 9px. */
+.docFooter {
+  margin-top: 0;
+  padding: 14px 16px;
+  background: #f9fafb;
+  border-top: 3px solid #F5C518; /* SS-goud — vaste print-kleur */
+  font-size: 9px;
+  color: #6b7280;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* Bedrijfsnaam in de footer — navy. */
+.footerBrand {
+  color: #002D63; /* SS-navy — vaste print-kleur */
 }
