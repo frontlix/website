@@ -165,6 +165,7 @@ export function MobileOverzicht({ data }: Props) {
         onClose={closeDrilldown}
         items={data.urgent.items}
         onOpenItem={openLead}
+        onChat={(id) => router.push(`/inbox?lead=${id}`)}
         counts={{
           alle: data.urgent.totalCount,
           urgent: data.urgent.items.filter((i) => i.badge?.tone === 'red').length,
@@ -181,6 +182,10 @@ export function MobileOverzicht({ data }: Props) {
         totalDuur={data.vandaag.totalDuur ?? ''}
         dayLabel={formatDayLabel(data.vandaag.items)}
         route={buildRouteSummary(data.vandaag.items)}
+        onOpenLead={openLead}
+        onNavigate={(id) => openMapForStop(data.vandaag.items, id)}
+        onOpenMap={() => openMapRoute(data.vandaag.items)}
+        // onCall bewust niet gewired: VandaagItem heeft geen telefoonveld (geen nepdata).
       />
 
       <ActiviteitView
@@ -250,4 +255,22 @@ function buildRouteSummary(items: VandaagItem[]): string {
     if (uniek[uniek.length - 1] !== p) uniek.push(p)
   }
   return uniek.join(' → ')
+}
+
+/** Opent Google Maps op het adres van één stop (echt VandaagItem.adres). */
+function openMapForStop(items: VandaagItem[], id: string): void {
+  const item = items.find((i) => i.id === id)
+  if (!item) return
+  const q = encodeURIComponent(item.adres.replace(/\s*·\s*/g, ', '))
+  window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank', 'noopener,noreferrer')
+}
+
+/** Opent Google Maps met alle stops als route (laatste = bestemming, rest = waypoints). */
+function openMapRoute(items: VandaagItem[]): void {
+  if (items.length === 0) return
+  const stops = items.map((i) => encodeURIComponent(i.adres.replace(/\s*·\s*/g, ', ')))
+  const destination = stops[stops.length - 1]
+  const waypoints = stops.slice(0, -1).join('|')
+  const base = `https://www.google.com/maps/dir/?api=1&destination=${destination}`
+  window.open(waypoints ? `${base}&waypoints=${waypoints}` : base, '_blank', 'noopener,noreferrer')
 }

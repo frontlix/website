@@ -28,6 +28,8 @@ type Props = {
     buitenRadius: number
   }
   onOpenItem?: (id: string) => void
+  /** Tik op "Chat" → opent het in-app gesprek (/inbox?lead=:id). */
+  onChat?: (id: string) => void
 }
 
 /**
@@ -49,6 +51,7 @@ export function WatNuView({
   groupedByCategory,
   counts,
   onOpenItem,
+  onChat,
 }: Props) {
   const [filter, setFilter] = useState<Filter>('alle')
 
@@ -104,6 +107,7 @@ export function WatNuView({
               key={it.id}
               item={it}
               onOpen={() => onOpenItem?.(it.id)}
+              onChat={() => onChat?.(it.id)}
             />
           ))}
         </section>
@@ -117,6 +121,7 @@ export function WatNuView({
               key={it.id}
               item={it}
               onOpen={() => onOpenItem?.(it.id)}
+              onChat={() => onChat?.(it.id)}
             />
           ))}
         </section>
@@ -148,9 +153,11 @@ function Chip({
 function ItemCard({
   item,
   onOpen,
+  onChat,
 }: {
   item: UrgentItem
   onOpen: () => void
+  onChat?: () => void
 }) {
   return (
     <article className={styles.card}>
@@ -174,7 +181,7 @@ function ItemCard({
         <button type="button" className={styles.primary} onClick={onOpen}>
           Open offerte
         </button>
-        <button type="button" className={styles.secondary}>
+        <button type="button" className={styles.secondary} onClick={onChat}>
           <MessageCircle size={14} /> Chat
         </button>
       </div>

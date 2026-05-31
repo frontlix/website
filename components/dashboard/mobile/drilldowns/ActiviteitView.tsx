@@ -5,7 +5,6 @@ import Link from 'next/link'
 import {
   Calendar,
   FileText,
-  Filter,
   MessageCircle,
   User,
   type LucideIcon,
@@ -20,8 +19,6 @@ type Props = {
   open: boolean
   onClose: () => void
   items: ActivityItem[]
-  /** Optional callback voor de filter-icon rechts in de navbar. */
-  onOpenFilter?: () => void
 }
 
 // Strict-typed map ActivityType → lucide-react icon (geen any nodig).
@@ -48,7 +45,7 @@ const LABELS: Record<ActivityType, string> = {
  *   en "EERDER VANDAAG" (alle andere formats, bv. "1u", "2u", "1d").
  * - Empty-state wanneer beide buckets leeg zijn na filtering.
  */
-export function ActiviteitView({ open, onClose, items, onOpenFilter }: Props) {
+export function ActiviteitView({ open, onClose, items }: Props) {
   const [filter, setFilter] = useState<FilterKey>('alles')
 
   const filtered = items.filter((it) => {
@@ -71,16 +68,6 @@ export function ActiviteitView({ open, onClose, items, onOpenFilter }: Props) {
       title="Activiteit"
       subtitle={`live · ${items.length} events`}
       onClose={onClose}
-      rightAction={
-        <button
-          type="button"
-          className={styles.filterBtn}
-          onClick={onOpenFilter}
-          aria-label="Filter activiteit"
-        >
-          <Filter size={20} />
-        </button>
-      }
     >
       <div className={styles.chips}>
         <Chip active={filter === 'alles'} onClick={() => setFilter('alles')}>
