@@ -10,6 +10,7 @@
 // notitie zien i.p.v. placeholder-getallen (zie UITGESTELD in de PR-notitie).
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Sparkles, Minus, Plus, Check, AlertTriangle } from 'lucide-react'
 import { updatePricingRulesBatch } from '@/lib/dashboard/pricing-actions'
 import type { PricingRule } from '@/components/dashboard/instellingen/SettingSections'
@@ -41,6 +42,7 @@ export function InstPrijzen({ rules }: { rules: PricingRule[] }) {
   const [error, setError] = useState<string | null>(null)
   const [savedFlash, setSavedFlash] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   // Basisprijzen blijven constant — vergelijkingsbron voor delta + "changed".
   const base = Object.fromEntries(rules.map((r) => [r.rule_key, r.waarde]))
@@ -64,6 +66,10 @@ export function InstPrijzen({ rules }: { rules: PricingRule[] }) {
       if (res.ok) {
         setSavedFlash(true)
         setTimeout(() => setSavedFlash(false), 2000)
+        // Ververs de server-component → verse `rules`-prop wordt de nieuwe
+        // baseline, zodat de delta-pills + "gewijzigd"-staat clearen en de
+        // opslaan-knop disabled raakt (zelfde patroon als desktop PrijzenEditor).
+        router.refresh()
       } else {
         setError(res.error)
       }
