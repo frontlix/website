@@ -2,6 +2,7 @@
 
 import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 
 export type AvgActionResult = { ok: true; message?: string } | { ok: false; error: string }
 
@@ -21,9 +22,13 @@ export async function requestAccountDeleteAction(
     return { ok: false, error: 'Typ "VERWIJDER" in het bevestigingsveld om door te gaan.' }
   }
 
+  // Ingelogd EN approved. Een reeds-rejected user is effectief al geblokkeerd
+  // en hoeft niet nogmaals te verwijderen; requireApprovedUser() redirect 'm
+  // dan naar /wachtkamer i.p.v. de service-role-update opnieuw te draaien.
+  const { user } = await requireApprovedUser()
+
+  // signOut() na de update — daarom hebben we óók de SSR-cookie-client nodig.
   const supabase = await getDashboardSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
 
   const admin = getDashboardAdmin()
   const { error } = await admin
@@ -39,18 +44,22 @@ export async function requestAccountDeleteAction(
 }
 
 /**
- * Triggert een data-export. Voorlopig stub: we sturen geen ZIP, maar
- * loggen het verzoek in lead_notes van de eigenaar (of in een latere
- * tabel) zodat Frontlix het handmatig kan oppakken.
+ * Registreert een data-export-aanvraag. Let op: deze action verstuurt
+ * (nog) GÉÉN automatische mail en zet geen ZIP-job klaar — de afhandeling
+ * gebeurt handmatig door Frontlix. De message belooft daarom bewust geen
+ * automatische levering binnen X dagen.
+ *
+ * TODO (Optie B, aparte beslissing): export-aanvragen in een eigen tabel
+ * loggen + een ZIP-job starten en de download-link mailen.
  */
 export async function requestDataExportAction(): Promise<AvgActionResult> {
   const supabase = await getDashboardSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return { ok: false, error: 'Niet ingelogd.' }
 
-  // TODO (post-v1): start ZIP-job met alle tenant-data, mail link naar user.
   return {
     ok: true,
-    message: `Aanvraag genoteerd. Je ontvangt binnen 5 werkdagen een mail op ${user.email} met een download-link.`,
+    message:
+      'Je export-aanvraag is doorgegeven aan Frontlix. We nemen contact met je op zodra je data klaarstaat.',
   }
 }

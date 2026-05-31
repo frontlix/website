@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 
 export type OfferteRegelInput = {
   omschrijving: string
@@ -22,8 +23,8 @@ export type OfferteActionResult =
  *
  * Schrijf-paden gaan via de service-role client omdat het dashboard alleen
  * SELECT-policies heeft op offertes/prijsregels (de bot doet zelf de write).
- * De auth-check daarvoor staat boven: alleen ingelogde dashboard-users mogen
- * deze action aanroepen.
+ * De auth-check daarvoor staat boven: alleen ingelogde, approved
+ * dashboard-users mogen deze action aanroepen (requireApprovedUser).
  */
 export async function createManualOfferte(
   leadId: string,
@@ -45,12 +46,14 @@ export async function createManualOfferte(
 
   const korting = Math.max(0, Math.min(100, Number(kortingPct) || 0))
 
-  // Auth-check op de gewone client (RLS dwingt approved-user via is_approved_dashboard_user())
-  const supabase = await getDashboardSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  // Auth-check: ingelogd EN approved. Een pending/rejected user heeft wél een
+  // sessie maar mag via de service-role-write hieronder geen RLS omzeilen.
+  // requireApprovedUser() redirect bij niet-approved (client-transition vangt
+  // de NEXT_REDIRECT af).
+  await requireApprovedUser()
 
   // Verify lead bestaat & leesbaar voor deze user (RLS).
+  const supabase = await getDashboardSupabase()
   const { data: lead, error: leadErr } = await supabase
     .from('leads')
     .select('lead_id')

@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@supabase/supabase-js'
 import { getDashboardSupabase } from './supabase-server'
 
 export type AccountActionResult = { ok: true; message?: string } | { ok: false; error: string }
@@ -17,13 +18,26 @@ export async function updatePasswordAction(formData: FormData): Promise<AccountA
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return { ok: false, error: 'Niet ingelogd.' }
 
-  // Verifieer huidig wachtwoord door opnieuw te authenticeren.
-  const { error: reauthErr } = await supabase.auth.signInWithPassword({
+  // Verifieer huidig wachtwoord op een WEGWERP-client met de anon-key —
+  // signInWithPassword op de live SSR-client zou de actieve cookie-sessie
+  // muteren (token-rotatie / overschrijven). Deze client persist niets en
+  // raakt de cookies dus niet aan; alleen de credential-check telt.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DASHBOARD
+  if (!url || !anonKey) {
+    return { ok: false, error: 'Supabase niet geconfigureerd op deze server.' }
+  }
+  const reauthClient = createClient(url, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { error: reauthErr } = await reauthClient.auth.signInWithPassword({
     email: user.email,
     password: huidig,
   })
   if (reauthErr) return { ok: false, error: 'Huidig wachtwoord is onjuist.' }
 
+  // De daadwerkelijke wijziging blijft op de live SSR-client (die de
+  // ingelogde sessie/cookies beheert).
   const { error } = await supabase.auth.updateUser({ password: nieuw })
   if (error) return { ok: false, error: error.message }
 

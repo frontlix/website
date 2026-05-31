@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { sendNotification, sendConfirmation } from '@/lib/mail'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { escapeHtml } from '@/lib/html-escape'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,10 +45,10 @@ export async function POST(request: NextRequest) {
         `[Website Formulier] Nieuw contactformulier van ${naam}`,
         `
           <h2>Nieuw bericht via het contactformulier</h2>
-          <p><strong>Naam:</strong> ${naam}</p>
-          <p><strong>E-mail:</strong> ${email}</p>
-          <p><strong>Telefoon:</strong> ${telefoon}</p>
-          ${bericht ? `<p><strong>Bericht:</strong></p><p>${bericht.replace(/\n/g, '<br>')}</p>` : ''}
+          <p><strong>Naam:</strong> ${escapeHtml(naam)}</p>
+          <p><strong>E-mail:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Telefoon:</strong> ${escapeHtml(telefoon)}</p>
+          ${bericht ? `<p><strong>Bericht:</strong></p><p>${escapeHtml(bericht).replace(/\n/g, '<br>')}</p>` : ''}
         `
       )
     } catch (emailError) {

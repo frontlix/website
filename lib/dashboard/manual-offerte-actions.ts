@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 import { computeRules, computeTotals } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
 import { geocodeAddress } from './geocoding'
@@ -39,15 +39,16 @@ function trimOrNull(v: string): string | null {
  *
  * Schrijf gaat via service-role omdat de leads/offertes/prijsregels tabellen
  * geen INSERT-policy hebben voor dashboard-users (alleen SELECT). Auth check
- * blijft staan: alleen ingelogde dashboard-users mogen deze action runnen.
+ * gate't op approved-status: een pending/rejected user heeft wél een sessie
+ * maar mag via service-role geen RLS omzeilen, dus requireApprovedUser().
  */
 export async function createManualLeadEnOfferte(
   data: ManualOfferteData
 ): Promise<ManualOfferteResult> {
   // ── Auth-check (mag deze user überhaupt offertes maken?) ──────────
-  const supabase = await getDashboardSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  // requireApprovedUser() redirect bij niet-ingelogd/niet-approved; de
+  // client-transition vangt die NEXT_REDIRECT correct af.
+  const { user } = await requireApprovedUser()
 
   // ── Validatie van verplichte velden ───────────────────────────────
   if (!data.naam.trim()) return { ok: false, error: 'Naam is verplicht.' }

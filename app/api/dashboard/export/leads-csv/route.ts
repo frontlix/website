@@ -25,6 +25,12 @@ const CSV_HEADERS = [
 function csvEscape(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return ''
   const s = String(value)
+  // CSV-formule-injectie: cellen die met =, +, -, @, tab of CR beginnen,
+  // worden door Excel/Sheets als formule geïnterpreteerd. Prefix met een
+  // apostrof (neutraliseert de formule) en wikkel altijd in quotes.
+  if (/^[=+\-@\t\r]/.test(s)) {
+    return `"'${s.replace(/"/g, '""')}"`
+  }
   if (s.includes(',') || s.includes('"') || s.includes('\n')) {
     return `"${s.replace(/"/g, '""')}"`
   }

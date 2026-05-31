@@ -1,7 +1,7 @@
 'use server'
 
 import OpenAI from 'openai'
-import { getDashboardSupabase } from './supabase-server'
+import { getCurrentUser, getCurrentUserProfile } from './auth'
 
 /**
  * Geëxtraheerde velden uit een ruw bericht (WhatsApp / e-mail). Alles
@@ -270,8 +270,14 @@ Factuur-adres:
 
 /**
  * Extract klant- en werkvelden uit een ruwe bericht-tekst via OpenAI.
- * Auth-gated zodat alleen ingelogde dashboard-users de OpenAI-API
- * kunnen aanroepen (anders is het een open relay op onze tokens).
+ * Auth-gated zodat alleen ingelogde, approved dashboard-users de OpenAI-API
+ * kunnen aanroepen (anders is het een open relay op onze tokens — ook een
+ * pending/rejected user mag dit niet triggeren).
+ *
+ * Deze action geeft JSON terug; we gebruiken daarom een NON-redirecting
+ * gate (getCurrentUser + profiel-check) i.p.v. requireApprovedUser(), zodat
+ * een niet-approved user een nette { ok:false }-fout krijgt i.p.v. een
+ * redirect die de client-flow breekt.
  *
  * Model: gpt-4o-mini — snel, goedkoop ($0.15 per 1M input tokens),
  * en met structured-output betrouwbaar voor dit soort extractie.
@@ -279,9 +285,12 @@ Factuur-adres:
 export async function extractFieldsFromMessage(
   text: string,
 ): Promise<ExtractResult> {
-  const supabase = await getDashboardSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  const profile = await getCurrentUserProfile()
+  if (!profile || profile.tenant_status !== 'approved') {
+    return { ok: false, error: 'Geen toegang.' }
+  }
 
   const trimmed = text.trim()
   if (trimmed.length < 10) {

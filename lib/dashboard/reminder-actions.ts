@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -30,12 +30,10 @@ export async function updateReminderDays(
     return { ok: false, error: 'Dagen moet tussen 1 en 90 zijn.' }
   }
 
-  // Auth-check via user-client (RLS-gerelateerd).
-  const supabase = await getDashboardSupabase()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  // Auth-check: ingelogd EN approved. Anders kan een pending/rejected user via
+  // de service-role-write hieronder de ontbrekende UPDATE-policy omzeilen.
+  // requireApprovedUser() redirect bij niet-approved.
+  await requireApprovedUser()
 
   // Schrijven via admin-client (zoals saveTenantBase).
   const admin = getDashboardAdmin()

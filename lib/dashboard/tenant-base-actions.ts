@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 import { geocodeAddress } from './geocoding'
 
 export type SaveTenantBaseResult =
@@ -29,11 +29,10 @@ export async function saveTenantBase(input: {
   huisnummer: string
   label: string
 }): Promise<SaveTenantBaseResult> {
-  const supabase = await getDashboardSupabase()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  // Ingelogd EN approved — anders kan een pending/rejected user via de
+  // service-role-write hieronder de ontbrekende UPDATE-policy omzeilen.
+  // requireApprovedUser() redirect bij niet-approved.
+  await requireApprovedUser()
 
   const postcode = input.postcode.trim()
   const huisnummer = input.huisnummer.trim()

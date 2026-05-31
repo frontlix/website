@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { sendNotification, sendConfirmation } from '@/lib/mail'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { escapeHtml } from '@/lib/html-escape'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,12 +44,12 @@ export async function POST(request: NextRequest) {
         `[Website Formulier] Nieuwe projectaanvraag van ${voornaam} ${achternaam}`,
         `
           <h2>Nieuwe projectaanvraag</h2>
-          <p><strong>Naam:</strong> ${voornaam} ${achternaam}</p>
-          <p><strong>Telefoon:</strong> ${telefoon}</p>
-          <p><strong>E-mail:</strong> ${email}</p>
-          ${bedrijfsnaam ? `<p><strong>Bedrijf:</strong> ${bedrijfsnaam}</p>` : ''}
-          ${website ? `<p><strong>Website:</strong> ${website}</p>` : ''}
-          ${extra ? `<p><strong>Extra info:</strong></p><p>${extra.replace(/\n/g, '<br>')}</p>` : ''}
+          <p><strong>Naam:</strong> ${escapeHtml(voornaam)} ${escapeHtml(achternaam)}</p>
+          <p><strong>Telefoon:</strong> ${escapeHtml(telefoon)}</p>
+          <p><strong>E-mail:</strong> ${escapeHtml(email)}</p>
+          ${bedrijfsnaam ? `<p><strong>Bedrijf:</strong> ${escapeHtml(bedrijfsnaam)}</p>` : ''}
+          ${website ? `<p><strong>Website:</strong> ${escapeHtml(website)}</p>` : ''}
+          ${extra ? `<p><strong>Extra info:</strong></p><p>${escapeHtml(extra).replace(/\n/g, '<br>')}</p>` : ''}
         `
       )
     } catch (emailError) {

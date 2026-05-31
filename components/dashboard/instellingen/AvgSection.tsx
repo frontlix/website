@@ -37,7 +37,7 @@ function ExportCard() {
         <div>
           <div className={styles.cardTitle}>Exporteer mijn data</div>
           <div className={styles.cardSub}>
-            We zetten alle leads, gesprekken, foto&apos;s en offertes klaar in een ZIP. Je ontvangt een mail met een download-link.
+            We verzamelen al je leads, gesprekken, foto&apos;s en offertes. Na je aanvraag neemt Frontlix contact met je op zodra je data klaarstaat.
           </div>
         </div>
       </div>
