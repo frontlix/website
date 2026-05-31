@@ -4,7 +4,7 @@ import styles from './ReviewScoreHeader.module.css'
 
 type Props = { score: number; total: number; deltaMaand: number; bedrijfsnaam?: string }
 
-export function ReviewScoreHeader({ score, total, deltaMaand, bedrijfsnaam = 'Schoon Straatje' }: Props) {
+export function ReviewScoreHeader({ score, total, deltaMaand, bedrijfsnaam = 'je bedrijf' }: Props) {
   // Komma-notatie zoals Google (nl-NL): 4.8 → "4,8".
   const scoreLabel = score.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
   return (

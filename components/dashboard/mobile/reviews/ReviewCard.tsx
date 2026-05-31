@@ -9,6 +9,8 @@ import styles from './ReviewCard.module.css'
 
 type Props = {
   review: MobileReview
+  /** Echte bedrijfsnaam van de tenant — toont als auteur van de reactie. */
+  bedrijfsnaam: string
   /** Lokaal geplaatste reactie (deze sessie), indien aanwezig. */
   placedReply?: string
   isOpen: boolean
@@ -21,7 +23,7 @@ type Props = {
 }
 
 export function ReviewCard({
-  review, placedReply, isOpen, draft, templates, onOpen, onCancel, onDraftChange, onPost,
+  review, bedrijfsnaam, placedReply, isOpen, draft, templates, onOpen, onCancel, onDraftChange, onPost,
 }: Props) {
   const replyText = placedReply ?? (review.status === 'beantwoord' ? review.reply : undefined)
   // 'beantwoord' zonder reply-tekst (toekomstige echte data) telt ook als beantwoord,
@@ -54,7 +56,7 @@ export function ReviewCard({
 
       {replied && !isOpen && (
         <div className={styles.reply}>
-          <div className={styles.replyAuthor}>Reactie van Schoon Straatje</div>
+          <div className={styles.replyAuthor}>Reactie van {bedrijfsnaam}</div>
           <div className={styles.replyText}>{replyText}</div>
         </div>
       )}

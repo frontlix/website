@@ -51,3 +51,16 @@
 .toastIcon {
   color: var(--color-success);
 }
+
+/* Eerlijkheids-banner: markeert de reviews-data als voorbeeld.
+   Amber/warning-tint via tokens (consistent met desktop demo-banner). */
+.demoBanner {
+  margin: 12px 16px 0;
+  padding: 9px 12px;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-warning-strong);
+}

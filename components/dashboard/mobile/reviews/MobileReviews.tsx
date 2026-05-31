@@ -9,7 +9,9 @@ import { reviewCounts, filterReviews, type ReviewTab, type ReviewTextMap } from 
 import { REVIEWS_MOCK, REVIEW_TEMPLATES, REVIEW_AGGREGATE } from './reviews-mock'
 import styles from './MobileReviews.module.css'
 
-export function MobileReviews() {
+type Props = { bedrijfsnaam?: string }
+
+export function MobileReviews({ bedrijfsnaam = 'je bedrijf' }: Props) {
   const [tab, setTab] = useState<ReviewTab>('nieuw')
   const [openId, setOpenId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<ReviewTextMap>({})
@@ -38,10 +40,18 @@ export function MobileReviews() {
 
   return (
     <div className={styles.root}>
+      {/* Eerlijkheids-banner: deze cijfers + reviews zijn voorbeelddata.
+          Toon/tekst consistent met de desktop /reviews demo-banner. */}
+      <div className={styles.demoBanner} role="note">
+        Voorbeeld — reviews-koppeling volgt. Deze score en reviews zijn nog
+        geen echte data; zodra Surface na elke klus een review-vraag
+        verstuurt verschijnen hier jouw echte Google-reviews.
+      </div>
       <ReviewScoreHeader
         score={REVIEW_AGGREGATE.score}
         total={REVIEW_AGGREGATE.total}
         deltaMaand={REVIEW_AGGREGATE.deltaMaand}
+        bedrijfsnaam={bedrijfsnaam}
       />
 
       <ReviewsTabs active={tab} counts={counts} onSelect={(t) => { setTab(t); setOpenId(null) }} />
@@ -60,6 +70,7 @@ export function MobileReviews() {
             <ReviewCard
               key={r.id}
               review={r}
+              bedrijfsnaam={bedrijfsnaam}
               placedReply={done[r.id]}
               isOpen={openId === r.id}
               draft={drafts[r.id] ?? ''}
@@ -76,7 +87,7 @@ export function MobileReviews() {
       {toast && (
         <div className={styles.toast} role="status">
           <Check size={16} aria-hidden="true" className={styles.toastIcon} />
-          <span>Antwoord geplaatst op Google</span>
+          <span>Antwoord opgeslagen (voorbeeld — nog niet op Google geplaatst)</span>
         </div>
       )}
     </div>
