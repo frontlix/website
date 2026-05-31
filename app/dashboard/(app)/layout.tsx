@@ -1,5 +1,9 @@
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
+import {
+  getRecentNotifications,
+  getUnreadNotificationCount,
+} from '@/lib/dashboard/notification-queries'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TopbarServer } from '@/components/dashboard/TopbarServer'
 import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
@@ -18,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Parallel fetchen: tenant-info + sidebar-counts (open leads, komende
   // afspraken). Counts vullen de badges in de Sidebar — geven de klant
   // direct zicht op werk-in-uitvoering zonder elke pagina te openen.
-  const [settingsRes, openLeadsRes, upcomingApptsRes] = await Promise.all([
+  const [settingsRes, openLeadsRes, upcomingApptsRes, notifications, unreadCount] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select('bedrijfsnaam')
@@ -34,6 +38,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .select('lead_id', { count: 'exact', head: true })
       .not('afspraak_geboekt_op', 'is', null)
       .gte('afspraak_geboekt_op', new Date().toISOString()),
+    // Bel-feed + ongelezen-badge voor de mobiele shell-header (zelfde
+    // queries als de desktop-Topbar). Desktop heeft z'n eigen TopbarServer.
+    getRecentNotifications(15),
+    getUnreadNotificationCount(),
   ])
 
   // Cast: Supabase type-inference zonder generated DB types geeft `never`.
@@ -82,6 +90,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         bedrijfsnaam={bedrijfsnaam}
         userInitials={userInitials}
         userName={userName}
+        notifications={notifications}
+        unreadCount={unreadCount}
         counts={{ leads: counts.leads }}
       >
         {children}

@@ -24,6 +24,10 @@ import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
 import { getLeadsList, leadsArrivedTodayAndTomorrow } from '@/lib/dashboard/lead-queries'
 import { getRecentInboundMessages } from '@/lib/dashboard/activity-feed'
 import {
+  getRecentNotifications,
+  getUnreadNotificationCount,
+} from '@/lib/dashboard/notification-queries'
+import {
   buildFunnelRows,
   buildActivityFeed,
   buildKpiMetrics,
@@ -138,6 +142,8 @@ export default async function OverzichtPage({
     reactietijdPrev7Ms,
     openOffertes,
     leadsTodayTomorrow,
+    mobileNotifications,
+    mobileUnreadCount,
   ] = await Promise.all([
     countLeads(maand),
     countConverted(maand),
@@ -166,6 +172,9 @@ export default async function OverzichtPage({
     avgReactietijdMs(prevWeek7d),
     countOpenOffertes(),
     leadsArrivedTodayAndTomorrow(),
+    // Bel-feed + ongelezen-badge voor de mobiele Overzicht-header.
+    getRecentNotifications(15),
+    getUnreadNotificationCount(),
   ])
 
   // Tenant: chatbot_naam altijd aanwezig, omzet_doel_maand is nieuwe
@@ -294,6 +303,9 @@ export default async function OverzichtPage({
       totalDuur: undefined,
     },
     activity: mapLiveActivityToMobile(activityItems),
+    // Bel-feed + ongelezen-badge voor de Overzicht-header (echte notifications-tabel).
+    notifications: mobileNotifications,
+    unreadCount: mobileUnreadCount,
   }
 
   return (
