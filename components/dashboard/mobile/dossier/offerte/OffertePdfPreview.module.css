@@ -1,0 +1,252 @@
+/* ── OffertePdfPreview.module.css ──────────────────────────────────────────
+   PDF-preview overlay van de mobiele offerte-editor (port van QPDFPreview).
+
+   BELANGRIJK — papier, niet thema-afhankelijk:
+   het document binnen .paper bootst gedrukt papier na en blijft daarom licht/
+   wit, óók in dark mode. Alle kleuren binnen het papier zijn bewust LETTERLIJKE
+   print-greys (geen tokens, geen color-mix) — exact 1-op-1 uit de handoff.
+   Alleen de chrome buiten het papier (de OFullSheet-shell zelf) is thema-bewust;
+   die wordt geleverd door OfferteEditAtoms.module.css.
+   Maten (font-sizes als 11.5px, radii 10/13px) zijn 1-op-1 uit de handoff.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Voet (sticky) ─────────────────────────────────────────────────────────
+   "Versturen via WhatsApp" is deze ronde VISUEEL/DISABLED: versturen blijft de
+   desktop-flow. Gestyled als disabled (gedempte opacity, niet klikbaar) met een
+   onopvallende helper-noot. */
+
+.footWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Disabled WhatsApp-knop: WhatsApp-groen is een merk-/print-kleur (geen thema-
+   token), bewust gedempt + niet klikbaar. */
+.sendBtn {
+  width: 100%;
+  border: none;
+  background: #25d366; /* WhatsApp-groen — merk-kleur, niet thema-afhankelijk */
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  /* Disabled-staat: niet klikbaar, gereduceerde opacity. */
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Onopvallende helper-noot onder de knop. */
+.footNote {
+  margin: 0;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+/* ── Papier-container ──────────────────────────────────────────────────────
+   16px lucht rondom het vel binnen de scrollbare sheet-body. */
+.paperWrap {
+  padding: 16px;
+}
+
+/* Het witte A4-vel: subtiele schaduw, print-tekstkleur. */
+.paper {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+  padding: 22px 20px;
+  font-size: 12px;
+  color: #1a1a1a; /* print-tekst */
+}
+
+/* ── Briefhoofd ────────────────────────────────────────────────────────── */
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+/* Afzender-naam — print-blauw (letterlijk; spiegelt de accent uit de handoff,
+   maar als vaste print-kleur omdat dit papier is). */
+.brand {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #1a56ff; /* print-blauw, niet thema-afhankelijk */
+}
+
+.brandSub {
+  font-size: 10px;
+  color: #8a8a8a;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.headRight {
+  text-align: right;
+}
+
+.docTitle {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.docMeta {
+  font-size: 10px;
+  color: #8a8a8a;
+  margin-top: 3px;
+  line-height: 1.6;
+}
+
+/* ── Factuuradres ────────────────────────────────────────────────────────── */
+
+.addrLabel {
+  font-size: 10px;
+  color: #8a8a8a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.addr {
+  font-size: 11.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.addrName {
+  font-weight: 700;
+}
+
+/* ── Persoonlijk bericht ───────────────────────────────────────────────────
+   pre-wrap behoudt de newlines uit de aanhef. */
+.bericht {
+  font-size: 11.5px;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  color: #3a3a3a;
+  white-space: pre-wrap;
+}
+
+/* ── Regeltabel ────────────────────────────────────────────────────────────
+   Dikke print-bovenlijn, lichte onderlijn (handoff: #1A1A1A / #E4E4E4). */
+.lines {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1.5px solid #1a1a1a;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.linesHead {
+  color: #8a8a8a;
+}
+
+.thLabel,
+.thQty,
+.thAmount {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 0;
+}
+
+.thLabel {
+  text-align: left;
+}
+
+.thQty,
+.thAmount {
+  text-align: right;
+}
+
+.thAmount {
+  padding-left: 10px;
+}
+
+/* Tabelcellen (PRow). Omschrijving links, aantal + bedrag rechts. */
+.cellLabel {
+  padding: 7px 0;
+  font-size: 11.5px;
+}
+
+.cellQty {
+  padding: 7px 0;
+  font-size: 11px;
+  text-align: right;
+  color: #8a8a8a;
+  white-space: nowrap;
+}
+
+.cellAmount {
+  padding: 7px 0 7px 10px;
+  font-size: 11.5px;
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Gedempte rij (subtotaal/toeslagen/korting/BTW): label-kleur zachter. */
+.rowMuted .cellLabel {
+  color: #6b6b6b;
+}
+
+/* Cursieve klant-notitie onder een regel (print-amber). */
+.lineNote {
+  padding: 0 0 7px 0;
+  font-size: 10.5px;
+  font-style: italic;
+  color: #8a6a1f;
+}
+
+/* ── Totalen-blok ──────────────────────────────────────────────────────────
+   Eigen tabel direct onder de regeltabel. */
+.sums {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+}
+
+/* ── Grand-totaal ──────────────────────────────────────────────────────────
+   Dikke print-bovenlijn, vetgedrukt eindbedrag. */
+.grand {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1.5px solid #1a1a1a;
+  margin-top: 6px;
+  padding-top: 8px;
+}
+
+.grandLabel {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.grandValue {
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Voorwaarden-voettekst ─────────────────────────────────────────────────
+   Lichte print-grijs met dunne scheidingslijn erboven. */
+.terms {
+  font-size: 9.5px;
+  color: #a0a0a0;
+  margin-top: 18px;
+  line-height: 1.5;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}

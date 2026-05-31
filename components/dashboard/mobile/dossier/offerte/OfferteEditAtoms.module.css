@@ -1,0 +1,496 @@
+/* ── OfferteEditAtoms.module.css ───────────────────────────────────────────
+   Domein-agnostische UI-atomen voor de mobiele offerte-editor.
+   Maten 1-op-1 uit de handoff (Q*-atomen): stepper-knop 34×34 (radius 10),
+   groot 46×46 (radius 14); iOS-switch 46×28, knop 24px; kaart-radius 13/14px.
+   Theming via tokens + per-atoom --tone custom property + color-mix only —
+   geen inline kleuren. Off-state van de switch werkt in light én dark.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── OStepper ──────────────────────────────────────────────────────────────
+   Tikbaar getal met ± knoppen. --tone bepaalt de plus-tint + actieve kleur;
+   default = primary. size 'lg' vergroot knoppen, getal en gap. */
+
+.stepper {
+  /* Default-accent; consumenten overschrijven via style={{'--tone': accent}}. */
+  --tone: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Grote variant — meer lucht tussen knoppen (handoff: gap 14). */
+.stepper[data-size='lg'] {
+  gap: 14px;
+}
+
+/* ± knop — chip-achtergrond, 34×34 radius 10. */
+.stepBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.stepper[data-size='lg'] .stepBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+
+/* Plus-knop draagt de accent-tint (handoff: accent+'24' bg, accent fg). */
+.stepPlus {
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
+}
+
+/* Tikbaar getal (niet-edit) — tabulaire cijfers, vet, centraal. */
+.stepValueBtn {
+  min-width: 58px;
+  text-align: center;
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: none;
+  cursor: text;
+  padding: 0;
+}
+
+.stepper[data-size='lg'] .stepValueBtn {
+  min-width: 96px;
+  font-size: 30px;
+}
+
+/* Suffix (bv. 'm²', '%') — kleiner en gedempt. */
+.stepSuffix {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.stepper[data-size='lg'] .stepSuffix {
+  font-size: 16px;
+}
+
+/* Edit-input — accent-kleur + onderlijn in accent. */
+.stepInput {
+  width: 58px;
+  text-align: center;
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--tone);
+  border: none;
+  border-bottom: 2px solid var(--tone);
+  background: transparent;
+  padding: 0 2px;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper[data-size='lg'] .stepInput {
+  width: 96px;
+  font-size: 30px;
+}
+
+/* ── ONumField ─────────────────────────────────────────────────────────────
+   Tikbaar tarief/getal: tonen → klik → input. Accent = primary. */
+
+.numShow {
+  font: inherit;
+  font-weight: 800;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  /* Gestreepte onderlijn signaleert "tikbaar". */
+  border-bottom: 2px dashed var(--color-border);
+  padding: 1px 2px;
+  cursor: text;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.numShow[data-align='right'] {
+  text-align: right;
+}
+
+.numShow[data-align='left'] {
+  text-align: left;
+}
+
+.numInput {
+  width: 58px;
+  font: inherit;
+  font-weight: 800;
+  color: var(--color-primary);
+  border: none;
+  border-bottom: 2px solid var(--color-primary);
+  background: transparent;
+  padding: 1px 2px;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.numInput[data-align='right'] {
+  text-align: right;
+}
+
+.numInput[data-align='left'] {
+  text-align: left;
+}
+
+/* ── OSwitch (iOS-switch 46×28, knob 24) ──────────────────────────────────── */
+
+.switch {
+  /* Default-accent groen; consumenten overschrijven via --tone. */
+  --tone: var(--color-success);
+  width: 46px;
+  height: 28px;
+  border-radius: 99px;
+  border: none;
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* Off-state track — neutraal systeem-grijs (handoff light: #E4E4EA). */
+  background: rgba(120, 120, 128, 0.32);
+  transition: background 0.2s;
+}
+
+/* Dark off-track: alpha-wit op de donkere bg (handoff dark: #39393D),
+   in lijn met de .segmented dark-override hieronder. */
+:global(.dark) .switch {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.switch[data-on='true'] {
+  background: var(--tone);
+}
+
+.switchKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  /* iOS-knop blijft wit in beide thema's (een fysieke schakelaar-knop, geen
+     thema-oppervlak) — via token i.p.v. hardcoded hex. */
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.2s;
+}
+
+/* Aan: knob schuift naar rechts (46 - 24 - 2 = 20). */
+.switch[data-on='true'] .switchKnob {
+  left: 20px;
+}
+
+/* ── OSectionLabel ─────────────────────────────────────────────────────────
+   Uppercase sectiekop met optioneel rechter-slot (bv. sleep-hint). */
+
+.sectionLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px 8px;
+}
+
+.sectionLabelText {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── OClientNote (amber notitie-blok) ──────────────────────────────────────
+   Amber-tint uit --color-warning (color-mix), nooit hardcoded hex. */
+
+/* Open-staat: bewerk-blok. */
+.noteEdit {
+  margin-top: 9px;
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+  border-radius: 11px;
+  padding: 10px 11px;
+}
+
+/* 'Zichtbaar voor klant'-koptekst met oog-icoon. */
+.noteEyeHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  color: var(--color-warning-strong);
+}
+
+.noteEyeLabel {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.noteTextarea {
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.noteActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.noteCancel {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+/* Bewaar — gevuld in warning-strong. */
+.noteSave {
+  background: var(--color-warning-strong);
+  border: none;
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+/* Collapsed-staat met opgeslagen notitie. */
+.noteSaved {
+  width: 100%;
+  text-align: left;
+  margin-top: 9px;
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+  border-radius: 11px;
+  padding: 9px 11px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--color-warning-strong);
+}
+
+.noteSavedBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.noteSavedTag {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--color-warning-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+/* Opgeslagen tekst — cursief, gedempt-warm. */
+.noteSavedText {
+  display: block;
+  font-size: 12.5px;
+  /* Iets zachter dan de label-kleur (handoff noteTx). */
+  color: color-mix(in srgb, var(--color-warning-strong) 78%, var(--color-text));
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Lege-staat: ghost-knop. */
+.noteGhost {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+/* ── OAddrInput (factuuradres-veld) ───────────────────────────────────────── */
+
+.addrInput {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  padding: 7px 2px;
+}
+
+.addrInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ── OUnitPicker (native select, accent-getint) ───────────────────────────── */
+
+.unitPicker {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-primary);
+  border: none;
+  /* Zachte accent-achtergrond (handoff accentSoft). */
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+/* ── OSegmented (pill segmented control) ──────────────────────────────────── */
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  /* Track-achtergrond (handoff seg: licht #E4E4E9 / dark white .10). */
+  background: var(--color-surface-2);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+:global(.dark) .segmented {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.segment {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* Actief segment — verhoogd boven de track met surface + subtiele schaduw. */
+.segment[data-on='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+:global(.dark) .segment[data-on='true'] {
+  box-shadow: none;
+}
+
+/* ── OFullSheet (full-screen slide-up overlay) ────────────────────────────── */
+
+/* Backdrop — dimt onder de sheet; fade via --color-backdrop.
+   z-index 9000/9001 ligt ruim boven de BottomNav (50) en gewone sheets. */
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+  z-index: 9000;
+}
+
+.sheetBackdrop[data-open='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Paneel — vult het scherm, schuift van onder in beeld (translateY). */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9001;
+  /* Net iets meer dan 100% zodat een box-shadow tijdens transit onder beeld blijft. */
+  transform: translateY(102%);
+  transition: transform 0.32s var(--ease-ios);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sheet[data-open='true'] {
+  transform: translateY(0);
+}
+
+/* Header — 'Sluit' links + gecentreerde titel; respecteert safe-area-top. */
+.sheetHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+  background: var(--color-surface);
+  border-bottom: 0.5px solid var(--color-border);
+}
+
+.sheetClose {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Titel centraal; marge-right compenseert de 'Sluit'-knop links. */
+.sheetTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-right: 38px;
+}
+
+.sheetBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky voet — respecteert safe-area-bottom. */
+.sheetFoot {
+  flex-shrink: 0;
+  padding: 11px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background: var(--color-surface);
+  border-top: 0.5px solid var(--color-border);
+}

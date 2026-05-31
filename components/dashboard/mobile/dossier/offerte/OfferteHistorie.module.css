@@ -1,0 +1,114 @@
+/* ── OfferteHistorie.module.css ────────────────────────────────────────────
+   Versie-historie overlay. Maten 1-op-1 uit de handoff (QHistorie):
+   lijst padding 16 / gap 10; kaart-radius 14 / padding 14; huidige-kaart
+   1.5px accent-rand; badge 40×40 radius 10; bedrag 16/800 tabular; status
+   10.5/700; datum 11.5 muted; knoppen padding 9 radius 10.
+   Per-rij kleur via --tone custom property + color-mix; geen hardcoded hex.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Versie-kaart — surface met subtiele rand. */
+.card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+}
+
+/* Huidig concept — accent-rand i.p.v. de gewone border (handoff 1.5px accent). */
+.cardCurrent {
+  border: 1.5px solid var(--color-primary);
+}
+
+/* Bovenste rij: badge + meta naast elkaar. */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Versie-badge 40×40 — zachte tint van --tone (handoff tone + '1F' ≈ 12%). */
+.badge {
+  --tone: var(--color-text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: var(--tone);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Bedrag links, status rechts, op dezelfde baseline. */
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bedrag {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status-label in de rij-tint (groen 'Verstuurd' / amber 'In review' / grijs). */
+.status {
+  --tone: var(--color-text-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tone);
+}
+
+.datum {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* PDF + Dupliceer knoppen — visueel only (disabled). */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.actBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  /* Visueel-only deze ronde: niet klikbaar, licht gedempt. */
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* Dupliceer draagt de accent-kleur (tekst + icoon). */
+.actBtnAccent {
+  color: var(--color-primary);
+}

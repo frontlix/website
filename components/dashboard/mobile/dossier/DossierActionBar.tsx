@@ -3,9 +3,21 @@
 import { Phone, MessageCircle, FileText } from 'lucide-react'
 import styles from './DossierActionBar.module.css'
 
-type Props = { onCall?: () => void; onWhatsApp?: () => void; onSendOfferte?: () => void }
+// primaryLabel laat de send-knop van label wisselen: op de Offerte-tab tonen we
+// 'Controleer & stuur' (opent de PDF-preview), elders de default 'Stuur offerte'.
+type Props = {
+  onCall?: () => void
+  onWhatsApp?: () => void
+  onSendOfferte?: () => void
+  primaryLabel?: string
+}
 
-export function DossierActionBar({ onCall, onWhatsApp, onSendOfferte }: Props) {
+export function DossierActionBar({
+  onCall,
+  onWhatsApp,
+  onSendOfferte,
+  primaryLabel = 'Stuur offerte',
+}: Props) {
   return (
     <div className={styles.bar}>
       <button type="button" className={styles.iconBtn} onClick={onCall} aria-label="Bel">
@@ -16,7 +28,7 @@ export function DossierActionBar({ onCall, onWhatsApp, onSendOfferte }: Props) {
       </button>
       <button type="button" className={styles.sendBtn} onClick={onSendOfferte}>
         <FileText size={16} aria-hidden="true" />
-        Stuur offerte
+        {primaryLabel}
       </button>
     </div>
   )

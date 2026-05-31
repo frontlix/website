@@ -16,6 +16,9 @@ import type {
   DossRegel,
   DossActity,
 } from './dossier-mock'
+// Editor-types hergebruiken (niet dupliceren) zodat de seed-functie van de
+// offerte-editor direct op deze velden matcht.
+import type { EditorKlant, SeedRegel } from './offerte/offerte-edit-seed'
 
 const TONE = {
   blue: '#1A56FF',
@@ -53,6 +56,15 @@ export type MobileDossierData = {
     subtotaal: number
     btw: number
     totaal: number
+    // ── editor-velden (voeden de mobiele offerte-editor via seedOfferteState) ──
+    klant: EditorKlant
+    m2: number
+    voornaam: string
+    korstmos: boolean
+    kortingPct: number
+    kortingNote: string
+    seedRegels: SeedRegel[]
+    versies: { versie: number; totaalIncl: number; datum: string; verstuurd: boolean }[]
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
@@ -152,6 +164,17 @@ function buildActivity(detail: LeadDetail, now: number): DossActity[] {
     })
 }
 
+/**
+ * Korte nl-NL datum ('22 mei') voor de versie-historie. Lege/ongeldige
+ * timestamps geven '' terug (Intl.format zou anders gooien op Invalid Date).
+ */
+function shortDate(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const ms = new Date(iso).getTime()
+  if (!Number.isFinite(ms)) return ''
+  return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' }).format(new Date(ms))
+}
+
 /** Offerte-blok: regels uit prijsregels, totalen uit de laatste offerte. */
 function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
   const l = detail.lead
@@ -187,7 +210,51 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     status = 'Nog geen offerte'
   }
 
-  return { status, regels, subtotaal, btw, totaal }
+  // ── editor-velden: voorvulling voor de bewerkbare offerte-editor ──
+
+  // Factuuradres uit de losse lead-velden (alleen aanwezige delen samenvoegen).
+  const klant: EditorKlant = {
+    naam: l.naam ?? '',
+    bedrijf: l.bedrijfsnaam ?? '',
+    straat: [l.straat, l.huisnummer].filter(Boolean).join(' '),
+    pcplaats: [l.postcode, l.plaats].filter(Boolean).join(' '),
+  }
+
+  // Voornaam = eerste woord van de naam; valt terug op 'klant'.
+  const voornaam = (l.naam || 'klant').trim().split(/\s+/)[0] || 'klant'
+
+  // Bestaande prijsregels als seed voor de editor-regels (ruwe waarden;
+  // de seed-functie mapt deze later op de catalogus).
+  const seedRegels: SeedRegel[] = detail.prijsregels.map((r) => ({
+    omschrijving: r.omschrijving ?? '',
+    aantal: r.aantal ?? null,
+    eenheid: r.eenheid ?? null,
+    stukprijs: r.stukprijs ?? 0,
+  }))
+
+  // Versie-historie uit de echte offertes (read-only in de editor).
+  const versies = detail.offertes.map((o) => ({
+    versie: o.versie,
+    totaalIncl: o.totaal_incl,
+    datum: shortDate(o.aangemaakt_op),
+    verstuurd: !o.is_concept,
+  }))
+
+  return {
+    status,
+    regels,
+    subtotaal,
+    btw,
+    totaal,
+    klant,
+    m2: l.m2 ?? 0,
+    voornaam,
+    korstmos: l.korstmos === 'ja',
+    kortingPct: l.korting_percentage ?? 0,
+    kortingNote: l.korting_omschrijving ?? '',
+    seedRegels,
+    versies,
+  }
 }
 
 export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.now()): MobileDossierData {

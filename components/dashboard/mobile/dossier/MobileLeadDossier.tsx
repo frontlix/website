@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DossierHeader } from './DossierHeader'
 import { DossierFactStrip } from './DossierFactStrip'
 import { DossierSurfaceStrip } from './DossierSurfaceStrip'
 import { DossierTabs } from './DossierTabs'
 import { DossInfo } from './DossInfo'
-import { DossOfferte } from './DossOfferte'
+import { DossOfferteEdit } from './offerte/DossOfferteEdit'
 import { DossFotos } from './DossFotos'
 import { DossActiviteit } from './DossActiviteit'
 import { DossierActionBar } from './DossierActionBar'
@@ -24,6 +24,9 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('info')
   const { lead } = data
+  // Brug naar de offerte-editor: de actiebalk-knop "Controleer & stuur" opent
+  // de PDF-preview die binnen DossOfferteEdit leeft (registreert openPdf hierin).
+  const pdfApiRef = useRef<{ openPdf: () => void } | null>(null)
 
   return (
     <div className={styles.root}>
@@ -42,7 +45,7 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
               vragen={data.vragen}
             />
           )}
-          {tab === 'offerte' && <DossOfferte offerte={data.offerte} />}
+          {tab === 'offerte' && <DossOfferteEdit offerte={data.offerte} pdfApiRef={pdfApiRef} />}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}
         </div>
@@ -55,9 +58,13 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
         onWhatsApp={() => {
           if (data.waTel) window.open(`https://wa.me/${data.waTel}`, '_blank', 'noopener')
         }}
-        // Offerte VERSTUREN blijft de (handmatige, desktop) flow — hier tonen we
-        // alleen de offerte-tab. Geen automatische send (sendOfferteMail).
-        onSendOfferte={() => setTab('offerte')}
+        // Offerte VERSTUREN blijft de (handmatige, desktop) flow. Op de Offerte-tab
+        // opent de knop de PDF-preview ("Controleer & stuur"); op andere tabs
+        // springt-ie naar de Offerte-tab. Geen automatische send (sendOfferteMail).
+        primaryLabel={tab === 'offerte' ? 'Controleer & stuur' : undefined}
+        onSendOfferte={
+          tab === 'offerte' ? () => pdfApiRef.current?.openPdf() : () => setTab('offerte')
+        }
       />
     </div>
   )
