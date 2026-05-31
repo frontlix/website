@@ -12,6 +12,7 @@ import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import { minutesBetween } from './agenda-mobile-helpers'
 import { AgendaFilterPills } from './AgendaFilterPills'
 import { AgendaDayJumpStrip } from './AgendaDayJumpStrip'
+import { AgendaWeekNav } from './AgendaWeekNav'
 import { AgendaLiveBanner } from './AgendaLiveBanner'
 import { AgendaDayGroup } from './AgendaDayGroup'
 import { AgendaEventRow } from './AgendaEventRow'
@@ -83,6 +84,12 @@ interface AgendaWeekProps {
   weekDays: AgendaWeekDay[]
   /** Subtitle, bv. "Week 20 · 11 t/m 17 mei 2026". */
   weekLabel: string
+  /** Maandag-key vorige week (YYYY-MM-DD). */
+  prevWeekKey: string
+  /** Maandag-key volgende week (YYYY-MM-DD). */
+  nextWeekKey: string
+  /** True → "Vandaag" inactief. */
+  isCurrentWeek: boolean
   onOpenEvent?: (ev: AgendaEvent) => void
   onNew?: () => void
   onOpenSearch?: () => void
@@ -96,6 +103,9 @@ export function AgendaWeek({
   nowTime,
   weekDays,
   weekLabel,
+  prevWeekKey,
+  nextWeekKey,
+  isCurrentWeek,
   onOpenEvent,
   onNew,
   onOpenSearch,
@@ -147,6 +157,15 @@ export function AgendaWeek({
       })
   }, [visibleEvents, todayDate])
 
+  // Tik op een dag in de strip → scroll naar de bijbehorende dag-groep.
+  // De scroll-container is .root (overflow-y:auto); scrollIntoView scrollt
+  // de dichtstbijzijnde scrollbare ancestor.
+  const handleJump = (date: string) => {
+    document
+      .getElementById(`agday-${date}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   // Week-totaal voor de subtitle.
   const totalEv = events.length
 
@@ -157,7 +176,7 @@ export function AgendaWeek({
         <div className={styles.titleCol}>
           <h1 className={styles.title}>Agenda</h1>
           <p className={styles.subtitle}>
-            {weekLabel} · {totalEv} {totalEv === 1 ? 'afspraak' : 'afspraken'}
+            {totalEv} {totalEv === 1 ? 'afspraak' : 'afspraken'}
           </p>
         </div>
         <div className={styles.actions}>
@@ -180,11 +199,19 @@ export function AgendaWeek({
         </div>
       </header>
 
+      {/* Week-navigatie */}
+      <AgendaWeekNav
+        weekLabel={weekLabel}
+        prevWeekKey={prevWeekKey}
+        nextWeekKey={nextWeekKey}
+        isCurrentWeek={isCurrentWeek}
+      />
+
       {/* Filter-pills */}
       <AgendaFilterPills active={filter} onPick={setFilter} items={FILTER_ITEMS} />
 
       {/* Mini-week day-jump strip */}
-      <AgendaDayJumpStrip days={weekDays} events={events} todayDate={todayDate} />
+      <AgendaDayJumpStrip days={weekDays} events={events} todayDate={todayDate} onJump={handleJump} />
 
       {/* Live "bezig"-banner */}
       {nowEvent && (
@@ -213,6 +240,7 @@ export function AgendaWeek({
       {days.map((d) => (
         <AgendaDayGroup
           key={d.date}
+          id={`agday-${d.date}`}
           date={d.date}
           label={d.label}
           summary={d.summary}

@@ -6,7 +6,7 @@ import {
   getMonthGrid,
   buildAppointmentsByDay,
 } from '@/lib/dashboard/calendar'
-import { parseWeekParam, shiftWeekKey } from '@/lib/dashboard/agenda-week'
+import { parseWeekParam, shiftWeekKey, currentMondayKey } from '@/lib/dashboard/agenda-week'
 import {
   getAppointmentsForMonth,
   getAppointmentsForRange,
@@ -69,6 +69,9 @@ export default async function AgendaPage({
     nowTime: amsterdamTime(mobileNow.toISOString()),
     weekDays: buildMobileWeekDays(mobileWeek.mondayKey),
     weekLabel: `Week ${mobileWeek.weekNumber} · ${mobileWeek.rangeLabel}`,
+    prevWeekKey: shiftWeekKey(mobileWeek.mondayKey, -1),
+    nextWeekKey: shiftWeekKey(mobileWeek.mondayKey, 1),
+    isCurrentWeek: mobileWeek.mondayKey === currentMondayKey(),
   }
 
   return (

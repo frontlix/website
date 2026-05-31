@@ -22,6 +22,12 @@ export type MobileAgendaData = {
   weekDays: AgendaWeekDay[]
   /** Subtitle, bv. "Week 20 · 11 t/m 17 mei 2026". */
   weekLabel: string
+  /** Maandag-key (YYYY-MM-DD) van de vorige week. */
+  prevWeekKey: string
+  /** Maandag-key (YYYY-MM-DD) van de volgende week. */
+  nextWeekKey: string
+  /** True als de getoonde week de huidige week is (→ "Vandaag" inactief). */
+  isCurrentWeek: boolean
 }
 
 export function MobileAgenda({ data }: { data: MobileAgendaData }) {
@@ -41,6 +47,9 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
         nowTime={data.nowTime}
         weekDays={data.weekDays}
         weekLabel={data.weekLabel}
+        prevWeekKey={data.prevWeekKey}
+        nextWeekKey={data.nextWeekKey}
+        isCurrentWeek={data.isCurrentWeek}
         onOpenEvent={(ev) => setDetail(ev)}
         onNew={() => setNewOpen(true)}
         onAfrondenLive={(ev) => setAfronden(ev)}

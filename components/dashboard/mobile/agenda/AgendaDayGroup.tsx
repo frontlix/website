@@ -23,6 +23,8 @@ interface AgendaDayGroupProps {
   today?: boolean
   past?: boolean
   children?: ReactNode
+  /** Optioneel DOM-id, gebruikt als scroll-doel vanuit de dag-strip. */
+  id?: string
 }
 
 export function AgendaDayGroup({
@@ -33,6 +35,7 @@ export function AgendaDayGroup({
   today,
   past,
   children,
+  id,
 }: AgendaDayGroupProps) {
   const d = new Date(`${date}T00:00:00`)
   const wdayShort = WDAY_SHORT[d.getDay()]
@@ -41,7 +44,7 @@ export function AgendaDayGroup({
   const pillState = today ? 'today' : past ? 'past' : 'future'
 
   return (
-    <div className={styles.group}>
+    <div className={styles.group} id={id}>
       <header className={styles.header}>
         <div className={styles.datePill} data-state={pillState}>
           <span className={styles.pillWday}>{wdayShort}</span>

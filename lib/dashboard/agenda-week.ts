@@ -114,6 +114,12 @@ export function shiftWeekKey(mondayKey: string, deltaWeeks: number): string {
   return dateToKey(d)
 }
 
+/** Maandag-key (YYYY-MM-DD) van de week waarin `now` valt. Default: vandaag.
+ *  Gebruikt dezelfde lokale-tijd-logica als parseWeekParam's default-week. */
+export function currentMondayKey(now: Date = new Date()): string {
+  return dateToKey(getMondayOf(now))
+}
+
 /**
  * Genereert 7 dag-objecten voor de week, beginnend bij maandag, met
  * day-keys die matchen op `toAmsterdamDayKey` van een afspraak-timestamp.
