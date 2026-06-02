@@ -4,6 +4,7 @@ import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { applyOptOutFromUrl, isOptedOut } from '@/lib/analytics-optout'
 
 // Tracks page views on client-side navigation (Next.js App Router SPA)
 function PostHogPageView() {
@@ -35,6 +36,10 @@ export default function PostHogProvider({
     // Alleen data verzamelen op de live site, niet op localhost
     const isLive = window.location.hostname === 'frontlix.com' || window.location.hostname === 'www.frontlix.com'
     if (!isLive) return
+
+    // Eigen opt-out (Chris/Georg): bezoek frontlix.com?notrack=1 → eigen bezoeken niet meer tellen
+    applyOptOutFromUrl()
+    if (isOptedOut()) return
 
     posthog.init(key, {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com',

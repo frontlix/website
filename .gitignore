@@ -6,6 +6,7 @@ out/
 next-env.d.ts
 .DS_Store
 temporary screenshots/
+.playwright-mcp/
 lead-automation/venv/
 lead-automation/.env
 lead-automation/test-feedback.jsonl

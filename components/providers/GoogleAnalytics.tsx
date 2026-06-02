@@ -3,6 +3,7 @@
 import Script from 'next/script'
 import { useEffect, Suspense, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { applyOptOutFromUrl, isOptedOut } from '@/lib/analytics-optout'
 
 declare global {
   interface Window {
@@ -30,9 +31,11 @@ export default function GoogleAnalytics() {
   const [isLive, setIsLive] = useState(false)
 
   useEffect(() => {
-    // Alleen data verzamelen op de live site, niet op localhost
+    applyOptOutFromUrl()
+    // Alleen op de live site (niet localhost), en niet bij eigen opt-out
     const host = window.location.hostname
-    setIsLive(host === 'frontlix.com' || host === 'www.frontlix.com')
+    const liveHost = host === 'frontlix.com' || host === 'www.frontlix.com'
+    setIsLive(liveHost && !isOptedOut())
   }, [])
 
   if (!gaId || !isLive) return null
