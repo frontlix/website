@@ -187,7 +187,7 @@ export async function getLeadsList(
  * Telt leads die vandaag binnen zijn gekomen en die morgen verwacht zijn,
  * voor de subline op MobileOverzichtHeader ("14 leads vandaag · 4 morgen").
  *
- * Gebruikt `created_at` als binnenkomst-tijdstip. Dag-grens via lokale
+ * Gebruikt `aangemaakt` als binnenkomst-tijdstip. Dag-grens via lokale
  * datum (Date-constructor zonder timezone-arg = lokale tijd van de Node-
  * server, in productie = NL). Voor strict-NL bij UTC-server zou je
  * Europe/Amsterdam moeten forceren; volstaat voor nu.
@@ -209,13 +209,13 @@ export async function leadsArrivedTodayAndTomorrow(): Promise<{
     supabase
       .from('leads')
       .select('lead_id', { count: 'exact', head: true })
-      .gte('created_at', startOfToday.toISOString())
-      .lt('created_at', startOfTomorrow.toISOString()),
+      .gte('aangemaakt', startOfToday.toISOString())
+      .lt('aangemaakt', startOfTomorrow.toISOString()),
     supabase
       .from('leads')
       .select('lead_id', { count: 'exact', head: true })
-      .gte('created_at', startOfTomorrow.toISOString())
-      .lt('created_at', startOfDayAfterTomorrow.toISOString()),
+      .gte('aangemaakt', startOfTomorrow.toISOString())
+      .lt('aangemaakt', startOfDayAfterTomorrow.toISOString()),
   ])
 
   if (todayRes.error) {
