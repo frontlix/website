@@ -36,7 +36,10 @@
   background: var(--surface);
   border-top-left-radius: 22px;
   border-top-right-radius: 22px;
-  padding: 8px 0 22px;
+  /* Extra onder-padding voor de fixed bottom-nav (56px) + iOS safe-area, zodat
+     de onderste rij (WhatsApp-toggle) bóven de nav scrollbaar is i.p.v. erachter
+     te verdwijnen. */
+  padding: 8px 0 calc(22px + var(--mobile-bottom-nav-h) + var(--mobile-safe-area-bottom));
   z-index: 60;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
   max-height: 90%;

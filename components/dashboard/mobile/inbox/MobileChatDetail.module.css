@@ -248,8 +248,10 @@
   -webkit-overflow-scrolling: touch;
   /* WA-beige achtergrond met subtiel SVG-doodle pattern */
   background-color: var(--wa-chat-bg);
-  /* Subtiele cirkels en driehoekjes overlay op 0.04 opacity */
+  /* Subtiele cirkels en driehoekjes overlay op 0.04 opacity. Tegel op 90px
+     (i.p.v. 180px) → fijner, dichter doodle-patroon dat dichter bij de échte
+     WhatsApp-achtergrond komt i.p.v. een paar grote uitgezoomde vormen. */
   background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'180'%20height%3D'180'%20viewBox%3D'0%200%20180%20180'%3E%3Cg%20fill%3D'none'%20stroke%3D'rgba(0%2C0%2C0%2C0.04)'%20stroke-width%3D'1.2'%3E%3Ccircle%20cx%3D'20'%20cy%3D'30'%20r%3D'8'%2F%3E%3Cpath%20d%3D'M50%2060l8%2014h-16z'%2F%3E%3Ccircle%20cx%3D'100'%20cy%3D'40'%20r%3D'6'%2F%3E%3Cpath%20d%3D'M150%2025l6%2010-12%200z'%2F%3E%3Ccircle%20cx%3D'70'%20cy%3D'110'%20r%3D'10'%2F%3E%3Cpath%20d%3D'M120%20100h14v14h-14z'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  background-size: 180px 180px;
+  background-size: 90px 90px;
   padding: 8px 0 6px;
 }

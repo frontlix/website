@@ -28,3 +28,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Tijdens een open detail-overlay (drilldown) verbergt de algemene header zich:
+   het detail heeft z'n eigen "‹ Terug | titel"-balk en vult het scherm. Zonder
+   dit bleef bv. op /instellingen de "Instellingen"-titel dubbel bovenaan staan.
+   display:none haalt 'm uit de flow zodat het detail naar de bovenkant schuift. */
+:global(html[data-drilldown-open]) .header {
+  display: none;
+}

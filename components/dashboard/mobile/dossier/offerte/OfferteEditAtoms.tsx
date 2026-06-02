@@ -425,6 +425,18 @@ type OFullSheetProps = {
 }
 
 export function OFullSheet({ open, onClose, title, children, foot }: OFullSheetProps) {
+  // Markeer globaal dat een full-screen offerte-overlay (voorbeeld/historie)
+  // open is, zodat de DossierActionBar (bel/WhatsApp/Controleer & stuur) zich
+  // verbergt. Die heeft hier geen functie — de overlay heeft z'n eigen voet —
+  // en stak er voorheen doorheen (backdrop-filter maakt een eigen stacking-context).
+  useEffect(() => {
+    if (!open) return
+    document.documentElement.setAttribute('data-offerte-overlay-open', 'true')
+    return () => {
+      document.documentElement.removeAttribute('data-offerte-overlay-open')
+    }
+  }, [open])
+
   return (
     <>
       <div

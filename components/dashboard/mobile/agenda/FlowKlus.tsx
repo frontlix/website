@@ -16,6 +16,7 @@ import {
   FMiniMap,
 } from './FlowAtoms'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { type AgendaEvent } from './agenda-mock'
 import { eventTone, durStr } from './agenda-mobile-helpers'
 import styles from './FlowKlus.module.css'
@@ -42,12 +43,12 @@ function TrackIcon({ kind }: { kind: 'check' | 'clock' | 'zap' | 'pin' }) {
 }
 
 export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
+  const router = useRouter()
   // Live = de afspraak loopt nu (mapper zet ev.current op absolute tijd).
   const isNow = !!ev.current
 
-  // Echte contact-/route-velden (geen nepdata): tel: ongewijzigd, wa.me 0→31.
+  // Echte contact-/route-velden (geen nepdata): tel: ongewijzigd.
   const telDigits = (ev.telefoon ?? '').replace(/\D/g, '')
-  const waTel = telDigits.startsWith('0') ? `31${telDigits.slice(1)}` : telDigits
   const hasAdres = !!ev.adres && ev.adres !== '—'
   const mapsHref = hasAdres
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.adres)}`
@@ -63,7 +64,11 @@ export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
 
   return (
     // --tone draagt de event-kleur door naar avatar/badge (color-mix in CSS).
-    <div className={styles.root} style={{ '--tone': eventTone(ev.kind) } as React.CSSProperties}>
+    <div
+      className={styles.root}
+      data-flush-footer
+      style={{ '--tone': eventTone(ev.kind) } as React.CSSProperties}
+    >
       <FHero
         ev={ev}
         kindLabel="Klus"
@@ -110,11 +115,13 @@ export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
             }}
           />
         )}
-        {waTel && (
+        {ev.lead && (
           <FBigAction
             icon="wa"
             label="WhatsApp"
-            onClick={() => window.open(`https://wa.me/${waTel}`, '_blank', 'noopener,noreferrer')}
+            // In-app gesprek met deze lead (inbox-thread), niet de externe
+            // WhatsApp-app. Consistent met de leads-lijst en het lead-dossier.
+            onClick={() => router.push(`/inbox?lead=${ev.lead}`)}
           />
         )}
       </div>

@@ -14,7 +14,7 @@ import styles from './DossInfo.module.css'
 // Info-tab: Contact, Dienst, Bijzonderheden en Surface-uitvraag — nu gevoed
 // met echte lead-data (props) i.p.v. de DOSS-mock.
 type DossInfoProps = {
-  lead: Pick<DossierLead, 'm2'>
+  lead: Pick<DossierLead, 'm2' | 'id'>
   contact: { telefoon: string; email: string; adres: string; afstand: number | null }
   /** Genormaliseerd WhatsApp-nummer (0→31, alleen cijfers); leeg → geen WA-link. */
   waTel: string
@@ -39,8 +39,9 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen 
             icon="phone"
             label="Telefoon"
             value={contact.telefoon}
-            // WhatsApp-icoon → echt in-app/extern gesprek; geen link zonder nummer.
-            action={{ icon: 'wa', tone: 'var(--color-whatsapp)', href: waTel ? `https://wa.me/${waTel}` : undefined }}
+            // WhatsApp-icoon → het IN-APP gesprek met deze lead (inbox-thread),
+            // niet de externe WhatsApp-app. Geen link zonder telefoonnummer.
+            action={{ icon: 'wa', tone: 'var(--color-whatsapp)', href: waTel ? `/inbox?lead=${lead.id}` : undefined }}
           />
           <DossRow icon="mail" label="E-mail" value={contact.email} />
           <DossRow

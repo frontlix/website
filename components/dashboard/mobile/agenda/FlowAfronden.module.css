@@ -8,17 +8,35 @@
 /* Full-height scrollend sheet-oppervlak. Padding-top houdt ruimte vrij voor de
    FNav (header-hoogte) zodat de content niet onder de nav schuift. */
 .root {
-  /* Full-screen overlay: dekt week-lijst + open drilldown af (z boven de
-     MobileDrilldownLayer op z-index 40). */
+  /* Overlay: dekt week-lijst + open drilldown af (z boven de
+     MobileDrilldownLayer op z-index 40). Stopt — net als MobileDrilldownLayer —
+     vlak BOVEN de bottom-nav (bottom: nav-h) i.p.v. inset:0; anders viel de
+     onderste "Markeer als afgerond"-knop onder de bottom-nav en kon je er niet
+     bij / leek de content niet te scrollen. */
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--mobile-bottom-nav-h);
   z-index: 60;
   background: var(--color-bg);
   color: var(--color-text);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  /* overflow:hidden — de .body scrollt, niet de root. Zo blijven FNav (boven)
+     en footer (onder) vast en wordt de content niet weggekrompen op krappe
+     schermen. */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Scrollende content tussen de vaste FNav en de vaste footer. min-height:0 is
+   cruciaal in een flex-column, anders krimpt de body niet en scrollt 'ie niet. */
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* ── Tijd-tracking summary (groene hero) ───────────────────────────────── */
@@ -237,10 +255,10 @@
 /* ── Footer: markeer als afgerond ──────────────────────────────────────── */
 
 .footer {
-  position: sticky;
-  bottom: 0;
-  margin-top: auto;
-  padding: 14px 16px 28px;
+  /* Vaste footer onder de scrollende .body (flex:1 duwt 'm al naar onderen).
+     Geen sticky/auto-margin meer nodig. */
+  flex-shrink: 0;
+  padding: 14px 16px calc(28px + var(--mobile-safe-area-bottom));
   /* Fade vanaf de bg naar transparant zodat content netjes onderdoor scrollt. */
   background: linear-gradient(to top, var(--color-bg) 75%, transparent);
   display: flex;

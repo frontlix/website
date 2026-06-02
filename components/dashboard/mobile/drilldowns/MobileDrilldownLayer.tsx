@@ -40,6 +40,12 @@ export function MobileDrilldownLayer({
 }: Props) {
   useEffect(() => {
     if (!open) return
+    // Markeer globaal dat een detail-overlay open is. De algemene shell-header
+    // (alleen zichtbaar op routes zonder eigen header, zoals /instellingen)
+    // verbergt zich dan via CSS, zodat het detail full-screen is en de
+    // paginatitel (bv. "Instellingen") niet dubbel boven de "‹ Terug"-balk blijft.
+    document.documentElement.setAttribute('data-drilldown-open', 'true')
+
     // Push precies ÉÉN drilldown-history-entry. Guard tegen dubbele entries:
     // React Strict-Mode (dev) dubbel-mount, een instabiele onClose-identiteit,
     // of een deep-link (?section=…) waarbij de laag al open mount. Zonder guard
@@ -57,6 +63,7 @@ export function MobileDrilldownLayer({
     window.addEventListener('popstate', onPop)
     return () => {
       window.removeEventListener('popstate', onPop)
+      document.documentElement.removeAttribute('data-drilldown-open')
     }
   }, [open, onClose])
 

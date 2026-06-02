@@ -4,7 +4,6 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DossierHeader } from './DossierHeader'
 import { DossierFactStrip } from './DossierFactStrip'
-import { DossierSurfaceStrip } from './DossierSurfaceStrip'
 import { DossierTabs } from './DossierTabs'
 import { DossInfo } from './DossInfo'
 import { DossOfferteEdit } from './offerte/DossOfferteEdit'
@@ -33,7 +32,6 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
       <div className={styles.scroll}>
         <DossierHeader lead={lead} onBack={() => router.push('/leads')} />
         <DossierFactStrip facts={factStrip(lead)} />
-        <DossierSurfaceStrip fase={data.surface.fase} message={data.surface.message} />
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />
         <div className={styles.tabBody}>
           {tab === 'info' && (
@@ -56,8 +54,11 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
         onCall={() => {
           if (data.telefoonRaw) window.location.href = `tel:${data.telefoonRaw}`
         }}
+        // WhatsApp → het IN-APP gesprek met deze lead (inbox-thread), niet de
+        // externe WhatsApp-app. Consistent met de leads-lijst (SwipeableLeadCard)
+        // en het overzicht, zodat je vanuit het dossier direct verder kunt chatten.
         onWhatsApp={() => {
-          if (data.waTel) window.open(`https://wa.me/${data.waTel}`, '_blank', 'noopener')
+          router.push(`/inbox?lead=${lead.id}`)
         }}
         // Offerte VERSTUREN blijft de (handmatige, desktop) flow. Op de Offerte-tab
         // opent de knop de PDF-preview ("Controleer & stuur"); op andere tabs

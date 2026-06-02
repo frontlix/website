@@ -126,6 +126,9 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
     <div className={styles.root} role="dialog" aria-modal="true" aria-label="Klus afronden">
       <FNav title="Klus afronden" sub={`${naam} · ${plaats}`} rightLabel="Sluiten" onBack={onClose} />
 
+      {/* Scrollende body — vaste FNav boven, vaste footer onder. Zonder deze
+          wrapper kromp de content op krappe schermen weg i.p.v. te scrollen. */}
+      <div className={styles.body}>
       {/* Tijd-tracking summary */}
       <div className={styles.timeSummary}>
         <div className={styles.timeHead}>
@@ -208,6 +211,8 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
           )
         })}
       </FDetailCard>
+
+      </div>{/* /body */}
 
       {/* Footer: markeer als afgerond */}
       <div className={styles.footer}>

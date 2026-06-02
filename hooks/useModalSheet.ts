@@ -41,8 +41,10 @@ export function useModalSheet<T extends HTMLElement = HTMLDivElement>(
     if (!open) return
 
     // Onthoud de huidige focus en verplaats naar de dialog bij openen.
+    // preventScroll: true voorkomt dat de browser bij focus() abrupt naar het
+    // element scrollt (gaf een "scroll-sprong van onder naar boven" bij openen).
     prevFocusRef.current = document.activeElement as HTMLElement | null
-    dialogRef.current?.focus()
+    dialogRef.current?.focus({ preventScroll: true })
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

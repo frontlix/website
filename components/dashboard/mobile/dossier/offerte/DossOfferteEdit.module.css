@@ -649,7 +649,24 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  color: var(--color-primary);
+  /* transparante eigen tekstkleur als vangnet: ook als een pseudo-element niet
+     pakt, blijft de native datum onzichtbaar. */
+  color: transparent;
+}
+/* De datum staat al in de zwarte .geldigDateValue-span. We verbergen de
+   native datum-tekst van de date-input (anders staat 'ie er dubbel, blauw)
+   en houden alleen het tikbare kalender-icoon over.
+   - iOS Safari toont de waarde via ::-webkit-date-and-time-value
+   - Chrome/Android/desktop via ::-webkit-datetime-edit */
+.geldigDateInput::-webkit-date-and-time-value {
+  display: none;
+}
+.geldigDateInput::-webkit-datetime-edit {
+  display: none;
+}
+.geldigDateInput::-webkit-inner-spin-button,
+.geldigDateInput::-webkit-clear-button {
+  display: none;
 }
 
 /* ── 10. Acties ──────────────────────────────────────────────────────────── */

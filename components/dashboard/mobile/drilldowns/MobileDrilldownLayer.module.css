@@ -78,4 +78,17 @@
   padding: var(--space-3) var(--mobile-content-pad);
   /* iOS rubber-band containment binnen drilldown */
   overscroll-behavior-y: contain;
+  /* Flex-column zodat drilldown-content die de hoogte wil vullen (bv. FlowKlus
+     met een actiebalk onderaan) dat via flex:1 kan. Kinderen behouden hun
+     content-hoogte (default min-height:auto) → lange content scrollt gewoon. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Drilldowns met een edge-to-edge sticky footer (FlowKlus) markeren hun root met
+   [data-flush-footer]. Dan vervalt de content-padding-bottom zodat de sticky
+   footer vlak op de drilldown-onderrand zit i.p.v. ~12px erboven. Overige
+   drilldowns behouden hun 12px onder-ademruimte. */
+.content:has([data-flush-footer]) {
+  padding-bottom: 0;
 }

@@ -1,7 +1,14 @@
 .root {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  /* DEFINITIEVE hoogte i.p.v. height:100%. De parent (.main) krijgt z'n hoogte
+     van flex:1, en een percentage-hoogte resolvet daar op iOS niet betrouwbaar
+     tegen → .root kromp tot content-hoogte, .scroll rekte niet uit en de
+     DossierActionBar zakte onder de content. Met een definitieve 100dvh
+     (zelfde eenheid als .shell) rekt .scroll (flex:1) gegarandeerd uit en
+     staat de actiebalk vast onderaan — op álle tabs, ook bij korte content. */
+  height: 100dvh;
+  overflow: hidden;
   background: var(--color-bg);
   /* Header staat onder de notch wanneer de shell-header verborgen is. */
   padding-top: env(safe-area-inset-top, 0px);

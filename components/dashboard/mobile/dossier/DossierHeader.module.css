@@ -58,12 +58,17 @@
   margin-top: 3px;
 }
 
-/* Stage-pill: primary dot + tekst op een 12%-primary getinte achtergrond. */
+/* Stage-pill: primary dot + tekst op een 12%-primary getinte achtergrond.
+   flex-shrink:0 + nowrap houden de pill intact ongeacht de lengte van de
+   sub-tekst (plaats · lead-id); zonder dit werd de pill samengedrukt en
+   wrapte de status raar bij lange lead-id's. */
 .stagePill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 9px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 3px 10px;
   border-radius: 99px;
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
   color: var(--color-primary);
@@ -81,4 +86,9 @@
 .sub {
   font-size: 12px;
   color: var(--color-text-muted);
+  /* Lange "plaats · lead-id" netjes afkappen i.p.v. de stage-pill knijpen. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

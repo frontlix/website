@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   ChevronLeft,
   MapPin,
@@ -74,15 +75,27 @@ export function DossRow({ icon, label, value, action }: DossRowProps) {
       </div>
       {action && ActionIcon && (
         action.href ? (
-          <a
-            className={styles.rowAction}
-            href={action.href}
-            target={action.href.startsWith('http') ? '_blank' : undefined}
-            rel="noopener noreferrer"
-            style={{ '--tone': action.tone } as React.CSSProperties}
-          >
-            <ActionIcon size={15} aria-hidden="true" />
-          </a>
+          action.href.startsWith('http') ? (
+            // Externe link (tel:-fallback, maps, …) → nieuw tabblad.
+            <a
+              className={styles.rowAction}
+              href={action.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ '--tone': action.tone } as React.CSSProperties}
+            >
+              <ActionIcon size={15} aria-hidden="true" />
+            </a>
+          ) : (
+            // Interne route (bv. /inbox?lead=…) → soepele client-side navigatie.
+            <Link
+              className={styles.rowAction}
+              href={action.href}
+              style={{ '--tone': action.tone } as React.CSSProperties}
+            >
+              <ActionIcon size={15} aria-hidden="true" />
+            </Link>
+          )
         ) : (
           <span
             className={styles.rowAction}

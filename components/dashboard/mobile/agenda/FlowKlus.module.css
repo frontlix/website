@@ -12,7 +12,13 @@
 .root {
   display: flex;
   flex-direction: column;
-  margin: calc(-1 * var(--space-3)) calc(-1 * var(--mobile-content-pad)) calc(-1 * var(--space-3));
+  /* flex:1 vult de drilldown-scrollcontainer (.content is nu flex-column) zodat
+     de footer met margin-top:auto naar de onderkant wordt geduwd, óók bij korte
+     content. Alleen horizontaal negatieve marge (edge-to-edge breedte); de
+     verticale negatieve marges zijn weg — die duwden de footer ~20px ónder de
+     drilldown-rand (achter de bottom-nav). */
+  flex: 1;
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--mobile-content-pad)) 0;
 }
 
 /* ── Badges in de hero ─────────────────────────────────────────────────── */
@@ -193,9 +199,14 @@
 /* Sticky onderaan de scroll-container. .root annuleert al de content-padding,
    dus de footer loopt edge-to-edge; eigen padding herstelt de 16px-gutter. */
 .footer {
+  /* sticky: bij lange content (overflowt op kleine schermen) pint de footer
+     onderaan de scroll-viewport — dus net boven de bottom-nav, niet afgesneden.
+     margin-top:auto vult de rest: bij content die wél past (grote schermen)
+     duwt het de footer naar de onderkant van de (flex:1) .root. */
   position: sticky;
   bottom: 0;
-  padding: 12px var(--mobile-content-pad) 28px;
+  margin-top: auto;
+  padding: 12px var(--mobile-content-pad) 16px;
   /* Fade naar de container-achtergrond (drilldown-laag = --color-surface). */
   background: linear-gradient(to top, var(--color-surface) 75%, transparent);
   display: flex;
