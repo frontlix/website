@@ -87,7 +87,11 @@ export default async function InstellingenPage({
       .from('dashboard_user_profiles')
       .select('user_id, bedrijfsnaam, is_owner, tenant_status')
       .eq('tenant_status', 'approved'),
-    section === 'prijzen' ? getPricingImpactBaseline(30) : Promise.resolve(null),
+    // Wat-als-baseline (laatste 30 leads): altijd ophalen. De mobiele Prijzen-
+    // sectie wordt client-side geopend (zonder ?section=prijzen), dus we kunnen
+    // server-side niet weten of 'ie nodig is. Desktop gebruikt 'm alleen bij
+    // section==='prijzen'; de meerkost is één begrensde leads-query.
+    getPricingImpactBaseline(30),
     getTagsWithCounts(),
     section === 'opening' || section === 'reminders'
       ? getRecentTemplateAanvragen(20)
@@ -152,6 +156,7 @@ export default async function InstellingenPage({
         <MobileInstellingen
           tenant={tenant}
           pricing={pricing}
+          baseline={baselineRaw}
           services={services}
           team={team}
           tags={tags}

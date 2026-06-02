@@ -19,6 +19,7 @@ import type {
   TeamMember,
 } from '@/components/dashboard/instellingen/SettingSections'
 import type { TagWithCount } from '@/lib/dashboard/tags-queries'
+import type { PricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
 import styles from './MobileInstellingen.module.css'
 
@@ -43,6 +44,8 @@ type Props = {
   tenant: TenantSettings | null
   /** Prijsregels uit pricing_rules. */
   pricing: PricingRule[]
+  /** Wat-als-baseline (laatste leads) voor het omzet-effect in InstPrijzen. */
+  baseline: PricingImpactBaseline | null
   /** Diensten uit service_offerings. */
   services: ServiceOffering[]
   /** Approved teamleden uit dashboard_user_profiles. */
@@ -62,6 +65,7 @@ type Props = {
 export function MobileInstellingen({
   tenant,
   pricing,
+  baseline,
   services,
   team,
   tags,
@@ -100,7 +104,7 @@ export function MobileInstellingen({
           <InstBedrijf tenant={tenant} omzetDoel={tenant?.omzet_doel_maand ?? null} />
         )}
         {view === 'team' && <InstTeam members={team} />}
-        {view === 'prijzen' && <InstPrijzen rules={pricing} />}
+        {view === 'prijzen' && <InstPrijzen rules={pricing} baseline={baseline} />}
         {view === 'diensten' && <InstDiensten services={services} />}
         {view === 'opening' && (
           <InstOpening

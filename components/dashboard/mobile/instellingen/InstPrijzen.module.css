@@ -14,6 +14,73 @@
   color: var(--color-text-soft);
 }
 
+/* --- categorie-accordion --- */
+
+/* Elke categorie is een sectie binnen de groupCard. Vanaf de tweede sectie een
+   dunne scheidingslijn zodat de secties los van elkaar lezen. */
+.cat:not(:first-child) {
+  border-top: 0.5px solid var(--color-border);
+}
+
+/* Klikbare sectiekop: chevron + label + (stip) + telling. */
+.catHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  text-align: left;
+  font: inherit;
+}
+
+/* Chevron wijst naar rechts (dicht) en draait naar beneden bij open. */
+.chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform 0.2s var(--ease-ios, ease);
+}
+.chevron[data-open] {
+  transform: rotate(90deg);
+}
+
+.catLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Telling als subtiele chip rechts. */
+.catCount {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 9999px);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stip op een dichtgeklapte sectie met niet-opgeslagen wijzigingen. */
+.catDot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+/* Container voor de prijs-rijen binnen een open sectie. */
+.catBody {
+  padding-bottom: 2px;
+}
+
 /* --- prijs-rij --- */
 
 .row {
@@ -72,13 +139,52 @@
   padding: 0;
 }
 
-.value {
-  min-width: 80px;
-  text-align: center;
-  font-size: 14.5px;
+/* Bewerkbaar tarief-veld: input + eenheid in één bordered "field" zodat het
+   als aanpasbaar leest. Focus highlight blauw, ongeldige invoer rood. */
+.valueWrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  min-width: 92px;
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-2);
+  transition: border-color 0.15s;
+  /* Cursor + tik-gedrag: het kader leest als bewerkbaar veld. */
+  cursor: text;
+  touch-action: manipulation;
+}
+.valueWrap:focus-within {
+  border-color: var(--color-primary);
+}
+.valueWrap[data-invalid] {
+  border-color: var(--color-danger);
+}
+
+.valueInput {
+  width: 60px;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: right;
+  /* 16px is de iOS-drempel: kleiner → Safari zoomt automatisch in bij focus
+     (en zoomt niet vanzelf terug). Exact 16px voorkomt die zoom zónder dat we
+     pinch-zoom voor de hele site hoeven uit te schakelen. */
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  /* Forceer bewerkbaarheid op iOS (negeert een eventuele geërfde user-select:none
+     die anders de cursor in de input blokkeert) + geen tik-vertraging. */
+  -webkit-user-select: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+.valueInput:focus {
+  outline: none;
 }
 
 .unit {
@@ -95,11 +201,6 @@
   padding: 16px;
   background: var(--color-surface);
   color: var(--color-text);
-}
-.sim[data-changed] {
-  /* Gradient + witte tekst zodra er iets gewijzigd is. */
-  background: linear-gradient(135deg, var(--color-primary), var(--accent-2));
-  color: #fff;
 }
 
 .simHead {
@@ -118,10 +219,6 @@
   display: grid;
   place-items: center;
 }
-.sim[data-changed] .simIcon {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
 
 .simHeadText {
   flex: 1;
@@ -137,14 +234,15 @@
   font-size: 12px;
   opacity: 0.6;
 }
-.sim[data-changed] .simSub {
-  opacity: 0.9;
-}
 
 .simStats {
   display: flex;
   gap: 18px;
   margin-top: 14px;
+}
+
+.stat {
+  min-width: 0;
 }
 
 .statLabel {
@@ -156,6 +254,20 @@
   margin-top: 2px;
   font-size: 20px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+/* Kleur het omzet-effect: groen omhoog, rood omlaag (neutraal = tekstkleur). */
+.statValue[data-dir='up'] {
+  color: var(--color-success);
+}
+.statValue[data-dir='down'] {
+  color: var(--color-danger);
+}
+
+.statFootnote {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
 }
 
 /* Inline fout-melding bij mislukte batch-save. */
