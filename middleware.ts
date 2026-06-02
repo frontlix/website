@@ -127,6 +127,12 @@ export async function middleware(request: NextRequest) {
   response.cookies.getAll().forEach((c) => {
     rewritten.cookies.set(c.name, c.value, c)
   })
+  // Vangnet: geen enkele dashboard-respons (HTML/RSC) mag stale gecachet worden.
+  // Authed pagina's zijn al dynamisch; dit dekt ook de RSC-payloads en voorkomt
+  // dat een toekomstige pagina per ongeluk weer met s-maxage gecachet raakt
+  // (→ deployment-skew/login-loop). Content-gehashte /_next-assets vallen hier
+  // niet onder: die keren al via NextResponse.next() terug met hun eigen cache.
+  rewritten.headers.set('Cache-Control', 'no-store, must-revalidate')
   return rewritten
 }
 
