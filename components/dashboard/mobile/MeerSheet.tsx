@@ -128,13 +128,15 @@ export function MeerSheet({
             </Link>
           </div>
 
-          <Link
-            href="/dashboard/logout"
-            className={styles.logout}
-            onClick={onClose}
-          >
+          {/* BEWUST een gewone <a>, GEEN next/link: een <Link> prefetcht de
+              href zodra 'ie in beeld komt, en omdat /logout een GET is die
+              signOut() uitvoert, logde het openen van dit menu je meteen uit
+              (→ je kwam nooit bij Instellingen). Een plain anchor prefetcht
+              niet; uitloggen gebeurt alleen bij een echte klik. Zelfde patroon
+              als de desktop UserMenu. */}
+          <a href="/logout" className={styles.logout}>
             Uitloggen
-          </Link>
+          </a>
         </div>
       </div>
     </div>
