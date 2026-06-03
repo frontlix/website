@@ -21,3 +21,4 @@ mobile-overzicht-handoff/
 supabase/.temp/
 .claude/settings.local.json
 personalized-demo/__pycache__/
+dispatch-cockpit/fase0/*.log
