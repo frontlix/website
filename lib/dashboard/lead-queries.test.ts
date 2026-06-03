@@ -34,7 +34,7 @@ vi.mock('./supabase-server', () => ({
 
 import { getLeadsList, countAllLeads } from './lead-queries'
 
-describe('getLeadsList — geen filters', () => {
+describe('getLeadsList, geen filters', () => {
   beforeEach(() => {
     builder.select.mockClear()
     builder.eq.mockClear()
@@ -78,7 +78,7 @@ describe('getLeadsList — geen filters', () => {
   })
 })
 
-describe('getLeadsList — met filters', () => {
+describe('getLeadsList, met filters', () => {
   beforeEach(() => {
     builder.select.mockClear()
     builder.eq.mockClear()
@@ -138,7 +138,7 @@ describe('getLeadsList — met filters', () => {
       ),
     }
     // Cast naar any: mockFrom is getypt als () => Builder (geen arg), maar we
-    // dispatchten hier op tabelnaam — zelfde patroon als in getLeadDetail tests.
+    // dispatchten hier op tabelnaam, zelfde patroon als in getLeadDetail tests.
     ;(mockFrom.mockImplementation as any)((table: string) => {
       if (table === 'lead_tags') return tagsBuilder
       return builder

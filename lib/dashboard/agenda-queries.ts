@@ -44,7 +44,7 @@ const SELECT_COLUMNS = [
  * Europe/Amsterdam-tijdzone in de gevraagde maand valt.
  *
  * De DB slaat tijdstempels in UTC op. Een afspraak om 30 april 22:30 UTC
- * is in NL al 1 mei 00:30 — die hoort bij mei. Daarom widenen we de
+ * is in NL al 1 mei 00:30, die hoort bij mei. Daarom widenen we de
  * UTC-query met 1 dag aan beide kanten en filteren we daarna in JS op
  * Amsterdam-dagkey die in de gevraagde maand valt.
  */
@@ -55,7 +55,7 @@ export async function getAppointmentsForMonth(
   const supabase = await getDashboardSupabase()
 
   // Wider UTC-query: 1 dag eerder + 1 dag later dan de maand zelf.
-  // Dit dekt CEST (UTC+2) en CET (UTC+1) overal — late-avond UTC kan
+  // Dit dekt CEST (UTC+2) en CET (UTC+1) overal, late-avond UTC kan
   // nooit verder dan 2 uur in de volgende NL-dag terechtkomen.
   const queryStart = new Date(Date.UTC(year, month - 1, 0)).toISOString()  // dag 0 = laatste dag prev maand
   const queryEnd = new Date(Date.UTC(year, month, 2)).toISOString()        // 2e van volgende maand

@@ -17,15 +17,14 @@ type Props = {
 }
 
 /**
- * MobileNotificationsSheet — full-screen sheet (slide-up vanaf bottom)
+ * MobileNotificationsSheet, full-screen sheet (slide-up vanaf bottom)
  * rond de NotificationPanel-lijst.
  *
  * Wordt vanaf HeaderActions geopend op mobile. Hergebruikt
  * `NOTIF_KIND_ICON` + `formatRelative` zodat de visual-mapping
  * gelijk loopt met de desktop-NotificationPanel.
  *
- * NB: bewust GEEN server-action voor mark-as-read in deze sheet —
- * de tap op een item navigeert via `<Link>` en sluit de sheet; een
+ * NB: bewust GEEN server-action voor mark-as-read in deze sheet,  * de tap op een item navigeert via `<Link>` en sluit de sheet; een
  * volgende parent-render zal de notif uit de unread-lijst verwijderen
  * zodra de server-data ververst is. Dit houdt de sheet dom + simpel.
  */

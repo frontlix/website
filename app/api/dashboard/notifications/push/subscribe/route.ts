@@ -6,8 +6,8 @@ import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
  * Push-subscription registreren.
  *
  * Client roept dit aan na een succesvolle `pushManager.subscribe()`.
- * We upserten op endpoint (uniek) zodat opnieuw subscriben — bv. na
- * her-installatie van de PWA of cleared cache — niet faalt.
+ * We upserten op endpoint (uniek) zodat opnieuw subscriben, bv. na
+ * her-installatie van de PWA of cleared cache, niet faalt.
  */
 
 interface SubscribeBody {

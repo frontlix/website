@@ -17,7 +17,7 @@ export type ReviewItem = {
 }
 
 /**
- * Review-card — toont één review met avatar/naam/plaats/datum,
+ * Review-card, toont één review met avatar/naam/plaats/datum,
  * star-rating, body-text, en NPS-tone met published-pill.
  */
 export function ReviewCard({ review }: { review: ReviewItem }) {

@@ -1,6 +1,6 @@
 'use client'
 
-// AgendaEventRow — medium-density afspraak-rij.
+// AgendaEventRow, medium-density afspraak-rij.
 // Port van ABShared.jsx `ABEventRow` (default/medium density).
 // Tijd-kolom + 3px kleur-rail (--tone via color-mix) + content (type-badge,
 // m², "Bezig"-badge bij now, naam, adres met pin) + chevron.

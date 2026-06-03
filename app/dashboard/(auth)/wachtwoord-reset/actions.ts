@@ -7,7 +7,7 @@ export type WachtwoordResetState = { error?: string; redirectTo?: string }
 /**
  * Werkt het wachtwoord bij voor de huidige (recovery-)sessie. Supabase
  * heeft de recovery-token al verwerkt via /wachtwoord-reset?code=... door
- * de session-cookies te zetten — we hoeven hier alleen `updateUser` te
+ * de session-cookies te zetten, we hoeven hier alleen `updateUser` te
  * roepen met het nieuwe wachtwoord.
  */
 export async function resetAction(

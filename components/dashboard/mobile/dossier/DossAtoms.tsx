@@ -122,7 +122,7 @@ export function DossPhoto({ tag, url }: DossPhotoProps) {
   return (
     <div className={styles.photo}>
       {url && (
-        // unoptimized: zelfde aanpak als de desktop LeadPhotos — geen
+        // unoptimized: zelfde aanpak als de desktop LeadPhotos, geen
         // next/image domain-config of optimalisatie nodig voor Supabase-URLs.
         <Image
           src={url}

@@ -8,7 +8,7 @@ type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) 
  * Vul de klant-velden vanuit een bestaande lead. Adres laat de
  * postcode-auto-fetch vervolgens met rust (afstand_km wordt opnieuw
  * berekend door het effect in ManualOfferteModal). Sub-dienst /
- * m² / etc. raken we expliciet niet aan — dit is alleen "klant".
+ * m² / etc. raken we expliciet niet aan, dit is alleen "klant".
  */
 export function applyExistingClient(set: SetFn, m: ExistingClientMatch) {
   set('existing_lead_id', m.lead_id)
@@ -24,7 +24,7 @@ export function applyExistingClient(set: SetFn, m: ExistingClientMatch) {
 
 /**
  * Merge AI-extractie in de wizard-data. Alleen niet-null velden
- * overschrijven we — een gedeeltelijk gevuld formulier blijft dus
+ * overschrijven we, een gedeeltelijk gevuld formulier blijft dus
  * staan voor velden die de AI niet kon vinden. `wensen` gaat naar
  * `notitie` (de begeleidende tekst-veld in stap 4).
  *
@@ -63,7 +63,7 @@ export function applyAiExtracted(
   if (f.sub_diensten && f.sub_diensten.length > 0) set('sub', f.sub_diensten)
   if (typeof f.m2 === 'number' && f.m2 > 0) set('m2', f.m2)
 
-  // Voegzand normaal — bij actief=true mag het auto-zakken-effect in
+  // Voegzand normaal, bij actief=true mag het auto-zakken-effect in
   // ManualOfferteModal het aantal nog overschrijven, behalve als de
   // user expliciet een aantal heeft genoemd. Daarom set het aantal
   // ná de boolean (zelfde tick, react batched).
@@ -85,7 +85,7 @@ export function applyAiExtracted(
     set('voegzand_onkruidwerend_prijs', f.voegzand_onkruidwerend_prijs)
   }
 
-  // Kleur — als AI iets teruggeeft, vervangen we de defaults; anders
+  // Kleur, als AI iets teruggeeft, vervangen we de defaults; anders
   // raken we de kleurkeuze niet aan (default = naturel aan).
   if (f.kleur_naturel !== null) set('kleur_naturel', f.kleur_naturel)
   if (f.kleur_antraciet !== null) set('kleur_antraciet', f.kleur_antraciet)
@@ -110,7 +110,7 @@ export function applyAiExtracted(
     set('onderhoud_weken', f.onderhoud_weken)
   }
 
-  // Extra arbeid — alleen overschrijven als de AI een complete set
+  // Extra arbeid, alleen overschrijven als de AI een complete set
   // teruggaf (minuten + tenminste een omschrijving). Half-leeg laten
   // we de wizard-defaults staan.
   if (typeof f.extra_arbeid_minuten === 'number' && f.extra_arbeid_minuten > 0) {
@@ -123,7 +123,7 @@ export function applyAiExtracted(
     if (f.extra_arbeid_omschrijving) set('extra_arbeid_omschrijving', f.extra_arbeid_omschrijving)
   }
 
-  // Korting — alleen overschrijven bij geldig percentage. 0% = "geen
+  // Korting, alleen overschrijven bij geldig percentage. 0% = "geen
   // korting" en is niet anders dan default; daar laten we 'm met rust.
   if (
     typeof f.korting_percentage === 'number' &&

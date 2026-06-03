@@ -16,7 +16,7 @@ export function UserMenu({ email }: { email: string }) {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  // Sluit dropdown bij click-buiten — anders blijft hij open na navigatie.
+  // Sluit dropdown bij click-buiten, anders blijft hij open na navigatie.
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
@@ -83,7 +83,7 @@ export function UserMenu({ email }: { email: string }) {
 
       {open && (
         <div className={styles.popup} role="menu">
-          {/* Identity-header — avatar + naam + email + owner-pill */}
+          {/* Identity-header, avatar + naam + email + owner-pill */}
           <div className={styles.popupHead}>
             <div className={styles.popupHeadRow}>
               <div className={styles.popupAvatar}>{initials}</div>
@@ -115,7 +115,7 @@ export function UserMenu({ email }: { email: string }) {
 
           <div className={styles.popupDivider} />
 
-          {/* Uitloggen — apart in danger-tone */}
+          {/* Uitloggen, apart in danger-tone */}
           <a href="/logout" className={styles.itemDanger}>
             <LogOut size={14} />
             <span>Uitloggen</span>

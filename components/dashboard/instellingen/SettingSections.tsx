@@ -84,7 +84,7 @@ function SectionCard({
 }: {
   title: string
   sub?: string
-  /** Toon de "Read-only" pill. Default true — zet op false voor secties
+  /** Toon de "Read-only" pill. Default true, zet op false voor secties
    *  waar de UI wel echt kan opslaan (bv. Prijzen sinds we de editor
    *  hebben). */
   readOnly?: boolean
@@ -174,14 +174,14 @@ export function BedrijfSection({ tenant }: { tenant: TenantSettings | null }) {
         </div>
       </div>
 
-      {/* Maand-omzetdoel — voedt de Hero KPI goal-ring op de mobiele
+      {/* Maand-omzetdoel, voedt de Hero KPI goal-ring op de mobiele
           Overzicht-pagina. NULL = geen doel ingesteld (placeholder elders). */}
       <div className="dash-card" style={{ marginTop: 16 }}>
         <div className="dash-card-head">
           <div>
             <div className="dash-card-title">Maand-omzetdoel</div>
             <div className="dash-card-sub">
-              Stel een omzetdoel in voor deze maand — de voortgangsring op je
+              Stel een omzetdoel in voor deze maand, de voortgangsring op je
               mobiele Overzicht volgt automatisch. Laat leeg om geen doel te
               tonen.
             </div>
@@ -215,7 +215,7 @@ export function PrijzenSection({
   return (
     <SectionCard
       title="Prijzen"
-      sub={`${pricing.length} prijsregels — gebruikt door Surface voor offerte-berekening`}
+      sub={`${pricing.length} prijsregels, gebruikt door Surface voor offerte-berekening`}
       readOnly={false}
     >
       <PrijzenEditor rules={pricing} baseline={safeBaseline} />
@@ -255,7 +255,7 @@ export function TagsSection({ tags }: { tags: TagWithCount[] }) {
   return (
     <SectionCard
       title="Tags"
-      sub="Categoriseer leads in je eigen woorden — gebruik in filters en zoekopdrachten"
+      sub="Categoriseer leads in je eigen woorden, gebruik in filters en zoekopdrachten"
       readOnly={false}
     >
       <TagsManager initialTags={tags} />
@@ -276,7 +276,7 @@ export function OpeningSection({
   return (
     <SectionCard
       title="Openingsbericht via WhatsApp"
-      sub={`Het eerste bericht dat ${chatbot} stuurt zodra een lead binnenkomt — Meta-template`}
+      sub={`Het eerste bericht dat ${chatbot} stuurt zodra een lead binnenkomt, Meta-template`}
       readOnly={false}
     >
       <div className={styles.metaWarning}>
@@ -369,7 +369,7 @@ export function TeamSection({ members }: { members: TeamMember[] }) {
   )
 }
 
-/* ── ACCOUNT / AVG — wrappers om client-components ──────── */
+/* ── ACCOUNT / AVG, wrappers om client-components ──────── */
 export function AccountWrapper({ email }: { email: string }) {
   return <AccountSection email={email} />
 }

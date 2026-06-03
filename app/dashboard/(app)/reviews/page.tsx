@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic'
 /**
  * Reviews & klanttevredenheid.
  *
- * V1: demo-data — er is nog geen NPS-tabel in de DB. De pagina toont de
+ * V1: demo-data, er is nog geen NPS-tabel in de DB. De pagina toont de
  * volledige UX (KPI's, NPS-balk, review-cards, pending-rij) zodat de
  * klant ziet hoe het wordt. Zodra de bot na elke klus een review-vraag
  * stuurt + de antwoorden landen in een `reviews`-tabel, vervangen we
@@ -176,8 +176,8 @@ export default async function ReviewsPage({
             type="button"
             className="dash-btn dash-btn-secondary"
             disabled
-            title="Exporteer rapport — binnenkort beschikbaar"
-            aria-label="Exporteer rapport — binnenkort beschikbaar"
+            title="Exporteer rapport, binnenkort beschikbaar"
+            aria-label="Exporteer rapport, binnenkort beschikbaar"
           >
             <FileText size={13} />
             Exporteer rapport
@@ -186,8 +186,8 @@ export default async function ReviewsPage({
             type="button"
             className="dash-btn dash-btn-primary"
             disabled
-            title="Stuur reviewverzoek — binnenkort beschikbaar"
-            aria-label="Stuur reviewverzoek — binnenkort beschikbaar"
+            title="Stuur reviewverzoek, binnenkort beschikbaar"
+            aria-label="Stuur reviewverzoek, binnenkort beschikbaar"
           >
             <Send size={13} />
             Stuur reviewverzoek
@@ -197,7 +197,7 @@ export default async function ReviewsPage({
 
       {/* Demo-banner: maak helder dat data placeholder is */}
       <div className={styles.demoBanner}>
-        Voorbeelddata — zodra Surface na elke klus een review-vraag verstuurt
+        Voorbeelddata, zodra Surface na elke klus een review-vraag verstuurt
         verschijnen hier echte reviews. Tracking-tabel volgt in een opvolg-batch.
       </div>
 

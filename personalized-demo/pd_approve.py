@@ -25,7 +25,7 @@ def _now_iso() -> str:
 
 def _error_page(title: str, message: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{escape(title)} — De Designmaker</title>
+    <title>{escape(title)}, De Designmaker</title>
     <style>body{{font-family:sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}}
     h1{{font-size:22px;font-weight:700;margin-bottom:12px}}p{{font-size:15px;color:#555;line-height:1.6}}a{{color:#1A56FF;text-decoration:none}}</style>
@@ -35,7 +35,7 @@ def _error_page(title: str, message: str) -> str:
 
 def _success_page(naam: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Offerte verstuurd — De Designmaker</title>
+    <title>Offerte verstuurd, De Designmaker</title>
     <style>body{{font-family:sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}}
     .icon{{font-size:48px;margin-bottom:16px}}
@@ -213,9 +213,8 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
       <!-- Footer -->
       <div style="background:#F9FAFB;padding:16px 24px;text-align:center;border-top:1px solid #F3F4F6">
         <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.5">
-          De Designmaker — Windmolenboschweg 14, Haelen<br>
-          <a href="mailto:lars@dedesignmaker.nl" style="color:#9CA3AF">lars@dedesignmaker.nl</a> —
-          <a href="tel:+31637296847" style="color:#9CA3AF">+31 6 37296847</a>
+          De Designmaker, Windmolenboschweg 14, Haelen<br>
+          <a href="mailto:lars@dedesignmaker.nl" style="color:#9CA3AF">lars@dedesignmaker.nl</a>,           <a href="tel:+31637296847" style="color:#9CA3AF">+31 6 37296847</a>
         </p>
       </div>
     </div>
@@ -237,7 +236,7 @@ def _send_customer_email(to_email: str, naam: str, type_dienst: str, pdf_url: st
     print(f"[pd_approve] Sending customer email to {to_email}")
     _send_email(
         to=to_email,
-        subject=f"Je offerte voor {branche_label} — De Designmaker",
+        subject=f"Je offerte voor {branche_label}, De Designmaker",
         html_body=html,
         attachments=attachments,
     )

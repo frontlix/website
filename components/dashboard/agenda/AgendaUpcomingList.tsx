@@ -33,7 +33,7 @@ function totalWorkHours(appointments: Appointment[]): number {
 }
 
 /**
- * Sidebar-card "Komende 7 dagen" — toont alle afspraken in de week
+ * Sidebar-card "Komende 7 dagen", toont alle afspraken in de week
  * chronologisch met kleurband links, naam, datum + tijd-range, en
  * (indien beschikbaar) plaats + m².
  */
@@ -101,7 +101,7 @@ export function AgendaUpcomingList({ appointments }: { appointments: Appointment
 }
 
 /**
- * "Op te volgen" — leads die wachten op actie.
+ * "Op te volgen", leads die wachten op actie.
  * Bronnen: oude offertes (`offerte_verstuurd > 3 dagen` zonder akkoord)
  * en owner-reviews (`pending_eigenaar_review` not null).
  */

@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 describe('body-scroll-lock reference counting', () => {
   beforeEach(() => {
     vi.resetModules()
-    // Minimale document-stub — alleen body.style.overflow is relevant.
+    // Minimale document-stub, alleen body.style.overflow is relevant.
     ;(globalThis as unknown as { document: unknown }).document = {
       body: { style: { overflow: '' } },
     }
@@ -29,7 +29,7 @@ describe('body-scroll-lock reference counting', () => {
     acquireBodyScrollLock() // tweede overlay opent
     expect(ov()).toBe('hidden')
 
-    releaseBodyScrollLock() // eerste overlay sluit — ander nog open
+    releaseBodyScrollLock() // eerste overlay sluit, ander nog open
     expect(ov()).toBe('hidden')
 
     releaseBodyScrollLock() // laatste overlay sluit

@@ -1,6 +1,6 @@
 'use client'
 
-// Openingsbericht — mobiel, nu met volledige editor-pariteit met desktop:
+// Openingsbericht, mobiel, nu met volledige editor-pariteit met desktop:
 // twee tabs (per hoofddienst), bewerkbare tekst, variabelen, live WA-preview,
 // "Aanvraag indienen" (Meta-goedkeuring via Slack-flow) + status-historie.
 // Defaults zijn 1-op-1 overgenomen van de desktop OpeningTemplateEditor zodat
@@ -28,7 +28,7 @@ Klopt het dat het gaat om ongeveer {m2} m²?`,
     hoofddienst: 'onkruidbeheersing',
     default: `Hoi {voornaam}👋
 
-Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam} — ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.
+Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.
 
 Klopt het dat het gaat om ongeveer {m2} m²?`,
   },
@@ -66,7 +66,7 @@ export function InstOpening({ bedrijfsnaam, chatbot, aanvragen }: Props) {
     lead_intake_onkruid: TEMPLATES[1].default,
   }))
 
-  // Preview-substitutie — echte bedrijfsnaam + bot-naam, rest demo-waarden.
+  // Preview-substitutie, echte bedrijfsnaam + bot-naam, rest demo-waarden.
   const makePreview = (text: string) =>
     text
       .replaceAll('{voornaam}', 'Jeroen')
@@ -81,7 +81,7 @@ export function InstOpening({ bedrijfsnaam, chatbot, aanvragen }: Props) {
     <div className={styles.wrap}>
       <div className={styles.banner}>
         Een aanpassing aan de template wordt door Meta beoordeeld (24–48u). Pas de
-        tekst aan en dien een aanvraag in — je ziet hieronder de status en krijgt
+        tekst aan en dien een aanvraag in, je ziet hieronder de status en krijgt
         bericht zodra Frontlix reageert.
       </div>
 

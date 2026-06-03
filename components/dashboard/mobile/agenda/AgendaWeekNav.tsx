@@ -1,6 +1,6 @@
 'use client'
 
-// AgendaWeekNav — week-navigatie voor de mobiele agenda.
+// AgendaWeekNav, week-navigatie voor de mobiele agenda.
 // ‹ (vorige week) · weeklabel · › (volgende week) + "Vandaag"-knop.
 // Navigatie via ?week=YYYY-MM-DD (zelfde infra als desktop). "Vandaag" is
 // inactief zolang de getoonde week de huidige week is.

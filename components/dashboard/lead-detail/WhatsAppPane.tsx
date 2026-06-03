@@ -10,8 +10,7 @@ import styles from './WhatsAppPane.module.css'
 
 /**
  * WhatsApp-pane voor het lead-detail scherm. Bevat de transcript + composer
- * onderaan. De composer is alleen actief wanneer Surface gepauzeerd is —
- * anders typt de bot en de owner door elkaar heen.
+ * onderaan. De composer is alleen actief wanneer Surface gepauzeerd is,  * anders typt de bot en de owner door elkaar heen.
  */
 export function WhatsAppPane({
   leadId,

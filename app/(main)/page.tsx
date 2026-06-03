@@ -9,7 +9,7 @@ import { faqs } from '@/lib/faq-data'
 export const metadata: Metadata = {
   title: 'Frontlix | Automatische leadopvolging via WhatsApp',
   description:
-    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
   alternates: {
     canonical: '/',
     languages: { nl: '/' },
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
     url: '/',
     locale: 'nl_NL',
   },

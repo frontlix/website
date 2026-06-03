@@ -6,7 +6,7 @@ import styles from './BotActions.module.css'
 
 /**
  * Toggle voor `klus_geblokkeerd`. Wanneer aan, slaat de review-cron deze lead
- * over bij het 2-dagen-na-klus reviewverzoek. Optimistic update — bij failure
+ * over bij het 2-dagen-na-klus reviewverzoek. Optimistic update, bij failure
  * draaien we de UI-stand terug en tonen we de error.
  */
 export function BlokkeerReviewToggle({

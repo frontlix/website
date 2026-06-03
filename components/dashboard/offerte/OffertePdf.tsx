@@ -21,7 +21,7 @@ import type {
  * PDF-template gemodelleerd naar het Schoon Straatje-design dat de bot
  * via Puppeteer genereert (zie src/templates/offerte-pdf-template.ts in
  * de bot-repo). Gebruikt @react-pdf/renderer i.p.v. HTML+Puppeteer want
- * dit draait client-side in de dashboard-wizard — geen server-roundtrip
+ * dit draait client-side in de dashboard-wizard, geen server-roundtrip
  * en geen Puppeteer-dependency op de browser.
  *
  * Visueel houden we vast aan: cream-header, gouden accent-lijn, blauwe
@@ -551,11 +551,11 @@ export function OffertePdfDocument({
                   <Text style={styles.totalRowKorting}>
                     Actiekorting ({formatPct(totals.discount)}%)
                     {data.korting_omschrijving?.trim()
-                      ? ` — ${data.korting_omschrijving.trim()}`
+                      ? `, ${data.korting_omschrijving.trim()}`
                       : ''}
                   </Text>
                   <Text style={[styles.totalRowAmount, styles.totalRowKorting]}>
-                    – {formatEuro(totals.kortingBedrag)}
+, {formatEuro(totals.kortingBedrag)}
                   </Text>
                 </View>
               )}

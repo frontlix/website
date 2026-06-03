@@ -11,7 +11,7 @@ import styles from './TagEditor.module.css'
  * swatches (10) en icon-grid (20). Toont onderaan een live preview van de
  * pill zoals 'ie in de overzicht-grid eruit komt te zien.
  *
- * Optimistic / async-save logica zit in de parent (TagsManager) — deze
+ * Optimistic / async-save logica zit in de parent (TagsManager), deze
  * component is puur form-state + onSubmit-callback.
  */
 
@@ -28,7 +28,7 @@ type Props = {
   onClose: () => void
   /** Foutmelding van de parent (server-zijde) om hier weer te geven. */
   externalError?: string | null
-  /** True wanneer er een save bezig is — disabled state. */
+  /** True wanneer er een save bezig is, disabled state. */
   saving?: boolean
 }
 

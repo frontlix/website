@@ -79,9 +79,9 @@ function ownerReviewReason(json: unknown): string {
 }
 
 function staleOfferteReden(verstuurdOp: string | null): string {
-  if (!verstuurdOp) return 'Offerte open — herinnering automatisch verstuurd'
+  if (!verstuurdOp) return 'Offerte open, herinnering automatisch verstuurd'
   const days = Math.floor(
     (Date.now() - new Date(verstuurdOp).getTime()) / (24 * 60 * 60 * 1000),
   )
-  return `Offerte ${days} dagen oud — herinnering automatisch verstuurd`
+  return `Offerte ${days} dagen oud, herinnering automatisch verstuurd`
 }

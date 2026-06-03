@@ -68,7 +68,7 @@ export default function AutomationIllustration() {
       <div className={styles.card}>
         {/* Steps */}
         <div className={styles.steps}>
-          {/* Step 1 — Lead binnenkomt */}
+          {/* Step 1, Lead binnenkomt */}
           <div className={`${styles.step} ${pct >= STEP_SHOW[0] ? styles.visible : ''}`}>
             <div className={`${styles.stepIcon} ${styles.blue}`}>
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
@@ -84,7 +84,7 @@ export default function AutomationIllustration() {
             </div>
           </div>
 
-          {/* Step 2 — Automatisch verwerkt */}
+          {/* Step 2, Automatisch verwerkt */}
           <div className={`${styles.step} ${pct >= STEP_SHOW[1] ? styles.visible : ''}`}>
             <div className={`${styles.stepIcon} ${styles.yellow}`}>
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
@@ -99,7 +99,7 @@ export default function AutomationIllustration() {
             </div>
           </div>
 
-          {/* Step 3 — Offerte verstuurd */}
+          {/* Step 3, Offerte verstuurd */}
           <div className={`${styles.step} ${pct >= STEP_SHOW[2] ? styles.visible : ''}`}>
             <div className={`${styles.stepIcon} ${styles.green}`}>
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">

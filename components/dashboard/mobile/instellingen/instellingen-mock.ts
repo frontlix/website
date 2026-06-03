@@ -4,7 +4,7 @@
  * De hub-structuur (groepen, iconen, labels) is statisch; de subtitels met
  * tellingen worden via `buildInstSections` met echte counts gevuld (team-leden,
  * actieve diensten, tags). De detailschermen krijgen hun data direct uit de
- * route — er wordt hier geen mock-data meer voor leads/prijzen/team/etc. gehouden.
+ * route, er wordt hier geen mock-data meer voor leads/prijzen/team/etc. gehouden.
  */
 
 export type InstSection = {
@@ -62,12 +62,12 @@ export function buildInstGroups(counts: InstCounts = {}): InstGroup[] {
   ]
 }
 
-/** Platte sectie-lijst met echte counts — handig voor zoeken + view-lookup. */
+/** Platte sectie-lijst met echte counts, handig voor zoeken + view-lookup. */
 export function buildInstSections(counts: InstCounts = {}): InstSection[] {
   return buildInstGroups(counts).flatMap((g) => g.items)
 }
 
-/** Statische default-varianten (neutrale subtitels) — gebruikt door tests. */
+/** Statische default-varianten (neutrale subtitels), gebruikt door tests. */
 export const INST_GROUPS: InstGroup[] = buildInstGroups()
 export const INST_ALL: InstSection[] = buildInstSections()
 

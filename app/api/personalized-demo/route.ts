@@ -12,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
 }
 
 /**
- * POST — Maak een nieuwe gepersonaliseerde demo aan.
+ * POST, Maak een nieuwe gepersonaliseerde demo aan.
  */
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) {
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * GET — Haal alle gepersonaliseerde demos op.
+ * GET, Haal alle gepersonaliseerde demos op.
  */
 export async function GET(req: NextRequest) {
   if (!checkAuth(req)) {
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * PATCH — Werk een demo bij (bijv. deactiveren of briefing wijzigen).
+ * PATCH, Werk een demo bij (bijv. deactiveren of briefing wijzigen).
  */
 export async function PATCH(req: NextRequest) {
   if (!checkAuth(req)) {

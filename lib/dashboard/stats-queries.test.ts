@@ -66,7 +66,7 @@ describe('countLeads', () => {
   beforeEach(resetBuilder)
 
   it('met from: filtert op aangemaakt >= from', async () => {
-    // Terminal call met from+to is .lt() (na .gte()) — daar landt de Promise.
+    // Terminal call met from+to is .lt() (na .gte()), daar landt de Promise.
     builder.lt.mockReturnValueOnce(Promise.resolve({ count: 42, error: null, data: null }))
 
     const result = await countLeads(PERIOD_MAY)

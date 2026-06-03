@@ -1,7 +1,7 @@
-"""WhatsApp webhook handler — the main inbound message processing loop.
+"""WhatsApp webhook handler, the main inbound message processing loop.
 
-GET  /webhook — Meta verification challenge
-POST /webhook — Process inbound WhatsApp messages
+GET  /webhook, Meta verification challenge
+POST /webhook, Process inbound WhatsApp messages
 """
 from __future__ import annotations
 
@@ -134,7 +134,7 @@ async def _process_webhook(body: dict):
     # Status-event branch (Pakket 4b): Meta sends `statuses` (not `messages`)
     # for delivery / read / failed events. Detect failed-delivery on our opening
     # template and trigger the web-chat fallback. New branch added BEFORE the
-    # existing message-handling — does not reorder.
+    # existing message-handling, does not reorder.
     status_event = detect_template_failure_status_event(value)
     if status_event:
         wa_message_id, error_code = status_event
@@ -212,7 +212,7 @@ async def _handle_branche_webhook(lead: dict, message: dict, msg_type: str, phon
     # Album-headers en system-events stilletjes negeren.
     # Bij een multi-photo send levert Meta éérst een type=unsupported bericht af
     # (de album-wrapper), gevolgd door één type=image per foto. Geen rejection
-    # naar de klant — de foto's volgen en worden door _handle_image opgepakt.
+    # naar de klant, de foto's volgen en worden door _handle_image opgepakt.
     if msg_type in ("unsupported", "reaction", "system", "ephemeral", "order", ""):
         print(f"[WEBHOOK] silently ignored msg_type={msg_type!r} (album-header / system event)")
         return
@@ -260,7 +260,7 @@ async def _activate_branche(lead: dict, branche_id: str, phone: str):
 
     # Welcome message in two beats: warm intro + name question.
     # The name question is the same for every branche so we don't have to involve
-    # the reply LLM here — the opening is fully deterministic.
+    # the reply LLM here, the opening is fully deterministic.
     welcome = WELCOME_MESSAGES.get(branche_id, "")
     if welcome:
         await send_text(phone, welcome)
@@ -268,7 +268,7 @@ async def _activate_branche(lead: dict, branche_id: str, phone: str):
         await asyncio.sleep(WELCOME_PAUSE_SEC)
         await send_text(phone, NAAM_QUESTION)
         await _save_message(lead["id"], "assistant", NAAM_QUESTION)
-    # Naam vraag staat al in de welcome, dus geen _send_next_question hier — anders
+    # Naam vraag staat al in de welcome, dus geen _send_next_question hier, anders
     # zou de LLM nog een derde opener-bericht genereren.
 
 
@@ -282,7 +282,7 @@ async def _handle_button_reply(lead: dict, message: dict, phone: str):
     await _increment_message_count(lead["id"], lead.get("message_count", 0))
 
     if lead.get("status") != "awaiting_choice":
-        await send_text(phone, "Bedankt! Je zit al midden in een gesprek — antwoord gerust op mijn vorige vraag.")
+        await send_text(phone, "Bedankt! Je zit al midden in een gesprek, antwoord gerust op mijn vorige vraag.")
         return
 
     branche = _map_button_to_branche(text) or _map_button_to_branche(payload)
@@ -304,7 +304,7 @@ async def _handle_interactive(lead: dict, message: dict, phone: str):
     await _increment_message_count(lead["id"], lead.get("message_count", 0))
 
     if lead.get("status") != "awaiting_choice":
-        await send_text(phone, "Bedankt! Je zit al midden in een gesprek — antwoord gerust op mijn vorige vraag.")
+        await send_text(phone, "Bedankt! Je zit al midden in een gesprek, antwoord gerust op mijn vorige vraag.")
         return
 
     branche = _map_button_to_branche(title) or _map_button_to_branche(rid)
@@ -321,14 +321,14 @@ async def _handle_choice(lead: dict, text_body: str, phone: str):
     detected = await detect_branche(history)
 
     if not detected:
-        await send_text(phone, "Sorry, ik kon je keuze niet helemaal plaatsen. Voor welke dienst wil je een offerte zien — zonnepanelen, dakdekker of schoonmaak?")
+        await send_text(phone, "Sorry, ik kon je keuze niet helemaal plaatsen. Voor welke dienst wil je een offerte zien, zonnepanelen, dakdekker of schoonmaak?")
         return
 
     await _activate_branche(lead, detected, phone)
 
 
 # ── Field-workaround map ─────────────────────────────────────────────────
-# Fields with a concrete practical tip — customer gets ONE re-ask after
+# Fields with a concrete practical tip, customer gets ONE re-ask after
 # the first "weet ik niet". Fields not listed here are skipped after the
 # very first uncertainty (per persona-prompt rules).
 _WORKAROUND_FIELDS: dict[str, set[str]] = {
@@ -381,7 +381,7 @@ def _mark_skipped(collected_data: dict, field_key: str) -> None:
 
 def _skip_remaining_missing(collected_data: dict, branche_id: str) -> list[str]:
     """When the photo step is being closed out, any data fields still unfilled
-    are marked _skipped — the photo evidence is treated as 'good enough' to move
+    are marked _skipped, the photo evidence is treated as 'good enough' to move
     on. Without this the bot would loop back to ask the same field after the
     customer already gave email. Returns the list of newly-skipped fields."""
     config = get_branche(branche_id)
@@ -409,13 +409,13 @@ def _skip_remaining_missing(collected_data: dict, branche_id: str) -> list[str]:
 
 async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
     """Channel-agnostic collecting flow. `sender` is the outbound text callable
-    — WhatsApp callers pass _whatsapp_sender(phone); the web-chat route passes
+, WhatsApp callers pass _whatsapp_sender(phone); the web-chat route passes
     a buffer-sender so replies land in the HTTP response instead of WhatsApp.
     """
     demo_type = lead.get("demo_type")
     if not demo_type:
         get_supabase().table("leads").update({"status": "awaiting_choice"}).eq("id", lead["id"]).execute()
-        await sender("Even opnieuw — voor welke dienst wil je een offerte zien? Zonnepanelen, dakdekker of schoonmaak?")
+        await sender("Even opnieuw, voor welke dienst wil je een offerte zien? Zonnepanelen, dakdekker of schoonmaak?")
         return
 
     config = get_branche(demo_type)
@@ -452,7 +452,7 @@ async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
         await _send_next_question(refreshed, await _fetch_history(lead["id"]), sender)
         return
 
-    # Determine what the bot was waiting on BEFORE this customer message — feeds the analyzer.
+    # Determine what the bot was waiting on BEFORE this customer message, feeds the analyzer.
     identity = {"naam": lead.get("naam"), "email": lead.get("email")}
     current_data = {f.key: collected.get(f.key) for f in config.fields if collected.get(f.key)}
     current_tag = _determine_next_tag(demo_type, identity, current_data, collected)
@@ -462,7 +462,7 @@ async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
     analysis = await analyze_message(demo_type, history, identity, current_data, current_field)
     print(f"[collecting] intent={analysis.intent} answered={analysis.answered_current_question} field={current_field} extracted_keys={list(analysis.extracted.keys())}")
 
-    # Intent-driven dispatch — controls whether to APPLY extracted data and whether
+    # Intent-driven dispatch, controls whether to APPLY extracted data and whether
     # to mark the current field as unsure/skipped. The reply itself is shaped by
     # generate_reply via the analysis object further down.
     workaround_set = _WORKAROUND_FIELDS.get(demo_type, set())
@@ -482,10 +482,10 @@ async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
     elif analysis.intent in {"price_question", "process_question", "faq_question",
                               "off_topic", "gibberish", "is_bot_question",
                               "acknowledgement", "not_recognized"}:
-        # No new info on the current field — keep state and re-ask same.
+        # No new info on the current field, keep state and re-ask same.
         apply_extracted = False
     elif analysis.intent == "will_provide_later":
-        # Customer will come back — mark unsure but don't skip; they may answer next turn.
+        # Customer will come back, mark unsure but don't skip; they may answer next turn.
         if current_field and current_field in {f.key for f in config.fields}:
             _bump_unsure(collected, current_field)
         apply_extracted = True
@@ -544,7 +544,7 @@ async def _handle_collecting(lead: dict, text_body: str, sender: Sender):
         await _trigger_approval(lead["id"], sender=sender)
         return
 
-    # Send next question — pass analysis so the reply prompt picks the right intent-branch
+    # Send next question, pass analysis so the reply prompt picks the right intent-branch
     updated = {**lead, "naam": new_naam, "email": new_email, "collected_data": fresh_collected}
     await _send_next_question(
         updated, history, sender,
@@ -598,7 +598,7 @@ async def _handle_image(lead: dict, message: dict, phone: str):
     analyses = list(collected.get("photo_analyses") or [])
 
     if len(photos) >= MAX_PHOTOS:
-        await send_text(phone, f"Je hebt al {MAX_PHOTOS} foto's gestuurd — dat is het maximum.")
+        await send_text(phone, f"Je hebt al {MAX_PHOTOS} foto's gestuurd, dat is het maximum.")
         return
 
     photos.append(public_url)
@@ -612,7 +612,7 @@ async def _handle_image(lead: dict, message: dict, phone: str):
 
     # Embed the vision analysis in the saved user message so extraction can read it
     # (e.g. pick up aansluiting=3-fase from a meterkast photo analysis).
-    msg_body = f"(foto ontvangen — analyse: {analysis})" if analysis else "(foto ontvangen)"
+    msg_body = f"(foto ontvangen, analyse: {analysis})" if analysis else "(foto ontvangen)"
     await _save_message(lead["id"], "user", msg_body, "image", public_url)
 
     # Max photos reached → advance immediately
@@ -635,7 +635,7 @@ async def _handle_image(lead: dict, message: dict, phone: str):
             await _send_next_question(refreshed, history, wa_sender, analysis=synthetic)
         return
 
-    # Save + schedule auto-advance (no separate ack message — next question handles it)
+    # Save + schedule auto-advance (no separate ack message, next question handles it)
     sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
 
     # Auto-advance after PHOTO_WAIT_MS
@@ -714,7 +714,7 @@ async def _send_next_question(
 
     # [WAIT] guard
     if reply.strip().upper().startswith("[WAIT]"):
-        print(f"[reply] [WAIT] token — holding off for lead {lead['id']}")
+        print(f"[reply] [WAIT] token, holding off for lead {lead['id']}")
         return
 
     await sender(reply)
@@ -739,8 +739,7 @@ def _appointment_meta(lead: dict) -> tuple[str, str, int, str, str]:
 
 
 def _schedule_fallback_url(lead: dict) -> str | None:
-    """URL the customer can use when the scheduling-agent / Calendar fails —
-    points to the same /schedule?token=… page which already exists for the
+    """URL the customer can use when the scheduling-agent / Calendar fails,     points to the same /schedule?token=… page which already exists for the
     klant-quote email. Returns None when token or service_url isn't set."""
     token = lead.get("approval_token")
     if not token:
@@ -791,7 +790,7 @@ async def _handle_start_scheduling(lead: dict, text_body: str, phone: str):
         return
 
     if intent == "quote_question":
-        # Don't pretend to answer specific pricing questions — hand off to the owner,
+        # Don't pretend to answer specific pricing questions, hand off to the owner,
         # but offer to schedule so the conversation doesn't dead-end.
         await send_text(
             phone,
@@ -868,7 +867,7 @@ Duur: {duration} minuten{purpose_line}
 - Voer een natuurlijk, warm gesprek over het inplannen
 - Gebruik de tool `check_beschikbaarheid` om te zien welke tijdslots vrij zijn
 - Gebruik de tool `boek_afspraak` zodra de klant een moment bevestigt
-- Verwijs naar de afspraak met "{appointment_short}" of "{appointment_label}" — NOOIT als "kennismakingsgesprek" tenzij dat letterlijk in de korte naam staat
+- Verwijs naar de afspraak met "{appointment_short}" of "{appointment_label}", NOOIT als "kennismakingsgesprek" tenzij dat letterlijk in de korte naam staat
 - Noem de duur als de klant ernaar vraagt ({duration} minuten); verzin geen andere getallen
 - Max 2-3 zinnen per bericht, informeel Nederlands
 - Geen streepjes (-) of gedachtestrepen (—) gebruiken
@@ -885,7 +884,7 @@ Duur: {duration} minuten{purpose_line}
    STAP A: roep `check_beschikbaarheid` aan
    STAP B: stel 2-3 passende tijden voor uit de lijst
 3. NOOIT zeggen dat een tijd niet beschikbaar is zonder eerst `check_beschikbaarheid` in DEZE turn aangeroepen te hebben. Geen uitzonderingen.
-4. NOOIT alternatieve tijden verzinnen — alle voorgestelde tijden moeten letterlijk uit de meest recente check_beschikbaarheid-output komen.
+4. NOOIT alternatieve tijden verzinnen, alle voorgestelde tijden moeten letterlijk uit de meest recente check_beschikbaarheid-output komen.
 5. "Morgen om 3 uur" = morgendatum om 15:00 (NL 24-uurs notatie). Andere relatieve tijden: "vanavond" = vanaf 17:00, "morgenochtend" = 07:00-12:00, "middag" = 12:00-17:00.
 
 ## VOORBEELDEN (vervang "kennismakingsgesprek" altijd door "{appointment_short}")
@@ -1045,7 +1044,7 @@ async def _execute_scheduling_tool(tool_name: str, tool_args: dict, lead: dict) 
             NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
             dag = NL_WEEKDAYS[local_start.weekday()]
             maand = NL_MONTHS[local_start.month]
-            mail_status = "Bevestigingsmail met agenda-links verstuurd." if mail_sent else "Bevestigingsmail kon niet worden verstuurd — gebruik in je afsluiting de variant ZONDER mail-belofte (zeg dat een collega contact opneemt als er iets is)."
+            mail_status = "Bevestigingsmail met agenda-links verstuurd." if mail_sent else "Bevestigingsmail kon niet worden verstuurd, gebruik in je afsluiting de variant ZONDER mail-belofte (zeg dat een collega contact opneemt als er iets is)."
             return f"{appointment_label.capitalize()} geboekt op {dag} {local_start.day} {maand} om {tijd} ({duration} min). {mail_status}"
 
         except Exception as e:
@@ -1081,7 +1080,7 @@ async def _run_scheduling_agent(lead: dict, phone: str):
             role = "user" if m.role == "user" else "assistant"
             messages.append({"role": role, "content": m.content})
 
-        # Agent loop — max 3 tool calls per beurt
+        # Agent loop, max 3 tool calls per beurt
         client = get_openai()
         for iteration in range(3):
             print(f"[scheduling-agent] Iteration {iteration + 1}, messages: {len(messages)}")
@@ -1174,7 +1173,7 @@ async def _run_scheduling_agent(lead: dict, phone: str):
         await _save_message(lead["id"], "assistant", msg)
         return
 
-    # Als de loop eindigt zonder antwoord — fallback (gebruik branche-copy)
+    # Als de loop eindigt zonder antwoord, fallback (gebruik branche-copy)
     appointment_label, appointment_short, _duration, _purpose, _branche_label = _appointment_meta(lead)
     fallback_msg = f"Wanneer komt het je uit voor de {appointment_short}?"
     await send_text(phone, fallback_msg)
@@ -1186,7 +1185,7 @@ async def _run_scheduling_agent(lead: dict, phone: str):
 async def _alert_owner_email_failure(lead: dict, error: Exception) -> None:
     """Notify the business owner via WhatsApp + structured log when an offerte
     mail fails. Silent failure of this notifier is acceptable (it's a safety net
-    on top of the python logger) — the log will still surface in journalctl.
+    on top of the python logger), the log will still surface in journalctl.
     """
     branche_label = "?"
     try:
@@ -1228,7 +1227,7 @@ async def _trigger_approval(lead_id: str, sender: Sender | None = None):
     neemt-contact-op). On failure we ALSO alert the owner via WhatsApp so leads
     don't silently disappear.
 
-    `sender` is optional — if provided (e.g. web-chat path) the confirmation
+    `sender` is optional, if provided (e.g. web-chat path) the confirmation
     message uses it; otherwise it falls back to WhatsApp via lead.telefoon."""
     sb = get_supabase()
     resp = sb.table("leads").select("*").eq("id", lead_id).execute()
@@ -1305,7 +1304,7 @@ async def _trigger_approval(lead_id: str, sender: Sender | None = None):
     except Exception as e:
         await _alert_owner_email_failure(lead, e)
 
-    # Outbound confirmation — wording depends on whether the mail actually went out.
+    # Outbound confirmation, wording depends on whether the mail actually went out.
     voornaam = (lead.get("naam") or "").split()[0] if lead.get("naam") else ""
     if email_sent:
         confirmation = (

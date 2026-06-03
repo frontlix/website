@@ -1,11 +1,11 @@
 'use client'
 
-// FlowAfronden — "Klus afronden" completion flow.
+// FlowAfronden, "Klus afronden" completion flow.
 // Full-height sheet content rendered by MobileAgenda inside a full-screen
 // overlay. Includes its own FNav (the Afronden sheet is NOT a drilldown, so it
 // carries its own header). Ported from handoff src/agenda-b/flow/FAfronden.jsx.
 //
-// v1: alle data is mock + lokale state. Geen echte persistence — de
+// v1: alle data is mock + lokale state. Geen echte persistence, de
 // foto-upload, notitie-edit, materiaal-edit en de vervolgstap-toggles
 // bewaren niets server-side. Zie de // TODO's voor de functionele pass.
 
@@ -25,7 +25,7 @@ type Props = {
   onDone: () => void
 }
 
-// Synthetische foto-previews — gekleurde gradient + camera-icoon.
+// Synthetische foto-previews, gekleurde gradient + camera-icoon.
 // Tones bewust inline als data (per Translation Contract: "PhotoTile gradient
 // tones inline as data (3 gradients)").
 const PHOTO_TONES = [
@@ -61,7 +61,7 @@ const INITIAL_NEXT_STEPS: NextStep[] = [
     id: 'review',
     icon: 'star',
     title: 'Reviewlink via WhatsApp',
-    sub: 'Stuurt morgen 10:00 — Google + eigen review',
+    sub: 'Stuurt morgen 10:00, Google + eigen review',
     on: true,
   },
   {
@@ -74,7 +74,7 @@ const INITIAL_NEXT_STEPS: NextStep[] = [
 ]
 
 const DEFAULT_NOTE =
-  'Voegen invegen netjes gelukt, beschermlaag aangebracht. Niet 48u betreden met natte voeten — drogen volledig binnen 24u.'
+  'Voegen invegen netjes gelukt, beschermlaag aangebracht. Niet 48u betreden met natte voeten, drogen volledig binnen 24u.'
 
 export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
   const router = useRouter()
@@ -85,20 +85,20 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
   const naam = ev?.naam ?? 'Marieke v.d. Heijden'
   const plaats = ev?.adres ? ev.adres.split(' · ').slice(-1)[0] : 'Utrecht'
 
-  // Lokale state — upload/edit nog niet gekoppeld aan een server-action.
+  // Lokale state, upload/edit nog niet gekoppeld aan een server-action.
   const [photos] = useState<number[]>([1, 2, 3])
   const [note, setNote] = useState(DEFAULT_NOTE)
   const [nextSteps, setNextSteps] = useState<NextStep[]>(INITIAL_NEXT_STEPS)
 
   function toggleStep(id: string) {
-    // TODO: functional pass — persisteer vervolgstap-keuze (server action).
+    // TODO: functional pass, persisteer vervolgstap-keuze (server action).
     setNextSteps((prev) =>
       prev.map((s) => (s.id === id ? { ...s, on: !s.on } : s)),
     )
   }
 
   function handleAddPhoto() {
-    // TODO: functional pass — photo upload (file picker + storage).
+    // TODO: functional pass, photo upload (file picker + storage).
   }
 
   function handleDone() {
@@ -126,7 +126,7 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
     <div className={styles.root} role="dialog" aria-modal="true" aria-label="Klus afronden">
       <FNav title="Klus afronden" sub={`${naam} · ${plaats}`} rightLabel="Sluiten" onBack={onClose} />
 
-      {/* Scrollende body — vaste FNav boven, vaste footer onder. Zonder deze
+      {/* Scrollende body, vaste FNav boven, vaste footer onder. Zonder deze
           wrapper kromp de content op krappe schermen weg i.p.v. te scrollen. */}
       <div className={styles.body}>
       {/* Tijd-tracking summary */}
@@ -168,7 +168,7 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
         </div>
       </FDetailCard>
 
-      {/* Notitie voor de klant — bewerkbaar, vooringevuld door Surface */}
+      {/* Notitie voor de klant, bewerkbaar, vooringevuld door Surface */}
       <FDetailCard icon="doc" title="Notitie voor de klant">
         <textarea
           className={styles.noteInput}
@@ -182,14 +182,14 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
         </div>
       </FDetailCard>
 
-      {/* Materiaal gebruikt — actueel vs. verwacht */}
+      {/* Materiaal gebruikt, actueel vs. verwacht */}
       <FDetailCard icon="bolt" title="Materiaal gebruikt">
         <FKV k="Voegzand polymeer" v="2 zakken (verwacht 4)" />
         <FKV k="Beschermlaag spray" v="1 fles" />
         <FKV k="Extra reiskosten" v="—" last />
       </FDetailCard>
 
-      {/* Vervolgstappen — toggles */}
+      {/* Vervolgstappen, toggles */}
       <FDetailCard icon="spark" title="Wat moet er nog gebeuren?">
         {nextSteps.map((step, i) => {
           const Icon = NEXT_ICON[step.icon]
@@ -233,7 +233,7 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
 
 // ── PhotoTile ──
 // Gekleurde gradient-tegel met camera-icoon + "1/3"-label. Gradient via --tone
-// (inline data — geen thema-token, dit zijn synthetische placeholders).
+// (inline data, geen thema-token, dit zijn synthetische placeholders).
 type PhotoTileProps = {
   idx: number
   tone: string

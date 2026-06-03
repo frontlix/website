@@ -1,6 +1,6 @@
 'use client'
 
-// AgendaDayGroup — dag-sectie met rijke header-tegel.
+// AgendaDayGroup, dag-sectie met rijke header-tegel.
 // Port van ABShared.jsx `ABDayGroup` + `AgCardList`-wrapper.
 // 46×50 datum-pill (data-today/data-past) + label(15/700) + samenvatting(12 muted)
 // + uren (rechts). Kinderen (AgendaEventRow's) zitten in een card-list shell.
@@ -11,7 +11,7 @@ import styles from './AgendaDayGroup.module.css'
 const WDAY_SHORT = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
 
 interface AgendaDayGroupProps {
-  /** ISO-datum 'YYYY-MM-DD' — voedt de datum-pill (weekdag + dagnummer). */
+  /** ISO-datum 'YYYY-MM-DD', voedt de datum-pill (weekdag + dagnummer). */
   date: string
   /** Lange dag-label, bijv. "Vandaag" / "Woensdag 13 mei". */
   label: string

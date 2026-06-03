@@ -1,4 +1,4 @@
-"""Scheduling agent — proposes free slots and matches customer choice via LLM."""
+"""Scheduling agent, proposes free slots and matches customer choice via LLM."""
 from __future__ import annotations
 
 import json
@@ -73,6 +73,7 @@ Rules:
 - Maximum 5-6 sentences total
 - No jargon, no sales talk
 - Don't start with the customer's name
+- Never use dashes (-) or em-dashes (—) in your message. Use a comma instead
 
 Return ONLY the WhatsApp message.""",
             },

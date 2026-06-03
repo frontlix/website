@@ -7,7 +7,7 @@ import { DIENST_LABELS } from '@/lib/dashboard/manual-offerte-types'
 import type { SubDienst } from '@/lib/dashboard/manual-offerte-types'
 
 /**
- * Pipeline-card — layout:
+ * Pipeline-card, layout:
  *  - head: avatar + naam + plaats (links), prijs OF m²-pill (rechts)
  *  - meta: m² + eerste dienst-label + "+N" voor extra diensten
  *  - foot: bron-pill + tijd

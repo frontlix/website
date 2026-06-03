@@ -1238,7 +1238,7 @@ export const Constants = {
   },
 } as const
 // ============================================
-// Frontlix dashboard — app-level types
+// Frontlix dashboard, app-level types
 // ============================================
 //
 // De DB-kolommen `leads.dashboard_status` en `leads.gesprek_fase` zijn TEXT
@@ -1267,7 +1267,7 @@ export type GesprekFase =
 //
 // De `web_chat_*` + `kanaal` + `whatsapp_bereikbaar` velden worden door
 // een bot-side Supabase-migratie aangemaakt. Tot die migratie live is
-// zijn ze er nog niet — daarom stubben we ze hier handmatig zodat de
+// zijn ze er nog niet, daarom stubben we ze hier handmatig zodat de
 // dashboard-code er nu al tegen kan worden geschreven. Zodra de migratie
 // live is en `database.types.ts` opnieuw gegenereerd wordt mogen deze
 // overrides blijven staan (ze worden dan redundant, niet conflicterend).

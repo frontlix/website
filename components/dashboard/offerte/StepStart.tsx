@@ -22,7 +22,7 @@ type Props = {
 }
 
 /**
- * Step 0 — mobile-only entry-scherm. Vier ingangen om een offerte te
+ * Step 0, mobile-only entry-scherm. Vier ingangen om een offerte te
  * starten: AI-paste, dicteer (placeholder), bestaande klant zoeken,
  * nieuwe klant. Na een succesvolle pick of AI-extract advancen we
  * automatisch naar Step 1 zodat de user direct het ingevulde formulier

@@ -1,9 +1,9 @@
 import styles from './DossierFactStrip.module.css'
 
 export interface DossierFact {
-  /** Waarde — bv. '145 m²' */
+  /** Waarde, bv. '145 m²' */
   v: string
-  /** Label — bv. 'Oppervlak' */
+  /** Label, bv. 'Oppervlak' */
   l: string
 }
 
@@ -12,7 +12,7 @@ interface DossierFactStripProps {
 }
 
 /**
- * DossierFactStrip — surface-card met 4 gelijke cellen (KPI's). Waarde 16/800,
+ * DossierFactStrip, surface-card met 4 gelijke cellen (KPI's). Waarde 16/800,
  * label 10.5 uppercase muted. Cellen 2–4 krijgen een 0.5px linker scheidslijn.
  */
 export function DossierFactStrip({ facts }: DossierFactStripProps) {

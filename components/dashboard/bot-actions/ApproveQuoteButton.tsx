@@ -6,7 +6,7 @@ import styles from './BotActions.module.css'
 
 /**
  * "Stuur naar klant" knop. Owner approveert de huidige offerte vanuit het
- * dashboard — Surface stuurt vervolgens PDF + bevestigingsmail naar de klant
+ * dashboard, Surface stuurt vervolgens PDF + bevestigingsmail naar de klant
  * (zelfde flow als wanneer de klant "akkoord" typt in WhatsApp).
  */
 export function ApproveQuoteButton({

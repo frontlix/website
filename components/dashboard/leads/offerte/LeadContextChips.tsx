@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * LeadContextChips — readonly chips die de lead-context tonen
+ * LeadContextChips, readonly chips die de lead-context tonen
  * waarop de automatische offerte-regels gebaseerd zijn.
  *
  * Layout: rij chips (wrap, gap 8px). Eerste chip is een label-chip
@@ -17,7 +17,7 @@ import styles from './LeadContextChips.module.css'
 
 export type LeadContextChipsProps = {
   lead: Lead
-  /** Callback voor "Pas aan in Info-tab" — fase 1: prop is voldoende. */
+  /** Callback voor "Pas aan in Info-tab", fase 1: prop is voldoende. */
   onEditInfoClick?: () => void
 }
 
@@ -61,7 +61,7 @@ export function LeadContextChips({ lead, onEditInfoClick }: LeadContextChipsProp
     chips.push({ key: 'diensten', label: 'DIENSTEN', value: labels.join(' + ') })
   }
 
-  // Voegzand — type + optionele kleur ("antraciet")
+  // Voegzand, type + optionele kleur ("antraciet")
   if (lead.voegzand_type) {
     const typeLabel =
       VOEGZAND_TYPE_LABELS[lead.voegzand_type] ?? lead.voegzand_type
@@ -76,7 +76,7 @@ export function LeadContextChips({ lead, onEditInfoClick }: LeadContextChipsProp
     chips.push({ key: 'korstmos', label: 'KORSTMOS', value: lead.korstmos })
   }
 
-  // Planten — "afschermen" als planten_afschermen truthy, anders "staan" als planten gevuld
+  // Planten, "afschermen" als planten_afschermen truthy, anders "staan" als planten gevuld
   if (lead.planten_afschermen) {
     chips.push({ key: 'planten', label: 'PLANTEN', value: 'afschermen' })
   } else if (lead.planten) {
@@ -86,7 +86,7 @@ export function LeadContextChips({ lead, onEditInfoClick }: LeadContextChipsProp
   return (
     <div className={styles.container}>
       <div className={styles.chipsRow}>
-        {/* Label-chip — uppercase, gradient-tint, sparkle-icoon. */}
+        {/* Label-chip, uppercase, gradient-tint, sparkle-icoon. */}
         <span className={styles.labelChip}>
           <Sparkles size={11} aria-hidden="true" />
           OP BASIS VAN LEAD-DATA

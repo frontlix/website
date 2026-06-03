@@ -114,7 +114,7 @@ def _euro(n: float) -> str:
 
 def _error_page(title: str, message: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{escape(title)} — De Designmaker</title>
+    <title>{escape(title)}, De Designmaker</title>
     <style>body{{font-family:sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}}
     h1{{font-size:22px;font-weight:700;margin-bottom:12px}}p{{font-size:15px;color:#555;line-height:1.6}}a{{color:#1A56FF;text-decoration:none}}</style>
@@ -193,7 +193,7 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offerte wijzigen — {escape(branche_label)}</title>
+  <title>Offerte wijzigen, {escape(branche_label)}</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: #F0F2F5; color: #1A1A1A; padding: 16px; line-height: 1.5; }}
@@ -233,7 +233,7 @@ def _render_edit_form(lead: dict, type_dienst: str, flag: str | None = None, pre
   <div class="container">
     <div class="header">
       <h1>Offerte wijzigen</h1>
-      <p>{escape(branche_label)} — {escape(lead.get('naam') or 'klant')}</p>
+      <p>{escape(branche_label)}, {escape(lead.get('naam') or 'klant')}</p>
     </div>
     <div class="card">
       {banner}

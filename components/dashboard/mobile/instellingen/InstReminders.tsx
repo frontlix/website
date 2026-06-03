@@ -1,6 +1,6 @@
 'use client'
 
-// Reminders — mobiel. Twee lagen per reminder:
+// Reminders, mobiel. Twee lagen per reminder:
 //  1) dag-stepper → direct persistent via updateReminderDays (alleen scheduling,
 //     geen Meta-goedkeuring).
 //  2) inklapbaar "Bericht bewerken" → de berichttekst zelf, via de aanvraag-flow
@@ -62,7 +62,7 @@ const VARIABLES = [
 const MIN_DAYS = 1
 const MAX_DAYS = 90
 
-// Preview-substitutie voor reminder-templates (puur visueel — zegt niets over
+// Preview-substitutie voor reminder-templates (puur visueel, zegt niets over
 // of de bot de variabelen daadwerkelijk doorgeeft).
 function makeReminderPreview(text: string): string {
   const geldigTotDate = new Date()
@@ -81,7 +81,7 @@ function makeReminderPreview(text: string): string {
     .replaceAll('{geldig_tot}', geldigTot)
 }
 
-/** Reminders-detailscherm — per reminder dag-stepper + inklapbare tekst-editor. */
+/** Reminders-detailscherm, per reminder dag-stepper + inklapbare tekst-editor. */
 export function InstReminders({
   days,
   aanvragen,
@@ -149,7 +149,7 @@ function ReminderCard({
   return (
     <div
       className={styles.card}
-      /* --tint is a per-item data value (hex color) — injected via style */
+      /* --tint is a per-item data value (hex color), injected via style */
       style={{ '--tint': reminder.tone } as React.CSSProperties}
     >
       {/* Bovenste rij: badge + info + dag-stepper */}

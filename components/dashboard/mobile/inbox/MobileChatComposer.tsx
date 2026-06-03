@@ -12,7 +12,7 @@ interface MobileChatComposerProps {
 
 /**
  * WhatsApp-stijl message-composer onderaan MobileChatDetail.
- * POST naar /api/dashboard/lead/[id]/send-message — zelfde route als
+ * POST naar /api/dashboard/lead/[id]/send-message, zelfde route als
  * WhatsAppComposer (desktop). Guard: alleen versturen als botPaused.
  *
  * Visueel: input-pill (emoji + veld + bijlage) + ronde send/mic-knop

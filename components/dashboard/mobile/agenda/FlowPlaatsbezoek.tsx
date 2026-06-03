@@ -1,6 +1,6 @@
 'use client'
 
-// FlowPlaatsbezoek — Plaatsbezoek-detail, gerenderd als CONTENT binnen
+// FlowPlaatsbezoek, Plaatsbezoek-detail, gerenderd als CONTENT binnen
 // MobileDrilldownLayer. De layer levert de header (terug + titel); dit
 // component levert alleen de body (geen eigen FNav). Andere primaire actie dan
 // klus: "Offerte starten" met een aftikbare intake-checklist (lokale state).
@@ -33,17 +33,17 @@ function initials(naam: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-// Intake-stappen — in v1 lokaal afvinkbaar (geen persistentie).
+// Intake-stappen, in v1 lokaal afvinkbaar (geen persistentie).
 const INTAKE_STEPS = [
   'Oppervlakte meten (verwacht 120m²)',
-  "Foto's maken — 4 tot 6 stuks",
+  "Foto's maken, 4 tot 6 stuks",
   'Type ondergrond noteren',
   'Onkruidbeheersing-vraag bespreken',
   'Toegang voor uitvoering afspreken',
 ]
 
 export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbezoekProps) {
-  // Lokale toggle-state per intake-stap. // TODO: functional pass — persist intake
+  // Lokale toggle-state per intake-stap. // TODO: functional pass, persist intake
   const [checked, setChecked] = useState<boolean[]>(() => INTAKE_STEPS.map(() => false))
   const toggle = (i: number) =>
     setChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
@@ -88,7 +88,7 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbe
         <FMiniMap label="6 km · 9 min" />
       </FDetailCard>
 
-      {/* Intake-checklist — lokaal afvinkbaar */}
+      {/* Intake-checklist, lokaal afvinkbaar */}
       <FDetailCard
         icon="check"
         title="Intake-checklist"
@@ -116,25 +116,25 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbe
       <FDetailCard icon="edit" title="Offerte-basis">
         <FKV k="Verwacht type" v="Tuinpaden invegen" />
         <FKV k="Verwacht m²" v="±120 m²" />
-        <FKV k="Prijsindicatie" v="€1.080 – €1.320" />
+        <FKV k="Prijsindicatie" v="€1.080, €1.320" />
         <FKV k="Concurrent-citaat" v="Geen" last />
       </FDetailCard>
 
       {/* Surface-tip (accent-callout) */}
       <FDetailCard icon="spark" title="Surface tipt">
         <div className={styles.tip}>
-          VVE&apos;s hechten aan een meerjarig onderhoudscontract — vraag of ze interesse hebben in
+          VVE&apos;s hechten aan een meerjarig onderhoudscontract, vraag of ze interesse hebben in
           een 3-jaarsplan met jaarlijkse review. Geeft je 18% hogere marge.
         </div>
       </FDetailCard>
 
       {/* Footer-acties (sticky onderaan) */}
       <div className={styles.footer}>
-        {/* TODO: functional pass — open herplan-sheet (reschedule server action) */}
+        {/* TODO: functional pass, open herplan-sheet (reschedule server action) */}
         <button type="button" onClick={onHerplan} className={styles.btnGhost}>
           <Clock size={14} /> Herplannen
         </button>
-        {/* TODO: functional pass — start offerte (create-quote server action) */}
+        {/* TODO: functional pass, start offerte (create-quote server action) */}
         <button type="button" onClick={onStartOfferte} className={styles.btnPrimary}>
           <FileText size={16} /> Offerte starten
         </button>

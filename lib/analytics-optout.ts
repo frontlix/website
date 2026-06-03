@@ -13,7 +13,7 @@ export function applyOptOutFromUrl(): void {
     if (v === '1') localStorage.setItem(KEY, '1')
     else if (v === '0') localStorage.removeItem(KEY)
   } catch {
-    // localStorage kan geblokkeerd zijn (private mode) — dan gewoon wél tracken
+    // localStorage kan geblokkeerd zijn (private mode), dan gewoon wél tracken
   }
 }
 

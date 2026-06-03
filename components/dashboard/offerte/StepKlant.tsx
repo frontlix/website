@@ -13,7 +13,7 @@ import styles from './ManualOfferteModal.module.css'
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
 
 // Genereert uit een ruwe input "06.../+316.../00316..." een schone
-// 06-string van precies 10 cijfers — handig voor zowel validatie als
+// 06-string van precies 10 cijfers, handig voor zowel validatie als
 // normalisatie naar +316.
 function toNLNationalMobile(raw: string): string | null {
   let cleaned = raw.replace(/[\s\-().]/g, '')
@@ -22,15 +22,15 @@ function toNLNationalMobile(raw: string): string | null {
   return /^06\d{8}$/.test(cleaned) ? cleaned : null
 }
 
-// NL-mobiel-validatie (soft — alleen voor de waarschuwing onder het
+// NL-mobiel-validatie (soft, alleen voor de waarschuwing onder het
 // veld). Naast format + lengte:
-//   - 3e cijfer moet in {1,2,3,4,5,8} zitten — de mobile-ranges die ACM
+//   - 3e cijfer moet in {1,2,3,4,5,8} zitten, de mobile-ranges die ACM
 //     aan operators heeft uitgegeven (061-065 en 068). Daarmee valt
 //     o.a. 0600000000 af (06 0xxxxxxx is geen mobiel).
 //   - De 8 cijfers na 06 mogen niet allemaal hetzelfde zijn
 //     (vangt 0611111111, 0622222222 etc.).
 // De eigenaar kan een afwijkend nummer (vaste lijn, buitenland) gewoon
-// doorgebruiken — dit is enkel een soft warning.
+// doorgebruiken, dit is enkel een soft warning.
 function isValidNLMobile(raw: string): boolean {
   const national = toNLNationalMobile(raw)
   if (!national) return false
@@ -48,7 +48,7 @@ function normalizeToInternational(raw: string): string {
   return national ? '+316' + national.slice(2) : raw
 }
 
-// Praktische email-check — niet RFC-compleet, wel een stuk strenger dan
+// Praktische email-check, niet RFC-compleet, wel een stuk strenger dan
 // "@ + punt". Vangt o.a. ongeldige domeinen ("@glL", "@gmail"), te-korte
 // TLD's, dubbele punten, leading/trailing dots, en respect voor de
 // max-lengtes uit RFC 5321 (64 lokaal, 254 totaal).
@@ -69,7 +69,7 @@ export function isValidEmail(raw: string): boolean {
 }
 
 // Domeinen die je in een NL-context vrijwel altijd ziet. Lijst bewust
-// kort gehouden — voor exotische providers willen we geen false
+// kort gehouden, voor exotische providers willen we geen false
 // "bedoelde je …?" tonen.
 const COMMON_EMAIL_DOMAINS = [
   'gmail.com',
@@ -116,7 +116,7 @@ function levenshtein(a: string, b: string): number {
 
 // Geeft een gecorrigeerd email-adres terug als het domein binnen
 // edit-distance 1–2 zit van een veelvoorkomende provider; anders null.
-// Korte domeinen (< 5 chars) sluiten we uit — daar wordt afstand 2
+// Korte domeinen (< 5 chars) sluiten we uit, daar wordt afstand 2
 // snel te coulant (bv. "abc.nl" zou suggereren "icloud.com").
 function suggestEmailFix(raw: string): string | null {
   const email = raw.trim().toLowerCase()
@@ -131,8 +131,7 @@ function suggestEmailFix(raw: string): string | null {
   for (const candidate of COMMON_EMAIL_DOMAINS) {
     const dist = levenshtein(domain, candidate)
     // Strenger voor korte candidates: anders is bv. "live.nl" ↔ "kpn.nl"
-    // al binnen distance 2. Pak max(2, candidate.length * 0.25) niet —
-    // simpeler: ≤ 2 én niet meer dan de helft van de candidate-lengte.
+    // al binnen distance 2. Pak max(2, candidate.length * 0.25) niet,     // simpeler: ≤ 2 én niet meer dan de helft van de candidate-lengte.
     const maxDist = Math.min(2, Math.floor(candidate.length / 2))
     if (dist > 0 && dist <= maxDist && (best === null || dist < best.dist)) {
       best = { domain: candidate, dist }
@@ -142,7 +141,7 @@ function suggestEmailFix(raw: string): string | null {
 }
 
 // Normaliseert e-mail naar lower-case + zonder spaties. Doe je op blur
-// zodat de user nog tijdens het typen casing/spaties kan zien — pas
+// zodat de user nog tijdens het typen casing/spaties kan zien, pas
 // als ze het veld verlaten "snap" je 'm.
 function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase()
@@ -162,12 +161,11 @@ export function StepKlant({
   // anders de net-ge-extracteerde zakken-aantallen overschrijft.
   onBeforeAiFill?: () => void
   // True wanneer de postcode/huisnummer-combo niet gevonden is door
-  // postcode.tech — toont een rode waarschuwing onder het adres.
+  // postcode.tech, toont een rode waarschuwing onder het adres.
   werkAdresNotFound?: boolean
   factuurAdresNotFound?: boolean
 }) {
-  // Pas waarschuwingen tonen als de user het veld heeft verlaten —
-  // anders flikkert "geen geldig nummer" al bij de eerste toets.
+  // Pas waarschuwingen tonen als de user het veld heeft verlaten,   // anders flikkert "geen geldig nummer" al bij de eerste toets.
   const [phoneTouched, setPhoneTouched] = useState(false)
   const [emailTouched, setEmailTouched] = useState(false)
 
@@ -175,8 +173,8 @@ export function StepKlant({
   const emailFilled = data.email.trim().length > 0
   const phoneWarning = phoneTouched && phoneFilled && !isValidNLMobile(data.telefoon)
   const emailWarning = emailTouched && emailFilled && !isValidEmail(data.email)
-  // Suggestie alleen tonen als (a) format op zich oké is — anders
-  // willen we eerst dat ze de format-fout fixen — en (b) er ook echt
+  // Suggestie alleen tonen als (a) format op zich oké is, anders
+  // willen we eerst dat ze de format-fout fixen, en (b) er ook echt
   // een waarschijnlijke fix bestaat.
   const emailSuggestion =
     emailTouched && emailFilled && isValidEmail(data.email)
@@ -219,7 +217,7 @@ export function StepKlant({
       <div>
         <div className={styles.sectionLabel}>Klantgegevens</div>
         <div className={styles.sectionSub}>
-          Telefoon en e-mail zijn verplicht — telefoon om de offerte via WhatsApp te versturen, e-mail voor de PDF.
+          Telefoon en e-mail zijn verplicht, telefoon om de offerte via WhatsApp te versturen, e-mail voor de PDF.
         </div>
       </div>
 
@@ -287,7 +285,7 @@ export function StepKlant({
         </Field>
       </div>
 
-      {/* Werk-adres — postcode + huisnummer eerst zodat de auto-fill
+      {/* Werk-adres, postcode + huisnummer eerst zodat de auto-fill
           (straat, plaats, afstand) zich aankondigt voordat de user
           die velden zelf zou invullen. */}
       <div>
@@ -333,10 +331,10 @@ export function StepKlant({
           </div>
         )}
         {/* Mobile-only autofill-bevestiging. Toont een groene success-card
-            zodra PDOK straat+plaats heeft ingevuld — zo ziet de user op
+            zodra PDOK straat+plaats heeft ingevuld, zo ziet de user op
             de telefoon in één oogopslag dat het adres goed staat zonder
             naar de aparte velden te hoeven turen. Op desktop is deze
-            card verborgen (CSS) — daar zijn de inputs prominent genoeg. */}
+            card verborgen (CSS), daar zijn de inputs prominent genoeg. */}
         {data.straat.trim() && data.plaats.trim() && !werkAdresNotFound && (
           <div className={styles.autofillSuccess} role="status">
             <span className={styles.autofillSuccessIcon}>

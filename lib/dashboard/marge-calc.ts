@@ -7,7 +7,7 @@ import type { Kostprijs } from './kostprijzen-actions'
 //
 // We mappen elke prijsregel op één van 8 vaste categorieën via een
 // trefwoord-heuristiek op de omschrijving. Geen DB-veld nodig op
-// `prijsregels` — de omschrijvingen worden gegenereerd door computeRules()
+// `prijsregels`, de omschrijvingen worden gegenereerd door computeRules()
 // (auto-regels) of door de owner zelf getypt (handmatige regels). De
 // matching is bewust simpel en defensief: onbekende strings vallen
 // automatisch in 'overig_handmatig' met de bijbehorende default-marge.
@@ -32,17 +32,16 @@ export type RuleKey = typeof RULE_KEYS[number]
  * Bepaal welke kostprijs-categorie hoort bij een prijsregel-omschrijving.
  *
  * Heuristiek: case-insensitive trefwoord-check op de omschrijving. Volgorde
- * van checks is belangrijk — meer-specifieke patronen eerst. Bijvoorbeeld
+ * van checks is belangrijk, meer-specifieke patronen eerst. Bijvoorbeeld
  * "beschermlaag" wordt eerder gematcht dan dat "arbeid" 'm zou afkapen
  * (een beschermlaag-regel kan ook "arbeid" in de tekst hebben).
  *
- * Voor onbekende omschrijvingen wordt 'overig_handmatig' teruggegeven —
- * dat is de catch-all met een redelijke default-marge (38%) zodat de
+ * Voor onbekende omschrijvingen wordt 'overig_handmatig' teruggegeven,  * dat is de catch-all met een redelijke default-marge (38%) zodat de
  * marge-kaart geen onrealistische 100% laat zien voor regels die niet
  * herkend worden.
  *
  * Heuristiek-keuzes per categorie:
- *  - reiniging_straatwerk: "reiniging" of "schoonmaak" — dekt de
+ *  - reiniging_straatwerk: "reiniging" of "schoonmaak", dekt de
  *    auto-regel "Reiniging straatwerk" + manual variaties.
  *  - arbeid_invegen: "invegen" als directe match, of "arbeid" zonder
  *    "extra" (zodat "Extra arbeid (meerwerk)" niet hierin valt; dat
@@ -54,7 +53,7 @@ export type RuleKey = typeof RULE_KEYS[number]
  *  - plantenafscherming_folie: "plantenafscherming" of "folie".
  *  - reiskosten: "reiskosten", "voorrijden" of "km" (de auto-regel
  *    bevat "Reiskosten ({n} km)").
- *  - onderhoud_abonnement: "onderhoud" of "abonnement" — de auto-regel
+ *  - onderhoud_abonnement: "onderhoud" of "abonnement", de auto-regel
  *    voor periodiek onderhoud bevat "Onderhoudsplan".
  *  - overig_handmatig: alles wat hierboven niet matcht.
  */
@@ -92,9 +91,9 @@ export type MargeRegel = {
   // We exposen extra velden zodat de Kostprijzen-modal en marge-kaart
   // (Agent 3b's UI) niet hoeven te weten dat `totaal === omzet` en
   // `categorie === rule_key`. Pure aliassen, geen nieuwe data.
-  /** Alias voor `categorie` — gebruikt door UI die in "rule_key"-naamgeving denkt. */
+  /** Alias voor `categorie`, gebruikt door UI die in "rule_key"-naamgeving denkt. */
   rule_key: RuleKey
-  /** Alias voor `totaal` — semantisch identiek (regel-omzet excl BTW). */
+  /** Alias voor `totaal`, semantisch identiek (regel-omzet excl BTW). */
   omzet: number
   /** Per-regel status-bucket, zelfde drempels als overview-status. */
   status: MargeStatus
@@ -106,7 +105,7 @@ export type MargeOverview = {
   marge: number
   margePct: number
   perRegel: MargeRegel[]
-  /** Alias voor `perRegel` — voor consumers die kortere naam verkiezen. */
+  /** Alias voor `perRegel`, voor consumers die kortere naam verkiezen. */
   regels: MargeRegel[]
   /** Indicator voor de UI: 'krap' (<30), 'acceptabel' (30-50), 'gezond' (50-70), 'uitstekend' (>70). */
   status: MargeStatus
@@ -152,7 +151,7 @@ function bucketStatus(margePct: number): MargeStatus {
  * Veiligheid:
  *  - Als `kostprijzen` leeg is (tabel nog niet geseed of fetch faalde),
  *    krijgen we default 0% kost_pct → 100% marge. Dat is niet correct
- *    maar veilig — de marge-kaart toont dan onrealistisch hoge marge en
+ *    maar veilig, de marge-kaart toont dan onrealistisch hoge marge en
  *    de owner ziet meteen dat de kostprijzen niet geconfigureerd zijn.
  *  - Als totaal = 0 voor een regel (gratis-regel?), margePct = 0 (niet
  *    NaN door deling door nul).

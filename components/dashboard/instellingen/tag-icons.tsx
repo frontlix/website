@@ -25,7 +25,7 @@ import type { IconKey } from '@/lib/dashboard/tag-presets'
 
 /**
  * Mapping van icon-key (string in DB) naar lucide-react component.
- * Held client-side want hier zitten React-componenten in — server kent
+ * Held client-side want hier zitten React-componenten in, server kent
  * alleen de string-keys uit `tag-presets.ts`.
  */
 export const ICON_REGISTRY: Record<IconKey, LucideIcon> = {

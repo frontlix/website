@@ -38,7 +38,7 @@ function csvEscape(value: string | number | null | undefined): string {
 }
 
 export async function GET(request: Request) {
-  // Auth check — alleen approved users mogen exporteren.
+  // Auth check, alleen approved users mogen exporteren.
   await requireApprovedUser()
 
   const url = new URL(request.url)

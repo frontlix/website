@@ -10,7 +10,7 @@ const initialState: SignupState = {}
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signupAction, initialState)
 
-  // Full page reload bij success — zelfde reden als in /login: voorkomt 404
+  // Full page reload bij success, zelfde reden als in /login: voorkomt 404
   // op /wachtkamer door cookie-write race in Next.js Server Actions.
   useEffect(() => {
     if (state.redirectTo) {

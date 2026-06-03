@@ -4,7 +4,7 @@ import type React from 'react'
 import { useBodyScrollLock } from './useBodyScrollLock'
 
 /**
- * useModalSheet — gedeelde modal-/bottom-sheet plumbing voor de mobiele sheets
+ * useModalSheet, gedeelde modal-/bottom-sheet plumbing voor de mobiele sheets
  * (LeadsFilterSheet, AgendaNewSheet, AgendaHerplanSheet). Doet drie dingen zolang
  * `open` true is:
  *   1. body-scroll lockt via de bestaande useBodyScrollLock (één bron van waarheid);
@@ -12,7 +12,7 @@ import { useBodyScrollLock } from './useBodyScrollLock'
  *   3. focus naar de dialog-div verplaatst bij openen en bij sluiten herstelt naar
  *      het element dat de focus had (zodat de gebruiker niet 'kwijtraakt').
  *
- * Geen volledige focus-trap — scroll-lock + Escape + focus-move/-restore volstaat
+ * Geen volledige focus-trap, scroll-lock + Escape + focus-move/-restore volstaat
  * voor deze sheets. Retourneert de ref die op de role="dialog"-div moet
  * (samen met tabIndex={-1} zodat de div programmatisch focusbaar is).
  *
@@ -24,7 +24,7 @@ export function useModalSheet<T extends HTMLElement = HTMLDivElement>(
   onClose: () => void,
 ): React.RefObject<T | null> {
   const dialogRef = useRef<T | null>(null)
-  // Het element dat focus had vóór openen — voor herstel bij sluiten.
+  // Het element dat focus had vóór openen, voor herstel bij sluiten.
   const prevFocusRef = useRef<HTMLElement | null>(null)
 
   // Body-scroll lock hergebruiken (zelfde gedrag als de andere sheets).

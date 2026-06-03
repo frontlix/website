@@ -1,5 +1,5 @@
 /**
- * Notificatie-types — applicatielaag boven de database.
+ * Notificatie-types, applicatielaag boven de database.
  *
  * `database.types.ts` wordt door Supabase CLI gegenereerd; voor onze
  * nieuwe enums + tabellen typen we hier hand-matig zodat de FE/backend
@@ -77,7 +77,7 @@ export const EVENT_LABELS: Record<NotificationEventType, { titel: string; sub: s
   },
   dagelijkse_samenvatting: {
     titel: 'Dagelijkse samenvatting',
-    sub: 'Elke ochtend — wat ging er gisteren',
+    sub: 'Elke ochtend, wat ging er gisteren',
   },
   template_goedgekeurd: {
     titel: 'Template goedgekeurd',
@@ -85,7 +85,7 @@ export const EVENT_LABELS: Record<NotificationEventType, { titel: string; sub: s
   },
   template_afgewezen: {
     titel: 'Template afgewezen',
-    sub: 'Frontlix heeft je aanvraag afgewezen — check de notitie',
+    sub: 'Frontlix heeft je aanvraag afgewezen, check de notitie',
   },
   template_notitie: {
     titel: 'Notitie op template-aanvraag',
@@ -130,7 +130,7 @@ export interface NotificationRow {
 
 /**
  * Mapping van event-type naar de visuele `kind` in NotificationPanel.
- * NotificationPanel ondersteunt 4 kinds (lead/wa/review/agenda) — we
+ * NotificationPanel ondersteunt 4 kinds (lead/wa/review/agenda), we
  * mappen onze 8 event-types daarop. Later kunnen we meer iconen toevoegen.
  */
 export type NotifKind = 'lead' | 'wa' | 'review' | 'agenda'
@@ -145,7 +145,7 @@ export const EVENT_KIND: Record<NotificationEventType, NotifKind> = {
   nieuwe_review: 'review',
   dagelijkse_samenvatting: 'lead',
   // Template-events hebben geen perfect-passende kind (komen niet van
-  // een klant) — mappen ze op 'wa' want het is een Frontlix-feedback-
+  // een klant), mappen ze op 'wa' want het is een Frontlix-feedback-
   // bericht. Latere uitbreiding kan een eigen 'template' kind krijgen.
   template_goedgekeurd: 'wa',
   template_afgewezen: 'wa',

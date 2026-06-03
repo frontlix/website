@@ -5,7 +5,7 @@ import { sendNotification } from '@/lib/mail'
 const LEAD_AUTOMATION_URL = process.env.LEAD_AUTOMATION_URL || 'http://localhost:8000'
 
 /**
- * POST — Start de demo-chatbot flow.
+ * POST, Start de demo-chatbot flow.
  * Branche-flow wordt doorgestuurd naar de Python lead-automation service.
  */
 export async function POST(req: NextRequest) {

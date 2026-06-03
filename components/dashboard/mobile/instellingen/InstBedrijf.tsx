@@ -13,7 +13,7 @@ import type { TenantSettings } from '@/components/dashboard/instellingen/Setting
 import { InstField, InstGroupCard } from './InstAtoms'
 import styles from './InstBedrijf.module.css'
 
-/** Bedrijfsgegevens-detailscherm. Plain content — drilldown layer levert header. */
+/** Bedrijfsgegevens-detailscherm. Plain content, drilldown layer levert header. */
 export function InstBedrijf({
   tenant,
   omzetDoel = null,
@@ -23,7 +23,7 @@ export function InstBedrijf({
 }) {
   return (
     <div className={styles.container}>
-      {/* Maanddoel — echt gekoppeld; bovenaan zodat de deeplink-CTA er direct op landt. */}
+      {/* Maanddoel, echt gekoppeld; bovenaan zodat de deeplink-CTA er direct op landt. */}
       <MaanddoelCard initial={omzetDoel} />
 
       {/* Surface card met de echte bedrijfsvelden (read-only). */}
@@ -45,7 +45,7 @@ export function InstBedrijf({
       {/* Eerlijke hint i.p.v. een dode opslaan-knop: deze velden zijn (nog) niet
           zelf te bewerken; wijzigingen lopen via Frontlix-support. */}
       <p className={styles.readonlyHint}>
-        Bedrijfsgegevens wijzig je via Frontlix-support — neem contact op om deze
+        Bedrijfsgegevens wijzig je via Frontlix-support, neem contact op om deze
         aan te passen.
       </p>
     </div>
@@ -53,7 +53,7 @@ export function InstBedrijf({
 }
 
 /**
- * MaanddoelCard — maand-omzetdoel (`tenant_settings.omzet_doel_maand`).
+ * MaanddoelCard, maand-omzetdoel (`tenant_settings.omzet_doel_maand`).
  * Lege input → NULL (= geen doel; Overzicht toont placeholder). Niet-leeg →
  * integer euros. Opslaan gaat via de echte server-action (laag risico, geen
  * bot/mail). Volgt het patroon van de desktop OmzetDoelForm.
@@ -74,7 +74,7 @@ function MaanddoelCard({ initial }: { initial: number | null }) {
     const trimmed = raw.trim()
     const value = trimmed === '' ? null : Number(trimmed)
 
-    // Client-side guard — de server valideert ook.
+    // Client-side guard, de server valideert ook.
     if (value !== null && (!Number.isFinite(value) || value < 0)) {
       setStatus({ kind: 'error', message: 'Voer een geldig, niet-negatief getal in.' })
       return
@@ -126,7 +126,7 @@ function MaanddoelCard({ initial }: { initial: number | null }) {
             <Check size={14} aria-hidden="true" />
             <span>
               {status.value === null
-                ? 'Doel gewist — er wordt geen ring meer getoond.'
+                ? 'Doel gewist, er wordt geen ring meer getoond.'
                 : `Opgeslagen: € ${status.value.toLocaleString('nl-NL')} per maand.`}
             </span>
           </div>

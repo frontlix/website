@@ -4,14 +4,14 @@ import { Sparkles, Pause } from 'lucide-react'
 import styles from './DossierSurfaceStrip.module.css'
 
 interface DossierSurfaceStripProps {
-  /** Fase-label, bv. 'Info verzamelen' — toont als "SURFACE · {fase}". */
+  /** Fase-label, bv. 'Info verzamelen', toont als "SURFACE · {fase}". */
   fase: string
   /** Surface-bericht onder de fase-regel. */
   message: string
 }
 
 /**
- * DossierSurfaceStrip — gradient-card met een gradient Sparkles-bubble,
+ * DossierSurfaceStrip, gradient-card met een gradient Sparkles-bubble,
  * "SURFACE · {fase}" (primary uppercase) + bericht, en een ghost "Pauze"-knop.
  * Pauze is visueel-only in v1.
  */

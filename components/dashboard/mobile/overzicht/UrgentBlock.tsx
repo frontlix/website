@@ -8,7 +8,7 @@ export type UrgentItem = {
   naam: string
   initials: string
   subline: string // bv. "€736 · korstmos" of "86 km · Utrecht · €998"
-  context: string // bv. "Wacht 4u 12m op owner-review" — niet getoond in preview, alleen in drilldown
+  context: string // bv. "Wacht 4u 12m op owner-review", niet getoond in preview, alleen in drilldown
   badge?: { tone: 'amber' | 'red'; label: string }
 }
 
@@ -20,7 +20,7 @@ type Props = {
 }
 
 /**
- * UrgentBlock — "Wat nu" preview (top-3 urgente items) voor mobile Overzicht.
+ * UrgentBlock, "Wat nu" preview (top-3 urgente items) voor mobile Overzicht.
  * Toont avatar/initials, naam + subline, optionele tone-badge. Empty-state copy
  * verschijnt als items leeg is. Klik op rij → onOpenItem(id), klik op "Alles" → onOpenAll.
  */
@@ -44,7 +44,7 @@ export function UrgentBlock({
         </button>
       </div>
       {items.length === 0 ? (
-        <p className={styles.empty}>Niks urgent — koffiepauze.</p>
+        <p className={styles.empty}>Niks urgent, koffiepauze.</p>
       ) : (
         <ul className={styles.list}>
           {items.slice(0, 3).map((item) => (

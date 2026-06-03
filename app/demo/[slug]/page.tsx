@@ -36,15 +36,15 @@ export async function generateMetadata({
   const demo = await getDemo(slug)
 
   if (!demo) {
-    return { title: 'Demo niet gevonden — Frontlix' }
+    return { title: 'Demo niet gevonden | Frontlix' }
   }
 
   return {
-    title: `Demo voor ${demo.naam} — Frontlix`,
+    title: `Demo voor ${demo.naam} | Frontlix`,
     description: `Persoonlijke demo voor ${demo.bedrijf}. Bekijk hoe automatische leadopvolging werkt voor jouw bedrijf.`,
     robots: { index: false, follow: false },
     openGraph: {
-      title: `Demo voor ${demo.naam} — Frontlix`,
+      title: `Demo voor ${demo.naam} | Frontlix`,
       description: `Persoonlijke demo voor ${demo.bedrijf}`,
       type: 'website',
     },

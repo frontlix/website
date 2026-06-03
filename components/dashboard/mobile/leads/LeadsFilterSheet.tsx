@@ -27,14 +27,14 @@ const ALL_BRONNEN = new Set<'wa' | 'form'>(['wa', 'form'])
 interface LeadsFilterSheetProps {
   open: boolean
   value: AdvFilter
-  /** Huidig aantal leads dat matcht — getoond in footer */
+  /** Huidig aantal leads dat matcht, getoond in footer */
   resultCount: number
   onApply: (f: AdvFilter) => void
   onClose: () => void
 }
 
 /**
- * LeadsFilterSheet — bottom-sheet met backdrop voor geavanceerde filters.
+ * LeadsFilterSheet, bottom-sheet met backdrop voor geavanceerde filters.
  *
  * Secties:
  *  - Fase (multi-select chips)
@@ -53,7 +53,7 @@ export function LeadsFilterSheet({
   onApply,
   onClose,
 }: LeadsFilterSheetProps) {
-  // Draft-state — alleen gesynct bij openen
+  // Draft-state, alleen gesynct bij openen
   const [stages, setStages]       = useState<Set<MobileLeadStage>>(value.stages)
   const [bronnen, setBronnen]     = useState<Set<'wa' | 'form'>>(value.bronnen)
   const [urgentOnly, setUrgent]   = useState(value.urgentOnly)
@@ -102,7 +102,7 @@ export function LeadsFilterSheet({
 
   return (
     <div className={styles.overlay}>
-      {/* Backdrop — klik = sluit */}
+      {/* Backdrop, klik = sluit */}
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
       {/* Sheet */}
@@ -128,7 +128,7 @@ export function LeadsFilterSheet({
         </div>
 
         {/* ── Fase ───────────────────────────────────────────────────────────── */}
-        <FilterSection title="Fase" sub="Tik om in/uit te schakelen — meerdere mogelijk">
+        <FilterSection title="Fase" sub="Tik om in/uit te schakelen, meerdere mogelijk">
           <div className={styles.chipRow}>
             {STAGES.map((s) => {
               const on = stages.has(s.key)

@@ -1,4 +1,4 @@
-"""Calendar route — serveert het .ics bestand van een ingeplande afspraak.
+"""Calendar route, serveert het .ics bestand van een ingeplande afspraak.
 
 GET /calendar/{token}.ics → download .ics voor het lead met approval_token=token.
 

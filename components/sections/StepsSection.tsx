@@ -91,7 +91,7 @@ export default function StepsSection() {
     <section className={styles.section} ref={sectionRef}>
       <div className={styles.inner}>
         <div className={styles.layout}>
-          {/* Left column — sticky intro */}
+          {/* Left column, sticky intro */}
           <div className={styles.left}>
             <div className={styles.labelRow}>
               <span className={styles.labelLine} />
@@ -113,7 +113,7 @@ export default function StepsSection() {
             <ProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
           </div>
 
-          {/* Right column — stacking cards */}
+          {/* Right column, stacking cards */}
           <div className={styles.right}>
             <div className={styles.steps}>
               {steps.map((step, i) => (

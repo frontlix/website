@@ -28,7 +28,7 @@ export function LiveActivityFocus({
         <div className={styles.title}>
           <LiveDot />
           <span className={styles.titleText}>
-            {chatbotName} — live feed
+            {chatbotName}, live feed
           </span>
           <span className={styles.titleSep}>·</span>
           <span className={styles.titleTime}>{tijd}</span>

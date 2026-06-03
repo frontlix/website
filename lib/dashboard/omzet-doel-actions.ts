@@ -39,7 +39,7 @@ export async function saveOmzetDoelMaand(
 
   const admin = getDashboardAdmin()
 
-  // Pak de eerste (en enige) tenant_settings rij — single-tenant setup.
+  // Pak de eerste (en enige) tenant_settings rij, single-tenant setup.
   const { data: existing, error: fetchErr } = await admin
     .from('tenant_settings')
     .select('id')

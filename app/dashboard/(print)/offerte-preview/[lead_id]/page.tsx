@@ -7,7 +7,7 @@ import { formatEuro } from '@/lib/dashboard/format'
 import styles from './page.module.css'
 
 /**
- * Offerte-preview pagina — 1-op-1 visueel gelijk aan de echte
+ * Offerte-preview pagina, 1-op-1 visueel gelijk aan de echte
  * Schoon-Straatje PDF die naar klanten wordt verstuurd (zie
  * /schoon-straatje product/schoon-straatje-assistent/src/templates/
  * offerte-pdf-template.ts).
@@ -21,7 +21,7 @@ import styles from './page.module.css'
  */
 export const dynamic = 'force-dynamic'
 
-// Bedrijfsgegevens — voor nu hardcoded voor Schoon Straatje (de enige
+// Bedrijfsgegevens, voor nu hardcoded voor Schoon Straatje (de enige
 // live tenant). Toekomstig kan dit uit tenant_settings/db worden gelezen.
 const BEDRIJF = {
   naam: 'Schoon Straatje',
@@ -242,7 +242,7 @@ export default async function OffertePreviewPage({
           </tbody>
         </table>
 
-        {/* TOTALS — rechts uitgelijnd ~60% breed */}
+        {/* TOTALS, rechts uitgelijnd ~60% breed */}
         <div className={styles.totalsWrap}>
           <table className={styles.totals}>
             <tbody>
@@ -254,7 +254,7 @@ export default async function OffertePreviewPage({
                 <tr className={styles.korting}>
                   <td>
                     Actiekorting ({kortingPct}%)
-                    {lead.korting_omschrijving ? ` — ${lead.korting_omschrijving}` : ''}
+                    {lead.korting_omschrijving ? `, ${lead.korting_omschrijving}` : ''}
                   </td>
                   <td className={styles.amount}>− {formatEuro(totalen.kortingBedrag)}</td>
                 </tr>

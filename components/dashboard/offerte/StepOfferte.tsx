@@ -22,7 +22,7 @@ export function StepOfferte({
   rules: RegelComputed[]
   totals: TotalsComputed
 }) {
-  // Placeholder-tekst kort houden op telefoon — "Toelichting (bv.
+  // Placeholder-tekst kort houden op telefoon, "Toelichting (bv.
   // Kennismakingskorting)" past niet in de smalle input naast de slider
   // en %-input, en wordt anders mid-zin afgekapt.
   const isMobile = useMediaQuery('(max-width: 768px)')
@@ -38,7 +38,7 @@ export function StepOfferte({
       <div className={styles.regelsList}>
         {rules.length === 0 && (
           <div className={styles.regelEmpty}>
-            Geen regels — ga terug naar &ldquo;Werk&rdquo; en kies minstens een dienst
+            Geen regels, ga terug naar &ldquo;Werk&rdquo; en kies minstens een dienst
           </div>
         )}
         {rules.map((r, i) => (
@@ -89,7 +89,7 @@ export function StepOfferte({
         </div>
       </div>
 
-      {/* Korting — desktop: slider + handmatige %-input (tot 40%).
+      {/* Korting, desktop: slider + handmatige %-input (tot 40%).
           Mobile: 4 preset-knoppen (Geen / 5% / 10% / 15%) + groene
           hint-rij. De slider is op telefoon onpraktisch (precieze 0–40
           range op ~340px breed is een vingertikkenontwijking) en de

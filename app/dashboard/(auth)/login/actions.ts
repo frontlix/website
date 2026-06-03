@@ -26,7 +26,7 @@ export async function loginAction(
     return { error: 'E-mail of wachtwoord onjuist.' }
   }
 
-  // Check tenant_status — pending → wachtkamer, rejected → foutmelding,
+  // Check tenant_status, pending → wachtkamer, rejected → foutmelding,
   // approved → /leads.
   const { data: profile } = await supabase
     .from('dashboard_user_profiles')
@@ -35,7 +35,7 @@ export async function loginAction(
     .maybeSingle()
 
   if (!profile) {
-    // Profile-rij ontbreekt — Auth Hook zou dit hebben moeten vangen.
+    // Profile-rij ontbreekt, Auth Hook zou dit hebben moeten vangen.
     // Forceer logout om geen geldige session in een ongeldige state te laten.
     await supabase.auth.signOut()
     return { error: 'Account-configuratie ontbreekt. Neem contact op met Frontlix.' }
@@ -49,7 +49,7 @@ export async function loginAction(
   // Invalideer de layout-cache (defensief: voor het geval client soft-navigeert).
   revalidatePath('/', 'layout')
 
-  // Geen server-side redirect() — die race't met de cookie-write en triggert
+  // Geen server-side redirect(), die race't met de cookie-write en triggert
   // een 404 op de eerste GET /leads. In plaats daarvan returnt de action
   // een redirectTo string; de client doet window.location.href = ... wat
   // een full page reload is en de net-gezette session-cookie wel ziet.

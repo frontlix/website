@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/dashboard/ui/ThemeToggle'
 import styles from './MeerSheet.module.css'
 
 /**
- * MeerSheet — slide-up bottom-sheet die opent vanuit de "Meer"-tab in
+ * MeerSheet, slide-up bottom-sheet die opent vanuit de "Meer"-tab in
  * de BottomNav. Bevat secundaire navigatie (Reviews, Analyses, Veldwerk),
  * thema-toggle, profile-strip met instellingen-shortcut en een
  * "Uitloggen"-link onderaan.
@@ -30,7 +30,7 @@ type Props = {
   bedrijfsnaam: string
   userInitials: string
   userName: string
-  /** Default 'Owner' — toont onder de naam in profile-strip. */
+  /** Default 'Owner', toont onder de naam in profile-strip. */
   userRole?: string
   /** Wordt als sub-tekst getoond op de Reviews-rij wanneer > 0. */
   reviewsCount?: number
@@ -73,7 +73,7 @@ export function MeerSheet({
   if (!open) return null
 
   const onTouchStart = (e: React.TouchEvent) => {
-    // Alleen slepen wanneer de inhoud bovenaan staat — anders is de
+    // Alleen slepen wanneer de inhoud bovenaan staat, anders is de
     // neerwaartse beweging gewoon scrollen binnen de sheet.
     if ((bodyRef.current?.scrollTop ?? 0) > 0) return
     // Zodra je begint te slepen is de open-animatie sowieso voorbij; forceer

@@ -1,4 +1,4 @@
-"""Demo start endpoint — called by the Next.js website form.
+"""Demo start endpoint, called by the Next.js website form.
 
 Body unchanged: { "telefoon": "..." }. Behaviour unchanged. The actual lead
 creation + template send is delegated to services.lead_intake so the HMAC

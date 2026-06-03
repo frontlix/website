@@ -16,7 +16,7 @@ interface AgendaFilterPillsProps {
 }
 
 /**
- * AgendaFilterPills — segmented pill-rij boven de week-lijst.
+ * AgendaFilterPills, segmented pill-rij boven de week-lijst.
  *
  * Port van ABMain/ABShared `ABFilterPills`.
  * Actief: --fg achtergrond, --bg tekst (data-active). Inactief: chip-bg + --fg.

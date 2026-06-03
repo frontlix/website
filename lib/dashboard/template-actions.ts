@@ -9,7 +9,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string }
 /**
  * Welke templates kunnen via de aanvraag-flow worden voorgesteld. Hardcoded
  * omdat de source-of-truth in de Surface-config (Python service) zit. Een
- * aanvraag muteert die config niet — Frontlix past hem handmatig toe na
+ * aanvraag muteert die config niet, Frontlix past hem handmatig toe na
  * Meta-goedkeuring (WhatsApp Business Templates).
  *
  * - `lead_intake_*` → openingsbericht-templates (per hoofddienst)
@@ -35,7 +35,7 @@ function isAllowedTemplate(s: string): s is TemplateNaam {
  * Owner dient een template-wijziging in. We schrijven naar template_aanvragen
  * (audit) en sturen daarnaast een Slack-melding via een webhook. Als Slack
  * faalt of niet is geconfigureerd: de DB-rij blijft staan en de owner krijgt
- * géén foutmelding — Frontlix-support ziet de aanvraag alsnog in de tabel
+ * géén foutmelding, Frontlix-support ziet de aanvraag alsnog in de tabel
  * en kan hem handmatig oppakken.
  */
 export async function requestTemplateChange(
@@ -58,7 +58,7 @@ export async function requestTemplateChange(
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
   // INSERT met .select('id') zodat we 'm in de Slack-buttons kunnen
-  // meegeven — de interactivity-endpoint heeft de id nodig om de juiste
+  // meegeven, de interactivity-endpoint heeft de id nodig om de juiste
   // rij te updaten bij approve/reject/note.
   const { data: inserted, error } = await supabase
     .from('template_aanvragen')
@@ -76,11 +76,11 @@ export async function requestTemplateChange(
   const aanvraagId = (inserted as { id: string }).id
 
   // Slack-melding met interactieve knoppen (Block Kit). Best-effort:
-  // bij netwerkfout faalt de hele actie niet — de aanvraag staat
+  // bij netwerkfout faalt de hele actie niet, de aanvraag staat
   // veilig in de DB en is via /instellingen + Studio nog beheersbaar.
   const webhookUrl = process.env.SLACK_TEMPLATE_REQUEST_WEBHOOK_URL
   if (webhookUrl) {
-    const headerText = `:envelope_with_arrow: *Template-aanvraag* — \`${templateNaam}\``
+    const headerText = `:envelope_with_arrow: *Template-aanvraag*, \`${templateNaam}\``
     const metaText = `*Door:* ${user.email}`
     // ``` blokken zijn Slack-mrkdwn. Triple-backticks in de input
     // zelf escapen we naar spaces om de codeblok niet te breken.
@@ -129,7 +129,7 @@ export async function requestTemplateChange(
         }),
       })
     } catch {
-      // Stille fout — niet falen op netwerkproblemen met Slack.
+      // Stille fout, niet falen op netwerkproblemen met Slack.
     }
   }
 
@@ -139,7 +139,7 @@ export async function requestTemplateChange(
 
 /**
  * Owner annuleert een eigen template-aanvraag. Alleen toegestaan wanneer
- * de aanvraag nog `pending` is — zodra Frontlix 'm doorzet naar Meta
+ * de aanvraag nog `pending` is, zodra Frontlix 'm doorzet naar Meta
  * (`forwarded`) of een eindstatus heeft, is annuleren niet meer zinvol.
  *
  * Implementatie: DELETE de rij via admin-client. RLS op template_aanvragen
@@ -170,7 +170,7 @@ export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> 
   }
   if (!row) return { ok: false, error: 'Aanvraag niet gevonden.' }
   if (row.aanvrager_user_id !== user.id) {
-    return { ok: false, error: 'Niet toegestaan — niet jouw aanvraag.' }
+    return { ok: false, error: 'Niet toegestaan, niet jouw aanvraag.' }
   }
   if (row.status !== 'pending') {
     return {

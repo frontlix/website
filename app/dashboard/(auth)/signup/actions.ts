@@ -39,7 +39,7 @@ export async function signupAction(
   }
 
   // Maak de dashboard_user_profiles-rij aan met tenant_status='pending'.
-  // (We doen dit hier omdat Supabase geen DDL toestaat op auth.users — zie
+  // (We doen dit hier omdat Supabase geen DDL toestaat op auth.users, zie
   // docs/superpowers/postponed.md.) UPSERT zodat retry's geen conflict geven.
   const { error: profileErr } = await admin
     .from('dashboard_user_profiles')
@@ -54,7 +54,7 @@ export async function signupAction(
     )
 
   if (profileErr) {
-    // User is gemaakt maar profile niet — log voor manuele opvolging.
+    // User is gemaakt maar profile niet, log voor manuele opvolging.
     // Slack-notify krijgt een vlag zodat Frontlix-admin het ziet.
     console.error('[signup] profile-upsert failed:', profileErr)
   }
@@ -73,14 +73,14 @@ export async function signupAction(
   }
 
   await postSignupNotification(
-    `🆕 Nieuwe dashboard-aanvraag: *${bedrijfsnaam}* — ${email}` +
+    `🆕 Nieuwe dashboard-aanvraag: *${bedrijfsnaam}*, ${email}` +
       (profileErr ? ` ⚠️ profile-rij ontbreekt, handmatig aanmaken!` : '')
   )
 
   // Invalideer layout-cache (defensief, voor het geval client soft-navigeert).
   revalidatePath('/', 'layout')
 
-  // Geen server-side redirect() — die race't met de cookie-write en triggert
+  // Geen server-side redirect(), die race't met de cookie-write en triggert
   // een 404 op de eerste GET /wachtkamer. In plaats daarvan: action returnt
   // redirectTo, client doet window.location.href = ... (full page reload
   // met de net-gezette session-cookie).

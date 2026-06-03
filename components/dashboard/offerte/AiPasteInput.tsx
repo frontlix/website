@@ -10,7 +10,7 @@ import styles from './ManualOfferteModal.module.css'
 
 type Props = {
   onExtracted: (fields: ExtractedFields) => void
-  /** Start het paneel direct uitgeklapt — handig in Step 0 (mobile),
+  /** Start het paneel direct uitgeklapt, handig in Step 0 (mobile),
    *  waar 'Plak bericht' al een dedicated scherm is en de compacte
    *  card-rust-toestand alleen een extra tik kost. */
   defaultOpen?: boolean

@@ -1,4 +1,4 @@
-"""Web-chat fallback route — Pakket 4b.
+"""Web-chat fallback route, Pakket 4b.
 
 GET  /chat/<token>            → server-rendered minimal chat UI
 POST /chat/<token>/message    → reuses _handle_collecting from routes/webhook.py
@@ -7,7 +7,7 @@ POST /chat/<token>/message    → reuses _handle_collecting from routes/webhook.
 Same DB persistence (conversations + leads.collected_data) so the conversation
 history is unified across channels. Once the token is used, the lead `kanaal`
 column reflects `web_chat` and incoming WhatsApp messages still route through
-the regular webhook — both channels stay live on the same lead.
+the regular webhook, both channels stay live on the same lead.
 """
 from __future__ import annotations
 
@@ -98,7 +98,7 @@ async def chat_message(token: str, request: Request) -> JSONResponse:
     elif status == "awaiting_choice":
         # Web-chat sessions are normally pre-branched via intake. If somehow not,
         # surface a fixed prompt rather than running branche-detection here.
-        buffer.append("Voor welke dienst wil je een offerte zien — zonnepanelen, dakdekker of schoonmaak?")
+        buffer.append("Voor welke dienst wil je een offerte zien, zonnepanelen, dakdekker of schoonmaak?")
     else:
         buffer.append(
             "Je sessie zit in een fase die ik nu niet via de browser kan afhandelen. "
@@ -148,7 +148,7 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 <body>
 <header>
   Frontlix chat
-  <small>We konden je niet bereiken op WhatsApp — chat hier verder, je gesprek staat klaar.</small>
+  <small>We konden je niet bereiken op WhatsApp, chat hier verder, je gesprek staat klaar.</small>
 </header>
 <div class="thread" id="thread">{{THREAD}}</div>
 <footer>

@@ -1,16 +1,16 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 /**
- * Service-role Supabase client. Bypasst RLS — gebruik ALLEEN server-side
+ * Service-role Supabase client. Bypasst RLS, gebruik ALLEEN server-side
  * voor admin-acties zoals het uitnodigen van users (Plan 7) of het
  * inserten van een profile-rij vlak nadat de Auth Hook 'm aanmaakt.
  *
- * NOOIT importeren in een Client Component — dan lekt de service-key
+ * NOOIT importeren in een Client Component, dan lekt de service-key
  * naar de browser.
  *
  * We typeren expliciet als `SupabaseClient` (i.p.v. `ReturnType<typeof createClient>`)
  * zodat de default `Database = any` generic correct doorwerkt naar
- * `from(...).upsert(...)` — anders worden Insert-types `never` en breken
+ * `from(...).upsert(...)`, anders worden Insert-types `never` en breken
  * type-checks op write-operaties.
  */
 let _admin: SupabaseClient | null = null

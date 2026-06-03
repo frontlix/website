@@ -75,7 +75,7 @@ export function NotificationPanel({
    * als gelezen + navigeren.
    *
    * Voor zowel gelezen als ongelezen items doen we e.preventDefault +
-   * handmatig router.push — anders blijft de dropdown openstaan en voelt
+   * handmatig router.push, anders blijft de dropdown openstaan en voelt
    * het alsof er niks gebeurt wanneer de href naar de huidige pagina wijst
    * (Next.js skipt zo'n navigation soft).
    */
@@ -143,7 +143,7 @@ export function NotificationPanel({
           </div>
           <div className={styles.list}>
             {items.length === 0 ? (
-              <div className={styles.empty}>Nog geen meldingen — alles is bijgewerkt.</div>
+              <div className={styles.empty}>Nog geen meldingen, alles is bijgewerkt.</div>
             ) : (
               items.map((item) => {
                 const Icon = NOTIF_KIND_ICON[item.kind]

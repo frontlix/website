@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic'
  * de periode negeerde).
  */
 export async function GET(request: Request) {
-  // Auth — alleen approved users mogen exporteren (redirect't anders).
+  // Auth, alleen approved users mogen exporteren (redirect't anders).
   await requireApprovedUser()
 
   const url = new URL(request.url)

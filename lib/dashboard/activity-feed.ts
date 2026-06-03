@@ -5,7 +5,7 @@ import { getDashboardSupabase } from './supabase-server'
  *
  * 'new' (lead-aangemaakt) en 'appt' (afspraak) events worden in page.tsx
  * gebouwd uit de al-aanwezige `allLeads` en `upcomingAppts`. Voor 'wa'
- * (klant-berichten) hebben we een aparte query nodig — die zit hier.
+ * (klant-berichten) hebben we een aparte query nodig, die zit hier.
  *
  * 'quote' events (leads in 'onderhandelen' fase = wacht op owner-review)
  * worden ook uit `allLeads` afgeleid; geen extra query nodig.

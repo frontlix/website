@@ -10,7 +10,7 @@ import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
  * Flow:
  *   1. Supabase mail-template stuurt user naar /callback?code=…&next=/x
  *   2. Wij wisselen de code via supabase.auth.exchangeCodeForSession
- *   3. Redirect naar `next` (default /leads) — die pagina ziet nu een
+ *   3. Redirect naar `next` (default /leads), die pagina ziet nu een
  *      ingelogde user en kan z'n werk doen (bv. wachtwoord updaten).
  *
  * BELANGRIJK: redirects gebruiken `NEXT_PUBLIC_SITE_URL_DASHBOARD` als base

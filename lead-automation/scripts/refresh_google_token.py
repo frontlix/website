@@ -1,6 +1,6 @@
 """Genereer een nieuwe Google refresh_token via de installed-app OAuth flow.
 
-Run LOKAAL (op je Mac), niet op de VPS — Google moet een browser kunnen openen
+Run LOKAAL (op je Mac), niet op de VPS, Google moet een browser kunnen openen
 voor het toestemmingscherm. Daarna print het script de refresh_token, die je
 in de VPS-`.env` als GOOGLE_REFRESH_TOKEN= zet.
 

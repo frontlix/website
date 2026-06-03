@@ -37,7 +37,7 @@ export function KpiMiniCard({
       <div className={styles.head}>
         <span className={styles.label}>{metric.label}</span>
         {delta.uitschieter && (
-          <span className={styles.badge} title="Uitschieter — ≥20% verschil vs vorige week">
+          <span className={styles.badge} title="Uitschieter, ≥20% verschil vs vorige week">
             <Flame size={11} strokeWidth={2.5} />
           </span>
         )}

@@ -1,6 +1,6 @@
 'use client'
 
-// Herbruikbaar mobiel template-editor-blok — gedeeld door Openingsbericht
+// Herbruikbaar mobiel template-editor-blok, gedeeld door Openingsbericht
 // (InstOpening) en Reminders (InstReminders). Geeft pariteit met de desktop-
 // editors: tekst bewerken → variabelen invoegen → live WhatsApp-preview →
 // "Aanvraag indienen" (requestTemplateChange + Slack-flow) → status-historie
@@ -40,7 +40,7 @@ type Props = {
   templateKey: string
   /** Huidige draft-tekst (controlled). */
   value: string
-  /** Default-tekst — basis voor "gewijzigd?" + herstellen. */
+  /** Default-tekst, basis voor "gewijzigd?" + herstellen. */
   defaultText: string
   /** Draft-mutatie naar de parent. */
   onChange: (next: string) => void
@@ -142,7 +142,7 @@ export function InstTemplateBlock({
         )}
       </div>
 
-      {/* Variabelen — tik om in te voegen op de cursorpositie */}
+      {/* Variabelen, tik om in te voegen op de cursorpositie */}
       <div className={styles.varsLabel}>
         <Sparkles size={11} aria-hidden="true" /> Variabelen
         <span className={styles.varsHint}>(tik om in te voegen)</span>

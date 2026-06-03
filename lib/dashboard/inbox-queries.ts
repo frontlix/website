@@ -10,7 +10,7 @@ export type ConversationPreview = {
   totaalPrijs: number | null
   offerteVerstuurd: boolean
   /**
-   * "Actie nodig" — heuristiek: onderhandelen-fase (owner-review) of
+   * "Actie nodig", heuristiek: onderhandelen-fase (owner-review) of
    * een ongelezen klant-bericht na een offerte. Geen DB-veld.
    */
   needsAction: boolean
@@ -28,7 +28,7 @@ export type ConversationPreview = {
 }
 
 /**
- * Lijst van actieve gesprekken — leads met minstens één bericht, gesorteerd
+ * Lijst van actieve gesprekken, leads met minstens één bericht, gesorteerd
  * op laatste bericht-timestamp DESC. Niet-gearchiveerde leads alleen.
  *
  * Implementatie: 2-staps query. Eerst de laatste N berichten (over alle
@@ -42,7 +42,7 @@ export type ConversationPreview = {
 export async function getActiveConversations(limit = 50): Promise<ConversationPreview[]> {
   const supabase = await getDashboardSupabase()
 
-  // Stap 1 — laatste 500 berichten (genoeg voor ~100 actieve leads).
+  // Stap 1, laatste 500 berichten (genoeg voor ~100 actieve leads).
   const msgQuery = supabase
     .from('berichten')
     .select('lead_id, richting, bericht, type, timestamp')
@@ -56,7 +56,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   type MsgRow = Pick<Bericht, 'lead_id' | 'richting' | 'bericht' | 'type' | 'timestamp'>
   const messages = (msgs as MsgRow[] | null) ?? []
 
-  // Stap 2 — group by lead_id (laatste eerst, dus eerste hit per lead = laatste bericht)
+  // Stap 2, group by lead_id (laatste eerst, dus eerste hit per lead = laatste bericht)
   const latestPerLead = new Map<string, MsgRow>()
   for (const m of messages) {
     if (!latestPerLead.has(m.lead_id)) {
@@ -67,7 +67,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   const leadIds = [...latestPerLead.keys()].slice(0, limit)
   if (leadIds.length === 0) return []
 
-  // Stap 3 — enrich met lead-info (alleen niet-gearchiveerd)
+  // Stap 3, enrich met lead-info (alleen niet-gearchiveerd)
   const leadQuery = supabase
     .from('leads')
     .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd, inbox_gelezen_op')
@@ -90,7 +90,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   > & { inbox_gelezen_op: string | null }
   const leadList = (leads as LeadRow[] | null) ?? []
 
-  // Stap 4 — combine + sort op laatste timestamp DESC
+  // Stap 4, combine + sort op laatste timestamp DESC
   const out: ConversationPreview[] = []
   for (const lead of leadList) {
     const latest = latestPerLead.get(lead.lead_id)
@@ -172,7 +172,7 @@ export type InboxLeadContext = Pick<
 
 /**
  * Lichte lead-info voor de rechter context-pane in Inbox. Doet er een
- * tweede query bij om het aantal foto's te tellen — zo kan de pane
+ * tweede query bij om het aantal foto's te tellen, zo kan de pane
  * "4 stuks" tonen zonder de hele foto-lijst te laden.
  */
 export async function getInboxLeadContext(leadId: string): Promise<InboxLeadContext | null> {

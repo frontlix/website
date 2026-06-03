@@ -1,6 +1,6 @@
 'use client'
 
-// AgendaWeek — gepolijste week-lijst (port van agenda-b/ABMain.jsx).
+// AgendaWeek, gepolijste week-lijst (port van agenda-b/ABMain.jsx).
 // Componeert: grote titel ("Agenda" + week-samenvatting + search/+ knoppen),
 // filter-pills (lokale filter-state), day-jump-strip, live "bezig"-banner en
 // gegroepeerde AgendaDayGroup's met AgendaEventRow's.
@@ -76,7 +76,7 @@ function dayLabel(date: string, todayDate: string): string {
 
 interface AgendaWeekProps {
   events: AgendaEvent[]
-  /** Vandaag (Europe/Amsterdam) als 'YYYY-MM-DD' — bepaalt Vandaag/Morgen-labels. */
+  /** Vandaag (Europe/Amsterdam) als 'YYYY-MM-DD', bepaalt Vandaag/Morgen-labels. */
   todayDate: string
   /** Huidige tijd 'HH:MM' (Amsterdam) voor de live-banner resterende-tijd. */
   nowTime: string

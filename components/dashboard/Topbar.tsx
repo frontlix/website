@@ -20,11 +20,11 @@ type RouteMeta = { title: string; sub: string }
 const ROUTE_TITLES: Record<string, RouteMeta> = {
   '/':              { title: 'Overzicht',    sub: 'Wat speelt er nu' },
   '/inbox':         { title: 'Inbox',        sub: 'Actieve WhatsApp-gesprekken' },
-  '/leads':         { title: 'Leads',        sub: 'Alle aanvragen — in de bot, in review, of klaar voor offerte' },
+  '/leads':         { title: 'Leads',        sub: 'Alle aanvragen, in de bot, in review, of klaar voor offerte' },
   '/agenda':        { title: 'Agenda',       sub: 'Afspraken & plaatsbezoeken' },
   '/reviews':       { title: 'Reviews',      sub: 'NPS-scores en klantfeedback' },
   '/statistieken':  { title: 'Analyses',     sub: 'Diepere stats over conversie en omzet' },
-  '/veldwerk':      { title: 'Veldwerk',     sub: "Vandaag's klussen — mobile-first" },
+  '/veldwerk':      { title: 'Veldwerk',     sub: "Vandaag's klussen, mobile-first" },
   '/instellingen':  { title: 'Instellingen', sub: 'Bedrijf, prijzen, bot' },
 }
 
@@ -73,8 +73,7 @@ export function Topbar({
     router.push(`/leads${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
-  // "Nieuwe offerte" voegt ?nieuwe-offerte=1 toe aan de huidige URL —
-  // de ManualOfferteController in de dashboard-layout pikt 'm op en
+  // "Nieuwe offerte" voegt ?nieuwe-offerte=1 toe aan de huidige URL,   // de ManualOfferteController in de dashboard-layout pikt 'm op en
   // toont de wizard. Op die manier werkt de knop op elke route.
   const offerteHref = (() => {
     const params = new URLSearchParams(searchParams.toString())

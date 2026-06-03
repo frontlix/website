@@ -108,7 +108,7 @@ export default async function LeadsPage({
     countAllLeads(),
   ])
 
-  // Counts per tab — over ALLE leads (niet de gefilterde view) zodat de
+  // Counts per tab, over ALLE leads (niet de gefilterde view) zodat de
   // counts stabiel blijven terwijl je tussen tabs schakelt.
   const counts: Record<FilterKey, number> = {
     all:         allLeads.length,
@@ -126,7 +126,7 @@ export default async function LeadsPage({
   // Web-chat count over ALLE niet-gearchiveerde leads, los van actieve filters.
   const webCount = allLeads.filter((l) => l.kanaal === 'web').length
 
-  // Eerst tab-filter, dan kanaal-filter, dan search — alle cumulatief.
+  // Eerst tab-filter, dan kanaal-filter, dan search, alle cumulatief.
   let displayed = sourceLeads.filter((l) => matchesFilter(l, activeFilter))
   if (kanaalFilter) {
     displayed = displayed.filter((l) => l.kanaal === kanaalFilter)
@@ -145,7 +145,7 @@ export default async function LeadsPage({
     })
   }
 
-  // ── Geavanceerde filters (LeadsFilterPanel) — bron / urgent / sortering ──
+  // ── Geavanceerde filters (LeadsFilterPanel), bron / urgent / sortering ──
   // Bron: Formulier = kanaal 'web'; WhatsApp = al het andere (incl. null),
   // zelfde semantiek als de mobile bron-filter.
   const bronFilter = sp.bron === 'wa' || sp.bron === 'form' ? sp.bron : null
@@ -159,7 +159,7 @@ export default async function LeadsPage({
     displayed = displayed.filter((l) => isLeadUrgent(l))
   }
 
-  // Sortering — 'binnen' (default) behoudt de server-volgorde (aangemaakt DESC).
+  // Sortering, 'binnen' (default) behoudt de server-volgorde (aangemaakt DESC).
   const sortKey = sp.sort
   if (sortKey === 'prijs') {
     displayed = [...displayed].sort(

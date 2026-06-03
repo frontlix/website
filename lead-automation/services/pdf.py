@@ -161,7 +161,7 @@ async def generate_quote_pdf(
         escape=escape,
     )
 
-    # Generate PDF (lazy import — WeasyPrint needs system libs that may not be on dev machines)
+    # Generate PDF (lazy import, WeasyPrint needs system libs that may not be on dev machines)
     from weasyprint import HTML  # pyrefly: ignore[missing-import]
     pdf_bytes = HTML(string=html_content).write_pdf()
 

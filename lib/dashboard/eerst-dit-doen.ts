@@ -1,10 +1,9 @@
 import type { LeadListItem } from './lead-queries'
 
 /**
- * "Eerst dit doen" — afleiding van openstaande owner-acties uit de leads-lijst.
+ * "Eerst dit doen", afleiding van openstaande owner-acties uit de leads-lijst.
  *
- * Doel: één heldere actiehiërarchie bovenaan het dashboard. Geen aparte tabel —
- * we leiden alles af uit bestaande lead-velden zodat de UI puur op leesoperaties
+ * Doel: één heldere actiehiërarchie bovenaan het dashboard. Geen aparte tabel,  * we leiden alles af uit bestaande lead-velden zodat de UI puur op leesoperaties
  * draait. Volgorde: tone (hot vóór warm) → urgency-score → wachttijd desc.
  */
 
@@ -24,9 +23,9 @@ export interface DashboardAction {
   leadId: string
   kind: ActionKind
   tone: ActionTone
-  /** Eerste regel — actie-titel ("Owner-review nodig") */
+  /** Eerste regel, actie-titel ("Owner-review nodig") */
   title: string
-  /** Tweede regel — context ("Korstmos-toeslag · €736") */
+  /** Tweede regel, context ("Korstmos-toeslag · €736") */
   subtitle: string
   /** Wachtlabel rechts ("Wacht 4u 12m", "Vandaag", "3d open") */
   waitLabel: string
@@ -36,9 +35,9 @@ export interface DashboardAction {
   urgency: number
 }
 
-const KM_RADIUS_LIMIT = 75 // boven 75 km = "buiten radius — beslissen"
+const KM_RADIUS_LIMIT = 75 // boven 75 km = "buiten radius, beslissen"
 const STILLE_KLANT_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000 // 3 dagen
-const OFFERTE_PENDING_HOT_MS = 12 * 60 * 60 * 1000 // 12u — daarna wordt het hot
+const OFFERTE_PENDING_HOT_MS = 12 * 60 * 60 * 1000 // 12u, daarna wordt het hot
 const NOW_TOLERANCE_MS = 60 * 1000 // < 1 min behandelen we als "Nu"
 
 /**
@@ -96,7 +95,7 @@ function deriveActionForLead(
       leadId: lead.lead_id,
       kind: 'klus_geblokkeerd',
       tone: 'hot',
-      title: 'Klus geblokkeerd — beslissen',
+      title: 'Klus geblokkeerd, beslissen',
       subtitle: subtitleForLead(lead),
       waitLabel: formatWait(waitMs),
       waitMs,
@@ -131,7 +130,7 @@ function deriveActionForLead(
       leadId: lead.lead_id,
       kind: 'offerte_versturen',
       tone: isHot ? 'hot' : 'warm',
-      title: isHot ? 'Offerte versturen — wacht al' : 'Offerte vandaag versturen',
+      title: isHot ? 'Offerte versturen, wacht al' : 'Offerte vandaag versturen',
       subtitle: subtitleForLead(lead),
       waitLabel: isVandaag(lead.offerte_pending_sinds) && !isHot ? 'Vandaag' : formatWait(waitMs),
       waitMs,
@@ -150,7 +149,7 @@ function deriveActionForLead(
       leadId: lead.lead_id,
       kind: 'afspraak_vandaag',
       tone: 'hot',
-      title: 'Afspraak vandaag — bevestig',
+      title: 'Afspraak vandaag, bevestig',
       subtitle: subtitleForLead(lead),
       waitLabel: 'Vandaag',
       waitMs: 0,
@@ -175,7 +174,7 @@ function deriveActionForLead(
     }
   }
 
-  // 6. Buiten radius — owner moet beslissen of we de klus aannemen
+  // 6. Buiten radius, owner moet beslissen of we de klus aannemen
   if (
     lead.afstand_km !== null &&
     lead.afstand_km !== undefined &&
@@ -192,7 +191,7 @@ function deriveActionForLead(
       leadId: lead.lead_id,
       kind: 'buiten_radius',
       tone: 'warm',
-      title: 'Buiten radius — beslissen',
+      title: 'Buiten radius, beslissen',
       subtitle: `${Math.round(lead.afstand_km)} km · ${lead.plaats ?? '—'}${
         lead.totaal_prijs ? ` · ${formatPrijs(lead.totaal_prijs)}` : ''
       }`,
@@ -217,7 +216,7 @@ function deriveActionForLead(
         leadId: lead.lead_id,
         kind: 'stille_klant',
         tone: 'warm',
-        title: 'Stille klant — follow-up?',
+        title: 'Stille klant, follow-up?',
         subtitle: subtitleForLead(lead),
         waitLabel: formatWait(waitMs),
         waitMs,

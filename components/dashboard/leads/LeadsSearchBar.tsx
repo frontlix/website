@@ -15,7 +15,7 @@ export function LeadsSearchBar({ initial }: { initial: string }) {
   const [, startTransition] = useTransition()
 
   useEffect(() => {
-    // Debounce — wacht 250ms na laatste keystroke voordat we navigeren.
+    // Debounce, wacht 250ms na laatste keystroke voordat we navigeren.
     const t = setTimeout(() => {
       // Lees de LIVE URL-params (niet de stale closure): een filter-/kanaal-
       // wijziging tijdens een pending debounce blijft zo behouden.

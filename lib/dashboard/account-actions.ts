@@ -18,8 +18,7 @@ export async function updatePasswordAction(formData: FormData): Promise<AccountA
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return { ok: false, error: 'Niet ingelogd.' }
 
-  // Verifieer huidig wachtwoord op een WEGWERP-client met de anon-key —
-  // signInWithPassword op de live SSR-client zou de actieve cookie-sessie
+  // Verifieer huidig wachtwoord op een WEGWERP-client met de anon-key,   // signInWithPassword op de live SSR-client zou de actieve cookie-sessie
   // muteren (token-rotatie / overschrijven). Deze client persist niets en
   // raakt de cookies dus niet aan; alleen de credential-check telt.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD

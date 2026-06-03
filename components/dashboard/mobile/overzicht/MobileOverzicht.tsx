@@ -17,7 +17,7 @@ import { formatDuration } from '@/lib/dashboard/format'
 import styles from './MobileOverzicht.module.css'
 
 /**
- * MobileOverzichtData — de volledige prop-shape voor de mobile Overzicht.
+ * MobileOverzichtData, de volledige prop-shape voor de mobile Overzicht.
  *
  * Wordt server-side in `app/dashboard/(app)/page.tsx` gevuld en als één
  * blob naar de client gepassed. Zo blijven alle widgets `'use client'`
@@ -53,16 +53,16 @@ type Props = {
 type SubView = 'watnu' | 'vandaag' | 'feed'
 
 /**
- * MobileOverzicht — composer die alle 7 widgets in volgorde rendert.
+ * MobileOverzicht, composer die alle 7 widgets in volgorde rendert.
  *
  * Order matters:
  *   1. Header (greeting + leads-subline + acties)
  *   2. AiBriefCard (Surface samenvatting)
  *   3. HeroKpiCard (omzet + goal ring)
  *   4. MiniKpiGrid (4 mini KPI's in 2x2 grid)
- *   5. UrgentBlock (Wat nu — top 3)
- *   6. VandaagBlock (Vandaag — top 3 stops)
- *   7. ActivityFeedBlock (Recent — top 3 events)
+ *   5. UrgentBlock (Wat nu, top 3)
+ *   6. VandaagBlock (Vandaag, top 3 stops)
+ *   7. ActivityFeedBlock (Recent, top 3 events)
  *
  * Drilldown-state wordt intern beheerd: `sub` is `null` (base view) of
  * één van de 3 drilldown-keys. Bij open schuift de base-content weg
@@ -201,7 +201,7 @@ export function MobileOverzicht({ data }: Props) {
 // --- Pure helpers ---------------------------------------------------------
 
 /**
- * formatDayLabel — bouwt het subtitle-label voor VandaagView.
+ * formatDayLabel, bouwt het subtitle-label voor VandaagView.
  *
  * Voorbeelden:
  *   - met items met tijden:  "don 28 nov · 10:30 – 17:30"
@@ -230,18 +230,18 @@ function formatDayLabel(items: VandaagItem[]): string {
   const laatste = tijden[tijden.length - 1]
 
   if (eerste && laatste && eerste !== laatste) {
-    return `${datum} · ${eerste} – ${laatste}`
+    return `${datum} · ${eerste}, ${laatste}`
   }
   return `${datum} · ${eerste ?? ''}`.trim().replace(/·\s*$/, '').trim()
 }
 
 /**
- * buildRouteSummary — destilleert een korte route-string ("A → B → C")
+ * buildRouteSummary, destilleert een korte route-string ("A → B → C")
  * uit de items. Pakt het laatste deel na "·" uit `item.adres` (typisch
  * "Straat 1 · Plaatsnaam"), of het hele adres als er geen separator is.
  *
  * Dubbele opeenvolgende plaatsen worden afgevangen (dedup van runs, niet
- * volledig globaal — een route "Utrecht → Zeist → Utrecht" blijft intact).
+ * volledig globaal, een route "Utrecht → Zeist → Utrecht" blijft intact).
  */
 function buildRouteSummary(items: VandaagItem[]): string {
   const plaatsen = items

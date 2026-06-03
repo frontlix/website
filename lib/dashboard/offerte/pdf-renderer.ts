@@ -20,7 +20,7 @@ function loadAssetBase64(relPath: string, label: string): string | null {
   // process.cwd() is de project-root op zowel dev (.) als VPS-build.
   const assetPath = path.join(process.cwd(), 'public', 'assets', 'schoon-straatje', relPath)
   if (!existsSync(assetPath)) {
-    console.warn(`[pdf-renderer] ${label} not found at ${assetPath} — skipping`)
+    console.warn(`[pdf-renderer] ${label} not found at ${assetPath}, skipping`)
     return null
   }
   const buffer = readFileSync(assetPath)
@@ -64,7 +64,7 @@ async function getBrowser(): Promise<Browser> {
       const existing = await browserPromise
       if (existing.connected) return existing
     } catch {
-      // launch faalde eerder — reset en probeer opnieuw
+      // launch faalde eerder, reset en probeer opnieuw
     }
     browserPromise = null
   }
@@ -148,7 +148,7 @@ export async function closePdfBrowser(): Promise<void> {
       const browser = await p
       await browser.close()
     } catch {
-      // Browser was al dood — niks te sluiten
+      // Browser was al dood, niks te sluiten
     }
   }
 }

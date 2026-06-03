@@ -16,11 +16,11 @@ const VALID_STATUSES: ReadonlySet<DashboardStatus> = new Set([
   'archief',
 ])
 
-// Velden die — indien gewijzigd via de info-tab — de auto-berekende
+// Velden die, indien gewijzigd via de info-tab, de auto-berekende
 // offerte-regels moeten triggeren. Zit één van deze keys in de patch
 // dan roepen we na de UPDATE `regenerateAutoRegels()` aan zodat
 // prijsregels in sync blijven met de actuele lead-data. Strict gehouden
-// tot velden die `computeRules()` daadwerkelijk leest — adres-velden
+// tot velden die `computeRules()` daadwerkelijk leest, adres-velden
 // veranderen de prijs niet en triggeren dus niets.
 const OFFERTE_TRIGGER_FIELDS: ReadonlySet<string> = new Set([
   'm2',
@@ -48,7 +48,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string }
 //
 // Witte lijst van kolommen die via de "Bewerken"-flow vanuit de info-tab
 // gewijzigd mogen worden. Alle andere kolommen (status-flow, offerte-velden,
-// systeem-velden) blijven onbereikbaar — die hebben hun eigen actions.
+// systeem-velden) blijven onbereikbaar, die hebben hun eigen actions.
 const EDITABLE_TEXT_FIELDS = new Set<string>([
   'naam',
   'bedrijfsnaam',
@@ -97,7 +97,7 @@ export type LeadEditPatch = Partial<{
 /**
  * Werkt één of meerdere kolommen van een lead bij. Wordt gebruikt door de
  * inline-edit op de info-tab. Valideert dat alleen toegestane kolommen
- * worden meegegeven (whitelist hierboven) — dit voorkomt dat een aangepaste
+ * worden meegegeven (whitelist hierboven), dit voorkomt dat een aangepaste
  * client per ongeluk status/offerte-velden kan overschrijven.
  */
 export async function updateLeadFields(
@@ -179,7 +179,7 @@ export async function updateLeadFields(
   // de auto-prijsregels synchroon. Synchroon zodat de router.refresh()
   // in de UI direct verse data ophaalt (geen race met realtime).
   //
-  // Errors loggen we wel, maar we breken de info-tab edit niet — de
+  // Errors loggen we wel, maar we breken de info-tab edit niet, de
   // lead-update zelf is succesvol en de owner kan altijd nog via de
   // offerte-tab herberekenen. Voorkomt dat een offerte-bug een info-tab
   // edit blokkeert.
@@ -271,13 +271,13 @@ export async function unarchiveLead(leadId: string): Promise<ActionResult> {
 }
 
 /**
- * Markeert een gesprek als "gelezen" door de owner — zet
+ * Markeert een gesprek als "gelezen" door de owner, zet
  * leads.inbox_gelezen_op = now(). Wordt aangeroepen vanuit de inbox
  * zodra een lead geselecteerd wordt (?lead=...). Verandert daarmee de
  * "Ongelezen" count in de filter-tabs.
  *
  * Idempotent: meerdere calls achter elkaar overschrijven gewoon de
- * timestamp. Bij DB-fouten falen we silent (return ok:false) — de inbox
+ * timestamp. Bij DB-fouten falen we silent (return ok:false), de inbox
  * werkt door, alleen de unread-count update niet.
  */
 export async function markInboxRead(leadId: string): Promise<ActionResult> {

@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * LeadOfferte — orchestrator van de Offerte-tab in lead-detail.
+ * LeadOfferte, orchestrator van de Offerte-tab in lead-detail.
  *
  * Combineert:
  *  - OfferteHeader (versie-badge, save-state, PDF-knoppen, revert-knop)
  *  - LeadContextChips (readonly chips uit lead-velden)
- *  - OfferteRegelsTable (inline-bewerkbare regels — auto + handmatig)
+ *  - OfferteRegelsTable (inline-bewerkbare regels, auto + handmatig)
  *  - OfferteSidebar (totalen + korting + verzendopties)
  *
  * Fase 2a: debounced auto-save naar concept-rij + revert naar verzonden versie.
@@ -14,7 +14,7 @@
  *    600ms-debounce. Bij timeout firet `saveDraft()` server-action.
  *  - SaveState propageert naar OfferteHeader (`saving` / `saved` / `idle`).
  *  - Revert-knop verschijnt alleen als er TEGELIJK een concept én een
- *    verzonden versie bestaat — opent confirm-dialog, dan `revertConcept()`.
+ *    verzonden versie bestaat, opent confirm-dialog, dan `revertConcept()`.
  *
  * Auto-save schrijft naar de concept-rij; verzonden versies blijven immutable.
  * "Versturen" promoveert het concept naar verzonden (Fase 2.5, nog stub).
@@ -49,11 +49,10 @@ type Props = {
   offertes: Offerte[]
   prijsregels: Prijsregel[]
   lead: Lead
-  /** Aantal foto's bij deze lead — toont "Foto's meesturen (n)" in verzendopties. */
+  /** Aantal foto's bij deze lead, toont "Foto's meesturen (n)" in verzendopties. */
   fotosCount?: number
   /**
-   * Toont owner-only UI (MargeKaart, Kostprijzen-modal). Default `false` —
-   * de page bepaalt dit op basis van `dashboard_user_profiles.is_owner`.
+   * Toont owner-only UI (MargeKaart, Kostprijzen-modal). Default `false`,    * de page bepaalt dit op basis van `dashboard_user_profiles.is_owner`.
    */
   isOwner?: boolean
 }
@@ -93,7 +92,7 @@ function toServerRegels(regels: RegelEdit[]): DraftRegelInput[] {
   })
 }
 
-/** Stabiele hash voor change-detection — vermijd dubbele saves bij irrelevante re-renders. */
+/** Stabiele hash voor change-detection, vermijd dubbele saves bij irrelevante re-renders. */
 function regelsFingerprint(regels: RegelEdit[]): string {
   return JSON.stringify(
     regels.map((r) => [r.bron, r.omschrijving, r.aantal, r.eenheid, r.stukprijs]),
@@ -112,7 +111,7 @@ export function LeadOfferte({
 
   // ─── Concept-state ─────────────────────────────────────────
   // Huidige offerte = concept als die bestaat, anders laatste verzonden.
-  // `offertes` komt DESC binnen — concept (versie max+1) komt boven verzonden.
+  // `offertes` komt DESC binnen, concept (versie max+1) komt boven verzonden.
   const concept = useMemo(() => offertes.find((o) => o.is_concept), [offertes])
   const laatsteVerzonden = useMemo(
     () => offertes.find((o) => !o.is_concept),
@@ -148,8 +147,7 @@ export function LeadOfferte({
   //  - Een ref naar de skip-first-render flag (init-state is geen wijziging).
   //  - Een ref naar de actieve debounce-timer.
   //  - Een ref naar de "saved → idle" reset-timer (2s na success).
-  //  - Een ref naar de laatste fingerprint die we hebben verstuurd —
-  //    zo skippen we identiek werk (bv. onChange firet zonder echte diff).
+  //  - Een ref naar de laatste fingerprint die we hebben verstuurd,   //    zo skippen we identiek werk (bv. onChange firet zonder echte diff).
   const isFirstRenderRef = useRef(true)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const idleResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -199,14 +197,14 @@ export function LeadOfferte({
   // pushen we de draft naar de server. De eerste render telt niet als
   // wijziging (init-state).
   useEffect(() => {
-    // Skip de eerste render — dat is gewoon initiële state-hydratie.
+    // Skip de eerste render, dat is gewoon initiële state-hydratie.
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false
       lastFingerprintRef.current = regelsFingerprint(regels)
       return
     }
 
-    // Cancel een lopende timer — alleen de meest recente edit telt.
+    // Cancel een lopende timer, alleen de meest recente edit telt.
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
@@ -228,7 +226,7 @@ export function LeadOfferte({
     }
   }, [regels, kortingPct, kortingOmschrijving, flushDraft])
 
-  // Cleanup eventuele open timers bij unmount (defensief — React 18
+  // Cleanup eventuele open timers bij unmount (defensief, React 18
   // StrictMode-veilig zonder dubbele alerts).
   useEffect(() => {
     return () => {
@@ -260,7 +258,7 @@ export function LeadOfferte({
   const [kostprijzenModalOpen, setKostprijzenModalOpen] = useState(false)
   const [margeKaartZichtbaar, setMargeKaartZichtbaar] = useState(true)
 
-  // Laad kostprijzen één keer bij mount — alleen voor owners.
+  // Laad kostprijzen één keer bij mount, alleen voor owners.
   // getKostprijzen() retourneert Kostprijs[] direct (geen Result-wrapper);
   // lege array bij fetch-fout is een veilige fallback (verbergt MargeKaart).
   useEffect(() => {
@@ -298,14 +296,14 @@ export function LeadOfferte({
   }
 
   const handleRevertClick = useCallback(async () => {
-    // Bevestiging — revert is destructief voor de huidige concept-edits.
+    // Bevestiging, revert is destructief voor de huidige concept-edits.
     // eslint-disable-next-line no-alert
     const confirmed = window.confirm(
       'Wil je de wijzigingen ongedaan maken en terug naar de verzonden versie?',
     )
     if (!confirmed) return
 
-    // Cancel een lopende debounce — anders schrijft die ná de revert nog weg.
+    // Cancel een lopende debounce, anders schrijft die ná de revert nog weg.
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
       debounceTimerRef.current = null
@@ -317,15 +315,14 @@ export function LeadOfferte({
       alert(`Terugdraaien mislukt: ${res.error}`)
       return
     }
-    // Verse server-data ophalen — regels, offertes en lead-velden zijn weer
+    // Verse server-data ophalen, regels, offertes en lead-velden zijn weer
     // zoals bij de verzonden versie.
     router.refresh()
   }, [leadId, router])
 
   const handlePdfClick = () => {
     // Sidebar "PDF" → toont de huidige (mogelijk aangepaste) versie als
-    // HTML-preview in een nieuw tabblad. Net als een PDF maar live —
-    // direct gebaseerd op de regels die nu in de DB staan voor deze lead.
+    // HTML-preview in een nieuw tabblad. Net als een PDF maar live,     // direct gebaseerd op de regels die nu in de DB staan voor deze lead.
     // De pagina is print-vriendelijk; user kan via browser-print naar PDF.
     const url = `/offerte-preview/${leadId}`
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -335,7 +332,7 @@ export function LeadOfferte({
     // Fase 2a: stub blijft. Fase 2.5 → server-action die concept → verzonden
     // promoveert, PDF genereert en bot-call uitvoert (TODO).
     alert(
-      `Versie v${versie + 1} opgeslagen — WhatsApp-versturen wordt binnenkort gekoppeld.\n\n(Fase 2a stub — geen verzonden-promotie)`,
+      `Versie v${versie + 1} opgeslagen, WhatsApp-versturen wordt binnenkort gekoppeld.\n\n(Fase 2a stub, geen verzonden-promotie)`,
     )
   }
 
@@ -349,7 +346,7 @@ export function LeadOfferte({
       {/* Twee parallelle render-trees, beide altijd in de HTML. CSS @media
           toggelt welke zichtbaar is via display:contents/none. Geen JS-
           detect = geen flash tijdens hydration. Trade-off: beide componenten
-          mounten en houden eigen state — bij viewport-resize mid-edit raakt
+          mounten en houden eigen state, bij viewport-resize mid-edit raakt
           de net-zichtbaar-geworden tree de laatste edits kwijt (terug naar
           server-state). Voor v1 acceptabel. */}
 
@@ -368,8 +365,7 @@ export function LeadOfferte({
 
         <LeadContextChips lead={lead} onEditInfoClick={handleEditInfoClick} />
 
-        {/* Legacy notice: verzonden offerte aanwezig maar geen prijsregels —
-            oude bot-flow sloeg alleen offertes.totaal_incl + PDF op. Knop
+        {/* Legacy notice: verzonden offerte aanwezig maar geen prijsregels,             oude bot-flow sloeg alleen offertes.totaal_incl + PDF op. Knop
             om alsnog regels uit lead-data te genereren. */}
         {verstuurd && prijsregels.length === 0 ? (
           <LegacyOfferteNotice leadId={leadId} />

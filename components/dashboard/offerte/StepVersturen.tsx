@@ -48,7 +48,7 @@ export function StepVersturen({
       <div>
         <div className={styles.sectionLabel}>Klaar om te versturen?</div>
         <div className={styles.sectionSub}>
-          Surface stuurt de PDF binnen 60 seconden via je gekozen kanaal — kies e-mail met bijlage of download zelf en stuur &lsquo;m handmatig door.
+          Surface stuurt de PDF binnen 60 seconden via je gekozen kanaal, kies e-mail met bijlage of download zelf en stuur &lsquo;m handmatig door.
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export function StepVersturen({
         <textarea
           className={styles.textarea}
           rows={3}
-          placeholder="Bv. Beste Jan, fijn dat we elkaar even hebben gesproken. Hierbij de offerte zoals afgesproken — je hoort het wel."
+          placeholder="Bv. Beste Jan, fijn dat we elkaar even hebben gesproken. Hierbij de offerte zoals afgesproken, je hoort het wel."
           value={data.notitie}
           onChange={(e) => set('notitie', e.target.value)}
         />

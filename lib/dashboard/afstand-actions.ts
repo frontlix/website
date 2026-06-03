@@ -23,7 +23,7 @@ export type AutoAfstandResult =
 const POSTCODE_RE = /^\s*\d{4}\s*[A-Za-z]{2}\s*$/
 
 /**
- * Haversine — afstand over de Aarde tussen twee lat/lng-punten, in km.
+ * Haversine, afstand over de Aarde tussen twee lat/lng-punten, in km.
  * Aarde-straal 6371km. Zelfde formule als in agenda-route.
  */
 function haversineKm(
@@ -45,7 +45,7 @@ export async function getAutoAfstandKm(
   postcode: string,
   huisnummer: string,
 ): Promise<AutoAfstandResult> {
-  // Auth check — alleen ingelogde dashboard-users mogen geocoden
+  // Auth check, alleen ingelogde dashboard-users mogen geocoden
   const supabase = await getDashboardSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, reason: 'auth' }

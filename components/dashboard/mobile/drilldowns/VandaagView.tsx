@@ -9,7 +9,7 @@ type Props = {
   open: boolean
   onClose: () => void
   items: VandaagItem[]
-  totalKm: number // required in drilldown — page-integratie levert default 0
+  totalKm: number // required in drilldown, page-integratie levert default 0
   totalDuur: string // bv. "7u 25m"
   dayLabel: string // bv. "don 28 nov · 10:30 – 17:30"
   route: string // bv. "Bilthoven → Zeist → Utrecht"
@@ -20,14 +20,13 @@ type Props = {
 }
 
 /**
- * VandaagView — drilldown vanuit het Vandaag-block op het overzicht.
+ * VandaagView, drilldown vanuit het Vandaag-block op het overzicht.
  *
  * Toont een totaal-card (route-overzicht: km + duur + steden) en een
  * timeline van stops met per-stop status-tag, tijd, type-label, naam,
  * adres en 3 actieknoppen (Navigatie / Bellen / Lead).
  *
- * Timeline-lijn loopt alleen tussen stops, niet voorbij de laatste —
- * vandaar `i < items.length - 1`.
+ * Timeline-lijn loopt alleen tussen stops, niet voorbij de laatste,  * vandaar `i < items.length - 1`.
  */
 export function VandaagView({
   open,

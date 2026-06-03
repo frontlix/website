@@ -102,7 +102,7 @@ export function periodLabel(key: PeriodKey): string {
 }
 
 /**
- * Vensters voor "vorige periode" — gebruikt voor diff-berekeningen
+ * Vensters voor "vorige periode", gebruikt voor diff-berekeningen
  * (current vs previous). Beide hebben dezelfde lengte zodat de
  * vergelijking eerlijk is.
  *

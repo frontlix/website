@@ -6,7 +6,7 @@ import { ManualOfferteModal } from './ManualOfferteModal'
 /**
  * Mounted in the dashboard layout. Renders the modal when the URL contains
  * `?nieuwe-offerte=1`. The "Nieuwe offerte" buttons throughout the dashboard
- * push that param onto the URL — no global event-bus needed.
+ * push that param onto the URL, no global event-bus needed.
  */
 export function ManualOfferteController() {
   const router = useRouter()

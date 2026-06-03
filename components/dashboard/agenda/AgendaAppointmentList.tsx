@@ -34,7 +34,7 @@ export function AgendaAppointmentList({
   if (validAppointments.length === 0) {
     return (
       <div id="agenda-list" className={styles.section}>
-        <h2 className={styles.heading}>Alle afspraken — {monthLabel}</h2>
+        <h2 className={styles.heading}>Alle afspraken, {monthLabel}</h2>
         <p className={styles.empty}>Geen afspraken in deze maand.</p>
       </div>
     )
@@ -52,7 +52,7 @@ export function AgendaAppointmentList({
 
   return (
     <div id="agenda-list" className={styles.section}>
-      <h2 className={styles.heading}>Alle afspraken — {monthLabel}</h2>
+      <h2 className={styles.heading}>Alle afspraken, {monthLabel}</h2>
       {sortedKeys.map((key) => (
         <div key={key} className={styles.day}>
           <h3 className={styles.dayLabel}>{formatDayHeader(key)}</h3>

@@ -21,19 +21,19 @@ type Props = {
   onSendClick?: () => void
   versturenDisabled?: boolean
   /**
-   * Optionele marge-overview — alleen aanwezig voor owners ná load van
+   * Optionele marge-overview, alleen aanwezig voor owners ná load van
    * kostprijzen. Als undefined wordt de MargeKaart niet gerenderd.
    */
   margeOverview?: MargeOverview
-  /** Opent de Kostprijzen-modal — required als margeOverview aanwezig is. */
+  /** Opent de Kostprijzen-modal, required als margeOverview aanwezig is. */
   onOpenKostprijzen?: () => void
   /** Sluit de MargeKaart (visibility blijft in parent). */
   onCloseMarge?: () => void
 }
 
 /**
- * Sidebar voor de Offerte-tab. Bevat de drie standaard-kaarten en — alleen
- * voor owners — een vierde "MargeKaart" onderaan.
+ * Sidebar voor de Offerte-tab. Bevat de drie standaard-kaarten en, alleen
+ * voor owners, een vierde "MargeKaart" onderaan.
  *
  *   1. Totalen
  *   2. Korting

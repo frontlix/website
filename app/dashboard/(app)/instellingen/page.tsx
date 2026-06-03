@@ -72,12 +72,12 @@ export default async function InstellingenPage({
       )
       .limit(1)
       .maybeSingle(),
-    // Prijzen: altijd ophalen — desktop-sectie én mobiele Prijzen-scherm gebruiken ze.
+    // Prijzen: altijd ophalen, desktop-sectie én mobiele Prijzen-scherm gebruiken ze.
     supabase
       .from('pricing_rules')
       .select('rule_key, label, waarde, eenheid, sort_order')
       .order('sort_order', { ascending: true }),
-    // Services/Team/Tags/Prefs: altijd ophalen — zowel desktop-sectie als
+    // Services/Team/Tags/Prefs: altijd ophalen, zowel desktop-sectie als
     // mobiele hub gebruiken ze.
     supabase
       .from('service_offerings')
@@ -95,7 +95,7 @@ export default async function InstellingenPage({
     getTagsWithCounts(),
     // Template-aanvragen altijd ophalen: de mobiele Opening/Reminders-schermen
     // worden client-side geopend (zonder ?section=), dus we kunnen server-side
-    // niet weten of ze nodig zijn. Lichte query (limit 20) — zelfde afweging als
+    // niet weten of ze nodig zijn. Lichte query (limit 20), zelfde afweging als
     // de pricing-baseline hierboven.
     getRecentTemplateAanvragen(20),
     getAllPrefs(),

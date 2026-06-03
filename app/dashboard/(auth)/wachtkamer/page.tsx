@@ -30,7 +30,7 @@ export default async function WachtkamerPage() {
         Bedankt voor je aanvraag, <strong>{profile.bedrijfsnaam ?? 'Klant'}</strong>.
       </p>
       <p>
-        We bekijken je aanvraag handmatig — meestal binnen 1 werkdag. Zodra je toegang krijgt verschijnt het dashboard automatisch op deze pagina.
+        We bekijken je aanvraag handmatig, meestal binnen 1 werkdag. Zodra je toegang krijgt verschijnt het dashboard automatisch op deze pagina.
       </p>
       <PollApproval />
       <p className={styles.footer}>

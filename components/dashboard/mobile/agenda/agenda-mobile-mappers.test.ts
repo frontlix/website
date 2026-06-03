@@ -58,7 +58,7 @@ describe('appointmentAdres', () => {
       'Kerkstraat 8 · Bilthoven',
     )
   })
-  it('valt terug op — bij ontbrekende delen', () => {
+  it('valt terug op, bij ontbrekende delen', () => {
     expect(appointmentAdres({ straat: null, huisnummer: null, plaats: null })).toBe('—')
   })
 })

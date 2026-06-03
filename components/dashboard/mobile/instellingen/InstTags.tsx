@@ -2,7 +2,7 @@
 
 // Echte tags + lead-counts uit getTagsWithCounts. Verwijderen via deleteTag
 // (alleen user-tags; systeem-tags worden bij refresh hersteld → geen X).
-// Nieuwe tag via een inline form MET kleur- en icoonkiezer — pariteit met de
+// Nieuwe tag via een inline form MET kleur- en icoonkiezer, pariteit met de
 // desktop TagEditor: naam + kleur-swatches + icoon-grid + live preview.
 // Presets/registry worden gedeeld met desktop (één bron van waarheid).
 
@@ -25,7 +25,7 @@ import styles from './InstTags.module.css'
 
 const NEUTRAL_TINT = '#6B7280'
 
-/** Tags-detailscherm — lijst + verwijderen + nieuwe tag (kleur + icoon). */
+/** Tags-detailscherm, lijst + verwijderen + nieuwe tag (kleur + icoon). */
 export function InstTags({ tags }: { tags: TagWithCount[] }) {
   const [rows, setRows] = useState<TagWithCount[]>(tags)
   const [error, setError] = useState<string | null>(null)
@@ -65,7 +65,7 @@ export function InstTags({ tags }: { tags: TagWithCount[] }) {
     startTransition(async () => {
       const res = await createTag({ naam: trimmed, kleur, icon })
       if (res.ok) {
-        // Voeg de echte row (incl. uuid) toe — count 0, geen systeem-tag.
+        // Voeg de echte row (incl. uuid) toe, count 0, geen systeem-tag.
         setRows((r) => [
           ...r,
           {
@@ -92,14 +92,14 @@ export function InstTags({ tags }: { tags: TagWithCount[] }) {
     <div className={styles.wrap}>
       <InstGroupCard>
         {rows.map((tag, i) => {
-          // Altijd een icoon tonen — gekozen icoon of het default Tag-icoon
+          // Altijd een icoon tonen, gekozen icoon of het default Tag-icoon
           // (zelfde fallback als de desktop-lijst).
           const TagIcon = isValidIcon(tag.icon)
             ? ICON_REGISTRY[tag.icon as IconKey]
             : DEFAULT_TAG_ICON
           return (
             <div key={tag.id} className={styles.row} data-last={i === rows.length - 1}>
-              {/* Tinted pill — --tint injected as CSS custom property */}
+              {/* Tinted pill, --tint injected as CSS custom property */}
               <span
                 className={styles.pill}
                 style={{ '--tint': tag.kleur ?? NEUTRAL_TINT } as React.CSSProperties}
@@ -115,10 +115,10 @@ export function InstTags({ tags }: { tags: TagWithCount[] }) {
               </span>
 
               {tag.isSystem ? (
-                /* System tag — not deletable (wordt automatisch hersteld) */
+                /* System tag, not deletable (wordt automatisch hersteld) */
                 <span className={styles.sysBadge}>SYS</span>
               ) : (
-                /* User tag — deletable */
+                /* User tag, deletable */
                 <button
                   type="button"
                   className={styles.removeBtn}

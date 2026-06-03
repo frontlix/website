@@ -1,4 +1,4 @@
-"""External form webhook — POST /api/webhook/lead.
+"""External form webhook, POST /api/webhook/lead.
 
 Three modes via EXTERNAL_WEBHOOK_MODE:
   off       (default) → 404 (endpoint hidden)
@@ -32,7 +32,7 @@ class FormSubmission(BaseModel):
     telefoon: str = Field(min_length=8, max_length=24)
     branche: str
     fotos: list[str] = Field(default_factory=list, max_length=10)
-    # Branche-specific extras — free dict, sanitised by intake.
+    # Branche-specific extras, free dict, sanitised by intake.
     fields: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("branche")
@@ -71,13 +71,13 @@ async def external_webhook(
     settings = get_settings()
     mode = settings.external_webhook_mode
 
-    # Off mode — endpoint is hidden.
+    # Off mode, endpoint is hidden.
     if mode == "off":
         raise HTTPException(status_code=404, detail="not found")
 
     secret = settings.external_webhook_secret
     if not secret:
-        # Mode is dry-run|live but no secret configured — refuse rather than no-auth.
+        # Mode is dry-run|live but no secret configured, refuse rather than no-auth.
         raise HTTPException(status_code=503, detail="external webhook secret not configured")
 
     raw = await request.body()

@@ -1,4 +1,4 @@
-"""Personalized demo module — gescheiden van de lead-automation branche-flow.
+"""Personalized demo module, gescheiden van de lead-automation branche-flow.
 
 Dit systeem is voor warme leads die een persoonlijke demo-link ontvangen.
 De LLM past zich aan op basis van de briefing uit de personalized_demos tabel.

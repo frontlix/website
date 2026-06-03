@@ -25,7 +25,7 @@ type ImpactBaseline = {
 
 /**
  * Categorie-buckets voor de tab-strip. Volgorde hier = volgorde van de
- * tabs. "overig" vangt alles op dat niet matcht — moet altijd laatst staan.
+ * tabs. "overig" vangt alles op dat niet matcht, moet altijd laatst staan.
  */
 const CATEGORIES = [
   { key: 'reiniging',   label: 'Reiniging' },
@@ -57,7 +57,7 @@ function categorize(ruleKey: string): CategoryKey {
  *  - Lokaal worden wijzigingen verzameld in `pending` (rule_key → nieuwe waarde).
  *  - Pas bij klik op "Alles opslaan" gaat alles in één batch naar de server.
  *  - Daarvoor: sticky bottom-bar toont real-time omzet-effect op de laatste
- *    N leads, geschatte conversie (statisch — geen elasticity-model) en
+ *    N leads, geschatte conversie (statisch, geen elasticity-model) en
  *    een heuristische "Beste actie".
  *
  * Waarom geen auto-save meer: de owner wil eerst de impact zien voordat
@@ -389,7 +389,7 @@ function ImpactBar({
   const isUp = revenueDelta > 0
   const isDown = revenueDelta < 0
 
-  // Heuristiek "Beste actie" — puur op basis van %-verandering t.o.v. omzet.
+  // Heuristiek "Beste actie", puur op basis van %-verandering t.o.v. omzet.
   const pctOfRevenue =
     baselineRevenue > 0 ? (revenueDelta / baselineRevenue) * 100 : 0
   const absPct = Math.abs(pctOfRevenue)
@@ -398,7 +398,7 @@ function ImpactBar({
       ? { label: 'Marginaal', sub: 'Kleine impact verwacht' }
       : absPct < 5
         ? { label: 'Substantieel', sub: 'Merkbare impact op omzet' }
-        : { label: 'Aanzienlijk', sub: 'Grote impact — overweeg testen' }
+        : { label: 'Aanzienlijk', sub: 'Grote impact, overweeg testen' }
 
   return (
     <div className={styles.impactBar}>

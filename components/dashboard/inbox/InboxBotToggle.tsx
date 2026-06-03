@@ -10,7 +10,7 @@ import styles from './InboxBotToggle.module.css'
  * (`/api/dashboard/lead/<id>/bot-pauzeren`), dus state blijft consistent
  * tussen beide views.
  *
- * Visueel: groen wanneer bot actief, oranje wanneer gepauzeerd — pill-shape
+ * Visueel: groen wanneer bot actief, oranje wanneer gepauzeerd, pill-shape
  * past in dezelfde threadHead-rij als voorheen.
  */
 export function InboxBotToggle({
@@ -46,12 +46,12 @@ export function InboxBotToggle({
       ) : botPaused ? (
         <>
           <Play size={11} />
-          <span>Bot gepauzeerd — hervatten</span>
+          <span>Bot gepauzeerd, hervatten</span>
         </>
       ) : (
         <>
           <Pause size={11} />
-          <span>Bot actief — pauzeren</span>
+          <span>Bot actief, pauzeren</span>
         </>
       )}
     </button>

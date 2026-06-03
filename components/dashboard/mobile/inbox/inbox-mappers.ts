@@ -16,10 +16,10 @@ const dayKey = (d: Date) =>
 
 /**
  * Bepaal in welke sectie een bericht-timestamp thuishoort.
- *  - 'live'  — minder dan 30 minuten geleden
- *  - 'today' — zelfde kalenderdag, ouder dan 30 minuten
- *  - 'yest'  — gisteren
- *  - 'older' — alles daarvoor
+ *  - 'live', minder dan 30 minuten geleden
+ *  - 'today', zelfde kalenderdag, ouder dan 30 minuten
+ *  - 'yest', gisteren
+ *  - 'older', alles daarvoor
  */
 export function bucketFor(iso: string, now: Date = new Date()): InboxBucket {
   const t = new Date(iso)
@@ -37,7 +37,7 @@ export function bucketFor(iso: string, now: Date = new Date()): InboxBucket {
 
 /**
  * Vertaal berichtrichting naar bubble-spreker.
- * Owner vs Surface zijn niet te onderscheiden uit de DB — alle uitgaande
+ * Owner vs Surface zijn niet te onderscheiden uit de DB, alle uitgaande
  * berichten renderen als Surface (blauw, rechts).
  */
 export function speakerFor(richting: string): BubbleSpeaker {

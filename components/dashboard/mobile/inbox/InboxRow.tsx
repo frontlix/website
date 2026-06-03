@@ -9,7 +9,7 @@ interface InboxRowProps {
   convo: ConversationPreview
 }
 
-/** Initialen uit naam — maximaal 2 letters. */
+/** Initialen uit naam, maximaal 2 letters. */
 function initials(naam: string): string {
   return naam
     .split(' ')
@@ -30,7 +30,7 @@ function isUnread(convo: ConversationPreview): boolean {
 }
 
 /**
- * Enkelvoudige rij in de inbox-lijst. Geen swipe hier — dat doet
+ * Enkelvoudige rij in de inbox-lijst. Geen swipe hier, dat doet
  * SwipeableInboxRow als wrapper. Toont avatar (initialen, 40px),
  * naam, timestamp, preview-tekst en optionele unread-badge.
  */
@@ -40,7 +40,7 @@ export function InboxRow({ convo }: InboxRowProps) {
 
   return (
     <div className={styles.row}>
-      {/* Avatar met initialen — kleur per naam (gedeeld met de Leads-kaarten) */}
+      {/* Avatar met initialen, kleur per naam (gedeeld met de Leads-kaarten) */}
       <div
         className={styles.avatar}
         style={{ background: getAvatarColor(convo.naam) }}

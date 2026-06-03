@@ -53,7 +53,7 @@ export async function countOffertesVerstuurd(period: StatsPeriod): Promise<numbe
 /**
  * Aantal "openstaande offertes" = leads met offerte_verstuurd_op gevuld
  * maar nog geen akkoord_op, en niet gearchiveerd. Periodieke snapshot
- * (geen tijdvenster) — geeft de huidige stand van zaken.
+ * (geen tijdvenster), geeft de huidige stand van zaken.
  */
 export async function countOpenOffertes(): Promise<number> {
   const supabase = await getDashboardSupabase()
@@ -74,7 +74,7 @@ export async function countOpenOffertes(): Promise<number> {
 /**
  * Aantal leads dat in de periode akkoord gaf (akkoord_op binnen venster).
  * Verschil met countConverted: dit teller-paar gebruikt akkoord_op-timestamp
- * i.p.v. aangemaakt — handig voor "vandaag/week" snapshots.
+ * i.p.v. aangemaakt, handig voor "vandaag/week" snapshots.
  */
 export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
   const supabase = await getDashboardSupabase()
@@ -97,7 +97,7 @@ export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
 }
 
 /**
- * Aantal "geconverteerde" leads in de periode — leads met akkoord_op of
+ * Aantal "geconverteerde" leads in de periode, leads met akkoord_op of
  * afspraak_geboekt_op gevuld.
  */
 export async function countConverted(period: StatsPeriod): Promise<number> {

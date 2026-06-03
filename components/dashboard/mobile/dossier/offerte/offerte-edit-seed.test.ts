@@ -56,7 +56,7 @@ describe('matchCatalogKey', () => {
   })
 })
 
-describe('seedOfferteState — lege seed', () => {
+describe('seedOfferteState, lege seed', () => {
   it('geen prijsregels → lege lines', () => {
     const out = seedOfferteState(input({ seedRegels: [] }))
     expect(out.lines).toEqual([])
@@ -73,7 +73,7 @@ describe('seedOfferteState — lege seed', () => {
   })
 })
 
-describe('seedOfferteState — prijsregels → lines', () => {
+describe('seedOfferteState, prijsregels → lines', () => {
   it('mapt een catalogus-regel: label/unit/area uit catalogus, rate = stukprijs', () => {
     const out = seedOfferteState(
       input({
@@ -148,7 +148,7 @@ describe('seedOfferteState — prijsregels → lines', () => {
   })
 })
 
-describe('seedOfferteState — korstmos-toeslag-regel', () => {
+describe('seedOfferteState, korstmos-toeslag-regel', () => {
   it('auto-on bij verse offerte (korstmos && geen regels)', () => {
     const out = seedOfferteState(input({ korstmos: true, seedRegels: [] }))
     expect(out.toeslagen).toHaveLength(1)
@@ -169,7 +169,7 @@ describe('seedOfferteState — korstmos-toeslag-regel', () => {
   })
 })
 
-describe('seedOfferteState — korting-prefill', () => {
+describe('seedOfferteState, korting-prefill', () => {
   it('neemt kortingPct en note uit input over', () => {
     const out = seedOfferteState(input({ kortingPct: 15, kortingNote: 'Vaste klant' }))
     expect(out.kortingPct).toBe(15)

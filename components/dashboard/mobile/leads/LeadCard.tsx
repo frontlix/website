@@ -4,7 +4,7 @@ import { getAvatarColor } from '@/components/dashboard/mobile/shared/avatar-colo
 import type { MobileLeadCard, MobileLeadStage } from './lead-mappers'
 import styles from './LeadCard.module.css'
 
-// ── Stage metadata — label + CSS class that drives color tokens ──────────────
+// ── Stage metadata, label + CSS class that drives color tokens ──────────────
 const STAGE_META: Record<
   MobileLeadStage,
   { label: string; tone: string; emph: 'meta' | 'price' | 'datum' }
@@ -44,7 +44,7 @@ function SourceDot({ bron }: { bron: 'wa' | 'form' }) {
   )
 }
 
-// ── Right-side metric — varies by stage emphasis ──────────────────────────────
+// ── Right-side metric, varies by stage emphasis ──────────────────────────────
 function RightMetric({
   lead,
   emph,
@@ -92,7 +92,7 @@ export function LAStagePill({ stage }: { stage: MobileLeadStage }) {
   )
 }
 
-// ── LeadCard (medium density) — presentational ───────────────────────────────
+// ── LeadCard (medium density), presentational ───────────────────────────────
 interface LeadCardProps {
   lead: MobileLeadCard
 }

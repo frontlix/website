@@ -21,7 +21,7 @@ export default function OfferteMailPanel({ isActive }: OfferteMailPanelProps) {
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Onderwerp:</span>
-            <span className={styles.emailHeaderValue}>Uw persoonlijke offerte — Frontlix</span>
+            <span className={styles.emailHeaderValue}>Uw persoonlijke offerte, Frontlix</span>
           </div>
         </div>
 

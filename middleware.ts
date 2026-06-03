@@ -6,13 +6,13 @@ const DASHBOARD_HOSTS = new Set([
   'app.localhost:3000', // lokaal: voeg "127.0.0.1 app.localhost" toe aan /etc/hosts
   // LAN-IP voor real-device testing op zelfde WiFi (bv. iPhone). Pas dit
   // adres aan als het IP van de Mac wijzigt. Heeft geen effect in
-  // productie — productie luistert alleen op de app.frontlix.com host.
+  // productie, productie luistert alleen op de app.frontlix.com host.
   '192.168.1.228:3000',
 ])
 
 // Paden binnen de dashboard-host die GEEN session vereisen.
 // `/wachtwoord-reset` en `/uitnodiging` krijgen pas tijdens het bezoek
-// een sessie via de Supabase recovery-link — ze moeten dus bereikbaar
+// een sessie via de Supabase recovery-link, ze moeten dus bereikbaar
 // zijn vanuit een uitgelogde state.
 const PUBLIC_DASHBOARD_PATHS = new Set([
   '/login',
@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
   // DASHBOARD HOST (app.frontlix.com): rewrite naar /dashboard prefix
   // ─────────────────────────────────────────────────────────────────────
 
-  // Assets en API routes laten we ongewijzigd door — die zitten niet in /dashboard.
+  // Assets en API routes laten we ongewijzigd door, die zitten niet in /dashboard.
   if (isAssetPath(pathname)) {
     return NextResponse.next()
   }

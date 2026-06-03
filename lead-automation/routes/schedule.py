@@ -4,7 +4,7 @@ Kalender weergave met beschikbare 30-min tijdslots. Klant kiest datum + tijd
 en de werkelijke afspraak-duur (per branche) wordt in Google Calendar geboekt.
 
 Copy/duur per branche komt uit BrancheConfig.appointment_*. Bij Google-API
-fouten gaat de pagina niet stilletjes naar "geen slots" — we tonen een
+fouten gaat de pagina niet stilletjes naar "geen slots", we tonen een
 duidelijke error met WhatsApp-fallback en alerten intern.
 """
 from __future__ import annotations
@@ -58,7 +58,7 @@ def _error_page(title: str, message: str, fallback_label: str | None = None,
             f'{escape(fallback_label)}</a>'
         )
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{escape(title)} — Frontlix</title>
+    <title>{escape(title)}, Frontlix</title>
     <style>body{{font-family:-apple-system,sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}}
     h1{{font-size:22px;font-weight:700;margin-bottom:12px;color:#1A56FF}}p{{font-size:15px;color:#555;line-height:1.6}}</style>
@@ -67,7 +67,7 @@ def _error_page(title: str, message: str, fallback_label: str | None = None,
 
 def _success_page(naam: str, datum_str: str, appointment_label: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Afspraak ingepland — Frontlix</title>
+    <title>Afspraak ingepland, Frontlix</title>
     <style>
       body{{font-family:-apple-system,sans-serif;background:#F0F2F5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
       .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}}
@@ -93,8 +93,7 @@ def _fetch_lead(token: str) -> dict | None:
 
 
 def _alert_owner(subject: str, body: str) -> None:
-    """Best-effort WhatsApp alert to the business owner. Silent failure is fine —
-    structured log carries the full detail."""
+    """Best-effort WhatsApp alert to the business owner. Silent failure is fine,     structured log carries the full detail."""
     owner = (get_settings().owner_whatsapp_phone or "").strip()
     if not owner:
         return
@@ -116,7 +115,7 @@ async def _get_free_slots_grouped(days_ahead: int = 14) -> dict[str, list[str]]:
     now = datetime.now(timezone.utc)
     range_end = now + timedelta(days=days_ahead)
 
-    # Bubble up Google-API errors — schedule_page distinguishes "no slots" vs
+    # Bubble up Google-API errors, schedule_page distinguishes "no slots" vs
     # "API down" so the customer doesn't see an empty calendar and give up.
     slots = await get_free_slots(now, range_end, 500)
 
@@ -189,7 +188,7 @@ async def schedule_page(request: Request):
         )
 
     if not slots_by_day:
-        # Lege agenda binnen 14 dagen — niet hetzelfde als API-down, andere copy.
+        # Lege agenda binnen 14 dagen, niet hetzelfde als API-down, andere copy.
         return HTMLResponse(
             _error_page(
                 "Geen vrije momenten",
@@ -214,13 +213,13 @@ async def schedule_page(request: Request):
     intro_html = (
         f"Hoi <strong>{escape(naam)}</strong>, kies een datum en tijd voor de "
         f"{escape(appointment_label)}. ({duration} minuten"
-        + (f" — {escape(purpose)}" if purpose else "")
+        + (f", {escape(purpose)}" if purpose else "")
         + ")"
     )
     confirm_info_text = f"{appointment_short.capitalize()} van {duration} minuten"
 
     html = f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Afspraak inplannen — Frontlix</title>
+    <title>Afspraak inplannen, Frontlix</title>
     <style>
       * {{ box-sizing: border-box; margin: 0; padding: 0; }}
       body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F0F2F5; min-height: 100vh; padding: 40px 20px; }}
@@ -548,7 +547,7 @@ async def schedule_submit(request: Request):
     get_supabase().table("conversations").insert({
         "lead_id": lead["id"],
         "role": "assistant",
-        "content": f"(afspraak ingepland: {selected_date} om {selected_time}, {duration} min — {appointment_label})",
+        "content": f"(afspraak ingepland: {selected_date} om {selected_time}, {duration} min, {appointment_label})",
         "message_type": "text",
     }).execute()
 
@@ -578,7 +577,7 @@ async def schedule_submit(request: Request):
                 f"Lead {naam} ({lead.get('telefoon')}, {branche_label}) op {selected_date} {selected_time}. Fout: {e}",
             )
 
-    # WhatsApp zakelijke closing — content hangt af van of mail succesvol was
+    # WhatsApp zakelijke closing, content hangt af van of mail succesvol was
     try:
         from services.whatsapp import send_text
         dag_naam = NL_WEEKDAYS_FULL[local_start.weekday()]

@@ -14,7 +14,7 @@ import styles from './WebChatPanel.module.css'
 
 /**
  * Web-chat fallback paneel. Toont alleen content als `lead.kanaal === 'web'`
- * — voor klanten die geen WhatsApp hebben en via magic-link in de browser
+ *, voor klanten die geen WhatsApp hebben en via magic-link in de browser
  * chatten. Bevat:
  *  - status-pill afgeleid uit timestamps (deriveWebChatStatus)
  *  - magic-link met kopieer-knop
@@ -71,7 +71,7 @@ function MagicLinkRow({ url }: { url: string }) {
       // Reset na 2s zodat een tweede klik weer "Kopieer" toont.
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Clipboard API faalt op insecure contexts — gebruiker kan handmatig
+      // Clipboard API faalt op insecure contexts, gebruiker kan handmatig
       // de tekst uit het readonly veld kopiëren.
     }
   }

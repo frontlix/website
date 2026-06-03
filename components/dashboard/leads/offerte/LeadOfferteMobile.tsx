@@ -1,15 +1,15 @@
 'use client'
 
 /**
- * LeadOfferteMobile — mobile-only variant van de Offerte-tab in lead-detail.
+ * LeadOfferteMobile, mobile-only variant van de Offerte-tab in lead-detail.
  *
  * Volledig parallelle render-tree naast de desktop (OfferteRegelsTable + OfferteSidebar).
- * Parent (LeadOfferte) bepaalt welke tree mount op basis van viewport — beide
+ * Parent (LeadOfferte) bepaalt welke tree mount op basis van viewport, beide
  * delen geen state.
  *
  * Layout:
  *  - BronRow (samenvatting lead-data + Bewerk → BronSheet)
- *  - Groep-kaarten (gegroepeerde auto-regels) — tap regel → EditRuleSheet
+ *  - Groep-kaarten (gegroepeerde auto-regels), tap regel → EditRuleSheet
  *  - Extra-regel knop → AddCustomSheet
  *  - Tile-rij (Korting + Verzendopties) → eigen sheets
  *  - Subtotaal-blok (rekening-overzicht)
@@ -101,7 +101,7 @@ function regelTotaal(r: RegelEdit): number {
   return parseDecimal(r.aantal) * parseDecimal(r.stukprijs)
 }
 
-// Bouw "150 m² × € 3,95" — zelfde stijl als desktop mobile-summary.
+// Bouw "150 m² × € 3,95", zelfde stijl als desktop mobile-summary.
 function buildMeta(r: RegelEdit): string {
   const parts: string[] = []
   const a = r.aantal?.trim()
@@ -137,7 +137,7 @@ function buildBronDesc(lead: Lead): string {
 
 // ─── Groep-definities ─────────────────────────────────────────────────────
 //
-// Hardcoded volgorde — eerste hit wint. Onbekende auto-regels vallen in
+// Hardcoded volgorde, eerste hit wint. Onbekende auto-regels vallen in
 // "Overig" (catch-all aan het einde, opgebouwd in render).
 
 const AUTO_GROUPS: GroupDef[] = [
@@ -231,7 +231,7 @@ export function LeadOfferteMobile({
   }, [regels])
 
   // ─── Re-seed bij prop-changes (na router.refresh van BronSheet) ────
-  // Fingerprint vergelijkt alleen wat de server zegt — onze interne edits
+  // Fingerprint vergelijkt alleen wat de server zegt, onze interne edits
   // worden bewust niet weggegooid bij elke parent-rerender, alleen als de
   // server-data daadwerkelijk verandert.
   const initialFp = useMemo(
@@ -241,7 +241,7 @@ export function LeadOfferteMobile({
         .join('||'),
     [initialRegels],
   )
-  // Skip first render — initial state al goed.
+  // Skip first render, initial state al goed.
   const isFirstFpRef = useRef(true)
   useEffect(() => {
     if (isFirstFpRef.current) {
@@ -428,7 +428,7 @@ export function LeadOfferteMobile({
             <span className={styles.tileValue}>
               {kortingPct > 0
                 ? kortingOmschrijving
-                  ? `${kortingPct}% — ${kortingOmschrijving}`
+                  ? `${kortingPct}%, ${kortingOmschrijving}`
                   : `${kortingPct}%`
                 : 'Geen'}
             </span>
@@ -644,7 +644,7 @@ function EditRuleSheet({ regel, onClose, onUpdate, onDelete }: EditRuleSheetProp
         <div className={styles.sheetSection}>
           <div className={styles.sheetAutoNote}>
             <Info size={14} aria-hidden="true" />
-            <span>Auto-regel uit lead-data. Wijzig om te overschrijven — auto-titels passen zich aan op lead-data.</span>
+            <span>Auto-regel uit lead-data. Wijzig om te overschrijven, auto-titels passen zich aan op lead-data.</span>
           </div>
         </div>
       )}
@@ -1048,7 +1048,7 @@ function BronSheet({ open, leadId, lead, onClose }: BronSheetProps) {
   const [korstmos, setKorstmos] = useState<string>(lead.korstmos ?? '')
   const [plantenAfschermen, setPlantenAfschermen] = useState<string>(lead.planten_afschermen ?? '')
 
-  // Reset bij heropenen — neem laatste server-state mee.
+  // Reset bij heropenen, neem laatste server-state mee.
   useEffect(() => {
     if (open) {
       setM2(lead.m2 != null ? String(lead.m2) : '')

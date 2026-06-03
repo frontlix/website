@@ -10,7 +10,7 @@ import crypto from 'crypto'
  *   expected = "v0=" + HMAC_SHA256(SLACK_SIGNING_SECRET, sig_basestring)
  *   compare met X-Slack-Signature in constant-time
  *
- * Replay-protectie: weiger requests ouder dan 5 minuten — anders kan
+ * Replay-protectie: weiger requests ouder dan 5 minuten, anders kan
  * een eerder onderschept request later nog gebruikt worden.
  */
 export function verifySlackRequest(args: {

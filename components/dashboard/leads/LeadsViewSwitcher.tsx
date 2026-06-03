@@ -33,7 +33,7 @@ function readCookieView(): LeadsView | null {
  * 'pipeline'. Page-component leest dezelfde cookie en rendert de juiste
  * view direct, dus geen full-page flash bij terugnavigatie. Zonder URL-
  * param zou de switcher initieel 'pipeline' tonen totdat de useEffect de
- * cookie leest — een mini-correctie alleen op de highlight, niet op content.
+ * cookie leest, een mini-correctie alleen op de highlight, niet op content.
  */
 export function LeadsViewSwitcher() {
   const pathname = usePathname()

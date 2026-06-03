@@ -4,7 +4,7 @@ import styles from './Trechter.module.css'
 type FunnelRow = { label: string; count: number; pct: number }
 
 /**
- * Trechter (funnel) widget — toont door wat % van de leads in elke fase
+ * Trechter (funnel) widget, toont door wat % van de leads in elke fase
  * is gekomen. Counts/percentages worden door de caller berekend op basis
  * van echte query-data.
  */

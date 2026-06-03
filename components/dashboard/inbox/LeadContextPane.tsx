@@ -19,15 +19,15 @@ import type { Lead, GesprekFase } from '@/lib/dashboard/database.types'
 import styles from './LeadContextPane.module.css'
 
 /**
- * Rechterkolom van Inbox — compacte lead-info bij het actieve gesprek.
+ * Rechterkolom van Inbox, compacte lead-info bij het actieve gesprek.
  * Layout volgt design:
  *   ┌ avatar + naam + lead_id · binnen
  *   ├ "Open volledig dossier" CTA
- *   ├ Status — pill(status) + pill(fase)
- *   ├ Werk — adres, oppervlakte, diensten, foto's
- *   ├ Offerte — gradient-block met bedrag (alleen als prijs > 0)
- *   ├ Snelle acties — 4 buttons
- *   └ Tags — chip-lijst + "+ Tag"
+ *   ├ Status, pill(status) + pill(fase)
+ *   ├ Werk, adres, oppervlakte, diensten, foto's
+ *   ├ Offerte, gradient-block met bedrag (alleen als prijs > 0)
+ *   ├ Snelle acties, 4 buttons
+ *   └ Tags, chip-lijst + "+ Tag"
  */
 export function LeadContextPane({ lead }: { lead: InboxLeadContext }) {
   const adres = [

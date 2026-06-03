@@ -10,7 +10,7 @@ export function Pill({
 }: {
   tone?: Tone
   dot?: boolean
-  /** Compactere variant — gebruikt op pipeline-cards en in-table. */
+  /** Compactere variant, gebruikt op pipeline-cards en in-table. */
   sm?: boolean
   children: ReactNode
 }) {

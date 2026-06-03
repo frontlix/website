@@ -6,7 +6,7 @@ import type { NotifItem } from '@/components/dashboard/NotificationPanel'
 import styles from './MobileShellHeader.module.css'
 
 /**
- * MobileShellHeader — dunne sticky header (56px) voor alle
+ * MobileShellHeader, dunne sticky header (56px) voor alle
  * non-/dashboard mobile-routes (leads, inbox, agenda, reviews, etc.).
  *
  * De /dashboard-route krijgt later z'n eigen MobileOverzichtHeader met

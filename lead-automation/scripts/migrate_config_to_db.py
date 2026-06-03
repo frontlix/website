@@ -1,6 +1,6 @@
 """Seed-script: leest clients/<id>/config.json en upsert in Supabase.
 
-Idempotent — herrun overschrijft alleen bestaande rijen, dubbele inserts worden
+Idempotent, herrun overschrijft alleen bestaande rijen, dubbele inserts worden
 voorkomen door de PK's (id voor branche_settings, (branche_id, key) voor branche_fields).
 
 Run vanuit lead-automation/:

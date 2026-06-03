@@ -7,13 +7,13 @@ import { MobileSheet } from './MobileSheet'
 import styles from './MobileSearchSheet.module.css'
 
 /**
- * MobileSearchSheet — mobile zoek-sheet die submit naar `/leads?q=…`.
+ * MobileSearchSheet, mobile zoek-sheet die submit naar `/leads?q=…`.
  *
  * Werkt in twee modes:
  *  1. **Uncontrolled** (default, geen props): rendert z'n eigen
  *     trigger-knop + sheet. Topbar gebruikt deze mode.
  *  2. **Controlled** (`open` + `onClose` props): rendert alleen de
- *     sheet — de parent levert de trigger. MobileShell en
+ *     sheet, de parent levert de trigger. MobileShell en
  *     MobileOverzichtHeader gebruiken deze mode want zij hebben hun
  *     eigen knop in HeaderActions.
  *
@@ -38,7 +38,7 @@ export function MobileSearchSheet({ open: openProp, onClose: onCloseProp }: Prop
     ? (onCloseProp ?? (() => {}))
     : () => setInternalOpen(false)
 
-  // Auto-focus de input wanneer de sheet opent — voor zowel controlled
+  // Auto-focus de input wanneer de sheet opent, voor zowel controlled
   // als uncontrolled mode. Setimeout zodat de focus pas na de slide-in
   // gebeurt (anders pakt de browser 'm niet betrouwbaar op mobile).
   useEffect(() => {

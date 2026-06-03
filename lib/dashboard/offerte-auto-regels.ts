@@ -17,17 +17,17 @@ type Result = { ok: true; regelCount: number } | { ok: false; error: string }
 // om de auto-berekende offerte-regels in sync te houden met de actuele
 // lead-data. De flow:
 //
-//   1. Lees lead-row via admin client (RLS bypassen — gebruiker is al
+//   1. Lees lead-row via admin client (RLS bypassen, gebruiker is al
 //      gauth'd via de aanroepende server-action).
 //   2. Map de lead-row naar een ManualOfferteData-shape (zelfde input die
 //      de handmatige wizard ook in computeRules() voert). Velden die niet
 //      in `leads` staan krijgen veilige defaults (geen toeslag, geen
 //      extra regel) zodat regenerate nooit ongewenst iets toevoegt.
-//   3. Haal pricing op (DB → fallback) — exact hetzelfde pad als de
+//   3. Haal pricing op (DB → fallback), exact hetzelfde pad als de
 //      handmatige action gebruikt.
 //   4. Compute regels via dezelfde pure functie als de wizard.
 //   5. Vervang alleen de AUTO-prijsregels (bron='auto_lead') van de lead.
-//      Handmatige regels (bron='manual') blijven ongemoeid — die heeft
+//      Handmatige regels (bron='manual') blijven ongemoeid, die heeft
 //      de owner zelf toegevoegd via de offerte-tab en mogen niet
 //      verdwijnen door een info-tab edit.
 //
@@ -118,7 +118,7 @@ function leadToOfferteData(lead: LeadRow): ManualOfferteData {
     korstmos: lead.korstmos === 'ja' ? 'ja' : 'nee',
     afstand_km: Number(lead.afstand_km) || 0,
 
-    // Plantenafscherming — defaults voor rollen/prijs (lead bevat geen
+    // Plantenafscherming, defaults voor rollen/prijs (lead bevat geen
     // detail; user kan dit alsnog via de wizard fijntunen).
     planten_afschermen_actief: plantenAfschermenActief,
     planten_afschermen_rollen: plantenAfschermenActief ? DEFAULTS.planten_afschermen_rollen : 0,
@@ -136,7 +136,7 @@ function leadToOfferteData(lead: LeadRow): ManualOfferteData {
 /**
  * Herbereken auto-uit-lead-data prijsregels voor een lead.
  *
- * Geen auth-check — wordt alleen aangeroepen vanuit andere server-actions
+ * Geen auth-check, wordt alleen aangeroepen vanuit andere server-actions
  * die zelf al gauth zijn (zie lead-actions.ts). Errors worden teruggegeven
  * in `Result`; de aanroeper besluit zelf of dat fataal is voor de
  * gebruikersactie of niet (lead-actions logt + slikt 'm).

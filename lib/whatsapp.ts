@@ -1,5 +1,5 @@
 /**
- * WhatsApp Cloud API helper — shared functions for the website.
+ * WhatsApp Cloud API helper, shared functions for the website.
  * Automation-specific functions (send templates, media, documents)
  * have been moved to lead-automation/services/whatsapp.py.
  */
@@ -27,7 +27,7 @@ export async function sendWhatsAppMessage(telefoon: string, naam: string): Promi
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME
 
   if (!phoneNumberId || !accessToken || !templateName) {
-    console.warn('WhatsApp env variabelen niet geconfigureerd — bericht overgeslagen.')
+    console.warn('WhatsApp env variabelen niet geconfigureerd, bericht overgeslagen.')
     return
   }
 

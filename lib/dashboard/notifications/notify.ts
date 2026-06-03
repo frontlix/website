@@ -10,18 +10,18 @@ import type {
  * op `true` staat.
  *
  * Fase 1: alleen `in_app` kanaal. Fase 2/3/4 (e-mail/push/whatsapp) breiden
- * deze functie uit zónder de call-sites te wijzigen — de event-triggers in
+ * deze functie uit zónder de call-sites te wijzigen, de event-triggers in
  * de bot/dashboard code blijven gewoon `notify(...)` aanroepen.
  *
  * Gebruikt de service-role client omdat `notifications` geen INSERT-policy
- * heeft voor dashboard-credentials (anti-injection — alleen server mag
+ * heeft voor dashboard-credentials (anti-injection, alleen server mag
  * notificaties aanmaken).
  */
 export interface NotifyArgs {
   eventType: NotificationEventType
   titel: string
   body: string
-  /** Optionele lead-ref — bij klik op de notificatie navigeren we hierheen. */
+  /** Optionele lead-ref, bij klik op de notificatie navigeren we hierheen. */
   leadId?: string
   /** Vrije payload, beschikbaar in de UI voor extra context (bv. bedrag). */
   payload?: Record<string, unknown>
@@ -50,12 +50,12 @@ export async function notify(args: NotifyArgs): Promise<void> {
   // Geen enkel kanaal aan → niets te doen (geen storage, geen werk).
   if (enabledKanalen.size === 0) return
 
-  // 2) Bezorg-laag — Fase 1: in-app via DB-feed.
+  // 2) Bezorg-laag, Fase 1: in-app via DB-feed.
   if (enabledKanalen.has('in_app')) {
     await deliverInApp(args)
   }
 
-  // Fase 2/3/4 placeholders — uitcommentariëren tot die fase live is,
+  // Fase 2/3/4 placeholders, uitcommentariëren tot die fase live is,
   // niet leeg laten staan zodat het nooit per ongeluk live gaat.
   // if (enabledKanalen.has('email'))    await deliverEmail(args)
   // if (enabledKanalen.has('push'))     await deliverPush(args)
@@ -69,7 +69,7 @@ export async function notify(args: NotifyArgs): Promise<void> {
 async function deliverInApp(args: NotifyArgs): Promise<void> {
   const supabase = getDashboardAdmin()
 
-  // Approved users ophalen — die krijgen de notificatie in hun bel-feed.
+  // Approved users ophalen, die krijgen de notificatie in hun bel-feed.
   const { data: profiles, error: profErr } = await supabase
     .from('dashboard_user_profiles')
     .select('user_id')

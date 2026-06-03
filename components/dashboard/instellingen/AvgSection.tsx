@@ -62,7 +62,7 @@ function DeleteCard() {
       const result = await requestAccountDeleteAction(fd)
       if (result.ok) {
         setMsg({ ok: true, text: result.message ?? 'Verzoek genoteerd.' })
-        // Na een korte beat naar /login — de session is ongeldig gemaakt.
+        // Na een korte beat naar /login, de session is ongeldig gemaakt.
         setTimeout(() => router.push('/login'), 1500)
       } else {
         setMsg({ ok: false, text: result.error })

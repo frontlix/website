@@ -6,7 +6,7 @@ export interface SegmentedChip {
   key: string
   label: string
   count: number
-  /** Tone string gebruikt door data-tone CSS attribute — bepaalt dot-kleur */
+  /** Tone string gebruikt door data-tone CSS attribute, bepaalt dot-kleur */
   tone?: string
 }
 
@@ -17,7 +17,7 @@ interface LeadsSegmentedChipsProps {
 }
 
 /**
- * LeadsSegmentedChips — sticky horizontale scroll-rij van stage-filter pills.
+ * LeadsSegmentedChips, sticky horizontale scroll-rij van stage-filter pills.
  *
  * Actief: --fg achtergrond, --bg tekst.
  * Inactief: chip-bg achtergrond + 6px gekleurde dot voor stage-tone.

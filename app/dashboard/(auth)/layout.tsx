@@ -4,14 +4,14 @@ import styles from './layout.module.css'
 
 // Auth-pagina's (login/signup/wachtwoord/uitnodiging/wachtkamer) NIET statisch
 // prerenderen + cachen. Default kregen ze `Cache-Control: s-maxage=31536000`
-// (1 jaar) — waardoor browsers/caches ná een deploy de oude login-HTML met
+// (1 jaar), waardoor browsers/caches ná een deploy de oude login-HTML met
 // verouderde chunk- en Server-Action-ID's bleven serveren → "Failed to find
 // Server Action" + login-loop. Force-dynamic geeft ze `no-store`, zodat de
 // nieuwe versie altijd direct geladen wordt. Geldt voor de hele (auth)-subtree.
 export const dynamic = 'force-dynamic'
 
 /**
- * Auth-layout — split-screen: form-card links, brand-story rechts
+ * Auth-layout, split-screen: form-card links, brand-story rechts
  * met gradient + tagline. Op smalle schermen valt de brand-story weg.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {

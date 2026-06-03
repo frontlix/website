@@ -9,7 +9,7 @@ import styles from './ReviewCard.module.css'
 
 type Props = {
   review: MobileReview
-  /** Echte bedrijfsnaam van de tenant — toont als auteur van de reactie. */
+  /** Echte bedrijfsnaam van de tenant, toont als auteur van de reactie. */
   bedrijfsnaam: string
   /** Lokaal geplaatste reactie (deze sessie), indien aanwezig. */
   placedReply?: string
@@ -50,7 +50,7 @@ export function ReviewCard({
       {flagged && !isOpen && (
         <div className={styles.hint}>
           <Flame size={14} aria-hidden="true" />
-          Reageer met zorg — een nette reactie herstelt vertrouwen.
+          Reageer met zorg, een nette reactie herstelt vertrouwen.
         </div>
       )}
 

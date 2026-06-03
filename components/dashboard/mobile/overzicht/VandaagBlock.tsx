@@ -21,7 +21,7 @@ type Props = {
 }
 
 /**
- * VandaagBlock — "Vandaag" preview met optionele totaal-kaart (km + duur)
+ * VandaagBlock, "Vandaag" preview met optionele totaal-kaart (km + duur)
  * en top-3 route-stops. Toont status-tag (NU/VOLGENDE/LATER) per item.
  */
 export function VandaagBlock({

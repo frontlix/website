@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Frontlix | Automatische leadopvolging via WhatsApp',
   description:
-    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
   keywords: [
     'leadopvolging',
     'WhatsApp automatisering',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
     url: 'https://frontlix.com',
     siteName: 'Frontlix',
     locale: 'nl_NL',
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
         url: '/og-frontlix.png',
         width: 1200,
         height: 630,
-        alt: 'Frontlix — Automatische leadopvolging via WhatsApp',
+        alt: 'Frontlix: Automatische leadopvolging via WhatsApp',
       },
     ],
   },
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp — persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
     images: ['/og-frontlix.png'],
   },
   robots: {

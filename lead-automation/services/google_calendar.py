@@ -1,4 +1,4 @@
-"""Google Calendar integration — free slots and event creation.
+"""Google Calendar integration, free slots and event creation.
 
 Availability rules (Frontlix private calendar):
   7 days/week, 07:00 - 18:00 local (Europe/Amsterdam).
@@ -103,7 +103,7 @@ async def get_free_slots(
                     if start_utc < range_start or end_utc > range_end:
                         continue
 
-                    # Conflict-check against real busy ranges only — no synthetic occupancy
+                    # Conflict-check against real busy ranges only, no synthetic occupancy
                     conflict = any(start_utc < b_end and end_utc > b_start for b_start, b_end in busy_ranges)
                     if conflict:
                         continue

@@ -10,7 +10,7 @@ export interface LeadsFilters {
   from?: string
   to?: string
   fase?: GesprekFase
-  /** Filter op communicatie-kanaal. Orthogonaal aan status — een lead
+  /** Filter op communicatie-kanaal. Orthogonaal aan status, een lead
    *  kan zowel "In gesprek" als kanaal=web zijn. */
   kanaal?: LeadKanaal
 }

@@ -22,7 +22,7 @@ type Props = {
  * - Dropdown sluit op outside-click of bij escape (geen library; zelf
  *   listener om geen extra deps binnen te halen).
  * - Bij selecteren wordt `onPick` met de match gedaan; de parent
- *   (StepKlant) vult de wizard-velden zelf — deze component weet niets
+ *   (StepKlant) vult de wizard-velden zelf, deze component weet niets
  *   van de wizard-state.
  * - Als er al een lead gekoppeld is, tonen we een "gekoppeld"-pill met
  *   een X-knop om weer naar zoek-mode te gaan. De velden in de wizard
@@ -41,7 +41,7 @@ export function ExistingClientSearch({
   const wrapRef = useRef<HTMLDivElement | null>(null)
 
   // Debounced search. Cancel-flag in plaats van AbortController omdat
-  // server actions die niet ondersteunen — late responses negeren we
+  // server actions die niet ondersteunen, late responses negeren we
   // gewoon via de flag.
   useEffect(() => {
     if (pickedLeadId) return
@@ -89,7 +89,7 @@ export function ExistingClientSearch({
       <div className={styles.pickedClient}>
         <Link2 size={14} />
         <div className={styles.pickedClientText}>
-          Gekoppeld aan bestaande lead — <strong>{pickedNaam || pickedLeadId}</strong>
+          Gekoppeld aan bestaande lead, <strong>{pickedNaam || pickedLeadId}</strong>
         </div>
         <button
           type="button"
@@ -128,7 +128,7 @@ export function ExistingClientSearch({
           )}
           {!loading && results.length === 0 && (
             <div className={styles.searchEmpty}>
-              Geen klant gevonden — vul de gegevens hieronder handmatig in.
+              Geen klant gevonden, vul de gegevens hieronder handmatig in.
             </div>
           )}
           {results.map((r) => {

@@ -29,7 +29,7 @@ export async function saveTenantBase(input: {
   huisnummer: string
   label: string
 }): Promise<SaveTenantBaseResult> {
-  // Ingelogd EN approved — anders kan een pending/rejected user via de
+  // Ingelogd EN approved, anders kan een pending/rejected user via de
   // service-role-write hieronder de ontbrekende UPDATE-policy omzeilen.
   // requireApprovedUser() redirect bij niet-approved.
   await requireApprovedUser()
@@ -45,7 +45,7 @@ export async function saveTenantBase(input: {
   if (!geo) {
     return {
       ok: false,
-      error: 'Geocoding faalde — controleer postcode + huisnummer.',
+      error: 'Geocoding faalde, controleer postcode + huisnummer.',
     }
   }
 

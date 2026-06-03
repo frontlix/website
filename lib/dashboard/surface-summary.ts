@@ -1,12 +1,12 @@
 /**
- * Pure tekst-builder voor de "Surface samenvatting" — een template-based
+ * Pure tekst-builder voor de "Surface samenvatting", een template-based
  * Nederlandse dag-cijfer-tekst die wordt getoond bovenaan zowel de
  * desktop-Overzicht (SurfaceDailySummary) als de mobile Overzicht
  * (AiBriefCard). Geen AI-call hier: deterministische zinnen op basis
  * van echte stats. Upgrade naar OpenAI kan later zonder caller-changes.
  *
  * Gestructureerd zodat elke zin alleen verschijnt als 'ie iets toevoegt
- * — geen awkward "0 nieuwe leads vandaag, 0 offertes uit, 0 akkoord."
+ *, geen awkward "0 nieuwe leads vandaag, 0 offertes uit, 0 akkoord."
  */
 
 export type SurfaceSummaryStats = {
@@ -20,7 +20,7 @@ export type SurfaceSummaryStats = {
 export function buildSurfaceSummary(s: SurfaceSummaryStats): string {
   const zinnen: string[] = []
 
-  // Zin 1 — vandaag + week
+  // Zin 1, vandaag + week
   const today =
     s.leadsVandaag === 0
       ? 'Nog geen nieuwe leads vandaag'
@@ -34,14 +34,14 @@ export function buildSurfaceSummary(s: SurfaceSummaryStats): string {
   const dayParts = [today, offertesPart, akkoordPart].filter(Boolean) as string[]
   zinnen.push(dayParts.join(', ') + '.')
 
-  // Zin 2 — omzet + ticket
+  // Zin 2, omzet + ticket
   const omzetTxt =
     s.omzetMaand > 0 ? `Omzet maand-tot-nu €${formatEuro(s.omzetMaand)}` : null
   const ticketTxt =
     s.gemTicket > 0 ? `gem. ticket €${formatEuro(s.gemTicket)}` : null
   const omzetParts = [omzetTxt, ticketTxt].filter(Boolean) as string[]
   if (omzetParts.length > 0) {
-    zinnen.push(omzetParts.join(' — ') + '.')
+    zinnen.push(omzetParts.join(', ') + '.')
   }
 
   return zinnen.join(' ')

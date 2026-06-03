@@ -87,13 +87,13 @@ export default function Pipeline({ currentStep, showComplete, onStepClick }: Pip
 
       {/* Steps */}
       <div ref={stepsListRef} className={styles.stepsList}>
-        {/* Progress track — background line from first to last circle */}
+        {/* Progress track, background line from first to last circle */}
         <div
           className={styles.progressTrack}
           style={{ top: trackStyle.top, height: trackStyle.height }}
         />
 
-        {/* Progress fill — positioned dynamically to stop at active circle center */}
+        {/* Progress fill, positioned dynamically to stop at active circle center */}
         <div
           className={styles.progressFill}
           style={{ top: lineStyle.top, height: lineStyle.height }}

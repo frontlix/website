@@ -4,7 +4,7 @@ import { proxyToBotApi } from '@/lib/dashboard/bot-api-proxy'
 /**
  * Genereert een nieuw web-chat token (oude wordt ongeldig), reset de
  * 30-dagen expiry en stuurt direct de nieuwe mail. Zeldzaam gebruikt
- * — alleen bij vermoeden van compromised token of verlopen window.
+ *, alleen bij vermoeden van compromised token of verlopen window.
  */
 export async function POST(
   req: NextRequest,

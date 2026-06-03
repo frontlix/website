@@ -59,7 +59,7 @@ export type FlowIconName = keyof typeof FLOW_LUCIDE
 // ── FNav ───────────────────────────────────────────────────────────────────
 // Top nav bar for the full-height Afronden sheet only. When flow content lives
 // inside MobileDrilldownLayer the layer already provides back+title, so this is
-// NOT used there — it is for the standalone full-height sheet.
+// NOT used there, it is for the standalone full-height sheet.
 type FNavProps = {
   title: string
   sub?: string
@@ -109,7 +109,7 @@ export function FHero({ ev, kindLabel, badge }: FHeroProps) {
         <div className={styles.heroTime}>
           <Clock size={13} aria-hidden="true" />
           <span className={styles.heroTimeText}>
-            {ev.start} – {ev.end} · {durStr(ev.start, ev.end)}
+            {ev.start}, {ev.end} · {durStr(ev.start, ev.end)}
           </span>
         </div>
       </div>

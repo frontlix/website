@@ -6,7 +6,7 @@ import { MobileSheet } from '@/components/dashboard/ui/MobileSheet'
 import { LeadContextPane } from './LeadContextPane'
 import styles from './MobileContextButton.module.css'
 
-// Gebruik dezelfde props als LeadContextPane via type-import — voorkomt
+// Gebruik dezelfde props als LeadContextPane via type-import, voorkomt
 // handmatige duplicatie en blijft automatisch in sync als de interface wijzigt.
 type LeadContextPaneProps = React.ComponentProps<typeof LeadContextPane>
 

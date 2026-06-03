@@ -7,13 +7,13 @@ import { completeOnboardingAction } from '@/lib/dashboard/onboarding-actions'
 import styles from './OnboardingWizard.module.css'
 
 const STEPS = [
-  { Icon: Sparkles,    title: 'Welkom bij Frontlix', body: 'In een paar minuten leid ik je rond. Geen lange formulieren — je kunt alles later nog aanpassen.' },
+  { Icon: Sparkles,    title: 'Welkom bij Frontlix', body: 'In een paar minuten leid ik je rond. Geen lange formulieren, je kunt alles later nog aanpassen.' },
   { Icon: Building2,   title: 'Bedrijfsgegevens',    body: 'Vul je bedrijfsnaam en adres in. Surface gebruikt deze om offertes en mailtjes te ondertekenen.' },
   { Icon: Euro,        title: 'Diensten + prijzen',  body: 'Welke diensten verkoop je? Stel je tarieven per m² of per uur in. Surface gebruikt deze om automatische offertes te maken.' },
-  { Icon: MessageCircle, title: 'WhatsApp-koppeling', body: 'Koppel je WhatsApp-nummer aan Surface. Klanten chatten direct met de bot — jij krijgt elk gesprek terug in de inbox.' },
+  { Icon: MessageCircle, title: 'WhatsApp-koppeling', body: 'Koppel je WhatsApp-nummer aan Surface. Klanten chatten direct met de bot, jij krijgt elk gesprek terug in de inbox.' },
   { Icon: Bot,         title: 'Bot-persona',          body: 'Bepaal toon en taalgebruik. Vriendelijk-formeel, los, of strak-zakelijk. Je kunt dit later nog tweaken.' },
   { Icon: FlaskConical, title: 'Stuur een test-lead', body: 'Stuur jezelf een proef-aanvraag via WhatsApp. Je ziet realtime hoe Surface vragen stelt en een offerte uitwerkt.' },
-  { Icon: PartyPopper, title: 'Klaar!',              body: 'Je dashboard staat live. Eerste lead binnen? Klik op "Inbox" om mee te lezen — Surface neemt het over.' },
+  { Icon: PartyPopper, title: 'Klaar!',              body: 'Je dashboard staat live. Eerste lead binnen? Klik op "Inbox" om mee te lezen, Surface neemt het over.' },
 ]
 
 export function OnboardingWizard() {

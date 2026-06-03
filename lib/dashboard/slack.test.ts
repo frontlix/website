@@ -16,7 +16,7 @@ describe('postSignupNotification', () => {
       new Response(null, { status: 200 })
     )
 
-    await postSignupNotification('Nieuwe aanvraag: Bedrijf X — a@b.c')
+    await postSignupNotification('Nieuwe aanvraag: Bedrijf X, a@b.c')
 
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     const [url, init] = fetchSpy.mock.calls[0]
@@ -24,7 +24,7 @@ describe('postSignupNotification', () => {
     expect(init?.method).toBe('POST')
     expect(init?.headers).toMatchObject({ 'Content-Type': 'application/json' })
     expect(init?.body).toBe(
-      JSON.stringify({ text: 'Nieuwe aanvraag: Bedrijf X — a@b.c' })
+      JSON.stringify({ text: 'Nieuwe aanvraag: Bedrijf X, a@b.c' })
     )
   })
 

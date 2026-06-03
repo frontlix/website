@@ -5,7 +5,7 @@ import { buildBreadcrumbSchema } from '@/lib/breadcrumb-schema'
 import styles from './page.module.css'
 
 export const metadata: Metadata = {
-  title: 'Over Frontlix — Automatische Leadopvolging voor MKB',
+  title: 'Over Frontlix: Automatische Leadopvolging voor MKB',
   description:
     'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     languages: { nl: '/over-ons' },
   },
   openGraph: {
-    title: 'Over Frontlix — Automatische Leadopvolging voor MKB',
+    title: 'Over Frontlix: Automatische Leadopvolging voor MKB',
     description:
       'Maak kennis met Christiaan en Georg, de broers achter Frontlix. Wij helpen MKB-bedrijven groeien met automatische leadopvolging.',
     url: '/over-ons',

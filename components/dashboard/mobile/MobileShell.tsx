@@ -10,7 +10,7 @@ import type { NotifItem } from '@/components/dashboard/NotificationPanel'
 import styles from './MobileShell.module.css'
 
 /**
- * MobileShell — mobile chrome wrapper.
+ * MobileShell, mobile chrome wrapper.
  *
  * Verantwoordelijkheden:
  *  - Decide welke header-variant rendert: op /dashboard rendert de page
@@ -18,7 +18,7 @@ import styles from './MobileShell.module.css'
  *    mounten we hier de dunne default MobileShellHeader.
  *  - Wraps page-content in .main met onderpadding voor de BottomNav.
  *  - Mounts BottomNav (fixed bottom) + MeerSheet (slide-up).
- *  - Mounts MobileSearchSheet in controlled-mode (open/onClose) — geen
+ *  - Mounts MobileSearchSheet in controlled-mode (open/onClose), geen
  *    eigen trigger, want de zoek-knop zit in HeaderActions.
  */
 

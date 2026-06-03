@@ -67,7 +67,7 @@ export async function updatePricingRule(
 }
 
 /**
- * Werkt meerdere prijsregels tegelijk bij — gebruikt door de "Alles
+ * Werkt meerdere prijsregels tegelijk bij, gebruikt door de "Alles
  * opslaan"-knop in de Prijzen-sectie nadat de owner meerdere regels heeft
  * aangepast en eerst de impact heeft bekeken via de Wat-als simulator.
  *
@@ -83,7 +83,7 @@ export async function updatePricingRulesBatch(
   if (!Array.isArray(changes) || changes.length === 0) {
     return { ok: false, error: 'Geen wijzigingen' }
   }
-  // Valideer alles vóór de eerste UPDATE — voorkomt half-doorlopen.
+  // Valideer alles vóór de eerste UPDATE, voorkomt half-doorlopen.
   for (const c of changes) {
     if (typeof c.rule_key !== 'string' || c.rule_key.trim() === '') {
       return { ok: false, error: 'Ongeldige prijsregel' }

@@ -31,7 +31,7 @@ import pageStyles from '@/app/dashboard/(app)/instellingen/page.module.css'
  *   de bezorg-laag implementeert, removen we deze gate per kanaal.
  */
 
-const LIVE_FASE = 3 // huidige fase — toggles voor kanalen met fase > LIVE_FASE disabled (fase 4=whatsapp)
+const LIVE_FASE = 3 // huidige fase, toggles voor kanalen met fase > LIVE_FASE disabled (fase 4=whatsapp)
 
 export function NotificatiesEditor({
   initialPrefs,
@@ -95,9 +95,9 @@ export function NotificatiesEditor({
       case 'no-vapid':
         return 'Push is server-side nog niet geconfigureerd (VAPID keys ontbreken).'
       case 'save-failed':
-        return 'Subscription kon niet worden opgeslagen — probeer opnieuw.'
+        return 'Subscription kon niet worden opgeslagen, probeer opnieuw.'
       default:
-        return 'Push kon niet worden ingeschakeld — probeer opnieuw.'
+        return 'Push kon niet worden ingeschakeld, probeer opnieuw.'
     }
   }
 
@@ -159,7 +159,7 @@ export function NotificatiesEditor({
 }
 
 /**
- * Tijd-input voor de "Dagelijkse samenvatting" — onder de tabel zodat
+ * Tijd-input voor de "Dagelijkse samenvatting", onder de tabel zodat
  * 'ie logisch bij die event-rij hoort zonder de grid-layout te breken.
  * Per-tenant instelbaar (single-tenant nu, dus globaal).
  */

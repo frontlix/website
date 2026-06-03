@@ -8,7 +8,7 @@ import {
 import type { StatsPeriod } from './period'
 
 /**
- * "Dagrapport" — server-side data ophalen voor de slide-out drawer die
+ * "Dagrapport", server-side data ophalen voor de slide-out drawer die
  * vanaf de overzicht-pagina geopend wordt via `?dagrapport=1`.
  *
  * Bundelt vandaag + gisteren (voor delta-vergelijking) + per-bron split +
@@ -20,18 +20,18 @@ export interface DagrapportData {
   datum: string
   vandaag: DagrapportDayStats
   gisteren: DagrapportDayStats
-  /** Leads per bron — alleen vandaag, gesorteerd op aantal desc. */
+  /** Leads per bron, alleen vandaag, gesorteerd op aantal desc. */
   bronnen: BronStat[]
-  /** 7-daags sparkline per KPI — oudste eerst, vandaag laatste. */
+  /** 7-daags sparkline per KPI, oudste eerst, vandaag laatste. */
   sparklines: {
     leads: number[]
     offertes: number[]
     akkoorden: number[]
     omzet: number[]
   }
-  /** 24 buckets (0-23u) met aantal events per uur — vandaag, lokale tijd. */
+  /** 24 buckets (0-23u) met aantal events per uur, vandaag, lokale tijd. */
   uurStrip: number[]
-  /** Surface-bot activiteit — bot-activity sectie boven KPI's. */
+  /** Surface-bot activiteit, bot-activity sectie boven KPI's. */
   surface: SurfaceActivity
 }
 
@@ -59,7 +59,7 @@ export interface BronStat {
 
 function dayWindow(date: Date): StatsPeriod {
   // Begin van dag in UTC (gebruikt door de queries die op aangemaakt /
-  // offerte_verstuurd_op / akkoord_op filteren — die staan in UTC).
+  // offerte_verstuurd_op / akkoord_op filteren, die staan in UTC).
   const y = date.getUTCFullYear()
   const m = date.getUTCMonth()
   const d = date.getUTCDate()
@@ -70,7 +70,7 @@ function dayWindow(date: Date): StatsPeriod {
 
 /**
  * Som van totaal_prijs voor leads die in periode akkoord gaven.
- * Geen aparte query in stats-queries.ts — daar wordt alleen gemiddelde
+ * Geen aparte query in stats-queries.ts, daar wordt alleen gemiddelde
  * berekend. Voor dagrapport hebben we de absolute som nodig.
  */
 async function sumOmzetAkkoord(period: StatsPeriod): Promise<number> {
@@ -161,7 +161,7 @@ function bucketDaysSum(
 }
 
 /**
- * Sparkline-data voor de 4 KPI's — 7 dagen, één rondrit naar de db per
+ * Sparkline-data voor de 4 KPI's, 7 dagen, één rondrit naar de db per
  * metric. Returnt arrays van lengte 7 (oudste → vandaag).
  */
 async function getSparklines(
@@ -219,7 +219,7 @@ async function getSparklines(
 /**
  * Uur-strip: 24 buckets met het aantal events vandaag, per uur in
  * Europe/Amsterdam-tijd. Combineert lead-binnenkomsten, offerte-verzending,
- * akkoorden en in/uitgaande berichten — alles wat "er gebeurde vandaag" is.
+ * akkoorden en in/uitgaande berichten, alles wat "er gebeurde vandaag" is.
  */
 async function getUurStrip(period: StatsPeriod): Promise<number[]> {
   const supabase = await getDashboardSupabase()
@@ -281,7 +281,7 @@ async function getUurStrip(period: StatsPeriod): Promise<number[]> {
 }
 
 /**
- * Surface-bot activiteit — counts van uit/inkomende berichten + gem.
+ * Surface-bot activiteit, counts van uit/inkomende berichten + gem.
  * reactietijd voor leads van vandaag. Geeft de drawer een bot-narratief
  * naast de pure KPI's.
  */

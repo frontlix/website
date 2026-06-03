@@ -1,11 +1,11 @@
 'use client'
 
-// FlowKlus — Klus-detail, gerenderd als CONTENT binnen MobileDrilldownLayer.
+// FlowKlus, Klus-detail, gerenderd als CONTENT binnen MobileDrilldownLayer.
 // De layer levert de header (terug + titel); dit component levert alleen de body
 // (geen eigen FNav). Data-driven: krijgt het aangetikte event en toont UITSLUITEND
 // echte velden uit de afspraak (naam, adres, telefoon, start/duur, dienst, m², afstand).
 // Een live "bezig"-staat (ev.current) krijgt een Bezig-badge; verder is er bewust
-// geen verzonnen voortgang/track-data — de DB kent die kolommen (nog) niet.
+// geen verzonnen voortgang/track-data, de DB kent die kolommen (nog) niet.
 
 import { Clock, MapPin, Zap, Check } from 'lucide-react'
 import {
@@ -54,7 +54,7 @@ export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.adres)}`
     : null
 
-  // Tijd-strip: Start + (geschatte) Duur + Afstand — allemaal afgeleid uit
+  // Tijd-strip: Start + (geschatte) Duur + Afstand, allemaal afgeleid uit
   // echte velden. Geen verzonnen "aangekomen/nu/verwacht"-tijden meer.
   const trackCells = [
     { lbl: 'Start', v: ev.start, icon: 'clock' as const },
@@ -97,7 +97,7 @@ export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
         ))}
       </div>
 
-      {/* Quick actions — alleen gerenderd als er echte data achter zit. */}
+      {/* Quick actions, alleen gerenderd als er echte data achter zit. */}
       <div className={styles.actionRow}>
         {mapsHref && (
           <FBigAction

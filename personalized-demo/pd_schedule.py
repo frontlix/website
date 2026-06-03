@@ -1,6 +1,6 @@
 """Scheduling pagina voor De Designmaker personalized demo.
 
-Maandkalender weergave — klik op een dag om een afspraak in te plannen.
+Maandkalender weergave, klik op een dag om een afspraak in te plannen.
 Afspraak duurt 1 hele dag (09:00 - 17:00).
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ def _now_iso() -> str:
 
 def _error_page(title: str, message: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{escape(title)} — De Designmaker</title>
+    <title>{escape(title)}, De Designmaker</title>
     <style>body{{font-family:-apple-system,sans-serif;background:#F3F4F6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
     .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}}
     h1{{font-size:22px;font-weight:700;margin-bottom:12px}}p{{font-size:15px;color:#555;line-height:1.6}}</style>
@@ -37,7 +37,7 @@ def _error_page(title: str, message: str) -> str:
 
 def _success_page(naam: str, datum_str: str) -> str:
     return f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Afspraak ingepland — De Designmaker</title>
+    <title>Afspraak ingepland, De Designmaker</title>
     <style>
       body{{font-family:-apple-system,sans-serif;background:#F3F4F6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
       .card{{background:#fff;border-radius:16px;padding:48px 40px;max-width:520px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}}
@@ -116,7 +116,7 @@ async def schedule_page(request: Request):
         max_year += 1
 
     html = f"""<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Afspraak inplannen — De Designmaker</title>
+    <title>Afspraak inplannen, De Designmaker</title>
     <style>
       * {{ box-sizing: border-box; margin: 0; padding: 0; }}
       body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F3F4F6; min-height: 100vh; padding: 40px 20px; }}
@@ -188,7 +188,7 @@ async def schedule_page(request: Request):
           </form>
         </div>
       </div>
-      <p class="footer">De Designmaker — Windmolenboschweg 14, Haelen</p>
+      <p class="footer">De Designmaker, Windmolenboschweg 14, Haelen</p>
     </div>
 
     <script>
@@ -352,7 +352,7 @@ async def schedule_submit(request: Request):
         event_id = await create_event(
             start_utc=start_utc,
             end_utc=end_utc,
-            summary=f"De Designmaker — {type_dienst} voor {naam}",
+            summary=f"De Designmaker, {type_dienst} voor {naam}",
             description=f"Voertuig inleveren voor 10:00 voor {type_dienst}.\n\nKlant: {naam}\nEmail: {lead.get('email')}\nTelefoon: +{lead['telefoon']}",
             attendee_email=lead.get("email"),
         )

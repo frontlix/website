@@ -3,7 +3,7 @@ import type { NotificationEventType } from './types'
 /**
  * Mail-templates voor notification-bezorging.
  *
- * Eén bouwer per event-type — bouwt subject + HTML + plain-text.
+ * Eén bouwer per event-type, bouwt subject + HTML + plain-text.
  * Hergebruikt de inline-CSS layout van lib/mail.ts (560px wrapper,
  * gradient CTA, footer met Frontlix-contact). Geen externe lib (React
  * Email etc.) zodat de mail-stack thin blijft.
@@ -14,9 +14,9 @@ import type { NotificationEventType } from './types'
 
 export interface NotificationMailArgs {
   eventType: NotificationEventType
-  /** Titel uit notifications.titel — gebruikt als email subject + H2. */
+  /** Titel uit notifications.titel, gebruikt als email subject + H2. */
   titel: string
-  /** Body uit notifications.body — eerste paragraaf in de mail. */
+  /** Body uit notifications.body, eerste paragraaf in de mail. */
   body: string
   /** Optionele URL naar lead-detail of dashboard-root voor de CTA-knop. */
   dashboardUrl: string
@@ -34,7 +34,7 @@ const BRAND_PRIMARY = '#1A56FF'
 const BRAND_ACCENT = '#00CFFF'
 
 /**
- * CTA-knop label per event — net iets specifieker dan generic "Bekijk".
+ * CTA-knop label per event, net iets specifieker dan generic "Bekijk".
  * Bekend pattern: actie-werkwoord + object.
  */
 const CTA_LABEL: Record<NotificationEventType, string> = {
@@ -52,7 +52,7 @@ const CTA_LABEL: Record<NotificationEventType, string> = {
 }
 
 /**
- * Korte event-label voor in de subject — sommige tools sorteren mails op
+ * Korte event-label voor in de subject, sommige tools sorteren mails op
  * prefix, dus we beginnen met "[Frontlix]" + event om de inbox scanbaar
  * te houden.
  */
@@ -136,7 +136,7 @@ function renderHtml(args: NotificationMailArgs, cta: string): string {
 
 /**
  * Extra context-rijen tussen body en CTA. Per event-type kiezen we welke
- * payload-velden zichtbaar zijn — voorkomt dat de mail vol met JSON-keys
+ * payload-velden zichtbaar zijn, voorkomt dat de mail vol met JSON-keys
  * komt te staan.
  */
 function renderPayloadRows(
@@ -207,7 +207,7 @@ Notificatie-voorkeuren: https://app.frontlix.com/dashboard/instellingen?section=
 `
 }
 
-// Basic HTML escaping — voorkomt XSS via lead-namen of dynamic content.
+// Basic HTML escaping, voorkomt XSS via lead-namen of dynamic content.
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

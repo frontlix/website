@@ -6,7 +6,7 @@ import { Home, ClipboardList, Inbox, Calendar, Menu } from 'lucide-react'
 import styles from './BottomNav.module.css'
 
 /**
- * BottomNav — sticky 5-tab bottom-navigatie voor de mobiele dashboard-shell.
+ * BottomNav, sticky 5-tab bottom-navigatie voor de mobiele dashboard-shell.
  *
  * Active-state wordt afgeleid uit `usePathname()` via een statische map.
  * Sub-routes vallen automatisch onder hun parent-tab (bv. `/leads/123`

@@ -9,7 +9,7 @@ type Props = {
   height?: number
 }
 
-/** Mini-lijn zonder assen — voor KPI-kaarten. */
+/** Mini-lijn zonder assen, voor KPI-kaarten. */
 export function Sparkline({ data, color = 'var(--color-primary)', width = 48, height = 20 }: Props) {
   const pts = scaleSeries(data, { w: width, h: height, pad: 2 })
   if (pts.length < 2) return null

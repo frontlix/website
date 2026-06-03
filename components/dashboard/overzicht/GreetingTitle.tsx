@@ -21,7 +21,7 @@ export function GreetingTitle({
   useEffect(() => {
     const sync = () => setGreeting(getGreeting(new Date()))
 
-    // Direct sync — vangt het zeldzame geval op dat de server-tijd net vóór
+    // Direct sync, vangt het zeldzame geval op dat de server-tijd net vóór
     // de boundary was en de client er net overheen.
     sync()
 

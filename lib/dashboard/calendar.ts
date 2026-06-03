@@ -130,7 +130,7 @@ export function getMonthGrid(
 
 /**
  * Converteert UTC ISO-timestamp naar Europe/Amsterdam dag-key (YYYY-MM-DD).
- * Gebruikt Intl.DateTimeFormat — hanteert DST automatisch.
+ * Gebruikt Intl.DateTimeFormat, hanteert DST automatisch.
  */
 export function toAmsterdamDayKey(iso: string): string {
   const date = new Date(iso)

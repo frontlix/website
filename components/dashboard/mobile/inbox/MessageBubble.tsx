@@ -7,7 +7,7 @@ import styles from './MessageBubble.module.css'
 interface MessageBubbleProps {
   msg: Bericht
   /** Wanneer true: dit bericht is deel van een aaneengesloten reeks
-   * van dezelfde spreker — verberg de Surface-label en tail-cut. */
+   * van dezelfde spreker, verberg de Surface-label en tail-cut. */
   continued?: boolean
 }
 

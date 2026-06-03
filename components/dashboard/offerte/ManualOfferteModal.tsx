@@ -39,7 +39,7 @@ const STEPS = [
   { n: 4, l: 'Versturen' },
 ] as const
 
-// localStorage-sleutels — V1 was één draft, V2 is een array zodat meerdere
+// localStorage-sleutels, V1 was één draft, V2 is een array zodat meerdere
 // concepten naast elkaar kunnen leven. Migratie van V1 → V2 gebeurt
 // éénmalig bij modal-open.
 const DRAFT_KEY_V1 = 'frontlix-handmatige-offerte-draft-v1'
@@ -98,19 +98,19 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // Pricing-snapshot uit pricing_rules. Initieel FALLBACK zodat de wizard
   // direct werkt; na fetch wordt deze vervangen door de live waardes.
   const [pricing, setPricing] = useState<ManualOffertePricing>(FALLBACK_PRICING)
-  // Geocoding-status per adres — `true` betekent: postcode + huisnummer
+  // Geocoding-status per adres, `true` betekent: postcode + huisnummer
   // ingevuld maar postcode.tech kon 'm niet vinden. UI toont dan een
   // waarschuwing zodat de user weet dat 'ie 't handmatig moet aanvullen.
   const [werkAdresNotFound, setWerkAdresNotFound] = useState(false)
   const [factuurAdresNotFound, setFactuurAdresNotFound] = useState(false)
 
-  // Lock scroll terwijl de modal open is — gecentraliseerd + reference-counted
+  // Lock scroll terwijl de modal open is, gecentraliseerd + reference-counted
   // (de modal mount alleen wanneer open, dus `true`). De body blijft zo gelockt
   // zolang er nóg een overlay (bv. de dagrapport-drawer) onder openstaat.
   useBodyScrollLock(true)
 
   // matchMedia-luistraar voor mobile-viewport. Triggert ook bij rotate
-  // of resize tijdens een open modal — header/footer/progress passen
+  // of resize tijdens een open modal, header/footer/progress passen
   // zich automatisch aan.
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -121,7 +121,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     return () => mq.removeEventListener('change', update)
   }, [])
 
-  // Eénmalige flag — voorkomt dat we de user terugkatapulteren naar
+  // Eénmalige flag, voorkomt dat we de user terugkatapulteren naar
   // Step 0 als 'ie al naar Step 1+ is doorgeklikt en vervolgens iets
   // van viewport-breedte verandert (rotatie, devtools, dubbele HMR).
   const initialMobileStepDecided = useRef(false)
@@ -143,7 +143,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
 
   // Haal actuele pricing op en pre-fill voegzand/planten-prijzen mét de
   // live waardes. We overschrijven alleen velden die nog op de hardcoded
-  // default staan — als de user al wat heeft ingetypt, raken we dat niet.
+  // default staan, als de user al wat heeft ingetypt, raken we dat niet.
   useEffect(() => {
     let cancelled = false
     getPricingForOffertePreview().then((p) => {
@@ -171,7 +171,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // Auto-vul Afstand, Straat en Plaats zodra postcode + huisnummer
   // geldig zijn. 400ms debounce zodat we postcode.tech niet hameren
   // terwijl de user nog typt. Straat/Plaats vullen we alleen wanneer
-  // het veld nog leeg is — een handmatige aanpassing wordt nooit
+  // het veld nog leeg is, een handmatige aanpassing wordt nooit
   // overschreven. Afstand wordt altijd ververst (read-only veld).
   useEffect(() => {
     const pc = data.postcode.trim()
@@ -187,7 +187,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         if (!res.ok) {
           // 'input' = postcode-regex matcht nog niet (user is aan't typen),
           // niet behandelen als echte fout. 'geocode' = postcode.tech vond
-          // niks — dat is de mismatch die we willen flaggen.
+          // niks, dat is de mismatch die we willen flaggen.
           setWerkAdresNotFound(res.reason === 'geocode')
           return
         }
@@ -351,7 +351,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(merged))
           }
         } catch {
-          // V1-payload corrupt — gewoon negeren bij migratie.
+          // V1-payload corrupt, gewoon negeren bij migratie.
         }
         window.localStorage.removeItem(DRAFT_KEY_V1)
       }
@@ -368,7 +368,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   }, [])
 
   // Auto-save: schrijft current data naar een draft-entry (debounced).
-  // Skip wanneer data nog default is — vermijdt lege "Onbekende klant"-
+  // Skip wanneer data nog default is, vermijdt lege "Onbekende klant"-
   // drafts bij elke modal-open. Skip ook zolang user/AI niets heeft
   // aangeraakt; pricing-init en dergelijke muteren `data` maar dat
   // mag de drafts-banner niet wegklappen.
@@ -398,7 +398,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         if (!currentDraftId) setCurrentDraftId(id)
         setDraftSavedFlash(true)
       } catch {
-        // localStorage vol of disabled — silently fail.
+        // localStorage vol of disabled, silently fail.
       }
     }, DRAFT_DEBOUNCE_MS)
     return () => clearTimeout(t)
@@ -431,7 +431,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
           window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(next))
         }
       } catch {
-        // Niets te doen — localStorage is mogelijk niet beschikbaar.
+        // Niets te doen, localStorage is mogelijk niet beschikbaar.
       }
       return next
     })
@@ -456,7 +456,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const valid: Record<1 | 2 | 3, boolean> = {
     // Naam + telefoon (aanwezigheid) + e-mail (format-geldig). E-mail
     // is harder dan telefoon omdat we 'm voor de PDF-verzending nodig
-    // hebben — een typo verspilt een offerte. Telefoon blijft soft
+    // hebben, een typo verspilt een offerte. Telefoon blijft soft
     // (vaste lijn / buitenlands nummer mag).
     1:
       Boolean(data.naam.trim()) &&
@@ -465,8 +465,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     2: data.hoofdcategorie.length > 0 && data.sub.length > 0 && Number(data.m2) > 0,
     3: rules.length > 0 && totals.total > 0,
   }
-  // Step 0 (mobile entry-scherm) heeft geen formulier-validatie nodig —
-  // advancen gebeurt via een tegel of de "Nieuwe klant"-knop in StepStart.
+  // Step 0 (mobile entry-scherm) heeft geen formulier-validatie nodig,   // advancen gebeurt via een tegel of de "Nieuwe klant"-knop in StepStart.
   const canNext =
     step === 0 ? true : step <= 3 ? valid[step as 1 | 2 | 3] : true
 
@@ -475,12 +474,12 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     startTransition(async () => {
       const result = await createManualLeadEnOfferte(data)
       if (result.ok) {
-        // Draft opruimen — offerte is succesvol aangemaakt, niets meer
+        // Draft opruimen, offerte is succesvol aangemaakt, niets meer
         // om te herstellen bij volgend bezoek. Alleen het current draft
         // verwijderen; andere drafts (van andere klanten) blijven staan.
         if (currentDraftId) verwijderDraft(currentDraftId)
         // Als de mail-verzending zelf faalde (offerte staat wel in DB),
-        // tonen we de error en blijven we in de modal — user kan dan
+        // tonen we de error en blijven we in de modal, user kan dan
         // beslissen om opnieuw te proberen of naar de lead te navigeren.
         if (result.mailError) {
           setError(
@@ -501,7 +500,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const submitLabel = data.kanaal === 'manual' ? 'PDF aanmaken' : 'Offerte versturen'
   const SubmitIcon = data.kanaal === 'manual' ? FileText : Mail
 
-  // PDF-download — genereert client-side via @react-pdf/renderer en
+  // PDF-download, genereert client-side via @react-pdf/renderer en
   // triggert een browser-download. Geen server-roundtrip; geen lead
   // wordt aangemaakt. Voor "echt versturen" gebruikt de owner de
   // submit-knop.
@@ -511,7 +510,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     setPdfBusy(true)
     try {
       const { pdf } = await import('@react-pdf/renderer')
-      // Tijdelijk offerte-nummer — placeholder tot de DB er één aanmaakt.
+      // Tijdelijk offerte-nummer, placeholder tot de DB er één aanmaakt.
       // Format: OFF-YYYYMMDD-HHMM
       const now = new Date()
       const stamp =
@@ -549,7 +548,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       URL.revokeObjectURL(url)
     } catch (e) {
       console.error('[ManualOfferteModal] PDF generation failed:', e)
-      setError('PDF genereren mislukt — check console voor details.')
+      setError('PDF genereren mislukt, check console voor details.')
     } finally {
       setPdfBusy(false)
     }
@@ -617,7 +616,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
                     )}
                   </div>
                   <div className={styles.subtitle}>
-                    Bv. voor een klant die je telefonisch hebt gesproken — Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
+                    Bv. voor een klant die je telefonisch hebt gesproken, Surface stuurt &lsquo;m daarna direct via WhatsApp of mail
                   </div>
                 </div>
               </div>
@@ -681,7 +680,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Stepper (desktop-only — op mobile gebruiken we de progress bar boven) */}
+          {/* Stepper (desktop-only, op mobile gebruiken we de progress bar boven) */}
           {!isMobile && <div className={styles.stepper}>
             {STEPS.map((s, i) => {
               const active = step === s.n
@@ -736,7 +735,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
           {error && <div className={styles.errorBox}>{error}</div>}
         </div>
 
-        {/* Footer — desktop versie (heel andere structuur op mobile, zie onder) */}
+        {/* Footer, desktop versie (heel andere structuur op mobile, zie onder) */}
         {!isMobile && (
           <div className={styles.footer}>
             <button onClick={onClose} className={styles.btnGhost} type="button">Annuleren</button>
@@ -781,8 +780,8 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Mobile footer — sticky bottom met totaal-bar + primaire CTA.
-            Niet getoond op Step 0 (entry-scherm) — daar advancen tegels. */}
+        {/* Mobile footer, sticky bottom met totaal-bar + primaire CTA.
+            Niet getoond op Step 0 (entry-scherm), daar advancen tegels. */}
         {isMobile && step > 0 && (
           <div className={styles.footerMobile}>
             <div className={styles.mobileTotaalRow}>

@@ -11,7 +11,7 @@ import {
 
 /**
  * Vertaal de invoer van de wizard naar een lijst offerte-regels. Pure
- * functie, geen side-effects — gebruikt door zowel de Step3-preview als
+ * functie, geen side-effects, gebruikt door zowel de Step3-preview als
  * de server-action.
  *
  * Prijzen zijn ontleend aan het Schoon-Straatje ontwerp:
@@ -31,7 +31,7 @@ export function computeRules(
   const r: RegelComputed[] = []
   const m2 = Number(data.m2) || 0
 
-  // Kleur-label — exact zoals Schoon Straatje 'm in de PDF zet:
+  // Kleur-label, exact zoals Schoon Straatje 'm in de PDF zet:
   //  - alleen naturel: "naturel"
   //  - alleen antraciet: "antraciet"
   //  - beide: "naturel + antraciet"
@@ -43,7 +43,7 @@ export function computeRules(
   const kleurSuffix = kleurLabel ? ` ${kleurLabel}` : ''
 
   if (data.sub.includes('invegen')) {
-    // Reiniging-regel — matcht Schoon Straatje:
+    // Reiniging-regel, matcht Schoon Straatje:
     //  m² < 100 → "Reiniging oppervlak (dagprijs)" met aantal=1 dag
     //  m² ≥ 100 → "Reiniging oppervlak" met aantal=m², eenheid=m²
     const reinPr = pricing.reiniging_per_m2
@@ -68,7 +68,7 @@ export function computeRules(
       })
     }
 
-    // Arbeid invegen — namen exact als SS: "Invegen normaal voegzand excl voegzand"
+    // Arbeid invegen, namen exact als SS: "Invegen normaal voegzand excl voegzand"
     if (data.voegzand_normaal_actief) {
       const am2 = Number(data.voegzand_normaal_m2) || 0
       const arbPr = pricing.arbeid_invegen_normaal_per_m2
@@ -96,7 +96,7 @@ export function computeRules(
       }
     }
 
-    // Voegzand-product — SS format: "Voegzand normaal naturel (15 kg/zak)".
+    // Voegzand-product, SS format: "Voegzand normaal naturel (15 kg/zak)".
     // Eenheid = "zakken" (meervoud), zoals in SS PDF te zien.
     if (data.voegzand_normaal_actief && Number(data.voegzand_normaal_zakken) > 0) {
       const zakken = Number(data.voegzand_normaal_zakken)

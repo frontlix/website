@@ -9,7 +9,7 @@ import styles from './OpeningTemplateEditor.module.css'
 
 /**
  * Tab-definities + default-teksten zoals overgenomen uit het design. Bij
- * goedkeuring werken jullie de Surface-config (Python) handmatig bij — deze
+ * goedkeuring werken jullie de Surface-config (Python) handmatig bij, deze
  * defaults blijven dan synchroon. Long-term: source-of-truth naar Supabase.
  */
 const TEMPLATES = [
@@ -29,7 +29,7 @@ Klopt het dat het gaat om ongeveer {m2} m²?`,
     hoofddienst: 'onkruidbeheersing',
     default: `Hoi {voornaam}👋
 
-Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam} — ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.
+Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.
 
 Klopt het dat het gaat om ongeveer {m2} m²?`,
   },
@@ -84,7 +84,7 @@ export function OpeningTemplateEditor({
     return () => clearTimeout(t)
   }, [savedFlash])
 
-  // Auto-grow: textarea-hoogte volgt de inhoud (zie RemindersEditor) — geen
+  // Auto-grow: textarea-hoogte volgt de inhoud (zie RemindersEditor), geen
   // interne scrollbalk die het muiswiel afvangt, hele tekst zichtbaar +
   // overal klikbaar. Reageert ook op tab-wissel (andere draft → ander `text`).
   useEffect(() => {
@@ -172,7 +172,7 @@ export function OpeningTemplateEditor({
 
       {/* Editor + preview kolom-layout */}
       <div className={styles.editorGrid}>
-        {/* Linker kolom — editor */}
+        {/* Linker kolom, editor */}
         <div className={styles.editorCol}>
           <div className={styles.colLabel}>Template-tekst</div>
           <textarea
@@ -214,7 +214,7 @@ export function OpeningTemplateEditor({
           </div>
         </div>
 
-        {/* Rechter kolom — preview */}
+        {/* Rechter kolom, preview */}
         <div className={styles.previewCol}>
           <div className={styles.colLabel}>Voorbeeld</div>
           <div className={styles.previewFrame}>

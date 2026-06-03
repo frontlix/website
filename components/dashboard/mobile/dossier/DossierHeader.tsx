@@ -11,7 +11,7 @@ interface DossierHeaderProps {
 }
 
 /**
- * DossierHeader — terug-knop ("Leads", primary) + lead-identiteit:
+ * DossierHeader, terug-knop ("Leads", primary) + lead-identiteit:
  * 50×50 accent-getinte initialen-avatar, naam (21/800) en een stage-pill
  * ("In gesprek", primary dot+tekst) naast {plaats} · {id}.
  */

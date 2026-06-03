@@ -4,7 +4,7 @@ import { proxyToBotApi } from '@/lib/dashboard/bot-api-proxy'
 /**
  * Stuurt de web-chat fallback-mail opnieuw naar de klant met de huidige
  * (bestaande) magic-link. Gebruikt door owner als de klant zegt "ik heb
- * je mail niet gezien". Geen token-regeneratie — de oude link blijft geldig.
+ * je mail niet gezien". Geen token-regeneratie, de oude link blijft geldig.
  */
 export async function POST(
   req: NextRequest,

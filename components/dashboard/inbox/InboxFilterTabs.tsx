@@ -30,7 +30,7 @@ export function InboxFilterTabs({
     const params = new URLSearchParams(searchParams.toString())
     if (key === 'all') params.delete('filter')
     else params.set('filter', key)
-    // Behoud de geselecteerde lead — anders verspringt de hoofd-pane.
+    // Behoud de geselecteerde lead, anders verspringt de hoofd-pane.
     const qs = params.toString()
     return qs ? `${pathname}?${qs}` : pathname
   }

@@ -2,11 +2,11 @@ import webpush from 'web-push'
 import { getDashboardAdmin } from '../supabase-admin'
 
 /**
- * Push-sender — verstuurt een notification-payload naar alle subscriptions
+ * Push-sender, verstuurt een notification-payload naar alle subscriptions
  * van een user. Dead subscriptions (HTTP 410 Gone of 404) worden uit de DB
  * verwijderd zodat we ze niet blijven proberen.
  *
- * VAPID-keys komen uit env-vars; geen lazy hot-config-reload nodig — de
+ * VAPID-keys komen uit env-vars; geen lazy hot-config-reload nodig, de
  * keys veranderen niet over de levensduur van het proces.
  */
 
@@ -57,7 +57,7 @@ export async function sendPushToUser(
   let sent = 0
   const deadIds: string[] = []
 
-  // Parallel versturen — web-push zelf is async fetch onder de motorkap.
+  // Parallel versturen, web-push zelf is async fetch onder de motorkap.
   await Promise.all(
     rows.map(async (sub) => {
       try {
@@ -67,7 +67,7 @@ export async function sendPushToUser(
             keys: { p256dh: sub.p256dh, auth: sub.auth },
           },
           body,
-          { TTL: 60 * 60 * 24 }, // 24u — daarna laat browser 'm vallen
+          { TTL: 60 * 60 * 24 }, // 24u, daarna laat browser 'm vallen
         )
         sent += 1
       } catch (err: unknown) {

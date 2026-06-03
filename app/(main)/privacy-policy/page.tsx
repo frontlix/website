@@ -88,7 +88,7 @@ export default function PrivacyPolicyPage() {
           <h3>Demo-aanvraag</h3>
           <ul>
             <li>Telefoonnummer (om de WhatsApp-demo te starten)</li>
-            <li>De gegevens die je tijdens de demo zelf met de bot deelt — zie sectie 14</li>
+            <li>De gegevens die je tijdens de demo zelf met de bot deelt, zie sectie 14</li>
           </ul>
 
           <h3>Automatisch verzamelde gegevens</h3>
@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               Geanonimiseerde session recordings, waarbij <strong>alle invoervelden,
-              e-mailadressen en wachtwoorden automatisch worden gemaskeerd</strong> — wij zien
+              e-mailadressen en wachtwoorden automatisch worden gemaskeerd</strong>: wij zien
               dus géén ingevulde tekst of gevoelige gegevens, alleen anoniem klik- en navigatiegedrag
             </li>
           </ul>
@@ -207,9 +207,9 @@ export default function PrivacyPolicyPage() {
             over het gebruik van de website.
           </p>
           <ul>
-            <li><strong>_ga</strong> — onderscheidt unieke gebruikers (bewaartermijn: 2 jaar)</li>
-            <li><strong>_ga_[ID]</strong> — behoudt sessiestatus (bewaartermijn: 2 jaar)</li>
-            <li><strong>ph_*</strong> — PostHog-cookies voor sessie- en gebruiksanalyse (bewaartermijn: 1 jaar)</li>
+            <li><strong>_ga</strong>: onderscheidt unieke gebruikers (bewaartermijn: 2 jaar)</li>
+            <li><strong>_ga_[ID]</strong>: behoudt sessiestatus (bewaartermijn: 2 jaar)</li>
+            <li><strong>ph_*</strong>: PostHog-cookies voor sessie- en gebruiksanalyse (bewaartermijn: 1 jaar)</li>
           </ul>
 
           <h2>8. Formulier-uitval (form-tracking)</h2>

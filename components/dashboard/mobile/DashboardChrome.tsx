@@ -6,16 +6,15 @@ import type { NotifItem } from '@/components/dashboard/NotificationPanel'
 import styles from './DashboardChrome.module.css'
 
 /**
- * DashboardChrome — client wrapper die desktop- en mobile-chrome
+ * DashboardChrome, client wrapper die desktop- en mobile-chrome
  * naast elkaar in de DOM zet. CSS media-query toggelt zichtbaarheid
  * (zelfde patroon als LeadOfferte.module.css `.desktopTree`/`.mobileTree`).
  *
- * `display: contents` zorgt dat de wrapper transparant is voor layout —
- * children gedragen zich als directe kinderen van de parent. Geen
+ * `display: contents` zorgt dat de wrapper transparant is voor layout,  * children gedragen zich als directe kinderen van de parent. Geen
  * layout-shift, geen hydration-flash.
  *
  * Beide takken renderen óf de echte React-tree (sidebar/topbar voor
- * desktop, BottomNav/MeerSheet voor mobile) — alleen één wordt
+ * desktop, BottomNav/MeerSheet voor mobile), alleen één wordt
  * uiteindelijk zichtbaar via de @media-query.
  */
 

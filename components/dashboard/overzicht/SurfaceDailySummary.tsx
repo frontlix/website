@@ -6,7 +6,7 @@ import styles from './SurfaceDailySummary.module.css'
 export type { SurfaceSummaryStats }
 
 /**
- * "Surface samenvatting" — banner kaartje bovenaan de overzicht-pagina.
+ * "Surface samenvatting", banner kaartje bovenaan de overzicht-pagina.
  * Template-based body-tekst uit echte stats. Geen AI-call op v1 (kost
  * OpenAI-tokens per pageload); upgrade naar AI-gen kan later.
  */
@@ -40,7 +40,7 @@ export function SurfaceDailySummary({
         <p className={styles.text}>{body}</p>
 
         <div className={styles.actions}>
-          {/* `scroll: false` zodat Next.js niet naar boven scrollt — drawer
+          {/* `scroll: false` zodat Next.js niet naar boven scrollt, drawer
               opent in-place via searchParam state. */}
           <Link href="?dagrapport=1" scroll={false} className={styles.cta}>
             Bekijk dagrapport

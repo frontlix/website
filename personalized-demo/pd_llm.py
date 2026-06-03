@@ -22,7 +22,7 @@ def _format_history(history: list[ConversationMessage]) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# EXTRACTIE LLM — 1 prompt voor alle 4 categorieën
+# EXTRACTIE LLM, 1 prompt voor alle 4 categorieën
 # ═══════════════════════════════════════════════════════════════════════════
 
 EXTRACTION_PROMPT = """## ROLE
@@ -32,10 +32,10 @@ found or corrected fields as JSON.
 
 ## CATEGORY DETECTION
 - type_dienst: which service the customer wants. ONLY one of:
-  · "carwrapping" — auto wrappen, kleur veranderen, folie op auto, partial wrap, full wrap
-  · "keuken_interieur" — keuken wrappen, kastdeurtjes, meubels, interieurfolie, deuren
-  · "binnen_reclame" — muurreclame, raamfolie, wandprint, kantoorsigning, vloerstickers
-  · "signing" — belettering, voertuigreclame, bedrijfswagen, fleet, stickers op auto/bus
+  · "carwrapping", auto wrappen, kleur veranderen, folie op auto, partial wrap, full wrap
+  · "keuken_interieur", keuken wrappen, kastdeurtjes, meubels, interieurfolie, deuren
+  · "binnen_reclame", muurreclame, raamfolie, wandprint, kantoorsigning, vloerstickers
+  · "signing", belettering, voertuigreclame, bedrijfswagen, fleet, stickers op auto/bus
 
 ## FIELDS PER CATEGORY
 
@@ -139,7 +139,7 @@ async def extract_data(
     if isinstance(parsed.get("email"), str) and "@" in parsed.get("email", ""):
         result["email"] = parsed["email"]
 
-    # Data velden — accepteer zowel top-level als genest in "data"
+    # Data velden, accepteer zowel top-level als genest in "data"
     valid_keys = ALL_FIELDS + ["type_dienst"]
     data: dict[str, str] = {}
 
@@ -161,7 +161,7 @@ async def extract_data(
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# REPLY LLMs — 4 prompts, één per dienst
+# REPLY LLMs, 4 prompts, één per dienst
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Gedeelde voice en gedragsregels voor Nick
@@ -187,7 +187,7 @@ You handle incoming customer inquiries via WhatsApp.
 - Match de lengte van het klantbericht
 
 ## GENERAL RULES
-- Stel precies 1 vraag per bericht — ALTIJD het NEXT veld dat onderaan staat. Sla NOOIT een veld over en vraag NOOIT een ander veld dan NEXT aangeeft
+- Stel precies 1 vraag per bericht, ALTIJD het NEXT veld dat onderaan staat. Sla NOOIT een veld over en vraag NOOIT een ander veld dan NEXT aangeeft
 - Als de klant naar prijs vraagt: geef kort een indicatie uit de PRICING sectie, en stel daarna je volgende vraag
 - Bij naam: begroet warm EENMAAL ("Hoi Tom! Gaaf...")
 - Daarna NIET meer de naam gebruiken tot het laatste COMPLETE bericht
@@ -198,7 +198,7 @@ You handle incoming customer inquiries via WhatsApp.
 - HANDOFF alleen bij EXPLICIETE frustratie of stopwoorden. Korte antwoorden ("ja", "ik heb al een idee") zijn GEEN reden voor handoff
 - Bij twijfel: stel gewoon de volgende vraag
   Herken: "bel me maar", "laat maar", "ik haak af", "te veel vragen", "geen zin meer", "stop", "spreek liever iemand"
-- Nooit prefixen met "Nick:" — schrijf alleen het bericht"""
+- Nooit prefixen met "Nick:", schrijf alleen het bericht"""
 
 
 REPLY_PROMPTS: dict[str, str] = {
@@ -383,7 +383,7 @@ def determine_next_tag(identity: dict, data: dict, collected_data: dict) -> str:
 
     fields = _get_fields_for_dienst(type_dienst)
     for field in fields:
-        # Skip afmetingen bij kantoorsigning — vast pakketprijs
+        # Skip afmetingen bij kantoorsigning, vast pakketprijs
         if field == "afmetingen" and data.get("type_reclame", "").lower() == "kantoorsigning":
             continue
         if not data.get(field):
@@ -438,11 +438,11 @@ NEXT: {next_tag}
 RETRY: {empty_streak}
 
 Your question MUST be about the NEXT field shown above. Look it up in the FIELD GUIDE and ask that question.
-- Only give a short enthusiastic reaction when the customer shares something exciting (like their car model + color choice together). Not on every message — keep it natural
+- Only give a short enthusiastic reaction when the customer shares something exciting (like their car model + color choice together). Not on every message, keep it natural
 - Do NOT use the customer's name after the first greeting
 - Do NOT skip fields or ask about a different field than NEXT
 
-Write 1 WhatsApp message as Nick in Dutch. Only the message text — no JSON, no explanation.
+Write 1 WhatsApp message as Nick in Dutch. Only the message text, no JSON, no explanation.
 If RETRY > 0: rephrase the question differently. At RETRY 3+: offer to help differently."""
 
     chat_history = _format_history(history)

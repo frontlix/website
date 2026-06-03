@@ -60,7 +60,7 @@ export async function createTag(input: {
 
   if (error || !inserted) {
     console.error('[createTag] failed:', error)
-    return { ok: false, error: 'Aanmaken mislukt — geen rechten?' }
+    return { ok: false, error: 'Aanmaken mislukt, geen rechten?' }
   }
 
   revalidatePath('/instellingen')
@@ -123,7 +123,7 @@ export async function updateTag(input: {
   const { error } = await supabase.from('tags').update(patch).eq('id', input.id)
   if (error) {
     console.error('[updateTag] failed:', error)
-    return { ok: false, error: 'Opslaan mislukt — geen rechten?' }
+    return { ok: false, error: 'Opslaan mislukt, geen rechten?' }
   }
 
   revalidatePath('/instellingen')
@@ -151,7 +151,7 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
   const { error } = await supabase.from('tags').delete().eq('id', tagId)
   if (error) {
     console.error('[deleteTag] failed:', error)
-    return { ok: false, error: 'Verwijderen mislukt — geen rechten?' }
+    return { ok: false, error: 'Verwijderen mislukt, geen rechten?' }
   }
 
   revalidatePath('/instellingen')
@@ -167,7 +167,7 @@ export async function deleteTag(tagId: string): Promise<ActionResult> {
  *  - 'INVALID' wanneer er een waarde is maar 'ie matched geen hex-regex.
  *
  * Vrije hex-waardes (buiten COLOR_OPTIONS) zijn toegestaan zolang ze
- * geldig hex zijn — de UI kiest uit presets, maar database staat
+ * geldig hex zijn, de UI kiest uit presets, maar database staat
  * flexibiliteit toe.
  */
 function normalizeKleur(value: string | null | undefined): string | null | 'INVALID' {
@@ -175,7 +175,7 @@ function normalizeKleur(value: string | null | undefined): string | null | 'INVA
   return isValidColor(value) ? value : 'INVALID'
 }
 
-/** Idem voor icon — moet matchen met een key in ICON_OPTIONS. */
+/** Idem voor icon, moet matchen met een key in ICON_OPTIONS. */
 function normalizeIcon(value: string | null | undefined): string | null | 'INVALID' {
   if (value === null || value === undefined || value === '') return null
   return isValidIcon(value) ? value : 'INVALID'

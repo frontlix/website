@@ -15,7 +15,7 @@ type Props = {
 export function ReviewReplyComposer({ review, templates, draft, onDraftChange, onCancel, onPost }: Props) {
   return (
     <div className={styles.composer}>
-      <div className={styles.title}>Concept-antwoord (voorbeeld — gaat nog niet live naar Google)</div>
+      <div className={styles.title}>Concept-antwoord (voorbeeld, gaat nog niet live naar Google)</div>
       <div className={styles.chips}>
         {templates.map((tp) => {
           const herstel = tp.k === 'herstel' && Boolean(review.flag)

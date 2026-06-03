@@ -9,7 +9,7 @@ export async function postSignupNotification(text: string): Promise<void> {
   const url = process.env.SLACK_WEBHOOK_DASHBOARD_SIGNUPS_URL
   if (!url) {
     console.error(
-      '[slack] SLACK_WEBHOOK_DASHBOARD_SIGNUPS_URL niet gezet — signup-notificatie wordt overgeslagen'
+      '[slack] SLACK_WEBHOOK_DASHBOARD_SIGNUPS_URL niet gezet, signup-notificatie wordt overgeslagen'
     )
     return
   }

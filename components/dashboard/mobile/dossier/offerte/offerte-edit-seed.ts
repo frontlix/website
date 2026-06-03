@@ -98,7 +98,7 @@ function seedBericht(voornaam: string): string {
  *   bestaande regels), om dubbeltelling te voorkomen; preset blijft toevoegbaar.
  * - btwKey '21', dagen 14, korting-prefill uit input.
  *
- * Line-ids zijn deterministisch ('l' + index) — nooit uit een klok/random,
+ * Line-ids zijn deterministisch ('l' + index), nooit uit een klok/random,
  * dat breekt tests en SSR-hydratie.
  */
 export function seedOfferteState(input: OfferteSeedInput): OfferteSeed {
@@ -157,7 +157,7 @@ export function seedOfferteState(input: OfferteSeedInput): OfferteSeed {
   return {
     lines,
     toeslagen,
-    // kortingPct/kortingNote zijn non-nullable in OfferteSeedInput — geen ?? nodig.
+    // kortingPct/kortingNote zijn non-nullable in OfferteSeedInput, geen ?? nodig.
     kortingPct: input.kortingPct,
     kortingNote: input.kortingNote,
     btwKey: '21',

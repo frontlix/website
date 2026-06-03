@@ -13,7 +13,7 @@ import styles from './AgendaHerplanSheet.module.css'
 
 interface AgendaHerplanSheetProps {
   ev: AgendaEvent
-  /** Alle week-events — voor bezet-niveau per dag + conflict-detectie. */
+  /** Alle week-events, voor bezet-niveau per dag + conflict-detectie. */
   events: AgendaEvent[]
   open: boolean
   onClose: () => void
@@ -58,7 +58,7 @@ function dayLabelReal(date: string): string {
 }
 
 /**
- * AgendaHerplanSheet — bottom-sheet om een afspraak te verzetten. De dagen zijn
+ * AgendaHerplanSheet, bottom-sheet om een afspraak te verzetten. De dagen zijn
  * de 7 komende dagen (echt), de bezet-blokken + slot-status komen uit de echte
  * week-afspraken, en Bevestig slaat het nieuwe tijdstip op via
  * rescheduleAppointment (afspraak_geboekt_op).
@@ -113,7 +113,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
 
   const activeEntry = days.find((d) => d.date === activeDay)
   const slotsTitle = activeEntry
-    ? `Beschikbare tijden — ${cap(activeEntry.wday)} ${activeEntry.day} ${NL_MONTH[activeEntry.month]}`
+    ? `Beschikbare tijden, ${cap(activeEntry.wday)} ${activeEntry.day} ${NL_MONTH[activeEntry.month]}`
     : 'Beschikbare tijden'
   const monthLabel = activeEntry
     ? `${cap(NL_MONTH[activeEntry.month])} ${new Date(`${activeDay}T00:00:00`).getFullYear()}`
@@ -151,7 +151,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
 
   return (
     <div className={styles.overlay}>
-      {/* Backdrop — klik = sluit */}
+      {/* Backdrop, klik = sluit */}
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
       {/* Sheet */}
@@ -166,7 +166,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
         {/* Grabber */}
         <div className={styles.handle} aria-hidden="true" />
 
-        {/* Header — Annuleren / titel / Bevestig (disabled bij conflict) */}
+        {/* Header, Annuleren / titel / Bevestig (disabled bij conflict) */}
         <div className={styles.header}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>
             Annuleren
@@ -191,7 +191,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
             <div className={styles.currentBody}>
               <div className={styles.currentLabel}>NU GEPLAND</div>
               <div className={styles.currentValue}>
-                {dayLabelReal(orig.date)} · {orig.start} — {orig.end}
+                {dayLabelReal(orig.date)} · {orig.start}, {orig.end}
               </div>
             </div>
             <div className={styles.currentName}>{orig.naam}</div>
@@ -204,7 +204,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
           <span className={styles.monthBtn}>{monthLabel}</span>
         </div>
 
-        {/* DayPicker — 7 komende dagen */}
+        {/* DayPicker, 7 komende dagen */}
         <div className={styles.dayPicker}>
           {days.map((d) => {
             const on = d.date === activeDay
@@ -231,7 +231,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
           })}
         </div>
 
-        {/* SlotsGrid — beschikbare tijden voor de gekozen dag */}
+        {/* SlotsGrid, beschikbare tijden voor de gekozen dag */}
         <div className={styles.slotsWrap}>
           <div className={styles.slotsTitle}>{slotsTitle}</div>
           <div className={styles.slotsGrid}>
@@ -256,7 +256,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
           </div>
         </div>
 
-        {/* Conflict-banner — alleen tonen wanneer het gekozen slot botst */}
+        {/* Conflict-banner, alleen tonen wanneer het gekozen slot botst */}
         {hasConflict && (
           <div className={styles.conflictBanner}>
             <div className={styles.conflictIcon}>
@@ -268,7 +268,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
               </div>
               <div className={styles.conflictSub}>
                 De klus duurt {durStr(orig.start, orig.end)}, dus deze loopt door tot{' '}
-                {conflictEnd} — over de volgende afspraak heen. Kies een later slot of
+                {conflictEnd}, over de volgende afspraak heen. Kies een later slot of
                 verzet de andere afspraak.
               </div>
             </div>
@@ -278,7 +278,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
         {/* Foutmelding bij opslaan */}
         {error && <div className={styles.saveError}>{error}</div>}
 
-        {/* WhatsApp-notify toggle — UI; automatische WA-notificatie is nog niet ingericht. */}
+        {/* WhatsApp-notify toggle, UI; automatische WA-notificatie is nog niet ingericht. */}
         <div className={styles.notifyRow}>
           <MessageCircle size={18} className={styles.notifyIcon} aria-hidden="true" />
           <div className={styles.notifyBody}>

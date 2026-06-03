@@ -16,7 +16,7 @@
  *    bewaard in `offertes.regels_snapshot` (jsonb).
  *
  * BTW: hardcoded 21% (zie ook `btw-calc.ts`). Wijziging vereist bewuste
- * codeaanpassing — geen runtime-config.
+ * codeaanpassing, geen runtime-config.
  *
  * Auth: alle actions vereisen een ingelogde, approved dashboard-user.
  * Schrijven gebeurt via service-role (admin-client) omdat de tabellen
@@ -32,7 +32,7 @@ const BTW_FACTOR = 1.21
 
 /** Input voor één regel in de draft-payload. */
 export type DraftRegelInput = {
-  /** Optioneel — wordt niet gebruikt voor INSERT (we REPLACE alle regels). */
+  /** Optioneel, wordt niet gebruikt voor INSERT (we REPLACE alle regels). */
   id?: string
   bron: 'auto_lead' | 'manual'
   omschrijving: string
@@ -58,7 +58,7 @@ type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string }
  * Format van de regels-snapshot die we in offertes.regels_snapshot schrijven
  * bij het versturen (Fase 2.5) én lezen bij revertConcept hieronder.
  *
- * Bewust GEEN id of uid — dit is een momentopname, geen referentie.
+ * Bewust GEEN id of uid, dit is een momentopname, geen referentie.
  */
 type RegelsSnapshot = Array<{
   omschrijving: string
@@ -75,14 +75,14 @@ function computeTotaalIncl(
   regels: DraftRegelInput[],
   kortingPct: number,
 ): number {
-  // Subtotaal EXCL — som van (aantal * stukprijs), waarbij null-aantal → 1
+  // Subtotaal EXCL, som van (aantal * stukprijs), waarbij null-aantal → 1
   // (consistent met OfferteRegelsTable die ook met 0/null werkt; we vangen
   // hier null op als 0 zodat de berekening niet exploded).
   const subtotaal = regels.reduce((acc, r) => {
     const aantal = r.aantal ?? 0
     return acc + aantal * (r.stukprijs ?? 0)
   }, 0)
-  // Korting clampen [0, 100]: bewust defensief — UI hoort 'm te clampen,
+  // Korting clampen [0, 100]: bewust defensief, UI hoort 'm te clampen,
   // maar we vertrouwen geen client-input.
   const pct = Math.max(0, Math.min(100, kortingPct))
   const naKorting = subtotaal * (1 - pct / 100)
@@ -238,7 +238,7 @@ export async function saveDraft(
 
     return { ok: true }
   } catch (err) {
-    // Auth-check gooit 'NEXT_REDIRECT' bij niet-ingelogde users — laat die
+    // Auth-check gooit 'NEXT_REDIRECT' bij niet-ingelogde users, laat die
     // doorvallen zodat Next 'm correct als redirect afhandelt.
     if (err && typeof err === 'object' && 'digest' in err) {
       throw err
@@ -254,8 +254,8 @@ export async function saveDraft(
  * prijsregels terug naar de snapshot van de laatste verzonden offerte.
  *
  *  1. Auth-check
- *  2. Concept-rij ophalen — geen concept? error.
- *  3. Laatste verzonden versie (is_concept=false) ophalen — geen? error.
+ *  2. Concept-rij ophalen, geen concept? error.
+ *  3. Laatste verzonden versie (is_concept=false) ophalen, geen? error.
  *  4. regels_snapshot uit de verzonden versie lezen.
  *  5. REPLACE prijsregels met snapshot-inhoud.
  *  6. Korting-velden op de lead terugzetten naar de waarden van de
@@ -307,7 +307,7 @@ export async function revertConcept(leadId: string): Promise<Result> {
       return {
         ok: false,
         error:
-          'Verzonden versie heeft geen regels-snapshot — terugdraaien niet mogelijk.',
+          'Verzonden versie heeft geen regels-snapshot, terugdraaien niet mogelijk.',
       }
     }
     const snapshot = snapshotRaw as RegelsSnapshot
@@ -342,7 +342,7 @@ export async function revertConcept(leadId: string): Promise<Result> {
     }
 
     // ── 4. Korting-velden op lead resetten naar verzonden waarde ──
-    // De omschrijving zit niet in offertes.korting_pct — alleen pct.
+    // De omschrijving zit niet in offertes.korting_pct, alleen pct.
     // We laten de omschrijving zoals 'ie nu op lead staat, want die wordt
     // ook tijdens "verstuur" naar de lead geschreven. Bij twijfel reset
     // alleen het percentage; omschrijving raken we niet aan.

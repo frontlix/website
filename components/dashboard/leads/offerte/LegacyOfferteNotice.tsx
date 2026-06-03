@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * LegacyOfferteNotice — banner getoond wanneer een lead WEL een verzonden
+ * LegacyOfferteNotice, banner getoond wanneer een lead WEL een verzonden
  * offerte heeft, maar GEEN prijsregels in de DB.
  *
  * Dit gebeurt vooral bij oude offertes (bot-flow vóór de redesign) die
@@ -45,7 +45,7 @@ export function LegacyOfferteNotice({ leadId }: Props) {
       <div className={styles.body}>
         <div className={styles.title}>Geen detail-regels voor deze offerte</div>
         <p className={styles.text}>
-          De verzonden offerte heeft geen losse regels in de database — alleen
+          De verzonden offerte heeft geen losse regels in de database, alleen
           het totaalbedrag en de PDF. Klik hieronder om automatisch regels te
           genereren uit de huidige lead-data zodat je ze kunt bekijken en
           aanpassen.

@@ -47,7 +47,7 @@ export function WatAlsSimulator({ rules }: { rules: Rule[] }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.intro}>
-        Vergelijk een hypothetische prijs met de huidige waarde — handig om
+        Vergelijk een hypothetische prijs met de huidige waarde, handig om
         een wijziging eerst te verkennen voordat je hem opslaat hierboven.
       </div>
 

@@ -1,4 +1,4 @@
-"""Pricing functies voor De Designmaker — 4 diensten.
+"""Pricing functies voor De Designmaker, 4 diensten.
 
 Hergebruikt PricingResult/PricingLine uit lead-automation/models/branches.py
 en helpers uit lead-automation/branches/base.py.

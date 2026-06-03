@@ -18,7 +18,7 @@ interface AgendaNewSheetProps {
   onSave: () => void
 }
 
-// ── Type-chips — kind → tone-token volgens de Translation Contract ────────────
+// ── Type-chips, kind → tone-token volgens de Translation Contract ────────────
 // plaatsbezoek → warning, klus → primary, bel → whatsapp, eigen → text-muted.
 type Kind = 'Plaatsbezoek' | 'Klus' | 'Bel' | 'Eigen'
 const KIND_TONE: Record<Kind, string> = {
@@ -30,18 +30,18 @@ const KIND_TONE: Record<Kind, string> = {
 const KINDS: Kind[] = ['Plaatsbezoek', 'Klus', 'Bel', 'Eigen']
 
 /**
- * AgendaNewSheet — bottom-sheet (max-height 88%, scrollbaar) om een nieuwe
+ * AgendaNewSheet, bottom-sheet (max-height 88%, scrollbaar) om een nieuwe
  * afspraak te plannen. Port van src/agenda-b/ABNew.jsx.
  *
  * Secties (FieldGroup / FieldRow): Klant, Wanneer (datum/tijd+duur/reminder),
- * Type (kind-chips — geselecteerd krijgt eventTone-achtergrond via --tone),
+ * Type (kind-chips, geselecteerd krijgt eventTone-achtergrond via --tone),
  * Adres + Dienst, Notitie (textarea).
  *
  * v1: alle waarden in lokale state met demo-defaults; geen persistente write
  * (zie onSave).
  */
 export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
-  // Demo-defaults — in de functionele pass komen deze uit de geselecteerde lead.
+  // Demo-defaults, in de functionele pass komen deze uit de geselecteerde lead.
   const [kind, setKind] = useState<Kind>('Klus')
   const [note, setNote] = useState('')
 
@@ -57,7 +57,7 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
 
   return (
     <div className={styles.overlay}>
-      {/* Backdrop — klik = sluit */}
+      {/* Backdrop, klik = sluit */}
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
       {/* Sheet */}
@@ -72,7 +72,7 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
         {/* Grabber */}
         <div className={styles.handle} aria-hidden="true" />
 
-        {/* Header — Annuleren / titel / Opslaan */}
+        {/* Header, Annuleren / titel / Opslaan */}
         <div className={styles.header}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>
             Annuleren
@@ -82,7 +82,7 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
             type="button"
             className={styles.saveBtn}
             onClick={() => {
-              // TODO: functional pass — create-appointment server action
+              // TODO: functional pass, create-appointment server action
               onSave()
             }}
           >
@@ -193,7 +193,7 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
   )
 }
 
-// ── Helper-componenten (lokaal — geport uit ABNew FieldGroup/FieldRow/FieldLabel)
+// ── Helper-componenten (lokaal, geport uit ABNew FieldGroup/FieldRow/FieldLabel)
 
 function FieldGroup({ label, children }: { label: string; children: ReactNode }) {
   return (

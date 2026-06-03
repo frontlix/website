@@ -29,7 +29,7 @@ const steps = [
     icon: MessageSquare,
     title: 'De juiste vragen worden automatisch gesteld',
     description:
-      'Het gesprek wordt automatisch overgenomen via WhatsApp. Stap voor stap worden de juiste vragen gesteld: type oppervlak, afmetingen, materiaal — alles wordt slim uitgevraagd.',
+      'Het gesprek wordt automatisch overgenomen via WhatsApp. Stap voor stap worden de juiste vragen gesteld: type oppervlak, afmetingen, materiaal, alles wordt slim uitgevraagd.',
     details: [
       'Natuurlijke WhatsApp conversatie',
       'Slimme follow-up vragen',
