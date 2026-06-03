@@ -1,4 +1,4 @@
-// MOCK v1 — vervang door getAppointmentsForRange in de functionele pass
+// MOCK v1, vervang door getAppointmentsForRange in de functionele pass
 
 export type AgendaEventKind = 'plaatsbezoek' | 'klus' | 'bel' | 'eigen'
 
@@ -80,7 +80,7 @@ export const AG_EVENTS: AgendaEvent[] = [
     dienst: 'Bouwbedrijf Korstmos',
   },
 
-  // Woensdag 13 mei — vandaag, 3 stops; C1 is live
+  // Woensdag 13 mei, vandaag, 3 stops; C1 is live
   {
     id: 'C1',
     date: '2026-05-13',
@@ -143,7 +143,7 @@ export const AG_EVENTS: AgendaEvent[] = [
     dienst: 'Materiaal',
   },
 
-  // Vrijdag 15 mei — lange dag
+  // Vrijdag 15 mei, lange dag
   {
     id: 'E1',
     date: '2026-05-15',
@@ -165,12 +165,12 @@ export const AG_EVENTS: AgendaEvent[] = [
     naam: 'Peter Hofstra',
     adres: 'Utrecht',
     m2: 70,
-    dienst: 'Buiten radius — check',
+    dienst: 'Buiten radius, check',
     lead: 'L-2080',
   },
 
-  // Zaterdag 16 — leeg
-  // Zondag 17  — leeg
+  // Zaterdag 16, leeg
+  // Zondag 17, leeg
 ]
 
 // ── Week days strip data ───────────────────────────────────────────────────

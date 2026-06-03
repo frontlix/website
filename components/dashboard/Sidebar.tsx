@@ -104,7 +104,7 @@ export function Sidebar({
 
   return (
     <>
-      {/* Backdrop — alleen zichtbaar bij open mobile-drawer */}
+      {/* Backdrop, alleen zichtbaar bij open mobile-drawer */}
       <div
         className={`${styles.backdrop} ${mobileOpen ? styles.backdropOpen : ''}`}
         onClick={() => setMobileOpen(false)}
@@ -183,7 +183,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
       <span
         className={`${styles.navItem} ${styles.navItemDisabled}`}
         aria-disabled="true"
-        title={`${item.label} — binnenkort beschikbaar`}
+        title={`${item.label}, binnenkort beschikbaar`}
       >
         <Icon size={16} />
         <span className={styles.navLabel}>{item.label}</span>

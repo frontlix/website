@@ -6,7 +6,7 @@ import { SYSTEM_TAG_DEFAULTS } from './tag-presets'
  *
  * Twee aparte queries (geen embedded join) zodat dit ook werkt als de
  * RLS-policies op `tags` en `lead_tags` los van elkaar zijn geconfigureerd.
- * Counts worden in JS gegroepeerd — `tags` blijft typisch < 50 rijen dus
+ * Counts worden in JS gegroepeerd, `tags` blijft typisch < 50 rijen dus
  * geen performance-zorgen.
  */
 
@@ -28,13 +28,13 @@ const SYSTEM_TAG_NAMES = new Set(SYSTEM_TAG_DEFAULTS.map((d) => d.naam))
 
 /**
  * Self-healing: zorgt dat alle systeem-tags als rij in `tags` staan met
- * default kleur + icoon. Idempotent — als ze al bestaan, no-op. Bestaande
+ * default kleur + icoon. Idempotent, als ze al bestaan, no-op. Bestaande
  * systeem-tags met NULL kleur/icon worden ge-upgrade met defaults (zonder
  * user-customizations te overschrijven).
  *
  * Race condition: 2 gelijktijdige page-loads kunnen beide proberen te
  * inserten. Aangezien er geen UNIQUE constraint op `tags.naam` is, kan dat
- * in theorie duplicates geven — same trade-off als `createTag` al accepteert.
+ * in theorie duplicates geven, same trade-off als `createTag` al accepteert.
  */
 async function ensureSystemTagsExist(
   supabase: Awaited<ReturnType<typeof getDashboardSupabase>>,
@@ -55,7 +55,7 @@ async function ensureSystemTagsExist(
   const existingRows = (existing ?? []) as ExistingRow[]
   const existingByName = new Map(existingRows.map((r) => [r.naam, r]))
 
-  // Stap 1 — insert ontbrekende systeem-tags met defaults.
+  // Stap 1, insert ontbrekende systeem-tags met defaults.
   const missing = SYSTEM_TAG_DEFAULTS.filter((d) => !existingByName.has(d.naam))
   if (missing.length > 0) {
     const { error: insErr } = await supabase
@@ -63,11 +63,11 @@ async function ensureSystemTagsExist(
       .insert(missing.map((d) => ({ naam: d.naam, kleur: d.kleur, icon: d.icon })))
     if (insErr) {
       console.error('[ensureSystemTagsExist] insert failed:', insErr)
-      // Niet hard falen — door naar update-stap.
+      // Niet hard falen, door naar update-stap.
     }
   }
 
-  // Stap 2 — upgrade bestaande systeem-tags die nog NULL kleur of icon hebben.
+  // Stap 2, upgrade bestaande systeem-tags die nog NULL kleur of icon hebben.
   // Eén UPDATE per tag; lijst is max 5 dus prima qua perf.
   for (const def of SYSTEM_TAG_DEFAULTS) {
     const row = existingByName.get(def.naam)

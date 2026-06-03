@@ -10,7 +10,7 @@ export function Avatar({
   /** Optionele kleur-tint 1-5. Wanneer ongeset: gradient (Frontlix-brand). */
   tint?: 1 | 2 | 3 | 4 | 5
 }) {
-  // Pakt eerste 2 woorden, neemt eerste letter van elk — "Familie Bakker" → "FB".
+  // Pakt eerste 2 woorden, neemt eerste letter van elk, "Familie Bakker" → "FB".
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -19,7 +19,7 @@ export function Avatar({
     .join('')
 
   // Auto-tint via hash op naam wanneer geen expliciete tint is meegegeven
-  // — geeft elke klant een eigen herkenbare kleur in lijsten.
+  //, geeft elke klant een eigen herkenbare kleur in lijsten.
   const resolvedTint = tint ?? tintFromName(name)
 
   const sizeClass = size === 'md' ? '' : size

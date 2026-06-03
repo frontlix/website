@@ -86,7 +86,7 @@ export function InstField({ label, value }: InstFieldProps) {
 }
 
 // ── InstGroupCard ──
-// Surface card container; radius 14, overflow hidden — wraps rows/items.
+// Surface card container; radius 14, overflow hidden, wraps rows/items.
 type InstGroupCardProps = {
   children: React.ReactNode
 }

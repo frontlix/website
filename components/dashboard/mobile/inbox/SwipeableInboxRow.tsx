@@ -110,7 +110,7 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
         </button>
       </div>
 
-      {/* De rij zelf — schuift via directe DOM-transform (hook, geen state) */}
+      {/* De rij zelf, schuift via directe DOM-transform (hook, geen state) */}
       <div
         ref={ref}
         onClick={handleTap}

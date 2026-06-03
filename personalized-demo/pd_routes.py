@@ -1,6 +1,6 @@
-"""Personalized demo routes — gescheiden van de lead-automation branche-flow.
+"""Personalized demo routes, gescheiden van de lead-automation branche-flow.
 
-POST /demo/personalized/start  — Start een persoonlijke demo (vanuit Next.js)
+POST /demo/personalized/start, Start een persoonlijke demo (vanuit Next.js)
 """
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ async def start_personalized_demo(req: PersonalizedDemoStartRequest):
         get_supabase().table("conversations").delete().eq("lead_id", old_lead["id"]).execute()
         get_supabase().table("leads").delete().eq("id", old_lead["id"]).execute()
 
-    # Create lead with demo_type="personalized" — naam alvast invullen uit de demo
+    # Create lead with demo_type="personalized", naam alvast invullen uit de demo
     naam = demo_info.get("naam", "")
 
     result = get_supabase().table("leads").insert({

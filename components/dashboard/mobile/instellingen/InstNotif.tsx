@@ -40,7 +40,7 @@ const KANAAL_ICON: Record<NotificationKanaal, LucideIcon> = {
   whatsapp: MessageCircle,
 }
 
-// Huidige live fase — kanalen met fase > LIVE_FASE zijn disabled (fase 4 = whatsapp).
+// Huidige live fase, kanalen met fase > LIVE_FASE zijn disabled (fase 4 = whatsapp).
 const LIVE_FASE = 3
 
 type Props = {
@@ -112,7 +112,7 @@ export function InstNotif({ prefs, digestTijd }: Props) {
                     on={enabled.get(key) ?? false}
                     onChange={() => handleToggle(evt, kn)}
                     size={0.85}
-                    label={`${EVENT_LABELS[evt].titel} — ${KANAAL_LABELS[kn]}`}
+                    label={`${EVENT_LABELS[evt].titel}, ${KANAAL_LABELS[kn]}`}
                     disabled={!isLive || savingKey === key}
                   />
                 </div>
@@ -144,13 +144,13 @@ function pushNiceError(reason: string | undefined): string {
     case 'no-vapid':
       return 'Push is server-side nog niet geconfigureerd.'
     case 'save-failed':
-      return 'Subscription kon niet worden opgeslagen — probeer opnieuw.'
+      return 'Subscription kon niet worden opgeslagen, probeer opnieuw.'
     default:
-      return 'Push kon niet worden ingeschakeld — probeer opnieuw.'
+      return 'Push kon niet worden ingeschakeld, probeer opnieuw.'
   }
 }
 
-/** Tijdstip voor de dagelijkse samenvatting — opslaan bij blur (geen mock). */
+/** Tijdstip voor de dagelijkse samenvatting, opslaan bij blur (geen mock). */
 function DigestTijdRow({ initial }: { initial: string }) {
   const [tijd, setTijd] = useState(initial)
   const [status, setStatus] = useState<'idle' | 'saving' | 'ok' | 'err'>('idle')

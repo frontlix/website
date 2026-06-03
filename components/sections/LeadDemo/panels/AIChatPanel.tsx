@@ -24,7 +24,7 @@ const MESSAGES: ChatMessage[] = [
   {
     id: 1,
     side: 'ai',
-    text: 'Hoi Thomas! 👋 Ik ben de assistent van Installatiebedrijf De Vries. Je hebt zojuist een aanvraag gedaan — top! Ik stel je zo een offerte op. Mag ik je een paar korte vragen stellen?',
+    text: 'Hoi Thomas! 👋 Ik ben de assistent van Installatiebedrijf De Vries. Je hebt zojuist een aanvraag gedaan, top! Ik stel je zo een offerte op. Mag ik je een paar korte vragen stellen?',
     time: '14:01',
   },
   { id: 2, side: 'user', text: 'Ja natuurlijk!', time: '14:02', ticks: true },

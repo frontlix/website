@@ -32,7 +32,7 @@ export function OmzetDoelForm({
     const trimmed = raw.trim()
     const value = trimmed === '' ? null : Number(trimmed)
 
-    // Client-side guard — server doet ook validatie.
+    // Client-side guard, server doet ook validatie.
     if (value !== null && (!Number.isFinite(value) || value < 0)) {
       setStatus({ kind: 'error', message: 'Voer een geldig, niet-negatief getal in.' })
       return
@@ -79,7 +79,7 @@ export function OmzetDoelForm({
           <Check size={14} />
           <span>
             {status.value === null
-              ? 'Doel gewist — er wordt geen ring meer getoond.'
+              ? 'Doel gewist, er wordt geen ring meer getoond.'
               : `Doel opgeslagen: € ${status.value.toLocaleString('nl-NL')} per maand.`}
           </span>
         </div>

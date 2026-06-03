@@ -66,7 +66,7 @@ export function PollApproval() {
         color: 'var(--color-text-muted)',
       }}
     >
-      {connected ? '✓ Verbonden — we sturen je automatisch door zodra je toegang krijgt.' : 'Verbinden…'}
+      {connected ? '✓ Verbonden, we sturen je automatisch door zodra je toegang krijgt.' : 'Verbinden…'}
     </p>
   )
 }

@@ -37,7 +37,7 @@ export async function sendConfirmation(to: string, naam: string) {
   await transporter.sendMail({
     from: `Frontlix <${process.env.MAIL_USER}>`,
     to,
-    subject: 'Bedankt voor je bericht — Frontlix',
+    subject: 'Bedankt voor je bericht | Frontlix',
     html: `
 <!DOCTYPE html>
 <html lang="nl">

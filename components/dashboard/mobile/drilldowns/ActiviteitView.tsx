@@ -37,7 +37,7 @@ const LABELS: Record<ActivityType, string> = {
 }
 
 /**
- * ActiviteitView — full-screen drilldown vanaf "Alles bekijken" in ActivityFeedBlock.
+ * ActiviteitView, full-screen drilldown vanaf "Alles bekijken" in ActivityFeedBlock.
  *
  * - Subtitle toont live-indicator + totaal aantal events.
  * - Horizontaal scrollable filter-chips (Alles / Leads / Offertes / WhatsApp / Afspraken).
@@ -134,7 +134,7 @@ function Chip({
 
 function Row({ item }: { item: ActivityItem }) {
   const Icon = ICONS[item.type]
-  // Gedeelde kaart-inhoud — identiek voor de link- en fallback-variant.
+  // Gedeelde kaart-inhoud, identiek voor de link- en fallback-variant.
   const content = (
     <>
       <span className={styles.iconBox} data-type={item.type}>

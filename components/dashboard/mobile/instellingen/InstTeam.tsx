@@ -1,7 +1,7 @@
 'use client'
 
 // Toont de echte approved teamleden uit dashboard_user_profiles.
-// Let op: die tabel bevat (nog) géén e-mail of persoonsnaam — alleen
+// Let op: die tabel bevat (nog) géén e-mail of persoonsnaam, alleen
 // bedrijfsnaam + owner-vlag + user_id. We tonen wat er is en verzinnen
 // niets bij. "Lid uitnodigen" heeft geen invite-flow → disabled met hint.
 
@@ -21,7 +21,7 @@ function initials(naam: string): string {
   return out.toUpperCase() || '?'
 }
 
-/** Team-detailscherm. Plain content — drilldown layer levert header. */
+/** Team-detailscherm. Plain content, drilldown layer levert header. */
 export function InstTeam({ members }: { members: TeamMember[] }) {
   return (
     <div className={styles.container}>
@@ -42,7 +42,7 @@ export function InstTeam({ members }: { members: TeamMember[] }) {
                 {initials(naam)}
               </div>
 
-              {/* Naam + (verkort) user-id — geen e-mail beschikbaar in deze tabel */}
+              {/* Naam + (verkort) user-id, geen e-mail beschikbaar in deze tabel */}
               <div className={styles.info}>
                 <div className={styles.naam}>{naam}</div>
                 <div className={styles.email}>{m.user_id.slice(0, 8)}…</div>
@@ -63,11 +63,11 @@ export function InstTeam({ members }: { members: TeamMember[] }) {
         )}
       </InstGroupCard>
 
-      {/* Uitnodigen verloopt via Frontlix-support — geen self-service invite-flow. */}
+      {/* Uitnodigen verloopt via Frontlix-support, geen self-service invite-flow. */}
       <div className={styles.btnWrap}>
         <InstGhostBtn disabled>
           <Plus size={15} aria-hidden="true" />
-          Lid uitnodigen — via Frontlix-support
+          Lid uitnodigen, via Frontlix-support
         </InstGhostBtn>
       </div>
     </div>

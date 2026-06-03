@@ -54,7 +54,7 @@ export default function LeadDemo() {
           const nextStepId = ((fromStep - 1 + nextOffset) % totalSteps) + 1 // 1-indexed
           add(() => setCurrentStep(nextStepId), cumulative)
         } else {
-          /* All steps played — show complete, then restart from the same step */
+          /* All steps played, show complete, then restart from the same step */
           add(() => setShowComplete(true), cumulative)
           add(() => {
             setResetKey((k) => k + 1)
@@ -103,7 +103,7 @@ export default function LeadDemo() {
     startSequenceFrom(nextStep)
   }, [startSequenceFrom])
 
-  /* IntersectionObserver — auto-start when scrolled into view */
+  /* IntersectionObserver, auto-start when scrolled into view */
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
@@ -142,7 +142,7 @@ export default function LeadDemo() {
         />
 
         <div className={styles.columns}>
-          {/* Glow ring arcs — attached to the blue border of .columns */}
+          {/* Glow ring arcs, attached to the blue border of .columns */}
           <Image
             src="/images/flare-blue.png"
             alt=""
@@ -190,7 +190,7 @@ export default function LeadDemo() {
             <Pipeline currentStep={currentStep} showComplete={showComplete} onStepClick={handleStepClick} />
           </div>
 
-          {/* Right column: animation panels — touch-hold pauses the animation */}
+          {/* Right column: animation panels, touch-hold pauses the animation */}
           <div
             className={styles.panelContainer}
             onTouchStart={handleTouchStart}

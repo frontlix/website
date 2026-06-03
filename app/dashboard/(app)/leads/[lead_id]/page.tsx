@@ -34,7 +34,7 @@ export default async function LeadDetailPage({
   const { lead_id } = await params
   const { tab } = (await searchParams) ?? {}
   // Op mobile verbergen we de WhatsApp-thread én de Afspraak-kaart wanneer
-  // de gebruiker actief de Offerte-tab bewerkt — het scherm moet zich dan
+  // de gebruiker actief de Offerte-tab bewerkt, het scherm moet zich dan
   // focussen op de offerte-edit-flow. Desktop blijft beide kolommen tonen.
   const offerteTabActief = (tab ?? 'info') === 'offerte'
   const [detail, allTags, leadTags] = await Promise.all([
@@ -53,7 +53,7 @@ export default async function LeadDetailPage({
     <>
       <div className={styles.desktopTree}>
         <LeadDetailHeader lead={lead} />
-        {/* Bot-status strip — op desktop direct onder de header. Op mobile
+        {/* Bot-status strip, op desktop direct onder de header. Op mobile
             verbergt CSS deze versie en wordt 'ie binnen colChat (vlak voor
             WhatsApp-paneel) gerenderd zodat de gebruiker eerst de lead-
             gegevens leest en pas in de gespreks-context de Surface-status
@@ -97,7 +97,7 @@ export default async function LeadDetailPage({
                     isOwner={isOwner}
                   />
                   {/* Afspraak-blok hoort bij de offerte-flow, maar op mobile
-                      wil de gebruiker volle focus op de regel-editor — daar
+                      wil de gebruiker volle focus op de regel-editor, daar
                       verbergen we 'm. Desktop houdt 'm zichtbaar. */}
                   <div className={styles.afspraakDesktopOnly}>
                     <LeadAfspraak lead={lead} />
@@ -126,14 +126,14 @@ export default async function LeadDetailPage({
           </div>
 
           {/* Rechterkolom: bot-status + WhatsApp transcript. Op mobile +
-              Offerte-tab verbergen we de hele kolom — gebruiker wil zich
+              Offerte-tab verbergen we de hele kolom, gebruiker wil zich
               focussen op de regel-editor zonder bot-status of chat eronder. */}
           <div
             className={`${styles.colChat} ${
               offerteTabActief ? styles.colChatHiddenOnMobileOfferte : ''
             }`}
           >
-            {/* Mobile-only positie voor LeadBotStatus — op desktop verborgen
+            {/* Mobile-only positie voor LeadBotStatus, op desktop verborgen
                 via CSS, op andere mobile-tabs zichtbaar boven WhatsApp. */}
             <div className={styles.botStatusMobile}>
               <LeadBotStatus lead={lead} />

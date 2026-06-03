@@ -20,7 +20,7 @@ import { MessageCircle } from 'lucide-react'
 import { OFullSheet } from './OfferteEditAtoms'
 import styles from './OffertePdfPreview.module.css'
 
-// ── Data-vorm (props-contract) — §4.7 ────────────────────────────────────
+// ── Data-vorm (props-contract), §4.7 ────────────────────────────────────
 // Exacte shape die DossOfferteEdit levert, afgeleid van de live editor-state.
 // Spiegelt de velden die pdf-template.ts (OffertePDFData) gebruikt.
 export type OffertePdfData = {
@@ -62,7 +62,7 @@ export type OffertePdfPreviewProps = {
 }
 
 // ── Geldformaat: exact pdf-template.ts formatCurrency ────────────────────
-// "€ 1234,56" — euro + spatie + getal, komma als decimaal, géén duizendtal-punt.
+// "€ 1234,56", euro + spatie + getal, komma als decimaal, géén duizendtal-punt.
 // Bewust NIET eur() uit offerte-edit-model (die geeft nl-NL met duizendtal-punt).
 function eurPdf(n: number): string {
   return `€ ${n.toFixed(2).replace('.', ',')}`
@@ -200,11 +200,11 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                     </tr>
                   ))}
 
-                  {/* Actiekorting — groen, negatief, met percentage en optionele noot */}
+                  {/* Actiekorting, groen, negatief, met percentage en optionele noot */}
                   {data.kortingBedrag > 0 && (
                     <tr className={styles.rowKorting}>
                       <td className={styles.totalsLabel}>
-                        {`Actiekorting (${data.kortingPct}%)${data.kortingNote ? ' — ' + data.kortingNote : ''}`}
+                        {`Actiekorting (${data.kortingPct}%)${data.kortingNote ? ', ' + data.kortingNote : ''}`}
                       </td>
                       <td className={styles.totalsAmount}>
                         {`- ${eurPdf(data.kortingBedrag)}`}
@@ -226,7 +226,7 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                     <td className={styles.totalsAmount}>{eurPdf(data.btwBedrag)}</td>
                   </tr>
 
-                  {/* Grand-row: Totaal incl. BTW — navy achtergrond, witte tekst */}
+                  {/* Grand-row: Totaal incl. BTW, navy achtergrond, witte tekst */}
                   <tr className={styles.rowGrand}>
                     <td className={styles.grandCell}>Totaal incl. BTW</td>
                     <td className={`${styles.grandCell} ${styles.grandAmount}`}>

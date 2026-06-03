@@ -16,7 +16,7 @@ type Toast = {
 /**
  * Luistert op de Supabase realtime kanaal voor nieuwe leads en toont
  * een toast met "Open" CTA. Auto-refresht de leads-pagina zodat de
- * nieuwe rij verschijnt — zonder dat de gebruiker hoeft te refreshen.
+ * nieuwe rij verschijnt, zonder dat de gebruiker hoeft te refreshen.
  *
  * Mount alleen op /leads (de page-component zet 'm in zijn return).
  */
@@ -26,7 +26,7 @@ export function LeadsRealtimeToast() {
 
   useEffect(() => {
     const supabase = getDashboardSupabaseBrowser()
-    // Unieke topic per effect-run — voorkomt de StrictMode-hergebruik-race
+    // Unieke topic per effect-run, voorkomt de StrictMode-hergebruik-race
     // (zie InboxRealtime). Math.random i.p.v. crypto.randomUUID i.v.m.
     // insecure context bij testen via http://LAN-IP.
     const topic = `leads-list-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -70,7 +70,7 @@ export function LeadsRealtimeToast() {
           </div>
           <div className={styles.body}>
             <div className={styles.title}>Nieuwe lead</div>
-            <div className={styles.sub}>{t.naam} — net binnen</div>
+            <div className={styles.sub}>{t.naam}, net binnen</div>
           </div>
           <Link href={`/leads/${t.leadId}`} className={styles.openBtn}>
             Open

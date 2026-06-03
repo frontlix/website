@@ -25,7 +25,7 @@ function formatEuro(n: number): string {
 }
 
 /**
- * HeroKpiCard — omzet deze maand met SVG goal-ring.
+ * HeroKpiCard, omzet deze maand met SVG goal-ring.
  * Bij doel === null toont 'm een placeholder met CTA naar Instellingen.
  */
 export function HeroKpiCard({ omzet, doel, delta, werkdagenLeft }: Props) {

@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * MargeKaart — owner-only sidebar-kaart die de marge van de huidige offerte
+ * MargeKaart, owner-only sidebar-kaart die de marge van de huidige offerte
  * inzichtelijk maakt. Toont kosten, marge in euro's, marge in percentage met
  * status-kleur, een progress-bar, en (optioneel uit te klappen) een lijst van
  * regels met hun individuele marge.
  *
- * De data komt uit `berekenMarge()` (zie lib/dashboard/marge-calc.ts) — deze
+ * De data komt uit `berekenMarge()` (zie lib/dashboard/marge-calc.ts), deze
  * component bevat geen rekenlogica zelf, alleen presentatie + lokale UI-state
  * voor de "Toon per regel"-expand.
  */
@@ -27,7 +27,7 @@ type Props = {
 
 /**
  * Map status → CSS-modifier-classname. Eén plek om kleur-mapping aan te passen.
- * Acceptabel valt op `--accent` (cyaan) — we hebben geen dedicated warning-token
+ * Acceptabel valt op `--accent` (cyaan), we hebben geen dedicated warning-token
  * en de cyaan past binnen het blauw/cyaan-merk.
  */
 function statusClass(status: MargeOverview['status']): string {
@@ -48,11 +48,11 @@ function statusClass(status: MargeOverview['status']): string {
 function statusLabel(status: MargeOverview['status']): string {
   switch (status) {
     case 'krap':
-      return 'Krap — onder verlies-grens'
+      return 'Krap, onder verlies-grens'
     case 'acceptabel':
       return 'Acceptabel'
     case 'gezond':
-      return 'Gezond — boven 50%'
+      return 'Gezond, boven 50%'
     case 'uitstekend':
       return 'Uitstekend'
     default:
@@ -64,7 +64,7 @@ export function MargeKaart({ overview, onOpenKostprijzen, onClose }: Props) {
   const [perRegelOpen, setPerRegelOpen] = useState(false)
 
   // Progress-bar fill: cap op 100% voor visuele consistentie bij outliers.
-  // margePct uit berekenMarge() is een ongerond float — wij ronden voor display.
+  // margePct uit berekenMarge() is een ongerond float, wij ronden voor display.
   const margePctDisplay = Math.round(overview.margePct)
   const fillPct = Math.max(0, Math.min(margePctDisplay, 100))
   const statusCls = statusClass(overview.status)

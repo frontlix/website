@@ -1,4 +1,4 @@
-"""Personalized demo webhook handler — apart van de branche webhook.
+"""Personalized demo webhook handler, apart van de branche webhook.
 
 Wordt aangeroepen vanuit de hoofdwebhook wanneer demo_type == "personalized".
 Gebruikt eigen LLM prompts specifiek voor De Designmaker.
@@ -290,7 +290,7 @@ async def _handle_image(lead: dict, message: dict, phone: str):
 
     sb.table("leads").update({"collected_data": collected, "updated_at": _now_iso()}).eq("id", lead["id"]).execute()
 
-    # Geen bevestigingsbericht — wacht 30 sec op meer foto's, ga dan door
+    # Geen bevestigingsbericht, wacht 30 sec op meer foto's, ga dan door
     asyncio.get_event_loop().call_later(
         PHOTO_WAIT_MS / 1000,
         lambda: asyncio.ensure_future(_auto_advance_photo(lead["id"], now_ms)),
@@ -338,13 +338,13 @@ async def _send_next_question(lead: dict, history: list[ConversationMessage], ph
     reply_upper = reply.strip().upper()
 
     if reply_upper.startswith("[WAIT]"):
-        print(f"[personalized] [WAIT] token — holding off for lead {lead['id']}")
+        print(f"[personalized] [WAIT] token, holding off for lead {lead['id']}")
         await send_text(phone, "Geen probleem, neem je tijd!")
         await _save_message(lead["id"], "assistant", "Geen probleem, neem je tijd!")
         return
 
     if reply_upper.startswith("[HANDOFF]"):
-        print(f"[personalized] [HANDOFF] token — handing off lead {lead['id']}")
+        print(f"[personalized] [HANDOFF] token, handing off lead {lead['id']}")
         get_supabase().table("leads").update({
             "status": "needs_handoff",
             "updated_at": _now_iso(),
@@ -513,7 +513,7 @@ async def _trigger_completion(lead_id: str):
               </table>
             </div>
 
-            <!-- Knoppen — gestapeld voor mobiel -->
+            <!-- Knoppen, gestapeld voor mobiel -->
             <div style="margin:24px 0 12px">
               <a href="{esc(approve_url)}" style="background:#16a34a;color:#ffffff;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:block;text-align:center;margin-bottom:10px">Goedkeuren &amp; versturen</a>
               <a href="{esc(edit_url)}" style="background:#f97316;color:#ffffff;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;display:block;text-align:center">Bewerken</a>
@@ -523,7 +523,7 @@ async def _trigger_completion(lead_id: str):
           <!-- Footer -->
           <div style="background:#F9FAFB;padding:16px 24px;text-align:center;border-top:1px solid #F3F4F6">
             <p style="color:#9CA3AF;font-size:11px;margin:0;line-height:1.5">
-              De Designmaker — Windmolenboschweg 14, Haelen<br>lars@dedesignmaker.nl
+              De Designmaker, Windmolenboschweg 14, Haelen<br>lars@dedesignmaker.nl
             </p>
           </div>
         </div>
@@ -558,7 +558,7 @@ async def _trigger_completion(lead_id: str):
 # ── Scheduling handlers (hergebruikt Google Calendar uit lead-automation) ──
 
 async def _handle_start_scheduling(lead: dict, text_body: str, phone: str):
-    """Klant antwoordt na ontvangst offerte — start de scheduling agent."""
+    """Klant antwoordt na ontvangst offerte, start de scheduling agent."""
     await _save_message(lead["id"], "user", text_body)
 
     get_supabase().table("leads").update({
@@ -683,7 +683,7 @@ async def _execute_tool(tool_name: str, tool_args: dict, lead: dict) -> str:
             event_id = await create_event(
                 start_utc=start_utc,
                 end_utc=end_utc,
-                summary=f"De Designmaker — {type_dienst} voor {naam}",
+                summary=f"De Designmaker, {type_dienst} voor {naam}",
                 description=f"Voertuig inleveren voor 10:00.\n\nKlant: {naam}\nEmail: {lead.get('email')}\nTelefoon: +{lead['telefoon']}\nDienst: {type_dienst}",
                 attendee_email=lead.get("email"),
             )
@@ -730,7 +730,7 @@ async def _run_scheduling_agent(lead: dict, phone: str):
             role = "user" if m.role == "user" else "assistant"
             messages.append({"role": role, "content": m.content})
 
-        # Agent loop — max 3 tool calls per beurt
+        # Agent loop, max 3 tool calls per beurt
         client = get_openai()
         for iteration in range(3):
             print(f"[scheduling-agent] Iteration {iteration + 1}, messages: {len(messages)}")

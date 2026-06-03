@@ -5,7 +5,7 @@
  * - Endpoint: `GET /api/v1/postcode?postcode=1234AB&number=5`
  * - Geeft o.a. lat/lng terug per postcode+huisnummer combinatie
  *
- * Caching: deze module geocodet ALLEEN — de caller (lead-create / backfill
+ * Caching: deze module geocodet ALLEEN, de caller (lead-create / backfill
  * / edit) bewaart de uitkomst in `leads.lat`/`lng`/`coords_geocoded_op` zodat
  * we elke postcode max 1× hoeven op te zoeken.
  */
@@ -35,7 +35,7 @@ function normalizePostcode(raw: string): string {
  * Geocodet een postcode+huisnummer via postcode.tech. Returnt `null` bij
  * onvolledige input, ontbrekende API-key, of niet-2xx response.
  *
- * Errors worden gelogd, niet geworpen — de caller besluit zelf hoe te
+ * Errors worden gelogd, niet geworpen, de caller besluit zelf hoe te
  * reageren (de routekaart-view skipt leads zonder coords).
  */
 export async function geocodeAddress(
@@ -44,7 +44,7 @@ export async function geocodeAddress(
 ): Promise<Geocoded | null> {
   const apiKey = process.env.POSTCODE_TECH_API_KEY
   if (!apiKey) {
-    console.warn('[geocoding] POSTCODE_TECH_API_KEY niet gezet — skip')
+    console.warn('[geocoding] POSTCODE_TECH_API_KEY niet gezet, skip')
     return null
   }
   if (!postcode || !huisnummer) return null
@@ -56,7 +56,7 @@ export async function geocodeAddress(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${apiKey}` },
-      // Geocoding-resultaat verandert zelden — caching is OK.
+      // Geocoding-resultaat verandert zelden, caching is OK.
       next: { revalidate: 60 * 60 * 24 * 30 }, // 30 dagen
     })
     if (!res.ok) {
@@ -84,7 +84,7 @@ export async function geocodeAddress(
 }
 
 /**
- * Korte sleep — voor rate-limit-vriendelijke batch-geocoding in scripts.
+ * Korte sleep, voor rate-limit-vriendelijke batch-geocoding in scripts.
  */
 export function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))

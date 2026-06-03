@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * KostprijzenModal — laat de eigenaar per dienst-categorie instellen welk
+ * KostprijzenModal, laat de eigenaar per dienst-categorie instellen welk
  * percentage van de omzet aan inkoop + arbeid opgaat. Live preview onderin
  * toont het effect op de huidige offerte. Persistentie via server-actions
  * (`saveKostprijzen` / `resetKostprijzen`) uit kostprijzen-actions.ts.
@@ -24,7 +24,7 @@ type Props = {
   open: boolean
   onClose: () => void
   initialKostprijzen: Kostprijs[]
-  /** Marge-regels in de huidige offerte — voor live preview. */
+  /** Marge-regels in de huidige offerte, voor live preview. */
   margeRegels: MargeRegel[]
   /**
    * Wordt aangeroepen na succesvol opslaan; ouder kan dan opnieuw
@@ -59,7 +59,7 @@ export function KostprijzenModal({
   margeRegels,
   onSaved,
 }: Props) {
-  // Lokale draft — sliders muteren deze, opslaan persist.
+  // Lokale draft, sliders muteren deze, opslaan persist.
   const [draft, setDraft] = useState<Kostprijs[]>(initialKostprijzen)
   const [saving, setSaving] = useState(false)
   const [resetting, setResetting] = useState(false)
@@ -69,7 +69,7 @@ export function KostprijzenModal({
     setDraft(initialKostprijzen)
   }, [initialKostprijzen])
 
-  // ESC-handler — alleen actief als modal open is.
+  // ESC-handler, alleen actief als modal open is.
   useEffect(() => {
     if (!open) return
     function onKey(e: KeyboardEvent) {
@@ -108,7 +108,7 @@ export function KostprijzenModal({
   const handleSave = useCallback(async () => {
     setSaving(true)
     try {
-      // Server-action accepteert alleen { rule_key, kost_pct } — we strippen
+      // Server-action accepteert alleen { rule_key, kost_pct }, we strippen
       // het label dat we lokaal voor de UI-rendering meedragen.
       const updates = draft.map((k) => ({
         rule_key: k.rule_key,
@@ -175,7 +175,7 @@ export function KostprijzenModal({
           </button>
         </div>
 
-        {/* ─── Body — sliders per categorie ───── */}
+        {/* ─── Body, sliders per categorie ───── */}
         <div className={styles.body}>
           {draft.map((k) => {
             const stats = statsByKey[k.rule_key]
@@ -222,7 +222,7 @@ export function KostprijzenModal({
           })}
         </div>
 
-        {/* ─── Footer — preview + acties ──────── */}
+        {/* ─── Footer, preview + acties ──────── */}
         <div className={styles.preview}>
           <div className={styles.previewTitle}>Effect op deze offerte</div>
           <div className={styles.previewGrid}>

@@ -1,6 +1,5 @@
 /**
- * Presets voor tag-iconen en -kleuren. Server-safe (geen React imports) —
- * wordt zowel client-side (picker UI) als server-side (action-validatie)
+ * Presets voor tag-iconen en -kleuren. Server-safe (geen React imports),  * wordt zowel client-side (picker UI) als server-side (action-validatie)
  * gebruikt.
  *
  * Iconen → string-keys die mappen naar lucide-react componenten in

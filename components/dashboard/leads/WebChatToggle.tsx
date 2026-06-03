@@ -8,7 +8,7 @@ import styles from './WebChatToggle.module.css'
 /**
  * Toggle naast `LeadsFilterTabs`. Filtert de leads-lijst op
  * `kanaal=web` (alleen leads zonder WhatsApp). Onafhankelijk van de
- * status-tabs — beide filters kunnen tegelijk actief zijn.
+ * status-tabs, beide filters kunnen tegelijk actief zijn.
  *
  * Toont een count-bubble met het aantal web-leads zodat de eigenaar
  * direct ziet hoeveel niet-WhatsApp leads er zijn.

@@ -36,7 +36,7 @@ async def _scan_once() -> int:
 
     raw_rows = resp.data or []
     # An engaged lead (message_count > 0) has clearly received the opening template
-    # AND replied, so WhatsApp delivery is working — never fallback on them, even
+    # AND replied, so WhatsApp delivery is working, never fallback on them, even
     # if Meta's status webhook was missed. Filter them out here so we don't spam
     # the "your WhatsApp isn't reaching you" mail once they finally drop their email.
     rows = [r for r in raw_rows if (r.get("message_count") or 0) == 0]

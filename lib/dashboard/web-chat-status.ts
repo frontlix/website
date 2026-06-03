@@ -25,7 +25,7 @@ export type WebChatSubStatus =
 /**
  * Pill-tone, mapt 1-op-1 op de `dash-pill-*` CSS-classes uit
  * `styles/dashboard.css`. We hergebruiken de bestaande pill-kleuren in plaats
- * van een eigen palet — `gray` voor "mail verzonden" (neutrale wacht-status),
+ * van een eigen palet, `gray` voor "mail verzonden" (neutrale wacht-status),
  * `amber` voor "reminder verzonden" (zwakke alarm-toon).
  */
 export type WebChatTone = 'green' | 'blue' | 'amber' | 'gray' | 'red'

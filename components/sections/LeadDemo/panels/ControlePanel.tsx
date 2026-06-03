@@ -44,7 +44,7 @@ export default function ControlePanel({ isActive }: ControlePanelProps) {
           </div>
           <div className={styles.emailHeaderRow}>
             <span className={styles.emailHeaderLabel}>Onderwerp:</span>
-            <span className={styles.emailHeaderValue}>Nieuwe offerte ter goedkeuring — Marco Visser</span>
+            <span className={styles.emailHeaderValue}>Nieuwe offerte ter goedkeuring, Marco Visser</span>
           </div>
         </div>
 

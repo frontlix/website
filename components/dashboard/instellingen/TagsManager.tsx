@@ -146,7 +146,7 @@ export function TagsManager({ initialTags }: { initialTags: TagWithCount[] }) {
         <span>
           <strong>Systeem-tags</strong> ({renderSystemList()}) worden
           automatisch door Surface gezet op basis van bot-detectie. Je kunt
-          ze verwijderen, hernoemen of een andere kleur geven — bij refresh
+          ze verwijderen, hernoemen of een andere kleur geven, bij refresh
           van deze pagina worden ontbrekende systeem-tags opnieuw aangemaakt.
         </span>
       </div>

@@ -64,7 +64,7 @@ export default function WhatsAppPanel({ isActive }: WhatsAppPanelProps) {
   return (
     <div className={`${styles.panel} ${isActive ? styles.panelActive : ''}`}>
       <IPhoneMockup statusBarTime="14:01" statusBarVariant="light">
-        {/* WhatsApp header — same style as AIChatPanel */}
+        {/* WhatsApp header, same style as AIChatPanel */}
         <div className={styles.waHeader}>
           <span className={styles.waBackArrow}>
             <ChevronLeft size={22} />
@@ -133,7 +133,7 @@ export default function WhatsAppPanel({ isActive }: WhatsAppPanelProps) {
           )}
         </div>
 
-        {/* Input bar — same style as AIChatPanel */}
+        {/* Input bar, same style as AIChatPanel */}
         <div className={styles.chatInputBar}>
           <span className={styles.inputIcon}>
             <Plus size={18} />

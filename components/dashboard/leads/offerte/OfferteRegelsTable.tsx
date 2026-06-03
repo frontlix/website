@@ -46,7 +46,7 @@ type Props = {
 
 /**
  * Random id-fallback voor omgevingen zonder crypto.randomUUID
- * (oudere browsers/SSR-context). Niet cryptografisch — alleen UI-keys.
+ * (oudere browsers/SSR-context). Niet cryptografisch, alleen UI-keys.
  */
 function makeUid(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -102,7 +102,7 @@ export default function OfferteRegelsTable({ initialRegels, onChange }: Props) {
     onChangeRef.current = onChange
   }, [onChange])
 
-  // Trigger onChange bij elke state-wijziging — parent rekent totalen direct mee.
+  // Trigger onChange bij elke state-wijziging, parent rekent totalen direct mee.
   useEffect(() => {
     onChangeRef.current?.(regels)
   }, [regels])
@@ -129,7 +129,7 @@ export default function OfferteRegelsTable({ initialRegels, onChange }: Props) {
     ])
   }, [])
 
-  // Splits per bron — auto-regels eerst, daarna manual.
+  // Splits per bron, auto-regels eerst, daarna manual.
   const { autoRegels, manualRegels } = useMemo(() => {
     return {
       autoRegels: regels.filter((r) => r.bron === 'auto_lead'),
@@ -147,12 +147,12 @@ export default function OfferteRegelsTable({ initialRegels, onChange }: Props) {
           {autoRegels.length === 1 ? 'regel' : 'regels'}
           <span className={styles.groupHeaderHint}>
             {' '}
-            — recalculatie volgt bronwijzigingen
+, recalculatie volgt bronwijzigingen
           </span>
         </span>
       </div>
 
-      {/* Kolomnamen-rij (gedeeld voor beide secties — eenmalig direct onder de eerste groepskop). */}
+      {/* Kolomnamen-rij (gedeeld voor beide secties, eenmalig direct onder de eerste groepskop). */}
       <div className={styles.columnHeader} role="row">
         <div role="columnheader">Omschrijving</div>
         <div role="columnheader" className={styles.colNumeric}>
@@ -171,7 +171,7 @@ export default function OfferteRegelsTable({ initialRegels, onChange }: Props) {
       {/* Auto-regels */}
       {autoRegels.length === 0 ? (
         <div className={styles.emptyAuto}>
-          Geen automatische regels — vul de Info-tab aan om regels te laten genereren.
+          Geen automatische regels, vul de Info-tab aan om regels te laten genereren.
         </div>
       ) : (
         autoRegels.map((regel) => (
@@ -195,7 +195,7 @@ export default function OfferteRegelsTable({ initialRegels, onChange }: Props) {
 
       {manualRegels.length === 0 ? (
         <div className={styles.emptyManual}>
-          Voeg extra regels toe — bijv. meerwerk, voorrijden, korting op specifieke post.
+          Voeg extra regels toe, bijv. meerwerk, voorrijden, korting op specifieke post.
         </div>
       ) : (
         manualRegels.map((regel) => (
@@ -234,7 +234,7 @@ function RegelRow({ regel, disabled, onUpdate, onRemove }: RegelRowProps) {
   // Mobile-only: pre-bouw "150 m² × € 3,95" zodat read-only auto-regels op
   // telefoon één compacte regel zijn i.p.v. 4 stacking input-velden. Wordt
   // op desktop via CSS verborgen (display:none). Voor manual regels niet
-  // gerenderd — die houden bewerkbare inputs ook op mobile.
+  // gerenderd, die houden bewerkbare inputs ook op mobile.
   const mobileMeta = disabled ? buildMetaSummary(regel.aantal, regel.eenheid, regel.stukprijs) : ''
 
   return (
@@ -253,7 +253,7 @@ function RegelRow({ regel, disabled, onUpdate, onRemove }: RegelRowProps) {
         placeholder="Omschrijving"
         aria-label="Omschrijving"
       />
-      {/* metaInputs wrapper — op desktop "transparant" via display:contents
+      {/* metaInputs wrapper, op desktop "transparant" via display:contents
           (kinderen worden directe grid-items van .row, dus desktop-layout
           ongewijzigd). Op mobile wordt het een flex-container die de drie
           inputs strak groepeert met een × tussen eenheid en stukprijs,

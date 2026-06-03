@@ -101,7 +101,7 @@ export default async function OverzichtPage({
   const prevMaand = prevMonthSamePeriodRange(now)
   const last30 = last30DaysRange(now)
   const prev30 = prev30DaysRange(now)
-  // "Vandaag" = sinds middernacht Europe/Amsterdam — handmatig omdat
+  // "Vandaag" = sinds middernacht Europe/Amsterdam, handmatig omdat
   // periodToRange geen 'vandaag' kent.
   const vandaagStart = (() => {
     const y = now.getUTCFullYear()
@@ -115,7 +115,7 @@ export default async function OverzichtPage({
   //
   // tenant-fetch breed uitgebreid: ook `omzet_doel_maand` voor de mobile
   // HeroKpiCard. Kolom is via migratie 045 toegevoegd en is mogelijk nog
-  // niet toegepast — defensieve cast onderaan vangt dat op (`?? null`).
+  // niet toegepast, defensieve cast onderaan vangt dat op (`?? null`).
   //
   // `leadsTodayTomorrow` is nieuw voor de mobile-header-subline
   // ("14 leads vandaag · 4 morgen").
@@ -228,7 +228,7 @@ export default async function OverzichtPage({
   ).length
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
-  // Dagrapport-data alleen ophalen als de drawer open is — voorkomt extra
+  // Dagrapport-data alleen ophalen als de drawer open is, voorkomt extra
   // queries op elke pageload. URL-param `?dagrapport=1` triggert het.
   const dagrapportData = dagrapportOpen ? await getDagrapport(now) : null
 
@@ -240,7 +240,7 @@ export default async function OverzichtPage({
 
   // ── Mobile-Overzicht data-mapping ─────────────────────
   // Bouwt één MobileOverzichtData blob uit de bestaande server-data.
-  // Hergebruikt alle queries hierboven — geen extra DB-calls hier.
+  // Hergebruikt alle queries hierboven, geen extra DB-calls hier.
   const mobileData: MobileOverzichtData = {
     greeting,
     voornaam: voornaam ?? undefined,
@@ -262,7 +262,7 @@ export default async function OverzichtPage({
     },
     omzet: Math.round(omzetMaand),
     omzetDoel: omzetDoelMaand,
-    // Week-delta op omzet — als er prev-data is. Gebruikt vorige-maand-
+    // Week-delta op omzet, als er prev-data is. Gebruikt vorige-maand-
     // same-periode (zelfde noemer als desktop KpiModule).
     omzetDelta:
       omzetMaandPrev > 0
@@ -288,7 +288,7 @@ export default async function OverzichtPage({
       },
       offertesOpen: {
         value: openOffertes,
-        // Stand-metric — geen historische vergelijking beschikbaar.
+        // Stand-metric, geen historische vergelijking beschikbaar.
         delta: undefined,
       },
     },
@@ -299,7 +299,7 @@ export default async function OverzichtPage({
     vandaag: {
       items: pickAppointmentsForToday(upcomingAppts, now),
       // Totale km/duur niet (eenvoudig) afleidbaar uit appts zonder
-      // route-optimalisatie — laat undefined. Komt later via dagrapport.
+      // route-optimalisatie, laat undefined. Komt later via dagrapport.
       totalKm: undefined,
       totalDuur: undefined,
     },
@@ -328,7 +328,7 @@ export default async function OverzichtPage({
         <div className="dash-section-actions">
           {/* Desktop: Eye-knop opent focus-modus (full-width live feed).
               Op mobile vervangen door een ankerlink 'Afspraken' die direct
-              naar de live-feed scrollt — geen extra view-state. */}
+              naar de live-feed scrollt, geen extra view-state. */}
           <Link
             href="/dashboard?focus=live"
             className="dash-btn dash-btn-secondary dash-hide-mobile"
@@ -373,7 +373,7 @@ export default async function OverzichtPage({
         }}
       />
 
-      {/* "Eerst dit doen" — alleen renderen als er daadwerkelijk acties zijn,
+      {/* "Eerst dit doen", alleen renderen als er daadwerkelijk acties zijn,
           anders verdwijnt de hele sectie zodat we geen leeg blok tonen. */}
       {eerstDitDoenActies.length > 0 && (
         <EerstDitDoen
@@ -390,13 +390,13 @@ export default async function OverzichtPage({
       />
 
       <div className={styles.mainGrid}>
-        {/* LINKERKOLOM — trend chart + funnel */}
+        {/* LINKERKOLOM, trend chart + funnel */}
         <div className={styles.colLeft}>
           <div className="dash-card">
             <div className="dash-card-head">
               <div>
                 <div className="dash-card-title">
-                  Lead-instroom — laatste {trendDays} dagen
+                  Lead-instroom, laatste {trendDays} dagen
                 </div>
                 <div className="dash-card-sub">Aantal nieuwe leads per dag</div>
               </div>
@@ -424,7 +424,7 @@ export default async function OverzichtPage({
           <Trechter rows={funnelRows} />
         </div>
 
-        {/* RECHTERKOLOM — live activity feed + komende afspraken */}
+        {/* RECHTERKOLOM, live activity feed + komende afspraken */}
         <div className={styles.colRight}>
           {/* id voor de mobile 'Afspraken'-anchor button in de section-head.
               scroll-margin-top in CSS zorgt dat de sticky topbar 'm niet
@@ -518,7 +518,7 @@ function werkdagenTotEindeMaand(now: Date): number {
   let count = 0
   for (let d = now.getDate(); d <= lastDay; d++) {
     const dow = new Date(year, month, d).getDay()
-    // 0 = zondag, 6 = zaterdag — beide overslaan
+    // 0 = zondag, 6 = zaterdag, beide overslaan
     if (dow !== 0 && dow !== 6) count++
   }
   return count
@@ -643,7 +643,7 @@ function pickAppointmentsForToday(appts: Appointment[], now: Date): VandaagItem[
   const nowMs = now.getTime()
   const THIRTY_MIN = 30 * 60 * 1000
 
-  // Index van eerste appt die nog komt — die wordt VOLGENDE of NU
+  // Index van eerste appt die nog komt, die wordt VOLGENDE of NU
   let firstFutureIdx = -1
   for (let i = 0; i < todays.length; i++) {
     const t = todays[i].afspraak_geboekt_op
@@ -674,7 +674,7 @@ function pickAppointmentsForToday(appts: Appointment[], now: Date): VandaagItem[
     return {
       id: a.lead_id,
       tijd,
-      // Default 1u — we hebben geen aparte duur-kolom in DB. Stub.
+      // Default 1u, we hebben geen aparte duur-kolom in DB. Stub.
       duur: '1u',
       type: 'AFSPRAAK',
       naam: a.naam ?? 'Onbekend',
@@ -688,7 +688,7 @@ function pickAppointmentsForToday(appts: Appointment[], now: Date): VandaagItem[
  * Mapt LiveActivityFeed-items naar de mobile ActivityFeedBlock-shape.
  *
  * - kind 'wa' → WHATSAPP, 'new' → NIEUWE_LEAD, 'appt' → AFSPRAAK, 'quote' → OFFERTE
- * - timeAgo: korte vorm "2m", "3u", "1d" — afgeleid uit timestamp
+ * - timeAgo: korte vorm "2m", "3u", "1d", afgeleid uit timestamp
  */
 function mapLiveActivityToMobile(items: LiveActivityItem[]): MobileActivityItem[] {
   const KIND_TO_TYPE: Record<LiveActivityItem['kind'], MobileActivityType> = {

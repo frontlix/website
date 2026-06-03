@@ -8,7 +8,7 @@ import styles from './AgendaLiveBanner.module.css'
 interface AgendaLiveBannerProps {
   /** Het actieve (NOW) event. */
   ev: AgendaEvent
-  /** Huidige tijd 'HH:MM' (Amsterdam) — voor "nu …" + resterende tijd. */
+  /** Huidige tijd 'HH:MM' (Amsterdam), voor "nu …" + resterende tijd. */
   nowTime: string
   onOpen?: () => void
   onAfronden?: () => void
@@ -17,7 +17,7 @@ interface AgendaLiveBannerProps {
 }
 
 /**
- * AgendaLiveBanner — groene "Bezig"-banner voor het lopende event.
+ * AgendaLiveBanner, groene "Bezig"-banner voor het lopende event.
  *
  * Port van ABMain `TodayLiveBanner`.
  * Groene gradient + rand via color-mix(--color-success); pulserende dot;
@@ -66,13 +66,13 @@ export function AgendaLiveBanner({ ev, nowTime, onOpen, onAfronden, onFoto, onWh
           </div>
         )}
 
-        {/* Mini-acties — stop propagation zodat de banner-tap (onOpen) niet vuurt */}
+        {/* Mini-acties, stop propagation zodat de banner-tap (onOpen) niet vuurt */}
         <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             className={styles.miniBtn}
             data-primary="true"
-            // TODO: functional pass — complete-job server action
+            // TODO: functional pass, complete-job server action
             onClick={onAfronden}
           >
             <Check size={12} aria-hidden="true" /> Afronden
@@ -80,7 +80,7 @@ export function AgendaLiveBanner({ ev, nowTime, onOpen, onAfronden, onFoto, onWh
           <button
             type="button"
             className={styles.miniBtn}
-            // TODO: functional pass — photo upload
+            // TODO: functional pass, photo upload
             onClick={onFoto}
           >
             <Camera size={12} aria-hidden="true" /> Foto
@@ -88,7 +88,7 @@ export function AgendaLiveBanner({ ev, nowTime, onOpen, onAfronden, onFoto, onWh
           <button
             type="button"
             className={styles.miniBtn}
-            // TODO: functional pass — WhatsApp-actie
+            // TODO: functional pass, WhatsApp-actie
             onClick={onWhatsApp}
           >
             <MessageCircle size={12} aria-hidden="true" /> WA

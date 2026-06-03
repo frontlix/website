@@ -7,7 +7,7 @@ import styles from './AgendaDayJumpStrip.module.css'
 interface AgendaDayJumpStripProps {
   /** 7 week-dagen (ma–zo). */
   days: AgendaWeekDay[]
-  /** Alle week-events — voor de dot-indicatoren per dag. */
+  /** Alle week-events, voor de dot-indicatoren per dag. */
   events: AgendaEvent[]
   /** Vandaag ('YYYY-MM-DD', Amsterdam). */
   todayDate: string
@@ -16,7 +16,7 @@ interface AgendaDayJumpStripProps {
 }
 
 /**
- * AgendaDayJumpStrip — mini horizontale week (7 kolommen).
+ * AgendaDayJumpStrip, mini horizontale week (7 kolommen).
  *
  * Per dag: wday + day + tot 3 event-dots (kleur via eventTone(kind)).
  * data-today (accent) / data-past (gedimd). Data komt nu van de echte

@@ -1,5 +1,5 @@
 /**
- * Client-side push helpers — alleen bruikbaar in een 'use client' component.
+ * Client-side push helpers, alleen bruikbaar in een 'use client' component.
  *
  * `enablePush()`: vraagt permission, registreert de service worker, maakt
  * een subscription en stuurt 'm naar de server.
@@ -20,7 +20,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export interface PushEnableResult {
   ok: boolean
-  /** Reden bij failure — laat client een meaningful melding tonen. */
+  /** Reden bij failure, laat client een meaningful melding tonen. */
   reason?: 'unsupported' | 'denied' | 'no-vapid' | 'save-failed' | 'error'
   detail?: string
 }
@@ -35,14 +35,14 @@ export async function enablePush(): Promise<PushEnableResult> {
   }
 
   try {
-    // Permission vragen — als al granted blijft 'ie granted, als denied
+    // Permission vragen, als al granted blijft 'ie granted, als denied
     // krijgt de gebruiker geen prompt meer (browser-policy).
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') {
       return { ok: false, reason: 'denied' }
     }
 
-    // Service worker registreren (idempotent — returnt bestaande registration
+    // Service worker registreren (idempotent, returnt bestaande registration
     // als 'ie al is). Daarna WACHTEN tot 'ie actief is, anders gooit
     // pushManager.subscribe() AbortError ("no active Service Worker").
     await navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -90,7 +90,7 @@ export async function disablePush(): Promise<PushEnableResult> {
 
     const endpoint = sub.endpoint
 
-    // Eerst lokaal — als dit faalt is server-state nog consistent.
+    // Eerst lokaal, als dit faalt is server-state nog consistent.
     await sub.unsubscribe()
 
     // Daarna server.

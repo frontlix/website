@@ -71,7 +71,7 @@ export async function createManualOfferte(
   const subtotaal = regelsMetTotaal.reduce((sum, r) => sum + r.totaal, 0)
   const totaalIncl = Math.round(subtotaal * (1 - korting / 100) * 100) / 100
 
-  // Schrijven via admin client — bot-tabel zonder dashboard-INSERT policy.
+  // Schrijven via admin client, bot-tabel zonder dashboard-INSERT policy.
   const admin = getDashboardAdmin()
 
   // Volgende versie bepalen
@@ -101,7 +101,7 @@ export async function createManualOfferte(
     return { ok: false, error: offerteErr?.message ?? 'Kon offerte niet opslaan.' }
   }
 
-  // Bij een nieuwe versie willen we oude prijsregels niet stapelen — we
+  // Bij een nieuwe versie willen we oude prijsregels niet stapelen, we
   // vervangen ze door alleen de regels van de nieuwste versie te tonen.
   // De bestaande LeadOfferte.tsx leest alle prijsregels voor de lead; om
   // niet te dubbelen verwijderen we eerst de oude regels van deze lead.

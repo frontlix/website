@@ -4,7 +4,7 @@
  * uit tenant_settings (fallback MAIL_USER). Tenant-config voor SMTP
  * per bedrijf komt in een latere phase.
  *
- * Server-only — importeert nodemailer + puppeteer (via pdf-renderer).
+ * Server-only, importeert nodemailer + puppeteer (via pdf-renderer).
  */
 
 import nodemailer from 'nodemailer'
@@ -58,14 +58,14 @@ function escapeHtml(s: string): string {
 
 /**
  * Bouwt de e-mail HTML-body. Strak en kort: groet + de notitie (als
- * gevuld) + verwijzing naar de bijlage. Geen sales-fluff — dit is een
+ * gevuld) + verwijzing naar de bijlage. Geen sales-fluff, dit is een
  * professionele offerte-mail.
  */
 function buildMailHtml(input: OfferteMailInput): string {
   const groet = `Beste ${escapeHtml(input.klantNaam.split(' ')[0] || input.klantNaam)},`
   const notitieBlock = input.notitie
     ? `<p style="margin:0 0 18px;color:#1a1a1a;line-height:1.55;white-space:pre-wrap;">${escapeHtml(input.notitie)}</p>`
-    : `<p style="margin:0 0 18px;color:#1a1a1a;line-height:1.55;">Hierbij de offerte zoals besproken. Laat het me weten als je vragen hebt of als je akkoord wilt geven — je hoort het wel.</p>`
+    : `<p style="margin:0 0 18px;color:#1a1a1a;line-height:1.55;">Hierbij de offerte zoals besproken. Laat het me weten als je vragen hebt of als je akkoord wilt geven, je hoort het wel.</p>`
 
   return `<!DOCTYPE html>
 <html lang="nl">
@@ -101,7 +101,7 @@ function buildMailHtml(input: OfferteMailInput): string {
 /**
  * Verstuurt de offerte naar de klant. Returns ok:true bij geslaagde
  * verzending; ok:false bij fout (mail-server down, ongeldig e-mailadres
- * etc.) — caller bepaalt of dit een blocker is of niet.
+ * etc.), caller bepaalt of dit een blocker is of niet.
  */
 export async function sendOfferteMail(input: OfferteMailInput): Promise<OfferteMailResult> {
   if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
@@ -114,7 +114,7 @@ export async function sendOfferteMail(input: OfferteMailInput): Promise<OfferteM
       from: `${input.bedrijfsnaam} <${process.env.MAIL_USER}>`,
       to: input.toEmail,
       replyTo: input.replyTo || process.env.MAIL_USER,
-      subject: `Offerte ${input.offertenummer} — ${input.bedrijfsnaam}`,
+      subject: `Offerte ${input.offertenummer}, ${input.bedrijfsnaam}`,
       html: buildMailHtml(input),
       attachments: [
         {

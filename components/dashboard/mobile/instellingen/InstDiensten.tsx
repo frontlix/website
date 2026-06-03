@@ -11,9 +11,9 @@ import { InstGroupCard } from './InstAtoms'
 import { MobileToggle } from '../shared/MobileToggle'
 import styles from './InstDiensten.module.css'
 
-/** Diensten-detailscherm — toggle per dienst (echt persistent). */
+/** Diensten-detailscherm, toggle per dienst (echt persistent). */
 export function InstDiensten({ services }: { services: ServiceOffering[] }) {
-  // Lokale state per dienst_key — geseed uit de echte data.
+  // Lokale state per dienst_key, geseed uit de echte data.
   const [actief, setActief] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(services.map((s) => [s.dienst_key, s.actief])),
   )

@@ -5,7 +5,7 @@ import styles from './OwnerActies.module.css'
 
 /**
  * Lijst van leads die wachten op owner-actie (onderhandelen-fase).
- * Toont top 3 — geeft direct gevoel "wat moet ik nu doen?"
+ * Toont top 3, geeft direct gevoel "wat moet ik nu doen?"
  */
 export function OwnerActies({ leads }: { leads: LeadListItem[] }) {
   const items = leads.slice(0, 3)

@@ -1,6 +1,6 @@
 import type { DossierLead } from './dossier-mock'
 
-/** '€ 1.871,57' — nl-NL met 2 decimalen. */
+/** '€ 1.871,57', nl-NL met 2 decimalen. */
 export function dossEur(n: number): string {
   return `€ ${n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }

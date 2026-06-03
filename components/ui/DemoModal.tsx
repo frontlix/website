@@ -82,7 +82,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
     e.preventDefault()
     setError(null)
 
-    /* Client-side validatie — stop als er fouten zijn */
+    /* Client-side validatie, stop als er fouten zijn */
     if (!validateFields()) return
 
     setLoading(true)
@@ -124,7 +124,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
               Perfect{name.trim() ? `, ${name.trim().split(' ')[0]}` : ''}!
             </h3>
             <p className={styles.successText}>
-              Check je WhatsApp — daar staat zo een berichtje van ons.
+              Check je WhatsApp, daar staat zo een berichtje van ons.
               Vanaf daar gaan we lekker verder.
             </p>
           </div>

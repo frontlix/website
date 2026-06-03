@@ -42,7 +42,7 @@ export function TableToCards<T extends Record<string, unknown>>({
     return <>{emptyState}</>
   }
 
-  // Eenmalig berekend buiten alle loops — stabiel voor elke rij.
+  // Eenmalig berekend buiten alle loops, stabiel voor elke rij.
   const primaries = columns.filter((c) => c.mobile === 'primary')
   // Alles wat niet primary of hidden is, telt als secondary in de card-grid.
   const secondaries = columns.filter(
@@ -51,7 +51,7 @@ export function TableToCards<T extends Record<string, unknown>>({
 
   return (
     <>
-      {/* Desktop: tabel — hidden-kolommen worden ook hier uitgesloten */}
+      {/* Desktop: tabel, hidden-kolommen worden ook hier uitgesloten */}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -110,7 +110,7 @@ export function TableToCards<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      {/* Mobile: cards — schakelaar is puur CSS (geen client-side branching) */}
+      {/* Mobile: cards, schakelaar is puur CSS (geen client-side branching) */}
       <div className={styles.cards}>
         {rows.map((row) => {
           const key = String(row[keyField])

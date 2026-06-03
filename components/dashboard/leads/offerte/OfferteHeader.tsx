@@ -1,17 +1,17 @@
 'use client'
 
 /**
- * OfferteHeader — top-bar van de Offerte-tab.
+ * OfferteHeader, top-bar van de Offerte-tab.
  *
  * Toont:
  *  - Versie-badge in gradient-pill (vN)
  *  - Status-tekst (concept / verstuurd-op datum)
  *  - "Auto uit lead-data" pill (alleen bij hasAutoRegels)
- *  - Save-indicator (idle / saving / saved) — gestuurd door parent
+ *  - Save-indicator (idle / saving / saved), gestuurd door parent
  *  - Knop "Terug naar verzonden versie" (revert, alleen bij canRevert)
  *  - Knop "Bekijk verzonden offerte" (alleen bij verstuurd + pdf_url)
  *
- * Component is volledig presentational — alle state komt via props.
+ * Component is volledig presentational, alle state komt via props.
  */
 
 import { Sparkles, ExternalLink, Undo2 } from 'lucide-react'
@@ -19,7 +19,7 @@ import { formatDateNL } from '@/lib/dashboard/format'
 import styles from './OfferteHeader.module.css'
 
 export type OfferteHeaderProps = {
-  /** Versienummer (bv 1, 2, 3) — getoond als `v{n}`. */
+  /** Versienummer (bv 1, 2, 3), getoond als `v{n}`. */
   versie: number
   /** Of de offerte verstuurd is (`leads.offerte_verstuurd`). */
   verstuurd: boolean
@@ -29,9 +29,9 @@ export type OfferteHeaderProps = {
   hasAutoRegels: boolean
   /** Save-state voor de indicator. */
   saveState?: 'idle' | 'saving' | 'saved'
-  /** ISO timestamp van laatste succesvolle save — toont "zojuist bewaard". */
+  /** ISO timestamp van laatste succesvolle save, toont "zojuist bewaard". */
   lastSavedAt?: string | null
-  /** Huidige `offerte.pdf_url` — opent in nieuw tabblad bij click. */
+  /** Huidige `offerte.pdf_url`, opent in nieuw tabblad bij click. */
   verzondenPdfUrl?: string | null
   /**
    * Callback voor "Terug naar verzonden versie".
@@ -61,7 +61,7 @@ export function OfferteHeader({
     ? `Verstuurd op ${formatDateNL(verstuurdOp)}`
     : 'Concept · niet verstuurd'
 
-  // Save-indicator tekst — leeg bij idle zodat er geen lege ruimte ontstaat
+  // Save-indicator tekst, leeg bij idle zodat er geen lege ruimte ontstaat
   let saveLabel = ''
   if (saveState === 'saving') saveLabel = 'Opslaan…'
   else if (saveState === 'saved') saveLabel = 'Zojuist bewaard'
@@ -85,7 +85,7 @@ export function OfferteHeader({
         {saveLabel ? <span className={styles.saveIndicator}>{saveLabel}</span> : null}
 
         {/*
-         * "Terug naar verzonden versie" — alleen zichtbaar als er
+         * "Terug naar verzonden versie", alleen zichtbaar als er
          * tegelijk een concept én een verzonden versie bestaat. Klik
          * triggert in parent een confirm + revertConcept() server-action.
          */}

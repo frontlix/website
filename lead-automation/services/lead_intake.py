@@ -1,8 +1,8 @@
 """Shared lead-intake pipeline.
 
 Used by both:
-  - routes/demo.py (existing /demo/start endpoint — phone-only, sends template)
-  - routes/external_webhook.py (Pakket 4a — full form payload, optional photos)
+  - routes/demo.py (existing /demo/start endpoint, phone-only, sends template)
+  - routes/external_webhook.py (Pakket 4a, full form payload, optional photos)
 
 Side-effects: inserts a `leads` row, optionally downloads + uploads photos to the
 shared `photos` storage bucket, and sends the WhatsApp opening template.
@@ -112,7 +112,7 @@ async def intake_lead(payload: IntakePayload, *, send_opening_template: bool = T
     from services.supabase import get_supabase
     sb = get_supabase()
 
-    # Existing-active-lead guard — same rule as /demo/start.
+    # Existing-active-lead guard, same rule as /demo/start.
     existing = (
         sb.table("leads").select("id, status").eq("telefoon", phone)
         .neq("status", "appointment_booked").limit(1).execute()
@@ -177,7 +177,7 @@ async def intake_lead(payload: IntakePayload, *, send_opening_template: bool = T
             lead["opening_template_sent_at"] = _now_iso()
         except Exception as e:
             print(f"[intake] opening template failed for {phone}: {e}")
-            # Don't raise — delivery-timeout cron will pick this up and trigger
+            # Don't raise, delivery-timeout cron will pick this up and trigger
             # the web-chat fallback if WEB_CHAT_FALLBACK_ENABLED.
 
     return lead

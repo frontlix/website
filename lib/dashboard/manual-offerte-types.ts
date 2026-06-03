@@ -21,7 +21,7 @@ export type SubDienst =
 export type SendKanaal = 'mail' | 'manual'
 
 export type ManualOfferteData = {
-  // koppeling — gevuld als de wizard via "zoek bestaande klant" een
+  // koppeling, gevuld als de wizard via "zoek bestaande klant" een
   // bestaande lead heeft geselecteerd. Bij submit gebruikt de action dit
   // om de offerte onder de bestaande lead te hangen i.p.v. een nieuwe
   // lead aan te maken.
@@ -41,7 +41,7 @@ export type ManualOfferteData = {
   factuur_huisnummer: string
   factuur_postcode: string
   factuur_plaats: string
-  // werk — hoofdcategorie is een array zodat de owner zowel
+  // werk, hoofdcategorie is een array zodat de owner zowel
   // oprit/terras als onkruidbeheersing kan kiezen voor één klus.
   // Lege array = nog niets gekozen (validatie in stap 2 blokkeert
   // Volgende dan).
@@ -113,7 +113,7 @@ export const DEFAULTS: ManualOfferteData = {
   factuur_postcode: '',
   factuur_plaats: '',
   // Geen hoofdcategorie, sub-dienst, voegzand-type of kleur standaard
-  // aan — user (of de AI-fill) moet expliciet kiezen. Validatie in
+  // aan, user (of de AI-fill) moet expliciet kiezen. Validatie in
   // stap 2 (sub.length > 0 én hoofdcategorie.length > 0) blokkeert
   // anders Volgende, dat is de bewuste guardrail.
   hoofdcategorie: [],
@@ -164,7 +164,7 @@ export const SUB_OPTIES: ReadonlyArray<{
   // Onderhoudsplan is een terugkerende onkruidbeheersings-flow; bij
   // alleen oprit/terras (eenmalige klus) is dit niet relevant en zou
   // de wizard 'm niet aanbieden.
-  { k: 'onderhoud',           l: 'Onderhoudsplan',                 d: 'Terugkerende beurten — 4 t/m 16 weken', cat: 'onkruidbeheersing' },
+  { k: 'onderhoud',           l: 'Onderhoudsplan',                 d: 'Terugkerende beurten, 4 t/m 16 weken', cat: 'onkruidbeheersing' },
 ]
 
 export const ONDERHOUD_PRIJZEN: Record<4 | 8 | 12 | 16, number> = {

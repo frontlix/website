@@ -112,7 +112,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
     e.preventDefault()
     setError(null)
 
-    /* Client-side validatie — stop als er fouten zijn */
+    /* Client-side validatie, stop als er fouten zijn */
     if (!validateFields()) return
 
     setLoading(true)
@@ -239,7 +239,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                 )}
               </div>
 
-              {/* Bedrijfsnaam — optioneel */}
+              {/* Bedrijfsnaam, optioneel */}
               <div className={styles.field}>
                 <label htmlFor="project-bedrijf" className={styles.label}>
                   Bedrijfsnaam <span className={styles.optional}>(optioneel)</span>
@@ -255,7 +255,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                 />
               </div>
 
-              {/* Website URL — optioneel */}
+              {/* Website URL, optioneel */}
               <div className={styles.field}>
                 <label htmlFor="project-website" className={styles.label}>
                   Website URL <span className={styles.optional}>(optioneel)</span>
@@ -274,7 +274,7 @@ export default function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
                 )}
               </div>
 
-              {/* Extra informatie — optioneel */}
+              {/* Extra informatie, optioneel */}
               <div className={styles.field}>
                 <label htmlFor="project-extra" className={styles.label}>
                   Extra informatie <span className={styles.optional}>(optioneel)</span>

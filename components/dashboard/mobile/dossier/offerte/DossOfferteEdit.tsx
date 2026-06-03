@@ -1,13 +1,13 @@
 'use client'
 
 // ── DossOfferteEdit ──────────────────────────────────────────────────────
-// Hoofd-editor van de mobiele offerte-tab (Optie A — inline). Faithful port van
+// Hoofd-editor van de mobiele offerte-tab (Optie A, inline). Faithful port van
 // `DossOfferteEdit` uit de handoff (MobileOfferteEdit.jsx): alle secties
 // (factuuradres · persoonlijk bericht · snel instellen · regels + sleep-herorden ·
 // toeslagen · korting · BTW · totalen · geldigheid · acties) + de twee full-screen
 // overlays (PDF-preview / versie-historie). Werkt op lokale state, gevoed met
 // echte lead-data via seedOfferteState(...). Schrijven naar DB/versturen blijft
-// bewust de bestaande desktop-flow — dit scherm raakt het CRM niet aan.
+// bewust de bestaande desktop-flow, dit scherm raakt het CRM niet aan.
 //
 // Translation Contract: handoff inline-styles → CSS Modules + tokens; custom
 // SVG-iconen → lucide-react; dynamische accent-tint via --tone + color-mix
@@ -71,14 +71,13 @@ import type { MobileDossierData } from '../dossier-mappers'
 import styles from './DossOfferteEdit.module.css'
 
 // CSS-kleur-vars die als --tone aan de atomen worden doorgegeven (geen hex
-// hardcode in JS — de tokens zelf bepalen het thema). Amber = toeslagen,
+// hardcode in JS, de tokens zelf bepalen het thema). Amber = toeslagen,
 // success = korting, primary = standaard-accent.
 const TONE_AMBER = 'var(--color-warning)'
 const TONE_SUCCESS = 'var(--color-success)'
 const TONE_PRIMARY = 'var(--color-primary)'
 
-// OffertePdfData (spec §4.7-shape) wordt geïmporteerd uit OffertePdfPreview —
-// dat is de bron-of-truth voor de PDF-render en het props-contract.
+// OffertePdfData (spec §4.7-shape) wordt geïmporteerd uit OffertePdfPreview, // dat is de bron-of-truth voor de PDF-render en het props-contract.
 
 type DossOfferteEditProps = {
   offerte: MobileDossierData['offerte']
@@ -264,7 +263,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up, { once: true })
     // Ook 'pointercancel' afronden: op touch kan een gesture onderbroken raken
-    // (scroll-overname, telefoontje) zonder dat 'pointerup' vuurt — zonder deze
+    // (scroll-overname, telefoontje) zonder dat 'pointerup' vuurt, zonder deze
     // cleanup zou de lijst dan in drag-state blijven hangen.
     window.addEventListener('pointercancel', up, { once: true })
     return () => {
@@ -296,7 +295,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
     setToeslagen((ts) => [...ts, { ...preset, id: newId('t'), on: true }])
     setAddingToeslag(false)
   }
-  // 'Eigen toeslag' — percentage-variant (gebruiker past % aan via stepper).
+  // 'Eigen toeslag', percentage-variant (gebruiker past % aan via stepper).
   const addEigenToeslag = () => {
     setToeslagen((ts) => [
       ...ts,
@@ -304,7 +303,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
     ])
     setAddingToeslag(false)
   }
-  // 'Eigen toeslag (vast bedrag)' — bedrag-variant (bv. €25 voorrijkosten).
+  // 'Eigen toeslag (vast bedrag)', bedrag-variant (bv. €25 voorrijkosten).
   const addEigenToeslagVast = () => {
     setToeslagen((ts) => [
       ...ts,
@@ -337,7 +336,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
   const pdfKlant = afwijkend ? adr : offerte.klant
   const onLines = lines.filter((l) => l.on)
   const nextVersie = (offerte.versies?.reduce((m, v) => Math.max(m, v.versie), 0) ?? 0) + 1
-  // Jaar dynamisch uit `today` (zelfde lazy-initializer als todayMs — hydration-veilig).
+  // Jaar dynamisch uit `today` (zelfde lazy-initializer als todayMs, hydration-veilig).
   // Nooit hardcoded 2026: vanaf 2027 werkt dit dan correct.
   const pdfData: OffertePdfData = {
     nr: `${today.getFullYear()}-${String(nextVersie).padStart(4, '0')}`,
@@ -410,7 +409,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
             {/* Info-melding: override op het document, CRM blijft ongewijzigd. */}
             <div className={styles.factInfo}>
               <Info size={13} aria-hidden="true" />
-              <span>Geldt alleen voor deze offerte — klantgegevens blijven ongewijzigd</span>
+              <span>Geldt alleen voor deze offerte, klantgegevens blijven ongewijzigd</span>
             </div>
             <OAddrInput value={adr.naam} onChange={(v) => setAdr({ ...adr, naam: v })} placeholder="Naam" />
             <OAddrInput
@@ -495,7 +494,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
                 style={dragging ? ({ transform: `translateY(${drag!.delta}px)` } as React.CSSProperties) : undefined}
               >
                 <div className={styles.regelTop}>
-                  {/* Grip-handle — start de drag (touch-action:none in CSS). */}
+                  {/* Grip-handle, start de drag (touch-action:none in CSS). */}
                   <div
                     className={styles.grip}
                     onPointerDown={(e) => startDrag(e, l.id)}
@@ -504,7 +503,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
                     <GripVertical size={16} aria-hidden="true" />
                   </div>
 
-                  {/* Aan/uit-checkbox — uit = regel telt niet mee.
+                  {/* Aan/uit-checkbox, uit = regel telt niet mee.
                       role="checkbox" + aria-checked geeft schermlezers de juiste
                       semantiek (toggle, niet push-button). */}
                   <button
@@ -777,7 +776,7 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
             </button>
           ))}
         </div>
-        {/* Datumkiezer-regel — toont de einddatum pas ná mount (hydration-veilig). */}
+        {/* Datumkiezer-regel, toont de einddatum pas ná mount (hydration-veilig). */}
         <label className={styles.geldigDate}>
           <span className={styles.geldigDateLabel}>Geldig t/m</span>
           <span className={styles.geldigDateValue}>{mounted ? fmtDatum(eind) : '—'}</span>

@@ -29,12 +29,12 @@ async def detect_branche(history: list[ConversationMessage]) -> str | None:
 Return ONLY JSON in this format: { "branche": "<value>" }
 
 Allowed values:
-- "zonnepanelen" — customer wants solar panels, PV, panels on the roof, energy generation
-- "dakdekker" — customer has roof problems, leaks, wants roof replaced, insulated or repaired
-- "schoonmaak" — customer wants cleaning services for office/home/hospitality/retail
-- "null" — unclear, customer has not mentioned an industry yet
+- "zonnepanelen", customer wants solar panels, PV, panels on the roof, energy generation
+- "dakdekker", customer has roof problems, leaks, wants roof replaced, insulated or repaired
+- "schoonmaak", customer wants cleaning services for office/home/hospitality/retail
+- "null", unclear, customer has not mentioned an industry yet
 
-Be generous with recognition — typos and Dutch synonyms are fine. When in doubt: "null".""",
+Be generous with recognition, typos and Dutch synonyms are fine. When in doubt: "null".""",
             },
             {"role": "user", "content": chat_history},
         ],

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { MobileLeadCard, MobileLeadStage } from './lead-mappers'
 import styles from './LeadExpandedPanel.module.css'
 
-// ── Stage metadata duplicaat (zelfde als LeadCard — bron van waarheid) ────────
+// ── Stage metadata duplicaat (zelfde als LeadCard, bron van waarheid) ────────
 const STAGE_META: Record<MobileLeadStage, { label: string; tone: string }> = {
   gesprek: { label: 'In gesprek',   tone: 'blue' },
   review:  { label: 'Owner-review', tone: 'amber' },
@@ -59,11 +59,11 @@ interface LeadExpandedPanelProps {
 }
 
 /**
- * LeadExpandedPanel — inline drilldown-panel dat opent onder SwipeableLeadCard.
+ * LeadExpandedPanel, inline drilldown-panel dat opent onder SwipeableLeadCard.
  *
  * Structuur:
  *  1. Kleurstrip met stage-label + sluit-knop
- *  2. Stats-grid: Oppervlak / Offerte / Binnen (Foto's weggelaten — geen data)
+ *  2. Stats-grid: Oppervlak / Offerte / Binnen (Foto's weggelaten, geen data)
  *  3. Dienst-sectie
  *  4. Surface-context
  *  5. Actie-knoppen (primair per stage + 2 secudaire)
@@ -96,7 +96,7 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         </button>
       </div>
 
-      {/* 2. Stats-grid — 3 kolommen (Foto's weggelaten) */}
+      {/* 2. Stats-grid, 3 kolommen (Foto's weggelaten) */}
       <div className={styles.statsGrid}>
         <Stat
           value={lead.m2 != null ? `${lead.m2}m²` : '—'}
@@ -121,7 +121,7 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         <p className={styles.sectionBody}>{lead.dienst}</p>
       </div>
 
-      {/* 4. Surface-context — 22×22 sparkle icon + "Surface · {context}" */}
+      {/* 4. Surface-context, 22×22 sparkle icon + "Surface · {context}" */}
       <div className={styles.section}>
         <div className={styles.surfaceRow}>
           {/* Sparkle icon in accent-gradient tile */}
@@ -137,7 +137,7 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         </div>
       </div>
 
-      {/* 5. Hoofdactie — vol breedte, accent gradient (label is stage-afhankelijk) */}
+      {/* 5. Hoofdactie, vol breedte, accent gradient (label is stage-afhankelijk) */}
       <div className={styles.actionsGrid}>
         <Link
           href={primary.href(lead.id)}

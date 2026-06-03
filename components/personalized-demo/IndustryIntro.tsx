@@ -49,7 +49,7 @@ const INDUSTRY_MAP: Record<string, IndustryInfo> = {
 
 const DEFAULT_INDUSTRY: IndustryInfo = {
   icon: HelpCircle,
-  text: 'Ongeacht je branche — snelle, persoonlijke opvolging via WhatsApp maakt het verschil. Bekijk hier hoe dat eruitziet voor jouw bedrijf.',
+  text: 'Ongeacht je branche, snelle, persoonlijke opvolging via WhatsApp maakt het verschil. Bekijk hier hoe dat eruitziet voor jouw bedrijf.',
 }
 
 export default function IndustryIntro({ branche }: { branche: string }) {

@@ -27,7 +27,7 @@ _apply_lock = threading.Lock()
 def load_from_json(branche_id: str) -> BrancheConfig:
     """Load a single branche config from clients/<id>/config.json.
 
-    Wraps Pydantic validation errors with branche-id context — raw v2 errors
+    Wraps Pydantic validation errors with branche-id context, raw v2 errors
     are otherwise cryptic.
     """
     path = _CLIENTS_DIR / branche_id / "config.json"
@@ -41,7 +41,7 @@ def load_from_json(branche_id: str) -> BrancheConfig:
 def load_from_db(branche_id: str) -> BrancheConfig:
     """Load a single branche config from Supabase (branche_settings + branche_fields).
 
-    Uses the shared `get_supabase()` factory — no separate client.
+    Uses the shared `get_supabase()` factory, no separate client.
     """
     # Import lazily so this module can be imported without Supabase env-vars set.
     from services.supabase import get_supabase
@@ -103,7 +103,7 @@ def load_from_db(branche_id: str) -> BrancheConfig:
 def _apply_snapshot(snapshot: dict[str, BrancheConfig]) -> None:
     """Adds new branches and updates fields on existing ones in-place.
 
-    Does NOT remove branches absent from the snapshot — `get_branche()` refs
+    Does NOT remove branches absent from the snapshot, `get_branche()` refs
     remain valid across reloads. Relevant once the dashboard exposes delete.
     """
     # Avoid a circular import at module load time.
@@ -123,7 +123,7 @@ def _apply_snapshot(snapshot: dict[str, BrancheConfig]) -> None:
 def hydrate_all() -> None:
     """Build a full snapshot of all branche-configs and apply it in-place.
 
-    Synchronous — called from FastAPI startup and from the dashboard reload
+    Synchronous, called from FastAPI startup and from the dashboard reload
     endpoint. The async background-refresh wraps this with asyncio.sleep.
     """
     from branches import BRANCHE_IDS
@@ -141,7 +141,7 @@ def hydrate_all() -> None:
 
 async def start_background_refresh(interval_seconds: int = 60) -> None:
     """Refresh BRANCHES every `interval_seconds`. Failures are logged and
-    swallowed — the previous snapshot stays in place (resilience)."""
+    swallowed, the previous snapshot stays in place (resilience)."""
     while True:
         await asyncio.sleep(interval_seconds)
         try:

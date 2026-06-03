@@ -9,7 +9,7 @@ import styles from './InstellingenHub.module.css'
 
 /**
  * Mobiele Instellingen-hub. `groups` bevat de gegroepeerde secties (met echte
- * counts in de subtitels) — die voedt zowel het zoekresultaat als de grid.
+ * counts in de subtitels), die voedt zowel het zoekresultaat als de grid.
  */
 export function InstellingenHub({
   groups,

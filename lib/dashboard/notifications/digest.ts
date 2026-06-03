@@ -8,14 +8,14 @@ import type { StatsPeriod } from '../period'
  * + payload terug, klaar om door create_notification_for_all_users() in
  * de DB te worden geïnsert.
  *
- * Service-role queries — draait via cron, geen ingelogde user.
+ * Service-role queries, draait via cron, geen ingelogde user.
  */
 
 export interface DigestContent {
   titel: string
   body: string
   payload: Record<string, unknown>
-  /** Of er überhaupt iets te melden was — false = skip de notificatie. */
+  /** Of er überhaupt iets te melden was, false = skip de notificatie. */
   hasActivity: boolean
 }
 
@@ -27,7 +27,7 @@ export async function buildDigestContent(now: Date = new Date()): Promise<Digest
   const period = dayWindow(gisteren)
 
   // Hergebruik bestaande stat-queries; deze gebruiken al de user-supabase
-  // wrapper. Voor cron-context willen we eigenlijk service-role — maar de
+  // wrapper. Voor cron-context willen we eigenlijk service-role, maar de
   // queries zijn read-only en `leads` heeft een RLS-policy die approved
   // users alle leads laat zien (single-tenant). Voor cron-veiligheid
   // wrappen we 'm wel met getDashboardAdmin via een aparte query path.
@@ -47,7 +47,7 @@ export async function buildDigestContent(now: Date = new Date()): Promise<Digest
 
   const titel = `Dagrapport ${datumLabel}`
 
-  // Body — alleen relevante zinnen tonen (skip "0 ..." regels).
+  // Body, alleen relevante zinnen tonen (skip "0 ..." regels).
   const zinnen: string[] = []
   if (leads > 0) zinnen.push(`${leads} ${plural(leads, 'nieuwe lead', 'nieuwe leads')}`)
   if (offertes > 0) zinnen.push(`${offertes} ${plural(offertes, 'offerte verstuurd', 'offertes verstuurd')}`)

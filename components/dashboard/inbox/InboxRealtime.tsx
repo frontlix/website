@@ -13,7 +13,7 @@ import { getDashboardSupabaseBrowser } from '@/lib/dashboard/supabase-browser'
  *   - de Ongelezen-count meebeweegt
  *
  * Debounce van 500ms voorkomt dat een burst van berichten (klant typt 5x
- * achter elkaar) 5 refreshes triggert — alleen de laatste telt.
+ * achter elkaar) 5 refreshes triggert, alleen de laatste telt.
  */
 export function InboxRealtime() {
   const router = useRouter()

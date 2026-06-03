@@ -15,7 +15,7 @@ const PHASES: ReadonlyArray<{ k: Phase; l: string; Icon: typeof Truck }> = [
 
 /**
  * Visuele stepper voor de monteur op locatie. State is voorlopig
- * uitsluitend client-side — een latere iteratie syncet naar een
+ * uitsluitend client-side, een latere iteratie syncet naar een
  * `lead_field_state` tabel of via /dashboard-api zodat kantoor live
  * de status ziet.
  */
@@ -85,7 +85,7 @@ function PhaseBody({ phase, leadNaam }: { phase: Phase; leadNaam: string }) {
   if (phase === 'aangekomen') {
     return (
       <div className={styles.body}>
-        <h3 className={styles.bodyTitle}>Aangekomen — check-in</h3>
+        <h3 className={styles.bodyTitle}>Aangekomen, check-in</h3>
         <p className={styles.bodyText}>Maak een foto van de uitgangssituatie (vóór).</p>
         <label className={styles.upload}>
           <input type="file" accept="image/*" capture="environment" hidden />
@@ -110,7 +110,7 @@ function PhaseBody({ phase, leadNaam }: { phase: Phase; leadNaam: string }) {
   }
   return (
     <div className={styles.body}>
-      <h3 className={styles.bodyTitle}>Klus klaar — overhandiging</h3>
+      <h3 className={styles.bodyTitle}>Klus klaar, overhandiging</h3>
       <p className={styles.bodyText}>Maak een foto van het resultaat (ná).</p>
       <label className={styles.upload}>
         <input type="file" accept="image/*" capture="environment" hidden />

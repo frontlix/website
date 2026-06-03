@@ -11,7 +11,7 @@ import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { ExportsModal } from '@/components/dashboard/ExportsModal'
 import { DashboardChrome } from '@/components/dashboard/mobile/DashboardChrome'
 import styles from './layout.module.css'
-// Globale dashboard design-system classes — alleen actief in deze layout.
+// Globale dashboard design-system classes, alleen actief in deze layout.
 import '@/styles/dashboard.css'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const supabase = await getDashboardSupabase()
 
   // Parallel fetchen: tenant-info + sidebar-counts (open leads, komende
-  // afspraken). Counts vullen de badges in de Sidebar — geven de klant
+  // afspraken). Counts vullen de badges in de Sidebar, geven de klant
   // direct zicht op werk-in-uitvoering zonder elke pagina te openen.
   const [settingsRes, openLeadsRes, upcomingApptsRes, notifications, unreadCount] = await Promise.all([
     supabase
@@ -51,8 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const counts = {
     leads: openLeadsRes.count ?? 0,
     agenda: upcomingApptsRes.count ?? 0,
-    // Inbox + Reviews: nog geen aparte unread/pending state in DB —
-    // toon geen badge zolang we niet weten wat er actief is.
+    // Inbox + Reviews: nog geen aparte unread/pending state in DB,     // toon geen badge zolang we niet weten wat er actief is.
   }
 
   // Desktop-chrome: bestaande sidebar+topbar+main structure ongewijzigd.
@@ -86,7 +85,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // `dashboard-theme-root` is de gedeelde wrapper waar de ThemeToggle
   // `.dark` op zet. Hij omvat BEIDE chrome-bomen (desktop + mobiel) zodat
   // dark mode op elk viewport werkt. `display:contents` (in dashboard.css)
-  // maakt 'm layout-transparant — identiek gedrag aan het vorige fragment.
+  // maakt 'm layout-transparant, identiek gedrag aan het vorige fragment.
   return (
     <div className="dashboard-theme-root">
       <DashboardChrome

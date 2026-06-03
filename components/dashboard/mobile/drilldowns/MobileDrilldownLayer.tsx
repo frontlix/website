@@ -25,7 +25,7 @@ type Props = {
  * - `handleClose`: als history.state.drilldown bestaat → history.back() (triggert
  *   popstate-handler die onClose roept). Anders → direct onClose() als safety net.
  *
- * URL blijft `/dashboard` — geen route-change, geen analytics-noise.
+ * URL blijft `/dashboard`, geen route-change, geen analytics-noise.
  *
  * Wachtwaard: het pushState-effect runt alleen op overgang naar open=true en
  * cleanup bij open=false. We pushen niet bij elke render.
@@ -50,14 +50,14 @@ export function MobileDrilldownLayer({
     // React Strict-Mode (dev) dubbel-mount, een instabiele onClose-identiteit,
     // of een deep-link (?section=…) waarbij de laag al open mount. Zonder guard
     // ontstaan meerdere drilldown-entries en sluit één history.back() de drilldown
-    // niet — dan landt 'm op de andere drilldown-entry en lijkt "Terug" dood.
+    // niet, dan landt 'm op de andere drilldown-entry en lijkt "Terug" dood.
     if (!history.state?.drilldown) {
       history.pushState({ drilldown: true }, '', window.location.href)
     }
 
     const onPop = (e: PopStateEvent) => {
       // State zonder drilldown-vlag = user navigeerde "weg" van de drilldown.
-      // We sluiten — zonder zelf history.back() te roepen om loops te voorkomen.
+      // We sluiten, zonder zelf history.back() te roepen om loops te voorkomen.
       if (!e.state?.drilldown) onClose()
     }
     window.addEventListener('popstate', onPop)

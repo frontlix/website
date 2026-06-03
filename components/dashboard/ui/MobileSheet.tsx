@@ -16,7 +16,7 @@ export interface MobileSheetProps {
   /** Vanaf welke kant de sheet inschuift op mobile. 'bottom' = standaard
    *  bottom-sheet; 'top' = drop-down vanaf bovenkant (handig voor zoek/
    *  filters die dicht bij de topbar horen). Op tablet+ blijft 't een
-   *  gecentreerde modal — geen effect. */
+   *  gecentreerde modal, geen effect. */
   anchor?: 'top' | 'bottom'
 }
 
@@ -33,12 +33,12 @@ export function MobileSheet({
   const onCloseRef = useRef(onClose)
   const titleId = useId()
 
-  // Body-scroll lock — gecentraliseerd + reference-counted, zodat gestapelde
+  // Body-scroll lock, gecentraliseerd + reference-counted, zodat gestapelde
   // overlays elkaars lock niet vroegtijdig vrijgeven. Lockt alleen bij `open`.
   useBodyScrollLock(open)
 
   // Houd de laatste onClose in een ref zodat we 'm niet als effect-dep
-  // hoeven te listen — voorkomt re-mounts van listener + scroll-lock
+  // hoeven te listen, voorkomt re-mounts van listener + scroll-lock
   // bij elke parent-rerender met inline arrow `onClose={() => ...}`.
   useEffect(() => {
     onCloseRef.current = onClose

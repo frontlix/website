@@ -5,7 +5,7 @@
  * - Alle regel-totalen zijn EXCL BTW.
  * - Korting wordt toegepast op het subtotaal EXCL BTW, vóór de BTW erbij komt.
  * - BTW is hardcoded op 21% (Nederland, standaard-tarief).
- *   Wijziging hiervan vereist bewuste codewijziging — geen runtime-config.
+ *   Wijziging hiervan vereist bewuste codewijziging, geen runtime-config.
  * - Negatieve of >100 kortingen worden geclampt naar het bereik [0, 100].
  */
 
@@ -32,7 +32,7 @@ export type Totalen = {
  *
  * @param regelTotalen Array van regel.totaal (excl BTW). Lege array → alles 0.
  * @param kortingPct Kortingspercentage 0-100. Buiten bereik wordt geclampt.
- * @returns Volledig Totalen-object — alle bedragen in euro's, niet afgerond
+ * @returns Volledig Totalen-object, alle bedragen in euro's, niet afgerond
  *          op centen (UI gebruikt formatEuro voor weergave).
  */
 export function berekenTotalen(

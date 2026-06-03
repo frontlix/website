@@ -5,7 +5,7 @@
  * eerst daar afstemmen, dan hier mirrorren.
  *
  * Input is gemapt naar de frontlix-wizard via `buildOffertePDFData`
- * onderaan deze file — die converteert ManualOfferteData + rules +
+ * onderaan deze file, die converteert ManualOfferteData + rules +
  * totals + tenant_settings naar de OffertePDFData die de template
  * verwacht.
  */
@@ -257,7 +257,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
             <td>Subtotaal diensten</td>
             <td class="amount">${formatCurrency(d.subtotaalExcl)}</td>
           </tr>
-          ${d.kortingBedrag > 0 ? `<tr class="korting"><td>${d.kortingOmschrijving ? `Actiekorting (${formatPct(d.kortingPercentage)}%) — ${escapeHtml(d.kortingOmschrijving)}` : `Actiekorting (${formatPct(d.kortingPercentage)}%)`}</td><td class="amount">- ${formatCurrency(d.kortingBedrag)}</td></tr>` : ''}
+          ${d.kortingBedrag > 0 ? `<tr class="korting"><td>${d.kortingOmschrijving ? `Actiekorting (${formatPct(d.kortingPercentage)}%), ${escapeHtml(d.kortingOmschrijving)}` : `Actiekorting (${formatPct(d.kortingPercentage)}%)`}</td><td class="amount">- ${formatCurrency(d.kortingBedrag)}</td></tr>` : ''}
           <tr class="subtotal">
             <td>Totaal excl. BTW</td>
             <td class="amount">${formatCurrency(d.totaalExcl)}</td>

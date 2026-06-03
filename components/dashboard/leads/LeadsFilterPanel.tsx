@@ -6,10 +6,10 @@ import { Filter, Zap, Check } from 'lucide-react'
 import styles from './LeadsFilterPanel.module.css'
 
 /**
- * LeadsFilterPanel — desktop-popover met de geavanceerde filters die
+ * LeadsFilterPanel, desktop-popover met de geavanceerde filters die
  * voorheen alleen op mobiel bestonden (LeadsFilterSheet): Bron, "Alleen
  * urgent" en Sortering. Schrijft naar de URL (server-side filtering,
- * blijft behouden bij refresh/delen) — consistent met de bestaande
+ * blijft behouden bij refresh/delen), consistent met de bestaande
  * desktop-filtertabs. Fase blijft de aparte tab-balk.
  */
 

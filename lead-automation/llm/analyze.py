@@ -1,4 +1,4 @@
-"""Universal message analyzer — replaces the legacy extract_data flow.
+"""Universal message analyzer, replaces the legacy extract_data flow.
 
 One LLM call per customer message returns:
   - extracted   : new/corrected naam, email, branche-fields (same shape as old extract_data)
@@ -8,7 +8,7 @@ One LLM call per customer message returns:
 
 Branche-specific data (fields, enum-values, units, persona) is injected at runtime
 from `BrancheConfig`, so the prompt is one universal English structural template
-with Dutch examples — no per-branche prompts.
+with Dutch examples, no per-branche prompts.
 
 Model: gpt-4o (structured outputs via response_format=json_schema).
 """
@@ -36,10 +36,10 @@ Intent = Literal[
     "off_topic",           # customer brings up unrelated topic / small talk
     "gibberish",           # message is nonsense / random typing
     "is_bot_question",     # customer asks "ben jij een bot/AI?"
-    "acknowledgement",     # "ok", "ja", "thanks" — no new info, no question
+    "acknowledgement",     # "ok", "ja", "thanks", no new info, no question
     "quote_accepted",      # post-quote: customer accepts the offerte / wants the appointment
     "quote_declines",      # post-quote: customer declines / not interested
-    "not_recognized",      # fallback / ambiguous — treat like gibberish
+    "not_recognized",      # fallback / ambiguous, treat like gibberish
 ]
 
 
@@ -57,7 +57,7 @@ class AnalysisResult(BaseModel):
 
 
 # Per-branche JSON-schema (cached). OpenAI's strict-mode rejects open-ended
-# `additionalProperties: <schema>` maps — every key in `data` must be enumerated
+# `additionalProperties: <schema>` maps, every key in `data` must be enumerated
 # explicitly in both `properties` AND `required`. We therefore build a schema
 # with each branche's exact field keys (values nullable so the LLM can leave
 # unanswered fields out by setting them null).
@@ -113,12 +113,12 @@ _SYSTEM_PROMPT = """## ROLE
 You analyze a Dutch WhatsApp conversation between a customer and a branche-specific assistant ({agent_name}, persona: {branche_label}). The customer just sent a new message. Your job is to:
 
 1. Extract any NEW or CORRECTED values the customer just provided (name, email, branche-specific fields).
-2. Classify the customer's INTENT — what kind of message they sent.
+2. Classify the customer's INTENT, what kind of message they sent.
 3. Determine if the customer actually answered the SPECIFIC field the bot was waiting on (the "current question").
 
 ## FIELDS YOU CAN EXTRACT
 - naam: first name or full name (top-level)
-- email: valid email — MUST contain @, MUST have a dot in the domain part, MUST have no whitespace. If malformed (missing dot, typos like "gmialcom"/"gail.com"/".co" instead of ".com", spaces inside): OMIT entirely. NEVER auto-correct.
+- email: valid email, MUST contain @, MUST have a dot in the domain part, MUST have no whitespace. If malformed (missing dot, typos like "gmialcom"/"gail.com"/".co" instead of ".com", spaces inside): OMIT entirely. NEVER auto-correct.
 - Branche-specific fields (see FIELD GUIDE below)
 
 ## FIELD GUIDE (branche: {branche_id})
@@ -142,9 +142,9 @@ The bot last asked about: **{current_question}**
 - gibberish           : message is nonsense, random letters, no parseable content.
 - is_bot_question     : customer asks if they're talking to a bot/AI ("ben je een bot?", "ben jij AI?").
 - acknowledgement     : pure ack ("ok", "ja", "duidelijk", "thanks") with no answer to the current question and no question back.
-- not_recognized      : truly ambiguous — fallback.
+- not_recognized      : truly ambiguous, fallback.
 
-If the customer simultaneously gives an answer AND asks a question (e.g. "plat dak. wat kost het?"), pick the dominant intent — usually `direct_answer` if a concrete value is given.
+If the customer simultaneously gives an answer AND asks a question (e.g. "plat dak. wat kost het?"), pick the dominant intent, usually `direct_answer` if a concrete value is given.
 
 ## EXTRACTION RULES
 - The output schema requires ALL branche-fields to be present in `extracted.data`. Set keys you have NO new value for to `null`. Only set a key to a concrete string when the customer just provided (or corrected) that value.
@@ -200,7 +200,7 @@ _BRANCHE_EXTRAS: dict[str, str] = {
         "## TRADE KNOWLEDGE (zonnepanelen)\n"
         "- On a `plat` dak, `dakmateriaal` of pannen/riet/leisteen does NOT occur in practice. "
         "If KNOWN daktype=plat and the customer names a pitched-roof material, OMIT dakmateriaal (do not overwrite).\n"
-        "- On a `schuin` dak, bitumen/EPDM is extremely unusual — same rule, OMIT.\n"
+        "- On a `schuin` dak, bitumen/EPDM is extremely unusual, same rule, OMIT.\n"
         "- For `orientatie`: combinations like \"noord-oost\", \"alle kanten\" → OMIT (don't guess)."
     ),
     "dakdekker": (
@@ -261,7 +261,7 @@ async def analyze_message(
         print(f"[analyze] failed, returning not_recognized: {e}")
         return AnalysisResult()
 
-    # Post-process `extracted` — same hygiene the old extract_data did:
+    # Post-process `extracted`, same hygiene the old extract_data did:
     # drop blanks, enforce enum values, drop malformed emails.
     cleaned: dict[str, Any] = {}
 
@@ -306,7 +306,7 @@ async def analyze_message(
 # ── Post-quote classifier ────────────────────────────────────────────────────
 # Used by the webhook AFTER the offerte is sent: the customer's reply needs a
 # different intent-vocabulary (do they accept? want a meeting? have a question
-# about the quote?). Lightweight — no field extraction, just classification.
+# about the quote?). Lightweight, no field extraction, just classification.
 
 PostQuoteIntent = Literal[
     "quote_accepted",       # accepts the offerte / wants to proceed
@@ -316,7 +316,7 @@ PostQuoteIntent = Literal[
     "is_bot_question",      # asks if they're talking to a bot
     "off_topic",            # unrelated chat
     "acknowledgement",      # bare "ok"/"hmm" without commitment either way
-    "ambiguous",            # cannot tell — ask explicitly
+    "ambiguous",            # cannot tell, ask explicitly
 ]
 
 _POST_QUOTE_SCHEMA = {
@@ -341,7 +341,7 @@ You analyze the LAST customer message in a Dutch WhatsApp conversation that just
 ## INTENTS
 - quote_accepted   : customer agrees / wants to proceed / "ik ga akkoord", "akkoort", "doe maar", "ja graag", "dat wil ik wel", "dat is goed", "perfect", "afspraak inplannen"
 - quote_declines   : explicit no / not interested / "nee bedankt", "te duur", "laat maar", "ik zie er vanaf"
-- quote_question   : a question about the quote itself — price, scope, materials, levertijd
+- quote_question   : a question about the quote itself, price, scope, materials, levertijd
 - process_question : asks WHAT the appointment is for, how the process works, "waarvoor is dat?", "wat gaan jullie doen?"
 - is_bot_question  : "ben je een bot", "ben jij AI"
 - off_topic        : unrelated chat / small talk

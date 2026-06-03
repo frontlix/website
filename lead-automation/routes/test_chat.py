@@ -36,7 +36,7 @@ from models.lead import ConversationMessage
 router = APIRouter()
 
 # ── In-memory session store ──────────────────────────────────────────────
-# Keyed by client-generated session_id (UUID per browser tab). No TTL — this
+# Keyed by client-generated session_id (UUID per browser tab). No TTL, this
 # is a dev tool. State is lost on server restart, which is fine.
 SESSIONS: dict[str, dict[str, Any]] = {}
 
@@ -48,7 +48,7 @@ WELCOME_MESSAGES = {
 
 NAAM_QUESTION = "Met wie heb ik het genoegen?"
 
-# Mirrors routes/webhook.py:_WORKAROUND_FIELDS — fields with a practical tip get
+# Mirrors routes/webhook.py:_WORKAROUND_FIELDS, fields with a practical tip get
 # one extra re-ask before being marked _skipped.
 _WORKAROUND_FIELDS: dict[str, set[str]] = {
     "zonnepanelen": {"jaarverbruik", "dakoppervlakte", "aansluiting"},
@@ -410,7 +410,7 @@ def _serialize_session(s: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _run_pipeline_turn(session: dict[str, Any]) -> None:
-    """Run one analyzer + reply turn — mutates session in-place.
+    """Run one analyzer + reply turn, mutates session in-place.
 
     Mirrors routes/webhook.py:_handle_collecting intent-dispatcher behaviour
     but does NOT touch Supabase. The latest history entry must be the
@@ -480,7 +480,7 @@ async def _run_pipeline_turn(session: dict[str, Any]) -> None:
     reply_latency = round((time.time() - t0) * 1000)
 
     # Build the analyzer prompt for the inspect modal (after state changes,
-    # known_values reflects pre-apply state — so build it BEFORE we mutate
+    # known_values reflects pre-apply state, so build it BEFORE we mutate
     # session.data. Already done implicitly: identity/data passed in were
     # pre-apply copies.)
     analyzer_prompt = _build_analyzer_prompt(
@@ -495,7 +495,7 @@ async def _run_pipeline_turn(session: dict[str, Any]) -> None:
     from llm.reply import _intent_guidance
     intent_guidance_line = _intent_guidance(analysis.intent, unsure_count, has_workaround)
     intent_section = (
-        f"\n## INTENT CONTEXT (deterministic — follow this branch)\n"
+        f"\n## INTENT CONTEXT (deterministic, follow this branch)\n"
         f"- intent: {analysis.intent}\n"
         f"- answered_current_question: {analysis.answered_current_question}\n"
         f"- unsure_count on current field: {unsure_count}\n"
@@ -507,7 +507,7 @@ async def _run_pipeline_turn(session: dict[str, Any]) -> None:
         f"Known info:{_build_known_info(branche_id, identity, data, photo_count)}\n\n"
         f"NEXT: {next_tag_after}\n"
         f"{intent_section}\n"
-        f"Write 1 WhatsApp message as {config.agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text — no JSON, no explanation."
+        f"Write 1 WhatsApp message as {config.agent_name} in Dutch. First check if the customer is waiting, unsure or frustrated. Only the message text, no JSON, no explanation."
     )
 
     # Commit state
@@ -700,7 +700,7 @@ _HTML_PAGE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Frontlix /test — analyzer + reply dev-loop</title>
+<title>Frontlix /test, analyzer + reply dev-loop</title>
 <style>
 :root {
   --bg: #fafafa;
@@ -953,7 +953,7 @@ footer {
 </header>
 
 <div class="thread" id="thread">
-  <div class="empty">Begin met een preset, of typ een bericht onderaan. Géén DB-writes — pure dev-loop.</div>
+  <div class="empty">Begin met een preset, of typ een bericht onderaan. Géén DB-writes, pure dev-loop.</div>
 </div>
 
 <footer>
@@ -967,7 +967,7 @@ footer {
 <div class="modal-bg" id="modal-inspect">
   <div class="modal">
     <button class="close" data-close>×</button>
-    <h2>Inspect — bot-bericht</h2>
+    <h2>Inspect, bot-bericht</h2>
     <div class="row"><label>Intent:</label> <span id="ins-intent" class="tag"></span></div>
     <div class="row"><label>Answered:</label> <span id="ins-answered"></span></div>
     <div class="row"><label>Current Q:</label> <span id="ins-current"></span></div>
@@ -1042,7 +1042,7 @@ function renderThread() {
   thread.innerHTML = '';
   const s = state.session;
   if (!s || !s.history.length) {
-    thread.innerHTML = '<div class="empty">Begin met een preset, of typ een bericht onderaan. Géén DB-writes — pure dev-loop.</div>';
+    thread.innerHTML = '<div class="empty">Begin met een preset, of typ een bericht onderaan. Géén DB-writes, pure dev-loop.</div>';
     return;
   }
   s.history.forEach((m, idx) => {

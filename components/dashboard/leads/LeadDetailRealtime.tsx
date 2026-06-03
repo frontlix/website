@@ -9,7 +9,7 @@ import { LiveDot } from '@/components/dashboard/ui/LiveDot'
  * Onzichtbaar (qua data-flow) component dat Supabase Realtime abonneert
  * op INSERTs in `berichten` en `fotos` voor het huidige lead_id, en bij
  * elke event `router.refresh()` triggert. Server fetcht opnieuw,
- * page re-rendert — geen client-state-mutations.
+ * page re-rendert, geen client-state-mutations.
  *
  * Rendert wel een kleine LiveIndicator zodat de user de connection-status ziet.
  */
@@ -23,12 +23,12 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let channel: any = null
 
-    // Debug-logs alleen in dev — productie blijft stil.
+    // Debug-logs alleen in dev, productie blijft stil.
     const DEBUG = process.env.NODE_ENV !== 'production'
 
     // Filter doen we in de callback i.p.v. via postgres_changes filter-string;
     // die bleek onbetrouwbaar voor TEXT-IDs met hyphens (lead_id heeft die).
-    // Werkt voor zowel INSERT (berichten/fotos) als UPDATE (leads) — beide
+    // Werkt voor zowel INSERT (berichten/fotos) als UPDATE (leads), beide
     // payloads hebben `new.lead_id`.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onChange = (payload: any) => {
@@ -55,7 +55,7 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
         console.warn('[realtime] NO session/token → RLS zal alle events filteren')
       }
 
-      // Unieke topic-suffix per effect-run — voorkomt de StrictMode-
+      // Unieke topic-suffix per effect-run, voorkomt de StrictMode-
       // hergebruik-race (zie InboxRealtime). Math.random i.v.m. insecure
       // context bij testen via http://LAN-IP (geen crypto.randomUUID).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,7 +86,7 @@ export function LeadDetailRealtime({ leadId }: { leadId: string }) {
     })()
 
     // Polling-fallback: elke 8s router.refresh() ALLEEN als de tab actief
-    // is. Realtime is primair, dit is verzekering — als de websocket-events
+    // is. Realtime is primair, dit is verzekering, als de websocket-events
     // niet doorkomen (RLS-filter, stale token, netwerk-flaky) zien we nieuwe
     // berichten alsnog binnen ~8s. Idle tabs verbruiken niets dankzij de
     // visibilityState-check.

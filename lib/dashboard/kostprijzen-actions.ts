@@ -11,7 +11,7 @@ import { requireApprovedUser } from './require-approved-user'
 // in de offerte-tab en geschreven via de Kostprijzen-modal.
 //
 // Read (getKostprijzen): voor iedere approved user (de marge-kaart toont
-// alleen aan owners, maar de query zelf is harmloos — RLS staat sowieso
+// alleen aan owners, maar de query zelf is harmloos, RLS staat sowieso
 // alleen service-role toe).
 //
 // Writes (saveKostprijzen, resetKostprijzen): alleen voor `is_owner=true`.
@@ -48,7 +48,7 @@ const DEFAULT_KOSTPRIJZEN: ReadonlyArray<Kostprijs> = [
  * Retourneert een lege lijst als de tabel leeg/niet-geseed is of bij een
  * netwerk-/RLS-fout. De aanroepers (marge-kaart) hebben dan een veilige
  * fallback: geen kostprijzen = geen marge-zicht (verbergen of "configureer
- * eerst kostprijzen"-state). Lege return is bewust geen Result-shape — de
+ * eerst kostprijzen"-state). Lege return is bewust geen Result-shape, de
  * read is bedoeld als "fire-and-forget" data-load, niet als een action.
  */
 export async function getKostprijzen(): Promise<Kostprijs[]> {
@@ -60,7 +60,7 @@ export async function getKostprijzen(): Promise<Kostprijs[]> {
 
   if (error || !data) return []
 
-  // Cast number-veld door Number() — Supabase numeric-types kunnen als
+  // Cast number-veld door Number(), Supabase numeric-types kunnen als
   // string terugkomen afhankelijk van driver-config.
   return data.map((row) => ({
     rule_key: row.rule_key,
@@ -75,7 +75,7 @@ export async function getKostprijzen(): Promise<Kostprijs[]> {
  * Per upsert wordt alleen `kost_pct` + `bijgewerkt_op` geschreven; bestaande
  * `label` blijft staan. Als de rule_key nog niet bestaat (verse install,
  * migratie nog niet gerund), pakken we het label uit DEFAULT_KOSTPRIJZEN
- * — anders zou de NOT NULL constraint op `label` falen.
+ *, anders zou de NOT NULL constraint op `label` falen.
  *
  * Validaties:
  *  - rule_key is een niet-lege string
@@ -108,7 +108,7 @@ export async function saveKostprijzen(
   const admin = getDashboardAdmin()
 
   // Lookup-map van defaults voor het geval een rule_key nog niet in de DB
-  // staat en we 'm via upsert moeten inserten — `label` is NOT NULL.
+  // staat en we 'm via upsert moeten inserten, `label` is NOT NULL.
   const defaultLabelByKey = new Map(
     DEFAULT_KOSTPRIJZEN.map((d) => [d.rule_key, d.label] as const),
   )
@@ -117,7 +117,7 @@ export async function saveKostprijzen(
   const rows = updates.map((u) => ({
     rule_key: u.rule_key,
     // Fallback-label voor onbekende rule_keys; bij bestaande rij doet de
-    // upsert er niets mee omdat we expliciet `label` mee-updaten — dus
+    // upsert er niets mee omdat we expliciet `label` mee-updaten, dus
     // hier kiezen we voor het default-label (of de key zelf als ook dat
     // ontbreekt) zodat de DB-constraint nooit faalt.
     label: defaultLabelByKey.get(u.rule_key) ?? u.rule_key,
@@ -132,8 +132,7 @@ export async function saveKostprijzen(
   if (error) return { ok: false, error: error.message }
 
   // Marge-kaart staat in de lead-detail-pagina. Geen specifieke lead-id
-  // bekend op dit punt, dus we revalidaten het pad-pattern globaal —
-  // Next.js raakt alle [lead_id]-routes aan.
+  // bekend op dit punt, dus we revalidaten het pad-pattern globaal,   // Next.js raakt alle [lead_id]-routes aan.
   revalidatePath('/leads/[lead_id]', 'page')
   revalidatePath('/instellingen')
 
@@ -152,11 +151,11 @@ type ResetResult =
  *
  * Implementatie: DELETE FROM kostprijzen_per_dienst, daarna INSERT van
  * de 8 default-rijen. We doen geen TRUNCATE (zou RLS/permission issues
- * kunnen geven via PostgREST) — een simpele DELETE op alle rijen is
+ * kunnen geven via PostgREST), een simpele DELETE op alle rijen is
  * equivalent voor deze tabel.
  *
  * De DELETE gebruikt een altijd-ware filter (`neq('rule_key', '')`)
- * omdat de Supabase JS client een filter vereist op DELETE — anders
+ * omdat de Supabase JS client een filter vereist op DELETE, anders
  * faalt 'ie met "DELETE requires a filter clause".
  *
  * Return-shape: bij success geven we de verse defaults mee in `kostprijzen`

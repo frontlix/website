@@ -17,7 +17,7 @@ export function getInitialMatch(query: string): boolean {
  * viewport en luistert hij op changes.
  */
 export function useMediaQuery(query: string): boolean {
-  // Altijd `false` als initial state — anders zou de client-init via
+  // Altijd `false` als initial state, anders zou de client-init via
   // getInitialMatch() afwijken van de server-render (true vs false),
   // wat Next.js als hydration-mismatch logt. useEffect zet de echte
   // waarde direct na mount.

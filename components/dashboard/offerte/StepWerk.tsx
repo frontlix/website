@@ -55,7 +55,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
         </div>
       </div>
 
-      {/* Hoofdcategorie — multi-select. Combinatie van oprit én
+      {/* Hoofdcategorie, multi-select. Combinatie van oprit én
           onkruid is toegestaan; de sub-diensten-filter eronder past
           zich automatisch aan op de keuze. */}
       <div>
@@ -87,7 +87,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
 
       {/* Sub-diensten. Op mobile blijft 'ie 2-koloms (i.t.t. de standaard
           .grid2 die op mobile 1-koloms wordt) zodat het matcht met het
-          design — Invegen / Onkruid / Beschermlaag / Onderhoud in een
+          design, Invegen / Onkruid / Beschermlaag / Onderhoud in een
           2×2 tegel-grid. */}
       <div>
         <div className={styles.fieldLabel} style={{ marginBottom: 8 }}>
@@ -144,7 +144,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             })}
           </div>
           <div className={styles.weeksHint}>
-            Hoe hoger de frequentie, hoe lager de prijs per beurt — maar wel meer beurten per jaar.
+            Hoe hoger de frequentie, hoe lager de prijs per beurt, maar wel meer beurten per jaar.
             {data.m2 > 0 && (
               <strong style={{ color: 'var(--fg-soft)', marginLeft: 6 }}>
                 Per beurt: €{(Number(data.m2) * ONDERHOUD_PRIJZEN[data.onderhoud_weken]).toFixed(2)}
@@ -158,7 +158,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
       <div className={styles.grid2}>
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Oppervlakte (m²) *</label>
-          {/* Desktop-input. Op mobile verborgen via CSS — daar gebruiken we
+          {/* Desktop-input. Op mobile verborgen via CSS, daar gebruiken we
               de stepper + presets eronder voor tap-vriendelijker input. */}
           <input
             className={`${styles.input} ${styles.numericInput} ${styles.m2InputDesktop}`}
@@ -229,7 +229,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           <div className={styles.voegzandHead}>
             <div style={{ fontSize: 13, fontWeight: 700 }}>Voegzand</div>
             <div className={styles.hideOnMobile} style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 2 }}>
-              Kies welke type(s) je wil gebruiken — pas aantal zakken en prijs per zak desgewenst aan
+              Kies welke type(s) je wil gebruiken, pas aantal zakken en prijs per zak desgewenst aan
             </div>
           </div>
 
@@ -363,7 +363,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
 
 // ── VoegzandMismatchWarning ────────────────────────────────────────
 // Rode banner wanneer de som van per-type voegzand-m² niet overeenkomt
-// met de totale oppervlakte. Blokkeert "Volgende" niet — alleen visueel
+// met de totale oppervlakte. Blokkeert "Volgende" niet, alleen visueel
 // signaal zodat de owner expliciet kiest of de mismatch klopt
 // (bijv. opzettelijk alleen 30 m² invegen op een 100 m² oprit).
 function VoegzandMismatchWarning({ data }: { data: ManualOfferteData }) {

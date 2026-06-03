@@ -12,7 +12,7 @@ type Props = {
   /** ISO date string. `null` als er nog geen geldigheidsdatum bekend is. */
   geldigTot: string | null
   onPdfClick?: () => void
-  /** "Versturen via WhatsApp" — fase 1: prop is genoeg, knop is voorbereid. */
+  /** "Versturen via WhatsApp", fase 1: prop is genoeg, knop is voorbereid. */
   onSendClick?: () => void
   /** Bij `true` is de Versturen-knop uitgeschakeld (bv. geen regels in de offerte). */
   versturenDisabled?: boolean

@@ -2,7 +2,7 @@ import { getDashboardSupabase } from './supabase-server'
 import { geocodeAddress } from './geocoding'
 
 /**
- * Thuisbasis-locatie van de tenant — bron voor alle dag-routes in de
+ * Thuisbasis-locatie van de tenant, bron voor alle dag-routes in de
  * routekaart.
  *
  * Drie wegen om aan een locatie te komen, in volgorde van voorkeur:
@@ -12,7 +12,7 @@ import { geocodeAddress } from './geocoding'
  *   3) `null` → caller valt terug op `DEFAULT_TENANT_BASE` (Biervliet)
  *
  * Pad 2 zorgt dat de routekaart al werkt zónder dat de tenant iets hoeft
- * in te stellen — zolang z'n adres in tenant_settings staat (postcode +
+ * in te stellen, zolang z'n adres in tenant_settings staat (postcode +
  * adres met huisnummer aan het eind). Pad 1 wint omdat de UI een
  * gecontroleerd huisnummer-veld heeft (niet afhankelijk van adres-parse).
  */
@@ -43,7 +43,7 @@ function extractHuisnummer(adres: string): string | null {
 export async function getTenantBase(): Promise<TenantBase | null> {
   const supabase = await getDashboardSupabase()
   // `select('*')` voorkomt een failure als migratie 028 nog niet is
-  // toegepast — dan zijn `base_*` kolommen er simpelweg niet, maar de
+  // toegepast, dan zijn `base_*` kolommen er simpelweg niet, maar de
   // andere bestaande kolommen werken nog wel.
   const { data, error } = await supabase
     .from('tenant_settings')
@@ -90,7 +90,7 @@ export async function getTenantBase(): Promise<TenantBase | null> {
   return null
 }
 
-/** Default fallback: Biervliet centrum — gebruikt als alle paths falen. */
+/** Default fallback: Biervliet centrum, gebruikt als alle paths falen. */
 export const DEFAULT_TENANT_BASE: TenantBase = {
   lat: 51.3057,
   lng: 3.6515,

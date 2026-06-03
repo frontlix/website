@@ -14,7 +14,7 @@ export type ReadActionResult =
   | { ok: false; error: string }
 
 /**
- * Markeer één notificatie als gelezen. Idempotent — als 'ie al gelezen
+ * Markeer één notificatie als gelezen. Idempotent, als 'ie al gelezen
  * is doen we niets (geen overschrijven van eerdere gelezen_op timestamp).
  */
 export async function markNotificationReadAction(
@@ -36,7 +36,7 @@ export async function markNotificationReadAction(
     return { ok: false, error: 'Kon notificatie niet markeren.' }
   }
 
-  // Geen revalidatePath — de bel update zichzelf optimistisch. Een
+  // Geen revalidatePath, de bel update zichzelf optimistisch. Een
   // revalidate zou alle dashboard-routes flushen, dat is overkill.
   return { ok: true }
 }

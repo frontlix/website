@@ -14,7 +14,7 @@ import {
  * Mapped van NotificationRow naar NotifItem (UI-shape) hier zodat de
  * client component (NotificationPanel) typed blijft op haar bestaande
  * interface. Voorheen aggregeerden we hier rechtstreeks uit leads/berichten
- * (V1, fake notificaties) — die logica is vervangen door echte event-driven
+ * (V1, fake notificaties), die logica is vervangen door echte event-driven
  * notificaties (fase 1).
  */
 export async function getRecentNotifications(limit = 10): Promise<NotifItem[]> {
@@ -53,7 +53,7 @@ export async function getRecentNotifications(limit = 10): Promise<NotifItem[]> {
 }
 
 /**
- * Aantal ongelezen notificaties voor de huidige user — voor de badge
+ * Aantal ongelezen notificaties voor de huidige user, voor de badge
  * in de bel-button. Aparte head-only count-query (geen rij-payload).
  */
 export async function getUnreadNotificationCount(): Promise<number> {

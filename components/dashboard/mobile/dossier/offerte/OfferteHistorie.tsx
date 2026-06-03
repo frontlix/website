@@ -6,7 +6,7 @@
 // mock-data. Bovenaan altijd de huidige (nog niet verstuurde) concept-kaart
 // met accent-rand; daaronder de echte versies, meest recente eerst.
 // De 'PDF' en 'Dupliceer' knoppen zijn deze ronde puur visueel (disabled,
-// geen handler) — versturen/dupliceren blijft de desktop-flow.
+// geen handler), versturen/dupliceren blijft de desktop-flow.
 // Theming via tokens + per-rij --tone custom property + color-mix; geen
 // inline kleuren of hardcoded hex.
 // ──────────────────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ export function OfferteHistorie({ open, onClose, huidigBedrag, versies }: Offert
   return (
     <OFullSheet open={open} onClose={onClose} title="Versie-historie">
       <div className={styles.list}>
-        {/* Huidig concept — accent-rand, altijd bovenaan, geen knoppen. */}
+        {/* Huidig concept, accent-rand, altijd bovenaan, geen knoppen. */}
         <article className={`${styles.card} ${styles.cardCurrent}`}>
           <div className={styles.head}>
             {/* Badge-tint = muted-grijs (handoff #8E8E93) via --tone. */}
@@ -88,7 +88,7 @@ export function OfferteHistorie({ open, onClose, huidigBedrag, versies }: Offert
                 </div>
               </div>
 
-              {/* PDF + Dupliceer — deze ronde puur visueel (disabled, geen handler). */}
+              {/* PDF + Dupliceer, deze ronde puur visueel (disabled, geen handler). */}
               <div className={styles.actions}>
                 <button type="button" className={styles.actBtn} disabled>
                   <Eye size={14} aria-hidden="true" /> PDF

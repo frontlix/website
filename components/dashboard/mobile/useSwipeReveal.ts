@@ -32,21 +32,21 @@ export type SwipeOpen = -1 | 0 | 1
 export type SwipeReveal = {
   /** Hang aan het schuivende element; de hook koppelt touch-listeners en schrijft transform er rechtstreeks op. */
   ref: React.RefObject<HTMLDivElement | null>
-  /** Gesettelde stand (verandert alléén bij snap/reset — niet per move). */
+  /** Gesettelde stand (verandert alléén bij snap/reset, niet per move). */
   open: SwipeOpen
   /** Snap terug naar 0 (met animatie). */
   reset: () => void
-  /** True wanneer de laatste interactie écht bewoog — om tap te onderscheiden. */
+  /** True wanneer de laatste interactie écht bewoog, om tap te onderscheiden. */
   movedRef: React.MutableRefObject<boolean>
 }
 
 /**
- * Drag-to-reveal swipe-hook — NATIVE TOUCH + PERFORMANT.
+ * Drag-to-reveal swipe-hook, NATIVE TOUCH + PERFORMANT.
  *
  * Waarom native touch-events i.p.v. React-pointer-events:
  *  - We koppelen `touchmove` als NON-passive listener, zodat we `preventDefault()`
  *    kunnen aanroepen zodra het gebaar horizontaal is. Daarmee claimen we de swipe
- *    hard — iOS kan 'm niet meer halverwege als lijst-scroll afpakken (de oorzaak
+ *    hard, iOS kan 'm niet meer halverwege als lijst-scroll afpakken (de oorzaak
  *    van "kaart beweegt een stukje en springt terug / 2× moeten slepen").
  *  - Geen setPointerCapture nodig → geen capture-hitch mid-gebaar.
  *
@@ -55,7 +55,7 @@ export type SwipeReveal = {
  * zodat lichte verticale jitter een horizontale swipe niet saboteert.
  *
  * De transform wordt RECHTSTREEKS op het element geschreven (geen React-render per
- * frame). `open` verandert alleen bij settle/reset — genoeg voor de lanes + parent-
+ * frame). `open` verandert alleen bij settle/reset, genoeg voor de lanes + parent-
  * coördinatie. `onSettle(open)` vuurt SYNCHROON in touchend, zodat een parent z'n
  * eigen "welke kaart is open"-state in dezelfde batch kan zetten (geen stale-read).
  *

@@ -65,7 +65,7 @@ export default async function AgendaPage({
   const mobileNow = new Date()
   // De query haalt bewust ±1 dag buffer op (TZ-safe, zie parseWeekParam),
   // maar de mobiele week-lijst mag ALLEEN de 7 dagen van de gekozen week
-  // tonen — anders verschijnt bv. een afspraak van zo 31 mei onder
+  // tonen, anders verschijnt bv. een afspraak van zo 31 mei onder
   // "Deze week" (1–7 jun). Filter op de Amsterdam-day-keys van de week.
   const mobileWeekDays = buildMobileWeekDays(mobileWeek.mondayKey)
   const mobileWeekDayKeys = new Set(mobileWeekDays.map((d) => d.date))
@@ -129,8 +129,8 @@ async function WeekView({
             type="button"
             className="dash-btn dash-btn-primary"
             disabled
-            title="Handmatige afspraak — binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
-            aria-label="Afspraak inplannen — binnenkort beschikbaar"
+            title="Handmatige afspraak, binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
+            aria-label="Afspraak inplannen, binnenkort beschikbaar"
           >
             <Plus size={13} />
             Afspraak
@@ -247,8 +247,8 @@ async function RouteView({
             type="button"
             className="dash-btn dash-btn-primary"
             disabled
-            title="Handmatige afspraak — binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
-            aria-label="Afspraak inplannen — binnenkort beschikbaar"
+            title="Handmatige afspraak, binnenkort beschikbaar (Surface plant nu automatisch in via WhatsApp)"
+            aria-label="Afspraak inplannen, binnenkort beschikbaar"
           >
             <Plus size={13} />
             Afspraak

@@ -12,7 +12,7 @@ type Props = {
 }
 
 /**
- * AiBriefCard — Surface · Samenvatting banner voor mobile Overzicht.
+ * AiBriefCard, Surface · Samenvatting banner voor mobile Overzicht.
  * Dismissible via interne state (lokaal verbergen tot remount).
  */
 export function AiBriefCard({ title, summary, primaryCtaLabel, onPrimaryCta }: Props) {

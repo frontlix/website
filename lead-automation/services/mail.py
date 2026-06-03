@@ -1,4 +1,4 @@
-"""Email service — approval emails, customer quote emails, appointment confirmations via SMTP."""
+"""Email service, approval emails, customer quote emails, appointment confirmations via SMTP."""
 from __future__ import annotations
 
 import asyncio
@@ -329,7 +329,7 @@ async def send_approval_email(
     await asyncio.to_thread(
         _send_email,
         to=to_email,
-        subject=f"Offerte ter goedkeuring — {naam} ({branche_label})",
+        subject=f"Offerte ter goedkeuring, {naam} ({branche_label})",
         html_body=html,
         attachments=attachments,
     )
@@ -444,7 +444,7 @@ async def send_appointment_confirmation_email(
     calendar.google.com; Apple Agenda (secondary, witte vulling + blauwe rand) →
     /calendar/{token}.ics endpoint dat het .ics-bestand on-the-fly serveert.
 
-    Geen .ics-attachment meer in de mail zelf — één canonical pad: knop →
+    Geen .ics-attachment meer in de mail zelf, één canonical pad: knop →
     endpoint → download. Voorkomt de 'Eén bijlage'-footer in Gmail en is
     minder verwarrend voor de klant.
     """
@@ -476,7 +476,7 @@ async def send_appointment_confirmation_email(
         start_utc=start_utc,
         end_utc=end_utc,
     )
-    # Geen ics_bytes meer als attachment — Apple-knop linkt naar /calendar/{token}.ics
+    # Geen ics_bytes meer als attachment, Apple-knop linkt naar /calendar/{token}.ics
     # endpoint dat het bestand on-the-fly serveert. Eén canonical pad voor de klant.
 
     html = f"""
@@ -518,7 +518,7 @@ async def send_appointment_confirmation_email(
                 <p style="margin:0;font-family:{font};font-size:15px;color:#475569;line-height:1.6">Hoi {escape(voornaam)}, dank voor uw interesse in Frontlix. Hieronder vindt u de details van uw {escape(appointment_label_short)}.</p>
               </td></tr>
 
-              <!-- Demo-notice — duidelijk maken dat dit een demonstratie is -->
+              <!-- Demo-notice, duidelijk maken dat dit een demonstratie is -->
               <tr><td style="padding:14px 40px 4px 40px">
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px">
                   <tr><td style="padding:14px 18px">

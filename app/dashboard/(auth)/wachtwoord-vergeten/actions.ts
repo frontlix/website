@@ -10,7 +10,7 @@ export type WachtwoordVergetenState = { error?: string; success?: boolean }
  * in Supabase Studio → Auth → Email Templates → "Reset Password".
  *
  * Geeft expres geen verschil tussen "bestaand account" en "onbekend mailadres"
- * — dat voorkomt enumeratie van gebruikers.
+ *, dat voorkomt enumeratie van gebruikers.
  */
 export async function vergetenAction(
   _prev: WachtwoordVergetenState,
@@ -28,6 +28,6 @@ export async function vergetenAction(
     redirectTo: `${siteUrl}/callback?next=/wachtwoord-reset`,
   })
 
-  // Altijd success retourneren — geen enumeratie van geldige mailadressen.
+  // Altijd success retourneren, geen enumeratie van geldige mailadressen.
   return { success: true }
 }

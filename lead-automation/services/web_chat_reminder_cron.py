@@ -35,7 +35,7 @@ def _reminder_html(naam: str, link: str) -> str:
   <p style="margin:20px 0">
     <a href="{escape(link)}" style="display:inline-block;background:#1A56FF;color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px">Open chat</a>
   </p>
-  <p style="margin:12px 0;font-size:12px;color:#666">Geen interesse meer? Dan kun je deze mail negeren — we sturen niets meer.</p>
+  <p style="margin:12px 0;font-size:12px;color:#666">Geen interesse meer? Dan kun je deze mail negeren, we sturen niets meer.</p>
 </div>
 """
 

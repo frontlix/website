@@ -11,7 +11,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string }
  *
  * Net als bij `updatePricingRule`: er staat een `.eq('dienst_key', ...)`
  * op de UPDATE zodat alleen een bestaande rij wordt aangeraakt. RLS in
- * Supabase regelt wie überhaupt UPDATE mag uitvoeren — zonder policy
+ * Supabase regelt wie überhaupt UPDATE mag uitvoeren, zonder policy
  * faalt deze action stil (geen rijen geraakt) en logs we de details.
  */
 export async function toggleServiceOffering(
@@ -31,7 +31,7 @@ export async function toggleServiceOffering(
 
   if (error) {
     console.error('[toggleServiceOffering] failed:', error)
-    return { ok: false, error: 'Opslaan mislukt — geen rechten?' }
+    return { ok: false, error: 'Opslaan mislukt, geen rechten?' }
   }
   if (!data || data.length === 0) {
     return { ok: false, error: 'Dienst niet gevonden' }

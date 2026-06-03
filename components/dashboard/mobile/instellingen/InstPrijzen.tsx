@@ -2,18 +2,18 @@
 
 // Echte prijsregels uit pricing_rules (rule_key/label/waarde/eenheid). De
 // stepper past de waarde aan; "Tarieven opslaan" stuurt de gewijzigde regels in
-// één batch naar updatePricingRulesBatch — de rule_keys komen rechtstreeks uit
+// één batch naar updatePricingRulesBatch, de rule_keys komen rechtstreeks uit
 // de DB, dus de mapping is betrouwbaar.
 //
 // Indeling: de regels worden in inklapbare categorie-secties getoond (Reiniging /
-// Invegen & voegzand / Onkruidbeheersing / Reiskosten / Overig) — dezelfde
+// Invegen & voegzand / Onkruidbeheersing / Reiskosten / Overig), dezelfde
 // substring-heuristiek als de desktop PrijzenEditor. Er is GEEN categorie-kolom
 // in de DB; we leiden 'm puur af uit de rule_key. De eerste niet-lege sectie
 // staat open; secties togglen onafhankelijk.
 //
 // Wat-als simulator (compacte mobiele variant): toont alléén het geschatte
 // omzet-effect van de wijziging op basis van de laatste N leads (lineair, via
-// computeRevenueDelta). Geen verzonnen getallen — zonder leads of zonder
+// computeRevenueDelta). Geen verzonnen getallen, zonder leads of zonder
 // wijziging tonen we een eerlijke notitie i.p.v. een cijfer.
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
@@ -28,7 +28,7 @@ import { deltaPct } from './inst-helpers'
 import styles from './InstPrijzen.module.css'
 
 /**
- * Categorie-buckets — zelfde indeling + volgorde als de desktop PrijzenEditor.
+ * Categorie-buckets, zelfde indeling + volgorde als de desktop PrijzenEditor.
  * "overig" vangt onbekende keys op en staat altijd laatst, zodat we nooit een
  * regel verbergen.
  */
@@ -41,7 +41,7 @@ const CATEGORIES = [
 ] as const
 type CategoryKey = (typeof CATEGORIES)[number]['key']
 
-/** Substring-heuristiek op rule_key — werkt los van tenant-eigen namen. */
+/** Substring-heuristiek op rule_key, werkt los van tenant-eigen namen. */
 function categorize(ruleKey: string): CategoryKey {
   const k = ruleKey.toLowerCase()
   if (k.startsWith('reinigen') || k.startsWith('reiniging')) return 'reiniging'
@@ -75,8 +75,7 @@ function stepValue(current: number, step: number, dir: 1 | -1): number {
 
 /**
  * Parse handmatige invoer (nl-NL): accepteert zowel komma als punt, negeert
- * duizendtal-punten ("1.234,50"). Geeft null bij leeg/ongeldig/negatief —
- * dezelfde regels als de desktop RuleInput. Snappen op 2 decimalen doet de
+ * duizendtal-punten ("1.234,50"). Geeft null bij leeg/ongeldig/negatief,  * dezelfde regels als de desktop RuleInput. Snappen op 2 decimalen doet de
  * caller via toFixed bij weergave.
  */
 function parseValue(s: string): number | null {
@@ -88,7 +87,7 @@ function parseValue(s: string): number | null {
   return n
 }
 
-/** Weergave-formaat in het invoerveld — 2 decimalen, consistent met de stepper. */
+/** Weergave-formaat in het invoerveld, 2 decimalen, consistent met de stepper. */
 function formatInput(n: number): string {
   return n.toFixed(2)
 }
@@ -147,7 +146,7 @@ export function InstPrijzen({
   )
   const toggle = (key: string) => setOpen((o) => ({ ...o, [key]: !o[key] }))
 
-  // Basisprijzen blijven constant — vergelijkingsbron voor delta + "changed".
+  // Basisprijzen blijven constant, vergelijkingsbron voor delta + "changed".
   const base = Object.fromEntries(rules.map((r) => [r.rule_key, r.waarde]))
   const changedKeys = rules
     .filter((r) => vals[r.rule_key].toFixed(2) !== r.waarde.toFixed(2))
@@ -307,7 +306,7 @@ export function InstPrijzen({
         )}
       </InstGroupCard>
 
-      {/* Wat-als simulator — compacte mobiele variant: alléén het omzet-effect. */}
+      {/* Wat-als simulator, compacte mobiele variant: alléén het omzet-effect. */}
       <div className={styles.sim}>
         <div className={styles.simHead}>
           <div className={styles.simIcon}>
@@ -404,7 +403,7 @@ function PrijsInput({
   }
 
   // Het hele veld is een <label>: een tik ergens binnen het kader (ook op de
-  // eenheid of de padding) zet native de cursor in de input — groter tikvlak en
+  // eenheid of de padding) zet native de cursor in de input, groter tikvlak en
   // robuust op iOS Safari, waar een tik náást de smalle input anders niets doet.
   return (
     <label className={styles.valueWrap} data-invalid={invalid || undefined}>

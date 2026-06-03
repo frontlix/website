@@ -7,7 +7,7 @@ import type { Database } from './database.types'
  * Server-side Supabase client met session uit cookies.
  * Gebruik in Server Components, Server Actions en Route Handlers.
  *
- * Respecteert RLS — als je RLS wilt bypassen voor admin-werk, gebruik dan
+ * Respecteert RLS, als je RLS wilt bypassen voor admin-werk, gebruik dan
  * getDashboardAdmin() uit supabase-admin.ts.
  *
  * Gewrapped in `cache()` zodat layout + page + lib-helpers binnen dezelfde
@@ -33,8 +33,7 @@ export const getDashboardSupabase = cache(async () => {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // setAll wordt aangeroepen vanuit een Server Component —
-            // negeren is veilig zolang je middleware de session refresht.
+            // setAll wordt aangeroepen vanuit een Server Component,             // negeren is veilig zolang je middleware de session refresht.
           }
         },
       },

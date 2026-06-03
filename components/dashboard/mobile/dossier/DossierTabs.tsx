@@ -16,7 +16,7 @@ interface DossierTabsProps {
 }
 
 /**
- * DossierTabs — sticky segmented control. Track gebruikt --color-chip-bg;
+ * DossierTabs, sticky segmented control. Track gebruikt --color-chip-bg;
  * de actieve knop krijgt een surface-achtergrond + schaduw via data-active.
  */
 export function DossierTabs({ active, tabs, onSelect }: DossierTabsProps) {

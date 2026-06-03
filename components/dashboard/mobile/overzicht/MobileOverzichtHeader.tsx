@@ -16,13 +16,13 @@ type Props = {
 }
 
 /**
- * MobileOverzichtHeader — rijke header bovenaan /dashboard op mobile.
+ * MobileOverzichtHeader, rijke header bovenaan /dashboard op mobile.
  *
  * Layout:
  *  - title-row: grote begroeting links, HeaderActions rechts
  *  - subline:   groene status-dot + leads-count vandaag/morgen
  *
- * Zoeken gaat via `MobileSearchSheet` in controlled-mode — geen eigen
+ * Zoeken gaat via `MobileSearchSheet` in controlled-mode, geen eigen
  * inline overlay meer; één canonical sheet voor alle mobile entry-points.
  */
 export function MobileOverzichtHeader({

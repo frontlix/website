@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Server-side Supabase client met service_role key
-// Alleen gebruiken in API routes / server components — nooit importeren in client components
+// Alleen gebruiken in API routes / server components, nooit importeren in client components
 
 let _supabase: SupabaseClient | null = null
 

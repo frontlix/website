@@ -87,7 +87,7 @@ function buildBijzonderheden(l: LeadDetail['lead']): DossBijzonder[] {
   if (l.planten) {
     rows.push({
       l: 'Planten langs de rand',
-      v: l.planten_afschermen ? `${l.planten} — afschermen` : l.planten,
+      v: l.planten_afschermen ? `${l.planten}, afschermen` : l.planten,
       tone: TONE.amber,
     })
   }
@@ -108,7 +108,7 @@ function buildBijzonderheden(l: LeadDetail['lead']): DossBijzonder[] {
   return rows
 }
 
-/** Surface-uitvraag — done-status afgeleid uit lead-velden. */
+/** Surface-uitvraag, done-status afgeleid uit lead-velden. */
 function buildVragen(l: LeadDetail['lead'], fotoCount: number): DossVraag[] {
   return [
     { q: "Foto's ontvangen", done: fotoCount > 0 },
@@ -122,7 +122,7 @@ function buildVragen(l: LeadDetail['lead'], fotoCount: number): DossVraag[] {
 function buildSurfaceMessage(l: LeadDetail['lead']): string {
   if (!l.m2_bevestigd) return 'Vraagt om bevestiging van de m²'
   if (!l.offerte_verstuurd) return 'Offerte wordt voorbereid'
-  return 'Offerte verstuurd — wacht op reactie'
+  return 'Offerte verstuurd, wacht op reactie'
 }
 
 /** 'HH:MM' (Amsterdam) of 'nu' bij <2 min geleden. */
@@ -209,7 +209,7 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
       : null
     status = op ? `Verstuurd op ${op}` : 'Verstuurd'
   } else if (regels.length > 0) {
-    status = 'Concept — nog niet verstuurd'
+    status = 'Concept, nog niet verstuurd'
   } else {
     status = 'Nog geen offerte'
   }

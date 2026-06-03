@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   const content = await buildDigestContent(now)
 
   // 5) Notificatie inschieten via de bestaande helper-function in de DB.
-  // PostgREST rpc-call — de function staat als SECURITY DEFINER ingesteld
+  // PostgREST rpc-call, de function staat als SECURITY DEFINER ingesteld
   // en doet zelf de pref-check + insert per user.
   const { error: rpcErr } = await admin.rpc('create_notification_for_all_users', {
     p_event_type: 'dagelijkse_samenvatting',
@@ -90,15 +90,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'rpc failed' }, { status: 500 })
   }
 
-  // 6) Markeer als gerund — voorkomt dat de volgende minuut-tick een
-  // duplicate stuurt. Update via id (single-tenant — één rij).
+  // 6) Markeer als gerund, voorkomt dat de volgende minuut-tick een
+  // duplicate stuurt. Update via id (single-tenant, één rij).
   const { error: upErr } = await admin
     .from('tenant_settings')
     .update({ daily_digest_laatste_run_op: amsterdamDate })
     .eq('id', tenantRow.id)
 
   if (upErr) {
-    // Niet hard-falen — de notificatie is al weg. Volgende cron-tick zou
+    // Niet hard-falen, de notificatie is al weg. Volgende cron-tick zou
     // wel duplicate kunnen veroorzaken; log voor debugging.
     console.error('[daily-digest] update last_run_op failed:', upErr)
   }

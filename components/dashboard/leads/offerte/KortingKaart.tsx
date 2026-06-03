@@ -7,7 +7,7 @@ import styles from './KortingKaart.module.css'
 type Props = {
   /** Huidig kortingspercentage, 0-100 (UI clampt op 0-40 via slider/presets). */
   kortingPct: number
-  /** Vrije tekst — bv. "Kennismakingskorting". */
+  /** Vrije tekst, bv. "Kennismakingskorting". */
   kortingOmschrijving: string
   onChange: (pct: number, omschrijving: string) => void
 }

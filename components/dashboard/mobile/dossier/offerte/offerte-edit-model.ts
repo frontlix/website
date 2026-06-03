@@ -192,7 +192,7 @@ export function lineAmount(l: OfferteLine): number {
   return l.on ? lineQty(l) * l.rate : 0
 }
 
-/** Rond af op centen (2 decimalen) — voorkomt float-staarten op geld-regels. */
+/** Rond af op centen (2 decimalen), voorkomt float-staarten op geld-regels. */
 function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
@@ -237,12 +237,12 @@ export function offerteTotals(
 
 // ── geld + datum ──
 
-/** '€1.234,56' — nl-NL, altijd 2 decimalen (komma als decimaalteken). */
+/** '€1.234,56', nl-NL, altijd 2 decimalen (komma als decimaalteken). */
 export function eur(n: number): string {
   return '€' + (n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-/** '€1.234' — afgerond op hele euro's. */
+/** '€1.234', afgerond op hele euro's. */
 export function eur0(n: number): string {
   return '€' + Math.round(n || 0).toLocaleString('nl-NL')
 }
@@ -257,12 +257,12 @@ export function addDays(base: Date, d: number): Date {
   return x
 }
 
-/** '14 jun 2026' — dag + maand-afkorting + jaar. */
+/** '14 jun 2026', dag + maand-afkorting + jaar. */
 export function fmtDatum(d: Date): string {
   return `${d.getDate()} ${MAANDEN[d.getMonth()]} ${d.getFullYear()}`
 }
 
-/** '2026-06-14' — ISO-datum (lokale velden), voor <input type="date">. */
+/** '2026-06-14', ISO-datum (lokale velden), voor <input type="date">. */
 export function isoDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }

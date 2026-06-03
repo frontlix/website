@@ -1,4 +1,4 @@
-"""Water reminder cron — tijdelijke vakantiegrap (28-31 mei 2026).
+"""Water reminder cron, tijdelijke vakantiegrap (28-31 mei 2026).
 
 Stuurt elke 2 uur (Istanbul-tijd, 10:00-20:00) een WhatsApp template naar
 twee vaste ontvangers met een wisselende grap. Doet na 31 mei 2026 niets meer
@@ -58,7 +58,7 @@ JOKES = [
     "Watermeloen is 92% water, en jij hebt 0% schaamte daarover",
     "Een baby drinkt verhoudingsgewijs 4x meer dan jij vandaag",
     "Je verliest 1.5L per dag puur door te ademen, jouw input matcht dat niet",
-    "Cafeïne onttrekt 1.2x het volume water dat je drinkt — die 6 koffies werken tegen je",
+    "Cafeïne onttrekt 1.2x het volume water dat je drinkt, die 6 koffies werken tegen je",
     "Bij 1% dehydratie daalt je focus al, dat verklaart de outfit van vandaag",
     "Een kwal is 98% water en 0% stress, balans dus",
     "Honger is vaak dorst in disguise, check eerst even",

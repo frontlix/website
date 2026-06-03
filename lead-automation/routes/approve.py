@@ -1,4 +1,4 @@
-"""Quote approval route — triggered when team clicks the approve button in the email."""
+"""Quote approval route, triggered when team clicks the approve button in the email."""
 from __future__ import annotations
 
 import asyncio
@@ -79,7 +79,7 @@ def _success_page(naam: str, already_sent: bool = False) -> str:
 async def _process_approval(lead: dict, config) -> None:
     """Heavy work: PDF, WhatsApp document + follow-up, customer email, status update.
 
-    Wordt uitgevoerd als FastAPI BackgroundTask NA de success-page response — de
+    Wordt uitgevoerd als FastAPI BackgroundTask NA de success-page response, de
     klant ziet dus direct 'Offerte goedgekeurd' i.p.v. 8-12 seconden te wachten.
     Bij elke step-failure: log + alert eigenaar via WhatsApp (best-effort).
     Als alles faalt: revert status pending_approval zodat het team opnieuw kan klikken.
@@ -141,7 +141,7 @@ async def _process_approval(lead: dict, config) -> None:
     sb.table("conversations").insert({
         "lead_id": lead_id,
         "role": "assistant",
-        "content": f"(PDF offerte verzonden — {pdf_url})",
+        "content": f"(PDF offerte verzonden, {pdf_url})",
         "message_type": "document",
         "media_url": pdf_url,
     }).execute()
@@ -166,7 +166,7 @@ async def approve_quote(request: Request, background: BackgroundTasks):
     """Handle quote approval from the email button click.
 
     Toont de success-page DIRECT en doet de heavy work (PDF + WA + mail) als
-    BackgroundTask — FastAPI's BackgroundTasks runt na de response. Voorheen
+    BackgroundTask, FastAPI's BackgroundTasks runt na de response. Voorheen
     duurde dit 8-12 seconden waarin het scherm wit bleef; nu instant feedback."""
     token = request.query_params.get("token")
     if not token:
@@ -195,7 +195,7 @@ async def approve_quote(request: Request, background: BackgroundTasks):
     if status != "pending_approval":
         return HTMLResponse(_error_page("Niet beschikbaar", f'Status "{escape(status)}" kan niet worden goedgekeurd.'), status_code=400)
 
-    # Idempotency claim — atomic conditional update voorkomt dubbele verzending
+    # Idempotency claim, atomic conditional update voorkomt dubbele verzending
     # bij dubbel-klikken of refresh terwijl de background-task nog loopt.
     claim = sb.table("leads").update({
         "status": "quote_processing",

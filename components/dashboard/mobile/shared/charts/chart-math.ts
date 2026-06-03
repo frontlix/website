@@ -1,5 +1,5 @@
 /**
- * Pure SVG-chart geometry helpers (geen React, geen DOM) — los te testen.
+ * Pure SVG-chart geometry helpers (geen React, geen DOM), los te testen.
  * Overgenomen uit het design-prototype (MobileAnalyses MaArea/MaDonut) en
  * gegeneraliseerd. Coördinaten in SVG-ruimte: y=0 is boven.
  */

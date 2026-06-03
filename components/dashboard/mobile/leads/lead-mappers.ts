@@ -21,7 +21,7 @@ export type MobileLeadCard = {
 
 /** Bepaal de mobile-stage op basis van dashboard_status + gesprek_fase. */
 export function leadStage(l: RawLead): MobileLeadStage {
-  // afgehandeld wint van alles — zelfs als de fase 'datum_kiezen' is
+  // afgehandeld wint van alles, zelfs als de fase 'datum_kiezen' is
   if (l.dashboard_status === 'afgehandeld') return 'klaar'
   switch (l.gesprek_fase) {
     case 'onderhandelen':

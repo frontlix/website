@@ -1,7 +1,7 @@
 import styles from './NPSDistributionBar.module.css'
 
 /**
- * Horizontale stacked-bar voor NPS-verdeling — visualiseert
+ * Horizontale stacked-bar voor NPS-verdeling, visualiseert
  * promoters/passives/detractors als gekleurde segmenten met gradient.
  * Bar groeit proportioneel via flex i.p.v. percentage-berekening.
  */

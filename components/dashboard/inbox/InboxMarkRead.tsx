@@ -11,7 +11,7 @@ import { markInboxRead } from '@/lib/dashboard/lead-actions'
  * "Ongelezen" count in de filter-tabs vanzelf bijwerkt.
  *
  * Idempotent: re-mounten op hetzelfde leadId zet de timestamp gewoon
- * opnieuw — geen probleem.
+ * opnieuw, geen probleem.
  */
 export function InboxMarkRead({ leadId }: { leadId: string }) {
   const router = useRouter()
@@ -22,7 +22,7 @@ export function InboxMarkRead({ leadId }: { leadId: string }) {
     const run = async () => {
       const result = await markInboxRead(leadId)
       if (!cancelled && result.ok) {
-        // Server-side counts en filter zijn nu bijgewerkt — page refreshen
+        // Server-side counts en filter zijn nu bijgewerkt, page refreshen
         // zodat de unread-count in de UI synchroon loopt.
         router.refresh()
       }

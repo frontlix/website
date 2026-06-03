@@ -5,7 +5,7 @@ import type { DashboardAction } from '@/lib/dashboard/eerst-dit-doen'
 import styles from './EerstDitDoen.module.css'
 
 /**
- * "Eerst dit doen" — top-prio actie-lijst bovenaan het overzicht.
+ * "Eerst dit doen", top-prio actie-lijst bovenaan het overzicht.
  *
  * Render-contract: deze component rendert *altijd* iets als hij gemount
  * is. De parent moet zelf de zichtbaarheid bepalen door 'm niet te

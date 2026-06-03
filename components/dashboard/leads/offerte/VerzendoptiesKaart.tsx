@@ -5,7 +5,7 @@ import type { ChangeEvent } from 'react'
 import styles from './VerzendoptiesKaart.module.css'
 
 export type VerzendOpties = {
-  /** Geldigheid in dagen — vrij invulbaar (1 t/m 365). */
+  /** Geldigheid in dagen, vrij invulbaar (1 t/m 365). */
   geldigheidDagen: number
   /**
    * Vlaggen worden voorlopig niet getoond in de UI (de drie checkboxes
@@ -19,7 +19,7 @@ export type VerzendOpties = {
 
 type Props = {
   opties: VerzendOpties
-  /** Aantal beschikbare lead-foto's — niet meer getoond, maar prop blijft compatibel. */
+  /** Aantal beschikbare lead-foto's, niet meer getoond, maar prop blijft compatibel. */
   fotosCount: number
   onChange: (opties: VerzendOpties) => void
 }
@@ -65,7 +65,7 @@ export function VerzendoptiesKaart({ opties, onChange }: Props) {
         </div>
       </div>
 
-      {/* Snelkeuzes — klik = direct invullen, blijft handmatig overschrijfbaar. */}
+      {/* Snelkeuzes, klik = direct invullen, blijft handmatig overschrijfbaar. */}
       <div className={styles.presets}>
         {PRESETS.map((d) => {
           const isActive = d === opties.geldigheidDagen

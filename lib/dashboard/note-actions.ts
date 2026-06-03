@@ -7,7 +7,7 @@ export type NoteActionResult = { ok: true } | { ok: false; error: string }
 
 /**
  * Voegt een notitie toe aan een lead. `auteur` wordt automatisch gezet
- * via auth.uid() — RLS-policy in 024 staat alleen INSERT toe als
+ * via auth.uid(), RLS-policy in 024 staat alleen INSERT toe als
  * auteur = auth.uid().
  */
 export async function addNote(

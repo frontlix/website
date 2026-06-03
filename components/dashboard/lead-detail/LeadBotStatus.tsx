@@ -16,13 +16,13 @@ const FASE_LABELS: Record<GesprekFase, string> = {
 const FASE_DESCRIPTIONS: Record<GesprekFase, string> = {
   info_verzamelen:    'Vraagt om bevestiging m²',
   offerte_besproken:  'Wacht op klant-reactie op offerte',
-  onderhandelen:      'Onderhandelt — owner-aandacht mogelijk nodig',
+  onderhandelen:      'Onderhandelt, owner-aandacht mogelijk nodig',
   datum_kiezen:       'Klant kiest een afspraak-moment',
   afspraak_bevestigd: 'Wacht op afronding van de klus',
 }
 
 /**
- * Bot-status strip — toont wat Surface doet + een toggle om de bot te
+ * Bot-status strip, toont wat Surface doet + een toggle om de bot te
  * pauzeren / hervatten. Wanneer gepauzeerd negeert de bot inkomende WhatsApp-
  * berichten voor deze lead en mag de owner zelf antwoorden via de composer.
  */
@@ -46,7 +46,7 @@ export function LeadBotStatus({ lead }: { lead: Lead }) {
         <Briefcase size={15} className={styles.icon} />
         <span className={styles.surfaceLabel}>Surface:</span>
         <span className={styles.description}>
-          {paused ? 'Gepauzeerd — owner antwoordt handmatig' : description}
+          {paused ? 'Gepauzeerd, owner antwoordt handmatig' : description}
         </span>
         {error && <span style={{ color: 'var(--color-danger)', fontSize: 'var(--text-xs)', marginLeft: 8 }}>{error}</span>}
       </div>

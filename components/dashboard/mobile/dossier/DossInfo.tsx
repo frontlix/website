@@ -11,7 +11,7 @@ import type { DossierLead, DossBijzonder, DossVraag } from './dossier-mock'
 import styles from './DossInfo.module.css'
 
 // ── DossInfo ──
-// Info-tab: Contact, Dienst, Bijzonderheden en Surface-uitvraag — nu gevoed
+// Info-tab: Contact, Dienst, Bijzonderheden en Surface-uitvraag, nu gevoed
 // met echte lead-data (props) i.p.v. de DOSS-mock.
 type DossInfoProps = {
   lead: Pick<DossierLead, 'm2' | 'id'>

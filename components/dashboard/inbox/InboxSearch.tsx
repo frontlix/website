@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Search } from 'lucide-react'
 
-/** Search-input voor inbox-conversaties — sync via ?q=. */
+/** Search-input voor inbox-conversaties, sync via ?q=. */
 export function InboxSearch({ initial }: { initial: string }) {
   const [value, setValue] = useState(initial)
   const router = useRouter()

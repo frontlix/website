@@ -67,7 +67,7 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
           </div>
         </div>
 
-        {/* Quick-action buttons — gaan naar de juiste tab voor de detail-actie */}
+        {/* Quick-action buttons, gaan naar de juiste tab voor de detail-actie */}
         <div className={styles.actions}>
           <Link
             href={`/leads/${lead.lead_id}?tab=notities`}

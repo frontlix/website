@@ -2,7 +2,7 @@
 
 // Write-server-actions voor de (mobiele) agenda: een klus afronden en een
 // afspraak herplannen. Beide updaten de `leads`-rij via de RLS-client (dezelfde
-// aanpak als setDashboardStatus — de leads-tabel heeft een UPDATE-policy voor
+// aanpak als setDashboardStatus, de leads-tabel heeft een UPDATE-policy voor
 // dashboard-users) en revalideren /agenda zodat de lijst meteen klopt.
 
 import { revalidatePath } from 'next/cache'

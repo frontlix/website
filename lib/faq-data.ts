@@ -7,7 +7,7 @@ export const faqs: FaqItem[] = [
   {
     question: 'Wat is automatische leadopvolging precies?',
     answer:
-      'Wanneer een potentiële klant een formulier invult of een bericht stuurt, wordt het gesprek automatisch overgenomen via WhatsApp. Er worden de juiste vragen gesteld, alle informatie wordt verzameld en er wordt automatisch een offerte verstuurd — zonder dat jij iets hoeft te doen.',
+      'Wanneer een potentiële klant een formulier invult of een bericht stuurt, wordt het gesprek automatisch overgenomen via WhatsApp. Er worden de juiste vragen gesteld, alle informatie wordt verzameld en er wordt automatisch een offerte verstuurd, zonder dat jij iets hoeft te doen.',
   },
   {
     question: 'Moet ik technische kennis hebben?',

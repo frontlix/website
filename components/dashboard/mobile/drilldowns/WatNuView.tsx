@@ -33,7 +33,7 @@ type Props = {
 }
 
 /**
- * WatNuView — drilldown voor "Wat nu" preview.
+ * WatNuView, drilldown voor "Wat nu" preview.
  *
  * Layout: filter-chips bovenaan (horizontaal scrollbaar), daaronder twee secties:
  * "Vandaag eerst" (rode label, urgent items) en "Wachtend op opvolgen" (muted label).
@@ -41,7 +41,7 @@ type Props = {
  * twee actie-knoppen (primary "Open offerte" + secundaire "Chat").
  *
  * Data-contract: `items` is altijd verplicht. `groupedByCategory` en `counts` zijn
- * optional — als parent ze pre-bewerkt levert gebruiken we die, anders berekent de
+ * optional, als parent ze pre-bewerkt levert gebruiken we die, anders berekent de
  * view ze zelf via `splitByGroup` / `filterItems`.
  */
 export function WatNuView({

@@ -16,10 +16,10 @@ import type { NotificationEventType, NotificationKanaal } from '@/lib/dashboard/
  * zonder andere bezorging te verstoren.
  *
  * Auth: shared secret via Authorization-header. Voorkomt dat iedereen
- * willekeurig kan POST'en — alleen onze eigen DB-trigger kent het secret.
+ * willekeurig kan POST'en, alleen onze eigen DB-trigger kent het secret.
  *
  * Fase 2: alleen `email` kanaal-implementatie. Push (3) en WhatsApp (4)
- * komen in latere fases — placeholders zijn aanwezig zodat we de DB-trigger
+ * komen in latere fases, placeholders zijn aanwezig zodat we de DB-trigger
  * niet hoeven aan te passen.
  */
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         await deliverPush(notif as NotificationRowSlice)
         break
       case 'whatsapp':
-        // Placeholder — komt in fase 4. 200 terug zodat de trigger niet
+        // Placeholder, komt in fase 4. 200 terug zodat de trigger niet
         // hoeft te retryen.
         return NextResponse.json({ ok: true, skipped: true, reason: 'whatsapp nog niet live' })
       case 'in_app':

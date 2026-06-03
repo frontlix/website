@@ -24,7 +24,7 @@ describe('factStrip', () => {
       { v: '8 min', l: 'Binnen' },
     ])
   })
-  it('shows — for a null offerte price', () => {
+  it('shows, for a null offerte price', () => {
     expect(factStrip({ ...DOSS_LEAD, prijs: null })[2]).toEqual({ v: '—', l: 'Offerte' })
   })
 })

@@ -10,7 +10,7 @@ const STARTTIJDEN = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00']
 /**
  * Form voor zowel het inplannen van een nieuwe afspraak (`mode='book'`) als
  * het verplaatsen van een bestaande (`mode='reschedule'`). De bot-endpoints
- * verschillen alleen in pad — payload + UX is identiek.
+ * verschillen alleen in pad, payload + UX is identiek.
  *
  * `mode='reschedule'` overslaat bewust de 48u-cutoff die in de WhatsApp-flow
  * geldt; eigenaar mag in dashboard tot vlak voor de afspraak verplaatsen.

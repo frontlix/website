@@ -8,7 +8,7 @@ import type { Lead, GesprekFase } from '@/lib/dashboard/database.types'
 import styles from './ConversationsList.module.css'
 
 /**
- * Linkerkolom van Inbox — lijst van actieve gesprekken.
+ * Linkerkolom van Inbox, lijst van actieve gesprekken.
  * Toont per rij: avatar, naam + tijd, preview van laatste bericht,
  * status-pill + optionele actie-/prijs-pill. Geselecteerd item krijgt
  * een primary border-accent links.
@@ -22,7 +22,7 @@ export function ConversationsList({
   selectedLeadId: string | null
   /**
    * URL-query-string (zonder ?) die behouden moet blijven wanneer de
-   * gebruiker een gesprek aanklikt — bv. "filter=action&q=jansen".
+   * gebruiker een gesprek aanklikt, bv. "filter=action&q=jansen".
    * Zonder dit zou een klik de actieve filter-tab resetten naar Alles.
    */
   preservedQuery?: string
@@ -97,7 +97,7 @@ function previewText(text: string | null, type: string): string {
 
 /**
  * Status-label valt terug op dashboard_status (open/afgehandeld) wanneer
- * de gesprek_fase nog niet bepalend is — anders prefereren we de
+ * de gesprek_fase nog niet bepalend is, anders prefereren we de
  * fase-label want die zegt meer over "waar zit het gesprek nu".
  */
 function faseLabel(fase: GesprekFase | null, status: Lead['dashboard_status']): string {

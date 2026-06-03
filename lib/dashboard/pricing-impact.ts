@@ -8,7 +8,7 @@
  * een aantal afleidt (m², zakken, km, minuten). Bij een prijswijziging is
  * de delta lineair: ΔOmzet = Σ(volume_per_lead) × (nieuwe_prijs − oude_prijs).
  *
- * Bewust geen elastiteit-model voor conversie — daar hebben we geen data
+ * Bewust geen elastiteit-model voor conversie, daar hebben we geen data
  * voor. De simulator toont alleen wat we eerlijk kunnen onderbouwen.
  */
 
@@ -51,7 +51,7 @@ export function volumeForRule(ruleKey: string, lead: LeadForImpact): number {
   const afstand = Number(lead.afstand_km) || 0
 
   switch (ruleKey) {
-    // Reiniging — wordt toegepast bij invegen
+    // Reiniging, wordt toegepast bij invegen
     case 'reiniging_per_m2':
     case 'reinigen_per_m2':
       return has('invegen') ? m2 : 0
@@ -90,7 +90,7 @@ export function volumeForRule(ruleKey: string, lead: LeadForImpact): number {
     case 'beschermlaag_per_m2':
       return has('beschermlaag') ? m2 : 0
 
-    // Onderhoudsplannen — we hebben geen `onderhoud_weken` veld in `leads`
+    // Onderhoudsplannen, we hebben geen `onderhoud_weken` veld in `leads`
     // dus we kunnen niet bepalen wélk plan een lead koos. Skip.
     case 'plan_4w_per_m2':
     case 'plan_8w_per_m2':

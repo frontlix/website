@@ -16,13 +16,13 @@ export type MiniKpiTile = {
 }
 
 type Props = {
-  // Tuple van exact 4 tiles — voorkomt dat de grid stuk loopt als
+  // Tuple van exact 4 tiles, voorkomt dat de grid stuk loopt als
   // er per ongeluk 3 of 5 tiles worden meegegeven.
   tiles: [MiniKpiTile, MiniKpiTile, MiniKpiTile, MiniKpiTile]
 }
 
 /**
- * MiniKpiGrid — 2×2 grid van mini-KPI tiles voor /dashboard mobile.
+ * MiniKpiGrid, 2×2 grid van mini-KPI tiles voor /dashboard mobile.
  *
  * Elke tile: icon-box top-left, optionele delta top-right, grote value
  * met optionele unit, label onderaan.

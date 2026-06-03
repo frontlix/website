@@ -17,12 +17,12 @@ interface SwipeableLeadCardProps {
   onArchive: (id: string) => void
   /** Id van de kaart die momenteel open-geveegd is (gedeeld via de parent). */
   swipeOpenId: string | null
-  /** Meld dat DEZE kaart open-veegt — parent sluit dan de andere. */
+  /** Meld dat DEZE kaart open-veegt, parent sluit dan de andere. */
   onSwipeOpen: (id: string) => void
 }
 
 /**
- * SwipeableLeadCard — wraps LeadCard met drag-to-reveal actie-lanes.
+ * SwipeableLeadCard, wraps LeadCard met drag-to-reveal actie-lanes.
  *
  * Swipe →: onthult "Bel" (accent gradient) + "WA" (whatsapp-groen)
  * Swipe ←: onthult "Archief" (danger)
@@ -50,7 +50,7 @@ export function SwipeableLeadCard({
     [onSwipeOpen, lead.id],
   )
 
-  // Swipe disabled wanneer expanded — geen actie-lanes, geen drag
+  // Swipe disabled wanneer expanded, geen actie-lanes, geen drag
   const { ref, open, reset, movedRef } = useSwipeReveal(!expanded, handleSettle)
 
   // Reset zodra de kaart expandeert (zodat hij niet verschoven blijft staan)
@@ -76,10 +76,10 @@ export function SwipeableLeadCard({
 
   return (
     <article className={styles.root}>
-      {/* ── Actie-lanes — alleen renderen als NIET expanded ─────────────── */}
+      {/* ── Actie-lanes, alleen renderen als NIET expanded ─────────────── */}
       {!expanded && (
         <>
-          {/* Linker lane (Bel + WA) — verschijnt bij veeg →.
+          {/* Linker lane (Bel + WA), verschijnt bij veeg →.
               Altijd zichtbaar: de kaart schuift eroverheen en bedekt de
               inactieve lane, dus geen opacity-toggle per frame nodig. */}
           <div
@@ -114,7 +114,7 @@ export function SwipeableLeadCard({
             </Link>
           </div>
 
-          {/* Rechter lane (Archief) — verschijnt bij veeg ← */}
+          {/* Rechter lane (Archief), verschijnt bij veeg ← */}
           <div
             className={styles.laneRight}
             style={{ pointerEvents: open === -1 ? 'auto' : 'none' }}
@@ -141,7 +141,7 @@ export function SwipeableLeadCard({
         </>
       )}
 
-      {/* ── De card zelf — schuift via directe DOM-transform (hook, geen state) ── */}
+      {/* ── De card zelf, schuift via directe DOM-transform (hook, geen state) ── */}
       <div
         ref={ref}
         onClick={handleClick}
@@ -149,7 +149,7 @@ export function SwipeableLeadCard({
         /* Zorgt dat verticaal scrollen niet geblokkeerd wordt door horizontaal slepen */
         role="button"
         tabIndex={0}
-        aria-label={`Lead van ${lead.naam} — tik voor details`}
+        aria-label={`Lead van ${lead.naam}, tik voor details`}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()

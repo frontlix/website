@@ -24,7 +24,7 @@ type Props = {
   leadId: string
   label: string
   display: string
-  /** Subtext onder de waarde (read-only — bv. "Binnen gratis radius"). */
+  /** Subtext onder de waarde (read-only, bv. "Binnen gratis radius"). */
   sub?: string | null
   /** Initiële waarde(n) voor edit-mode (string voor text/number/select; string[] voor multiselect; AdresValues voor adres). */
   initial: string | string[] | AdresValues | null
@@ -360,7 +360,7 @@ function buildPatch(editor: EditorConfig, draft: string | string[] | AdresValues
     if (!Number.isFinite(num) || num < 0) return null
     return { [editor.field]: num } as LeadEditPatch
   }
-  // text / textarea / select — allemaal string-velden
+  // text / textarea / select, allemaal string-velden
   if (typeof draft !== 'string') return null
   return { [editor.field]: draft } as LeadEditPatch
 }

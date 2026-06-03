@@ -43,7 +43,7 @@ export async function togglePrefAction(
     .maybeSingle()
   if (!profile?.approved_op) return { ok: false, error: 'Account nog niet goedgekeurd.' }
 
-  // 2) Update via admin client — bypasst RLS, schrijft direct.
+  // 2) Update via admin client, bypasst RLS, schrijft direct.
   // Upsert ipv update zodat een ontbrekende rij (zou niet moeten, maar veilig
   // is veilig) alsnog wordt aangemaakt i.p.v. silent-mislukt.
   const admin = getDashboardAdmin()

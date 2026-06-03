@@ -15,12 +15,12 @@ type Props = {
 }
 
 /**
- * HeaderActions — gedeelde rechter-acties voor mobile-headers.
+ * HeaderActions, gedeelde rechter-acties voor mobile-headers.
  *
  * Bevat 3 acties:
  *  1. 🔍  zoeken          → opens parent-handler (onOpenSearch)
  *  2. ➕  nieuwe offerte  → Link met ?nieuwe-offerte=1 (zelfde URL-pattern
- *                           als Topbar — wordt opgevangen door
+ *                           als Topbar, wordt opgevangen door
  *                           ManualOfferteController in dashboard-layout)
  *  3. 🔔  notificaties    → opent MobileNotificationsSheet
  *
@@ -36,7 +36,7 @@ export function HeaderActions({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Behoud bestaande searchParams en voeg nieuwe-offerte=1 toe — dit is
+  // Behoud bestaande searchParams en voeg nieuwe-offerte=1 toe, dit is
   // hetzelfde patroon als Topbar.tsx, zodat de Modal-controller 'm
   // automatisch opvangt op iedere route.
   const offerteHref = (() => {
@@ -72,7 +72,7 @@ export function HeaderActions({
           onClick={() => setNotifOpen(true)}
           aria-label={
             unreadCount > 0
-              ? `Notificaties — ${unreadCount} ongelezen`
+              ? `Notificaties, ${unreadCount} ongelezen`
               : 'Notificaties'
           }
           aria-haspopup="dialog"

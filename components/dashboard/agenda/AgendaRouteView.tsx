@@ -25,7 +25,7 @@ import styles from './AgendaRouteView.module.css'
  *
  * Gebruikt `useMapsLibrary('routes')` om de DirectionsService runtime te
  * laden. Per dag wordt 1 route-request gedaan met `optimizeWaypoints: true`
- * — Google reorganiseert de stops voor de kortste totaalafstand.
+ *, Google reorganiseert de stops voor de kortste totaalafstand.
  */
 
 export type MapStop = {
@@ -389,7 +389,7 @@ function DirectionsLayer({
 
       // Bepaal vertrektijd voor verkeer-aware schatting: eerste afspraak-tijd
       // van de dag, of nu+1u als geen tijd bekend. Google heeft FUTURE tijd
-      // nodig — anders negeert 'ie trafficModel.
+      // nodig, anders negeert 'ie trafficModel.
       const departureTime = parseFirstAppointmentTime(day) ?? nextHour()
 
       service.route(
@@ -580,8 +580,7 @@ function formatDuration(min: number): string {
  * Bouw een deep-link naar Google Maps mobile/web met de rit van die dag.
  * Format: https://www.google.com/maps/dir/?api=1&origin=...&destination=...&waypoints=...
  *
- * Op telefoon opent dit direct de Google Maps app als die geïnstalleerd is —
- * handig voor de uitvoerders die onderweg gaan.
+ * Op telefoon opent dit direct de Google Maps app als die geïnstalleerd is,  * handig voor de uitvoerders die onderweg gaan.
  */
 function buildGoogleMapsDirectionsUrl(
   day: MapDay,
@@ -613,7 +612,7 @@ function buildGoogleMapsDirectionsUrl(
 
 /**
  * Parse de eerste afspraak-tijd ("HH:mm") van een dag naar een Date.
- * Gebruikt om `drivingOptions.departureTime` te zetten — Google houdt dan
+ * Gebruikt om `drivingOptions.departureTime` te zetten, Google houdt dan
  * rekening met spits-verkeer op die echte tijd.
  */
 function parseFirstAppointmentTime(day: MapDay): Date | null {

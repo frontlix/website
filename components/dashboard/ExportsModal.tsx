@@ -57,7 +57,7 @@ export function ExportsModal() {
     // Reviews heeft nog geen data-tabel in de database → niet exporteerbaar.
     if (type === 'reviews') {
       setInfo(
-        'Reviews-export komt binnenkort — er is nog geen reviews-data in de database om te exporteren. Leads en Offertes kun je wél als CSV, Excel of PDF downloaden.',
+        'Reviews-export komt binnenkort, er is nog geen reviews-data in de database om te exporteren. Leads en Offertes kun je wél als CSV, Excel of PDF downloaden.',
       )
       return
     }

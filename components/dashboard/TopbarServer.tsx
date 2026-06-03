@@ -9,7 +9,7 @@ import { Topbar } from './Topbar'
  * ongelezen-count parallel zodat het bel-icoon direct het juiste badge-
  * getal kan tonen zonder client-side RSC-roundtrip.
  *
- * `limit: 15` voor de dropdown — meer dan we tonen zou pixels kosten
+ * `limit: 15` voor de dropdown, meer dan we tonen zou pixels kosten
  * zonder mens-meerwaarde.
  */
 export async function TopbarServer() {

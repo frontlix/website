@@ -32,7 +32,7 @@ import styles from './RemindersEditor.module.css'
  *  - tekens/woorden counter + per-reminder aanvragen-historie
  *
  * Defaults zijn hardcoded omdat de source-of-truth in de Surface-config
- * (Python service) zit — bij goedkeuring werkt Frontlix die config bij,
+ * (Python service) zit, bij goedkeuring werkt Frontlix die config bij,
  * waarna de defaults hier ook geüpdatet worden.
  */
 
@@ -67,7 +67,7 @@ const REMINDERS = [
 ] as const
 
 // Beschikbare variabelen voor reminder-templates. Let op: de huidige Meta-
-// templates (`herinnering_1/2/3`) accepteren alleen {{1}} = voornaam — de
+// templates (`herinnering_1/2/3`) accepteren alleen {{1}} = voornaam, de
 // andere variabelen werken pas wanneer Frontlix een template-aanvraag heeft
 // goedgekeurd én de bot is geüpdatet om extra parameters door te geven.
 const VARIABLES = [
@@ -136,8 +136,7 @@ function ReminderCard({
 
   // Auto-grow: de textarea-hoogte volgt de inhoud. Zonder dit krijgt een
   // langere reminder een eigen scrollbalk die (a) het muiswiel afving zodat
-  // de pagina niet scrollde, en (b) maar een deel van het bericht toonde —
-  // waardoor je in het kleine vak moest scrollen en precies op de tekst
+  // de pagina niet scrollde, en (b) maar een deel van het bericht toonde,   // waardoor je in het kleine vak moest scrollen en precies op de tekst
   // moest klikken. Nu is het hele bericht zichtbaar én overal klikbaar.
   useEffect(() => {
     const ta = textareaRef.current
@@ -206,7 +205,7 @@ function ReminderCard({
     [tekst],
   )
 
-  // Preview: vervang variabelen met voorbeeldwaardes (puur visueel — zegt
+  // Preview: vervang variabelen met voorbeeldwaardes (puur visueel, zegt
   // niets over of de bot ze daadwerkelijk doorgeeft, zie VARIABLES-comment).
   const preview = useMemo(() => {
     const geldigTotDate = new Date()
@@ -390,7 +389,7 @@ function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
   const [isPending, startTransition] = useTransition()
   const tone = statusTone(aanvraag.status)
   const canCancel = aanvraag.status === 'pending'
-  // Notitie van Frontlix-support — tonen zodra gevuld, buiten de
+  // Notitie van Frontlix-support, tonen zodra gevuld, buiten de
   // expand-toggle om: user wil feedback van Frontlix direct zien
   // zonder eerst "Inzien" te hoeven klikken.
   const heeftNotitie = aanvraag.notitie && aanvraag.notitie.trim().length > 0

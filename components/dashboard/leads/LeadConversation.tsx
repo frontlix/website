@@ -23,7 +23,7 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
 
   useEffect(() => {
     // 'auto' (= instant, geen smooth animatie). De polling refresht elke
-    // 8s en realtime kan ook door komen — we willen geen merkbare scroll-
+    // 8s en realtime kan ook door komen, we willen geen merkbare scroll-
     // animatie elke keer dat een bericht binnenkomt, alleen 'm direct in
     // beeld hebben.
     bottomRef.current?.scrollIntoView({ block: 'end' })
@@ -60,7 +60,7 @@ export function LeadConversation({ berichten }: { berichten: Bericht[] }) {
           <BubbleRow key={it.bericht.id} b={it.bericht} />
         ),
       )}
-      {/* Sentinel waar scrollIntoView naar springt — moet als laatste
+      {/* Sentinel waar scrollIntoView naar springt, moet als laatste
           DOM-kind staan zodat 'end' = visuele onderkant van de thread */}
       <li ref={bottomRef} className={styles.bottomSentinel} aria-hidden="true" />
     </ol>

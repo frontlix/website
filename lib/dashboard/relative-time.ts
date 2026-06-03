@@ -1,4 +1,4 @@
-/** Korte relatieve tijd — "nu" | "12m" | "3u" | "2d". Lege/ongeldige input → "—". */
+/** Korte relatieve tijd, "nu" | "12m" | "3u" | "2d". Lege/ongeldige input → "—". */
 export function shortTimeAgo(iso: string | null | undefined, now: number = Date.now()): string {
   if (!iso) return '—'
   const ms = now - new Date(iso).getTime()

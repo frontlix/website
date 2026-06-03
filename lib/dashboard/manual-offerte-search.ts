@@ -25,11 +25,11 @@ const SEARCH_COLUMNS =
  * wizard. Matcht op naam / telefoon / postcode / straat / plaats; geeft
  * max 8 hits terug (genoeg voor een dropdown, scheelt query-werk).
  *
- * Zoekt over niet-gearchiveerde leads — gearchiveerde klanten kun je
+ * Zoekt over niet-gearchiveerde leads, gearchiveerde klanten kun je
  * via de gewone leads-tabel terughalen, dat is geen wizard-context.
  *
  * Veiligheid: punten en komma's strippen we uit de input voordat we
- * 'm in PostgREST `.or(...)` gooien — dat zijn syntax-tekens binnen
+ * 'm in PostgREST `.or(...)` gooien, dat zijn syntax-tekens binnen
  * de filter-string. Andere ilike-wildcards (`%`, `_`) laten we staan.
  */
 export async function searchExistingClients(

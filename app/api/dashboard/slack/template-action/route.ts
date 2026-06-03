@@ -137,7 +137,7 @@ async function approveAanvraag(aanvraagId: string, payload: SlackPayload): Promi
 /**
  * Schrijft de bell-notificatie voor approved/rejected. notify() faalt
  * stil als event_type nog niet in de DB-enum zit (migratie 039 nog
- * niet gedraaid) — try/catch zorgt dat de Slack-action zelf niet faalt.
+ * niet gedraaid), try/catch zorgt dat de Slack-action zelf niet faalt.
  */
 async function fireBellNotification(
   event: NotificationEventType,
@@ -154,7 +154,7 @@ async function fireBellNotification(
         break
       case 'template_afgewezen':
         titel = 'Template afgewezen'
-        body = `Je aanvraag voor \`${naam}\` is afgewezen — check de notitie in de instellingen.`
+        body = `Je aanvraag voor \`${naam}\` is afgewezen, check de notitie in de instellingen.`
         break
       case 'template_notitie':
         titel = 'Notitie op template-aanvraag'
@@ -211,13 +211,13 @@ async function openNotitieModal(
   }
 
   // open de modal via views.open API. Hiervoor hebben we OAuth Bot Token
-  // nodig (xoxb-...). Per memory zit die nog niet in env — we communiceren
+  // nodig (xoxb-...). Per memory zit die nog niet in env, we communiceren
   // duidelijk als 'ie mist.
   const botToken = process.env.SLACK_BOT_TOKEN
   if (!botToken) {
     await postBackToSlack(
       payload.response_url,
-      ':warning: Modal kan niet openen — `SLACK_BOT_TOKEN` mist op de server. Vraag Frontlix om die te zetten.',
+      ':warning: Modal kan niet openen, `SLACK_BOT_TOKEN` mist op de server. Vraag Frontlix om die te zetten.',
     )
     return NextResponse.json({ ok: true })
   }
@@ -256,7 +256,7 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
   const admin = getDashboardAdmin()
   if (view.callback_id === 'reject_submit') {
     if (notitie.length === 0) {
-      // Bij afkeuren is notitie verplicht — Slack input-block had optional=false
+      // Bij afkeuren is notitie verplicht, Slack input-block had optional=false
       // dus dit hoort niet voor te komen, maar dubbelcheck voor zekerheid.
       return NextResponse.json({
         response_action: 'errors',
@@ -300,7 +300,7 @@ async function handleViewSubmission(payload: SlackPayload): Promise<NextResponse
     }
     revalidatePath('/dashboard/instellingen')
     // Bell-melding alleen als er ook echt een notitie staat (niet bij
-    // een leeggemaakte notitie — dat is geen actie waarvan owner
+    // een leeggemaakte notitie, dat is geen actie waarvan owner
     // notified hoeft te worden).
     if (notitie) {
       await fireBellNotification('template_notitie', updated?.template_naam as string | undefined)

@@ -19,7 +19,7 @@ const TAB_ICONS: Record<KpiKey, typeof Wallet> = {
 
 /**
  * URL-driven tab-rij die kiest welke KPI als hero (active) wordt
- * gerenderd. Server-side `Link`-componenten — geen JS-state nodig.
+ * gerenderd. Server-side `Link`-componenten, geen JS-state nodig.
  */
 export function KpiTabs({
   active,

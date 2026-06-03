@@ -1,4 +1,4 @@
-"""Edit route — modify quote details before approval.
+"""Edit route, modify quote details before approval.
 
 GET  /edit?token=...            → render edit form HTML
 POST /edit (action=recalculate) → save new values + re-render with updated price
@@ -163,7 +163,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offerte wijzigen — {escape(config.label)}</title>
+  <title>Offerte wijzigen, {escape(config.label)}</title>
   <style>
     :root {{
       --c-bg:        #F0F2F5;
@@ -302,7 +302,7 @@ def _render_edit_form(lead: dict, config, flag: str | None = None, previous_tota
     }}
     .field textarea {{ resize: vertical; min-height: 70px; }}
 
-    /* Korting card — subtle amber tint */
+    /* Korting card, subtle amber tint */
     .card.korting {{
       background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%);
       border: 1px solid #FDE68A;

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
  *  - bij succes: router.refresh() zodat server-componenten verse data lezen
  *  - bij failure: error-string die de caller kan tonen
  *
- * Body is optioneel — voor knoppen zonder payload (approve-quote, delete).
+ * Body is optioneel, voor knoppen zonder payload (approve-quote, delete).
  */
 export function useBotAction(path: string) {
   const router = useRouter()

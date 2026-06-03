@@ -28,7 +28,7 @@ type Props = {
 }
 
 /**
- * ICONS — map van ActivityType naar lucide-react component.
+ * ICONS, map van ActivityType naar lucide-react component.
  * Strict-typed met ComponentType<{size: number}> zodat lucide-icons
  * via dynamic key-access correct getypeerd worden (geen any).
  */
@@ -47,7 +47,7 @@ const LABELS: Record<ActivityType, string> = {
 }
 
 /**
- * ActivityFeedBlock — "Recent" preview (top-3 events) op mobile Overzicht.
+ * ActivityFeedBlock, "Recent" preview (top-3 events) op mobile Overzicht.
  * Icon-box met type-gekleurde tinten, naam + description + uppercase label,
  * tijd-ago rechts. Empty-state copy als items leeg.
  */
@@ -71,7 +71,7 @@ export function ActivityFeedBlock({ items, onOpenAll }: Props) {
         <ul className={styles.list}>
           {items.slice(0, 3).map((item) => {
             const Icon = ICONS[item.type]
-            // Gedeelde rij-inhoud — identiek voor de link- en fallback-variant.
+            // Gedeelde rij-inhoud, identiek voor de link- en fallback-variant.
             const content = (
               <>
                 <span className={styles.iconBox} data-type={item.type}>

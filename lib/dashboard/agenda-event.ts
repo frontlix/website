@@ -69,7 +69,7 @@ export function amsterdamHourMinutes(iso: string): {
 }
 
 /**
- * "62m²" / "156m²" — m²-label voor de upcoming-card. Null als geen m².
+ * "62m²" / "156m²", m²-label voor de upcoming-card. Null als geen m².
  */
 export function formatM2(m2: number | null | undefined): string | null {
   if (!m2 || m2 <= 0) return null

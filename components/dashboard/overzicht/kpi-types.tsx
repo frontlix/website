@@ -44,7 +44,7 @@ export type KpiMetric = {
 
 /**
  * "Extra"-metric die altijd als mini-card naast de actieve hero
- * wordt getoond, maar geen eigen tab heeft (bv. "Offertes open" — een
+ * wordt getoond, maar geen eigen tab heeft (bv. "Offertes open", een
  * stand-snapshot ipv een periode-totaal).
  */
 export type ExtraMetric = Omit<KpiMetric, 'key'> & { key: string }
@@ -195,15 +195,14 @@ function formatShortEur(n: number): string {
 }
 
 /**
- * Voor de donut: "78%" = value/doel * 100. Reactietijd inverteren —
- * lager is beter, dus 47s op doel 60s = "78% van doel ingehaald" geeft
+ * Voor de donut: "78%" = value/doel * 100. Reactietijd inverteren,  * lager is beter, dus 47s op doel 60s = "78% van doel ingehaald" geeft
  * 22% nog te gaan-feel. We tonen het als (doel/value)*100 zodat lager
  * dan doel = >100% (top in beeld) en hoger dan doel = <100% (rood).
  */
 export function pctVanDoel(metric: KpiMetric): number {
   if (metric.doel <= 0) return 0
   if (metric.invertDelta) {
-    // lager is beter — value=47, doel=60 → 60/47*100 = 127% (binnen target, vol)
+    // lager is beter, value=47, doel=60 → 60/47*100 = 127% (binnen target, vol)
     // value=80, doel=60 → 60/80*100 = 75% (boven target, deels)
     return (metric.doel / Math.max(1, metric.value)) * 100
   }
@@ -211,7 +210,7 @@ export function pctVanDoel(metric: KpiMetric): number {
 }
 
 /**
- * Tekst "nog €6.580" / "nog 4" — verschil tot doel. Negatief = doel bereikt.
+ * Tekst "nog €6.580" / "nog 4", verschil tot doel. Negatief = doel bereikt.
  */
 export function nogTotDoel(metric: KpiMetric): {
   done: boolean

@@ -43,7 +43,7 @@ export function MobileReviews({ bedrijfsnaam = 'je bedrijf' }: Props) {
       {/* Eerlijkheids-banner: deze cijfers + reviews zijn voorbeelddata.
           Toon/tekst consistent met de desktop /reviews demo-banner. */}
       <div className={styles.demoBanner} role="note">
-        Voorbeeld — reviews-koppeling volgt. Deze score en reviews zijn nog
+        Voorbeeld, reviews-koppeling volgt. Deze score en reviews zijn nog
         geen echte data; zodra Surface na elke klus een review-vraag
         verstuurt verschijnen hier jouw echte Google-reviews.
       </div>
@@ -87,7 +87,7 @@ export function MobileReviews({ bedrijfsnaam = 'je bedrijf' }: Props) {
       {toast && (
         <div className={styles.toast} role="status">
           <Check size={16} aria-hidden="true" className={styles.toastIcon} />
-          <span>Antwoord opgeslagen (voorbeeld — nog niet op Google geplaatst)</span>
+          <span>Antwoord opgeslagen (voorbeeld, nog niet op Google geplaatst)</span>
         </div>
       )}
     </div>

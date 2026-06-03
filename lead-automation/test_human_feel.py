@@ -49,7 +49,7 @@ def _canonical_field(tag: str) -> str | None:
         return tag.rsplit("_", 1)[0]
     return tag
 
-# BRANCHES is leeg op import (Pakket 1) — hydrate eenmalig voor standalone runs.
+# BRANCHES is leeg op import (Pakket 1), hydrate eenmalig voor standalone runs.
 hydrate_all()
 
 
@@ -115,7 +115,7 @@ def build_scenarios(n: int = 50) -> list[Scenario]:
         domain = random.choice(["gmail.com", "hotmail.com", "outlook.com", "icloud.com"])
         real_email = f"{naam.lower()}.{random.randint(10,99)}@{domain}"
 
-        # Pick axes — guarantee at least 2 challenging axes per scenario
+        # Pick axes, guarantee at least 2 challenging axes per scenario
         tempo = random.choice(TEMPO)
         zek = random.choice(ZEKERHEID)
         emo = random.choice(EMOTIE)
@@ -202,7 +202,7 @@ async def simulate(scenario: Scenario) -> dict:
     data: dict[str, str] = {}
     collected_data: dict[str, Any] = {}
 
-    # Initial customer trigger — they already chose the branche via button
+    # Initial customer trigger, they already chose the branche via button
     opener_map = {
         "zonnepanelen": "zonnepanelen",
         "dakdekker": "dakdekker",
@@ -210,12 +210,12 @@ async def simulate(scenario: Scenario) -> dict:
     }
     history.append(ConversationMessage(role="user", content=opener_map[scenario.branche]))
 
-    # Welcome (hardcoded in production) — sent in two beats: warm intro + name question.
+    # Welcome (hardcoded in production), sent in two beats: warm intro + name question.
     welcome = WELCOME_MESSAGES[scenario.branche]
     history.append(ConversationMessage(role="assistant", content=welcome))
     history.append(ConversationMessage(role="assistant", content=NAAM_QUESTION))
 
-    # No initial reply call — the name question is already in the welcome, the
+    # No initial reply call, the name question is already in the welcome, the
     # customer's next message is expected to be their name.
 
     for turn in range(MAX_TURNS):
@@ -278,7 +278,7 @@ async def simulate(scenario: Scenario) -> dict:
             # After customer answers, mark done.
             pass
 
-        # Bot reply — pass analysis so reply prompt picks the right intent branch
+        # Bot reply, pass analysis so reply prompt picks the right intent branch
         try:
             reply = await generate_reply(
                 scenario.branche, history, identity, data, collected_data,
@@ -315,12 +315,12 @@ RUBRIC_SYSTEM = """Je evalueert of een WhatsApp-bot (Frontlix persona Bram/Sanne
 
 Scoor ELK bot-bericht (behalve de eerste hardcoded welcome) op 6 dimensies, elk 0/1/2:
 
-1. CONTENT_REACTIE — refereert bot concreet aan wat klant zei? (0=generiek/niks, 1=licht, 2=specifiek)
-2. NATUURLIJKHEID — voelt als mens of als formulier? (passend bij persona: Bram=droog, Sanne=warm, Lotte=zorgzaam)
-3. STRUCTUUR — REACTION+QUESTION vloeiend? (0=alleen vraag, 1=staccato, 2=vloeiend) — N.v.t. voor allereerste veld-vraag en COMPLETE, geef dan 2
-4. EMOTIONAL_AWARENESS — reageert op emotie klant? (0=negeert, 2=past bij persona; 2 als n.v.t.)
-5. LENGTE — 1-3 zinnen, geen bloat? (0=te lang/kort, 2=strak)
-6. NAAM_FORMAT — correct naam-gebruik, geen "Assistent:"/"Bram:" prefix, geen dashes? (0=fout, 2=schoon)
+1. CONTENT_REACTIE, refereert bot concreet aan wat klant zei? (0=generiek/niks, 1=licht, 2=specifiek)
+2. NATUURLIJKHEID, voelt als mens of als formulier? (passend bij persona: Bram=droog, Sanne=warm, Lotte=zorgzaam)
+3. STRUCTUUR, REACTION+QUESTION vloeiend? (0=alleen vraag, 1=staccato, 2=vloeiend), N.v.t. voor allereerste veld-vraag en COMPLETE, geef dan 2
+4. EMOTIONAL_AWARENESS, reageert op emotie klant? (0=negeert, 2=past bij persona; 2 als n.v.t.)
+5. LENGTE, 1-3 zinnen, geen bloat? (0=te lang/kort, 2=strak)
+6. NAAM_FORMAT, correct naam-gebruik, geen "Assistent:"/"Bram:" prefix, geen dashes? (0=fout, 2=schoon)
 
 Geef ALLEEN valide JSON terug, geen uitleg:
 {
@@ -417,7 +417,7 @@ def aggregate(results: list[dict]) -> dict:
 
 
 def render_transcript(result: dict) -> str:
-    lines = [f"**Scenario {result['scenario'].id}** — {result['scenario'].branche} | {result['scenario'].persona_brief()}"]
+    lines = [f"**Scenario {result['scenario'].id}**, {result['scenario'].branche} | {result['scenario'].persona_brief()}"]
     lines.append(f"Status: {result.get('status')} | Avg: {(result.get('eval') or {}).get('avg', '?')} | Duration: {result.get('duration_s')}s")
     lines.append("")
     for m in result["history"]:
@@ -436,7 +436,7 @@ def render_report(results: list[dict], agg: dict, out_path: Path) -> None:
     lines.append(f"**Totaal gesprekken:** {agg['total_conversations']} · **Completed:** {agg['completed']}")
     lines.append("")
 
-    lines.append("## Dashboard — dimensie scores")
+    lines.append("## Dashboard, dimensie scores")
     lines.append("| Dimensie | Gemiddelde (0-2) | % berichten score ≤1 |")
     lines.append("|---|---|---|")
     for k, label in dim_labels.items():
@@ -454,7 +454,7 @@ def render_report(results: list[dict], agg: dict, out_path: Path) -> None:
     sorted_msgs = sorted(agg["all_msgs"], key=lambda m: m.get("total", 12))
     lines.append("## Slechtste 10 bot-berichten")
     for m in sorted_msgs[:10]:
-        lines.append(f"- **[{m['branche']} #{m['scenario_id']}]** score {m.get('total', '?')}/12: \"{m.get('text', '')[:140]}\" — {m.get('notes', '')}")
+        lines.append(f"- **[{m['branche']} #{m['scenario_id']}]** score {m.get('total', '?')}/12: \"{m.get('text', '')[:140]}\", {m.get('notes', '')}")
     lines.append("")
 
     # 3 slechtste + 2 beste transcripts
@@ -471,7 +471,7 @@ def render_report(results: list[dict], agg: dict, out_path: Path) -> None:
     lines.append("")
 
     lines.append("## Volgende stap")
-    lines.append("Identificeer patronen in de 10 slechtste berichten en de 3 slechtste transcripts — welke prompt-sectie faalt structureel? Stel voor welke regel(s) in reply.py aangepast moeten worden.")
+    lines.append("Identificeer patronen in de 10 slechtste berichten en de 3 slechtste transcripts, welke prompt-sectie faalt structureel? Stel voor welke regel(s) in reply.py aangepast moeten worden.")
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
 

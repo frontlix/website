@@ -5,7 +5,7 @@ import { formatHHmm, formatM2 } from './agenda-event'
 /**
  * Helpers voor de routekaart-view. Groepeert afspraken per dag, kent
  * elke dag een kleur toe, en bepaalt schematische pin-coördinaten op
- * basis van postcode-cijfer (geen geocoding nodig — alleen voor
+ * basis van postcode-cijfer (geen geocoding nodig, alleen voor
  * visuele indicatie binnen de NL-blob op de SVG).
  */
 
@@ -36,13 +36,13 @@ export type RouteStop = {
 
 /**
  * Vaste kleur-volgorde per dag-positie (1e dag met afspraken = blauw,
- * 2e dag = oranje, etc.) — matches het design.
+ * 2e dag = oranje, etc.), matches het design.
  */
 const DAY_COLORS = ['#1a56ff', '#f59e0b', '#16a34a', '#dc2626', '#7c3aed'] as const
 
 /**
  * Schematische coördinaten per postcode-cijfer in 0–100 viewBox.
- * Niet geografisch precies — alleen om pins binnen de NL-blob te plaatsen.
+ * Niet geografisch precies, alleen om pins binnen de NL-blob te plaatsen.
  */
 const POSTCODE_COORDS: Record<string, { x: number; y: number }> = {
   '1': { x: 55, y: 28 }, // Amsterdam / NH

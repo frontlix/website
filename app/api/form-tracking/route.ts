@@ -6,10 +6,10 @@ import { getSupabase } from '@/lib/supabase'
  * client (bypasst RLS). De TypeScript-cast hieronder doet niets op runtime, dus
  * valideren we de payload defensief op de server vóór we naar de database
  * schrijven. Doel: misbruik begrenzen zonder legitieme form-abandonment-tracking
- * te breken — bij twijfel liever opslaan-met-begrenzing dan hard weigeren.
+ * te breken, bij twijfel liever opslaan-met-begrenzing dan hard weigeren.
  */
 
-/* Maximale payload-grootte (8KB) — voorkomt grote/abusieve bodies vóór JSON.parse */
+/* Maximale payload-grootte (8KB), voorkomt grote/abusieve bodies vóór JSON.parse */
 const MAX_BODY_BYTES = 8 * 1024
 
 /* Whitelist: exact de form_name-waarden die de frontend (useFormTracking) stuurt */

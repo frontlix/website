@@ -26,7 +26,7 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
 
-  // Body-scroll lock terwijl de drawer open is — gecentraliseerd +
+  // Body-scroll lock terwijl de drawer open is, gecentraliseerd +
   // reference-counted (de drawer mount alleen bij ?dagrapport=1, dus `true`).
   useBodyScrollLock(true)
 
@@ -39,7 +39,7 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
     return () => {
       document.removeEventListener('keydown', onKey)
     }
-    // close is stable per render maar referentieel niet — daarom geen
+    // close is stable per render maar referentieel niet, daarom geen
     // dependency-array uitbreiden; effect runt alleen bij mount/unmount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -79,7 +79,7 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
         </div>
 
         <div className={styles.body}>
-          {/* Surface-bot activiteit — bovenaan zodat het bot-narratief
+          {/* Surface-bot activiteit, bovenaan zodat het bot-narratief
               eerst gezien wordt, vóór de pure conversie-KPI's. */}
           <section className={styles.section}>
             <div className={styles.sectionTitle}>Surface vandaag</div>
@@ -113,7 +113,7 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
             </div>
           </section>
 
-          {/* KPI-grid — 4 cijfers vandaag, delta vs gisteren + sparkline */}
+          {/* KPI-grid, 4 cijfers vandaag, delta vs gisteren + sparkline */}
           <section className={styles.section}>
             <div className={styles.sectionTitle}>Vandaag in cijfers</div>
             <div className={styles.kpiGrid}>
@@ -145,18 +145,18 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
             </div>
           </section>
 
-          {/* Uur-strip — wanneer gebeurde er iets vandaag ────────── */}
+          {/* Uur-strip, wanneer gebeurde er iets vandaag ────────── */}
           <section className={styles.section}>
             <div className={styles.sectionTitle}>Wanneer gebeurde het</div>
             <UurStrip data={data.uurStrip} />
           </section>
 
-          {/* Bronnen-split — alleen vandaag ──────────────────────── */}
+          {/* Bronnen-split, alleen vandaag ──────────────────────── */}
           <section className={styles.section}>
             <div className={styles.sectionTitle}>Waar kwamen ze vandaan</div>
             {data.bronnen.length === 0 ? (
               <div className={styles.empty}>
-                Nog geen leads vandaag — kanalen rusten even.
+                Nog geen leads vandaag, kanalen rusten even.
               </div>
             ) : (
               <div className={styles.bronnenList}>
@@ -217,7 +217,7 @@ function Sparkline({ points }: { points: number[] }) {
   const pad = 2
   const max = Math.max(...points, 1)
 
-  // Bouw x,y-coördinaten — gelijk verdeeld over breedte
+  // Bouw x,y-coördinaten, gelijk verdeeld over breedte
   const coords = points.map((v, i) => {
     const x = pad + (i / (points.length - 1)) * (w - pad * 2)
     const y = h - pad - (v / max) * (h - pad * 2)
@@ -277,7 +277,7 @@ function UurStrip({ data }: { data: number[] }) {
                   '--uur-h': ratio,
                 } as React.CSSProperties
               }
-              title={`${hour}:00 — ${count} ${count === 1 ? 'event' : 'events'}`}
+              title={`${hour}:00, ${count} ${count === 1 ? 'event' : 'events'}`}
             />
           )
         })}

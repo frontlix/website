@@ -59,7 +59,7 @@ type Props = {
   templateAanvragen: TemplateAanvraag[]
   /**
    * Rauwe `?section=`-param (server-side doorgegeven). Alleen als die expliciet
-   * aanwezig is openen we het detail direct — anders zou elk bezoek op 'bedrijf'
+   * aanwezig is openen we het detail direct, anders zou elk bezoek op 'bedrijf'
    * defaulten. De server-side default-naar-'bedrijf' mag hier dus NIET in.
    */
   initialSection?: string

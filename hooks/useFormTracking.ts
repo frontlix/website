@@ -74,14 +74,14 @@ export function useFormTracking({
           headers: { 'Content-Type': 'application/json' },
           body: payload,
         }).catch(() => {
-          /* Stille fout — tracking mag de UX niet verstoren */
+          /* Stille fout, tracking mag de UX niet verstoren */
         })
       }
     },
     [formName, getFieldData, hasData]
   )
 
-  /** Debounced save bij blur — wacht 2 seconden na laatste blur */
+  /** Debounced save bij blur, wacht 2 seconden na laatste blur */
   const trackBlur = useCallback(() => {
     if (isSubmittedRef.current) return
 

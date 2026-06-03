@@ -64,7 +64,7 @@ export default async function InboxPage({
     selectedLeadId ? getInboxLeadContext(selectedLeadId) : Promise.resolve(null),
   ])
 
-  // Counts per tab — stabiel over alle conversations.
+  // Counts per tab, stabiel over alle conversations.
   const counts: Record<InboxFilter, number> = {
     all:    allConversations.length,
     unread: allConversations.filter((c) => matchesFilter(c, 'unread')).length,
@@ -81,7 +81,7 @@ export default async function InboxPage({
     )
   }
 
-  // Behoud filter + search wanneer een gesprek wordt aangeklikt — anders
+  // Behoud filter + search wanneer een gesprek wordt aangeklikt, anders
   // klapt de URL terug naar /inbox?lead=... en verliest de gebruiker de
   // actieve filter-tab (bv. Actie of Ongelezen).
   const preservedParams = new URLSearchParams()
@@ -100,7 +100,7 @@ export default async function InboxPage({
       {/* ── Desktop tree (> 640px) ─────────────────────── */}
       <div className={styles.desktopTree}>
       <div className={styles.grid} data-pane={selectedLeadId ? 'detail' : 'list'}>
-        {/* Linkerkolom — conversaties-lijst */}
+        {/* Linkerkolom, conversaties-lijst */}
         <aside className={styles.colList}>
           <div className={styles.colHead}>
             <div className={styles.colHeadTitle}>
@@ -110,8 +110,8 @@ export default async function InboxPage({
                   type="button"
                   className={styles.iconBtn}
                   disabled
-                  title="Filter — binnenkort beschikbaar"
-                  aria-label="Filter — binnenkort beschikbaar"
+                  title="Filter, binnenkort beschikbaar"
+                  aria-label="Filter, binnenkort beschikbaar"
                 >
                   <Filter size={14} />
                 </button>
@@ -119,8 +119,8 @@ export default async function InboxPage({
                   type="button"
                   className={styles.iconBtn}
                   disabled
-                  title="Vernieuwen — binnenkort beschikbaar (inbox refresht nu automatisch via realtime)"
-                  aria-label="Vernieuwen — binnenkort beschikbaar"
+                  title="Vernieuwen, binnenkort beschikbaar (inbox refresht nu automatisch via realtime)"
+                  aria-label="Vernieuwen, binnenkort beschikbaar"
                 >
                   <RefreshCw size={14} />
                 </button>
@@ -136,7 +136,7 @@ export default async function InboxPage({
           />
         </aside>
 
-        {/* Middenkolom — WhatsApp thread */}
+        {/* Middenkolom, WhatsApp thread */}
         <section className={styles.colThread}>
           {selectedLeadId && leadContext ? (
             <>
@@ -145,7 +145,7 @@ export default async function InboxPage({
 
               <div className={styles.threadHead}>
                 <div className={styles.threadHeadLeft}>
-                  {/* Terug naar lijst — alleen zichtbaar op mobile (<800px) */}
+                  {/* Terug naar lijst, alleen zichtbaar op mobile (<800px) */}
                   <Link href="/inbox" className={styles.mobileBackBtn} aria-label="Terug naar lijst">
                     <ChevronLeft size={18} />
                   </Link>
@@ -170,7 +170,7 @@ export default async function InboxPage({
                 </div>
               </div>
 
-              {/* Bot-status strip onder header — wat Surface 'denkt' nu te doen */}
+              {/* Bot-status strip onder header, wat Surface 'denkt' nu te doen */}
               <div className={styles.botStatus}>
                 <span className={styles.botStatusLabel}>Surface:</span>
                 <span className={styles.botStatusText}>
@@ -195,7 +195,7 @@ export default async function InboxPage({
           )}
         </section>
 
-        {/* Rechterkolom — lead-context */}
+        {/* Rechterkolom, lead-context */}
         <aside className={styles.colContext}>
           {leadContext ? (
             <LeadContextPane lead={leadContext} />

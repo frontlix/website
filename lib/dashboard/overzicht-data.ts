@@ -1,7 +1,7 @@
 /**
  * Pure data-helpers voor de Overzicht-pagina (`/dashboard`).
  *
- * Geen Supabase-calls hier — alleen transformaties op data die de page
+ * Geen Supabase-calls hier, alleen transformaties op data die de page
  * al heeft opgehaald. Zo blijft de page zelf een dunne compositie-laag
  * en zijn deze functies los unit-testbaar.
  */
@@ -125,7 +125,7 @@ export function buildActivityFeed(
 
 /**
  * Bouwt het Record met 4 KPI-tegels (omzet/leads/conversie/reactietijd)
- * uit de losse query-resultaten. Doet pure aritmetiek — geen DB-calls.
+ * uit de losse query-resultaten. Doet pure aritmetiek, geen DB-calls.
  */
 export function buildKpiMetrics(input: {
   omzetMaand: number
@@ -162,7 +162,7 @@ export function buildKpiMetrics(input: {
     },
     conversie: {
       key: 'conversie',
-      // Korter dan "Conversie offerte → klant" — past op 1 regel in de
+      // Korter dan "Conversie offerte → klant", past op 1 regel in de
       // mobile mini-card. De "%"-suffix maakt al duidelijk dat 't een rate
       // is, en de tab heet nog steeds "Conversie".
       label: 'Offerte → klant',
@@ -190,7 +190,7 @@ export function buildKpiMetrics(input: {
 }
 
 /**
- * Mini-card "Offertes open" — huidige stand (geen tab, niet klikbaar).
+ * Mini-card "Offertes open", huidige stand (geen tab, niet klikbaar).
  * Geen meaningful prev-vergelijking voor stock-metrics: delta op 0 zodat
  * de mini "—" toont i.p.v. een misleidende ↑.
  */

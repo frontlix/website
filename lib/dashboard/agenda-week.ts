@@ -91,7 +91,7 @@ export function parseWeekParam(
         .pop()} ${monday.getFullYear()}`
     : `${fmt.format(monday)} t/m ${fmt.format(sunday)} ${sunday.getFullYear()}`
 
-  // Query-range UTC met 1 dag buffer aan beide kanten (TZ-safe — zie
+  // Query-range UTC met 1 dag buffer aan beide kanten (TZ-safe, zie
   // agenda-queries.ts voor dezelfde aanpak).
   const queryStart = new Date(monday)
   queryStart.setDate(queryStart.getDate() - 1)

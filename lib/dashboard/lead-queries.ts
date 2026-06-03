@@ -40,7 +40,7 @@ export type LeadListItem = Pick<
   | 'aangemaakt'
   | 'bijgewerkt'
   | 'kanaal'
-  // ── action-signalen voor "Eerst dit doen" — afgeleid op page-level ──
+  // ── action-signalen voor "Eerst dit doen", afgeleid op page-level ──
   | 'pending_eigenaar_review'
   | 'klus_geblokkeerd'
   | 'offerte_pending_sinds'
@@ -346,7 +346,7 @@ export interface ActivityEvent {
 
 /**
  * Aggregeert alle activiteits-events voor een lead uit de bestaande
- * tabellen. Geen aparte event-tabel nodig — we hergebruiken de timestamps
+ * tabellen. Geen aparte event-tabel nodig, we hergebruiken de timestamps
  * die al op berichten/fotos/offertes/notes/history/audit-velden staan.
  *
  * Sorteert nieuwste eerst (DESC) zodat de UI direct chronologisch kan
@@ -409,7 +409,7 @@ export function aggregateActivityTimeline(detail: LeadDetail): ActivityEvent[] {
     })
   }
 
-  // Status-history. nieuwe_status is nullable (status leeggemaakt) — render
+  // Status-history. nieuwe_status is nullable (status leeggemaakt), render
   // dat dan als "Geen status" zodat de timeline leesbaar blijft.
   for (const h of detail.statusHistory) {
     const nieuwLabel = h.nieuwe_status ?? 'Geen status'

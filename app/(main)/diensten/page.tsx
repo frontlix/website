@@ -59,7 +59,7 @@ const howToSchema = {
       '@type': 'HowToStep',
       position: 2,
       name: 'De juiste vragen worden gesteld',
-      text: 'Via WhatsApp worden stap voor stap de juiste vragen gesteld. Type oppervlak, afmetingen, materiaal — alles wordt slim uitgevraagd.',
+      text: 'Via WhatsApp worden stap voor stap de juiste vragen gesteld. Type oppervlak, afmetingen, materiaal, alles wordt slim uitgevraagd.',
     },
     {
       '@type': 'HowToStep',

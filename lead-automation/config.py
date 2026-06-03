@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str
 
-    # Supabase — accept either SUPABASE_URL or the Next.js convention
+    # Supabase, accept either SUPABASE_URL or the Next.js convention
     # NEXT_PUBLIC_SUPABASE_URL so the same root .env feeds both sides.
     supabase_url: str = Field(validation_alias=AliasChoices("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"))
     supabase_service_role_key: str
@@ -42,14 +42,14 @@ class Settings(BaseSettings):
     # Bearer-token voor POST /dashboard-api/config/reload. Leeg = endpoint geeft 503.
     dashboard_api_token: Optional[str] = None
 
-    # External form webhook (Pakket 4a) — off | dry-run | live
+    # External form webhook (Pakket 4a), off | dry-run | live
     external_webhook_mode: Literal["off", "dry-run", "live"] = "off"
     external_webhook_secret: Optional[str] = None
 
-    # Web-chat fallback (Pakket 4b) — false = detect-only, no mail sent
+    # Web-chat fallback (Pakket 4b), false = detect-only, no mail sent
     web_chat_fallback_enabled: bool = False
 
-    # WhatsApp number of the business owner — receives ALERT messages when an
+    # WhatsApp number of the business owner, receives ALERT messages when an
     # offerte-mail fails to send, so leads don't silently disappear. Leave empty
     # to disable owner-alerts (failures are still logged via the python logger).
     # Format: international with country code, no +, e.g. "31638272245".

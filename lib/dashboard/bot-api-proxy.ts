@@ -8,12 +8,12 @@ import { getCurrentUser, getCurrentUserProfile } from './auth'
  * client.
  *
  * Reden: alle "zware" acties (approve-quote, modify-quote, book-appointment,
- * reschedule, AVG-delete) blijven in de bot — dit dashboard is alleen
+ * reschedule, AVG-delete) blijven in de bot, dit dashboard is alleen
  * de UI-laag. Het token zit alleen server-side in `.env`.
  *
  * Auth-eisen: ingelogd EN tenant_status='approved'. Een pending/rejected
  * user heeft wél een sessie maar mag geen schrijf-acties triggeren tot
- * de owner ze goedkeurt — vandaar de extra profile-check.
+ * de owner ze goedkeurt, vandaar de extra profile-check.
  */
 
 /** Auth-check identiek aan requireApprovedUser() maar zonder redirect:

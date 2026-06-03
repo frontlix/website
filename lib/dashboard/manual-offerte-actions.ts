@@ -61,7 +61,7 @@ export async function createManualLeadEnOfferte(
 
   const pricing = await getManualOffertePricing()
   const rules = computeRules(data, pricing)
-  if (rules.length === 0) return { ok: false, error: 'Geen offerte-regels — controleer de gekozen diensten.' }
+  if (rules.length === 0) return { ok: false, error: 'Geen offerte-regels, controleer de gekozen diensten.' }
   const totals = computeTotals(rules, data)
   if (totals.total <= 0) return { ok: false, error: 'Totaalbedrag moet > 0 zijn.' }
 
@@ -88,13 +88,13 @@ export async function createManualLeadEnOfferte(
         ? voegzandTypes[0]
         : 'beide'
 
-  // m² per sub-dienst — bot/PDF gebruiken deze voor regel-uitsplitsing.
+  // m² per sub-dienst, bot/PDF gebruiken deze voor regel-uitsplitsing.
   // Alleen vullen als die sub_dienst gekozen is.
   const m2Num = Number(data.m2) || 0
   const invegenM2 = data.sub.includes('invegen') ? m2Num : null
   const beschermlaagM2 = data.sub.includes('beschermlaag') ? m2Num : null
 
-  // m² per voegzand-type — de user kiest dit nu expliciet in StepWerk.
+  // m² per voegzand-type, de user kiest dit nu expliciet in StepWerk.
   // Hier alleen sanitizen (Number + null voor niet-actieve types) en als
   // safety-net terugvallen op totale m² als alleen 1 type actief is maar
   // het m²-veld 0 staat (oude drafts vóór de m²-input bestond).
@@ -185,10 +185,10 @@ export async function createManualLeadEnOfferte(
       .eq('lead_id', leadId)
       .maybeSingle()
     if (existsErr || !existing) {
-      return { ok: false, error: 'Bestaande lead niet meer gevonden — probeer opnieuw zonder koppeling.' }
+      return { ok: false, error: 'Bestaande lead niet meer gevonden, probeer opnieuw zonder koppeling.' }
     }
 
-    // UPDATE: status/dashboard_status/bron raken we niet aan — dat is
+    // UPDATE: status/dashboard_status/bron raken we niet aan, dat is
     // de geschiedenis van de oorspronkelijke lead. Gesprek_fase wordt
     // wel teruggezet naar 'offerte_besproken' want dat is wat een
     // nieuwe handmatige offerte feitelijk doet.
@@ -249,7 +249,7 @@ export async function createManualLeadEnOfferte(
     .single()
 
   if (offerteErr || !offerte) {
-    // Rollback alleen bij nieuwe lead — een bestaande mogen we niet weggooien.
+    // Rollback alleen bij nieuwe lead, een bestaande mogen we niet weggooien.
     if (!isReuse) {
       await admin.from('leads').delete().eq('lead_id', leadId)
     }
@@ -257,7 +257,7 @@ export async function createManualLeadEnOfferte(
   }
 
   // ── 3) Prijsregels ────────────────────────────────────────────────
-  // Bij reuse plakken we de nieuwe regels erbij — oude regels van
+  // Bij reuse plakken we de nieuwe regels erbij, oude regels van
   // vorige offertes blijven staan (geen offerte_id-kolom om op te
   // splitsen, zie schema-comment in CLAUDE.md). Volgorde start bij
   // (huidige max + 1) zodat ze in de UI achteraan komen.
@@ -296,7 +296,7 @@ export async function createManualLeadEnOfferte(
     return { ok: false, error: `Prijsregels opslaan mislukt: ${regelsErr.message}` }
   }
 
-  // ── 4) Notitie als begeleidende tekst — opslaan als lead_note ─────
+  // ── 4) Notitie als begeleidende tekst, opslaan als lead_note ─────
   if (data.notitie.trim()) {
     await admin.from('lead_notes').insert({
       lead_id: leadId,
@@ -305,7 +305,7 @@ export async function createManualLeadEnOfferte(
     })
   }
 
-  // ── 5) Geocoding — fire-and-forget, blokkeert lead-create niet ────
+  // ── 5) Geocoding, fire-and-forget, blokkeert lead-create niet ────
   // De lead is al opgeslagen; als geocoding faalt (bv. postcode.tech
   // down) heeft 'ie alleen geen pin op de routekaart. Volgende edit
   // of een handmatige backfill-run vult 'm alsnog.
@@ -314,8 +314,7 @@ export async function createManualLeadEnOfferte(
   // ── 6) Mail-verzending (alleen bij kanaal=mail) ───────────────────
   // Rendert PDF via puppeteer + schoon-straatje-template, stuurt 'm
   // als bijlage via nodemailer. Faalt niet hard: bij fout markeren we
-  // offerte_verstuurd terug naar false en rapporteren in het result —
-  // de offerte zelf blijft staan zodat user 'm via dashboard alsnog
+  // offerte_verstuurd terug naar false en rapporteren in het result,   // de offerte zelf blijft staan zodat user 'm via dashboard alsnog
   // kan re-sturen.
   let mailError: string | null = null
   if (data.kanaal === 'mail' && data.email.trim()) {
@@ -356,7 +355,7 @@ export async function createManualLeadEnOfferte(
       })
       if (!mailRes.ok) {
         mailError = mailRes.error
-        // offerte_verstuurd flip terug — de mail is NIET aangekomen.
+        // offerte_verstuurd flip terug, de mail is NIET aangekomen.
         await admin
           .from('leads')
           .update({ offerte_verstuurd: false, offerte_verstuurd_op: null })
@@ -386,7 +385,7 @@ export async function createManualLeadEnOfferte(
 
 /**
  * Geocode postcode+huisnummer en sla lat/lng op de lead op. Faalt
- * stil — een lead zonder coords mist alleen z'n pin op de routekaart.
+ * stil, een lead zonder coords mist alleen z'n pin op de routekaart.
  */
 async function geocodeAndStore(
   admin: ReturnType<typeof getDashboardAdmin>,

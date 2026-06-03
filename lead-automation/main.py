@@ -36,7 +36,7 @@ from services.water_reminder_cron import start as start_water_reminder_cron
 app = FastAPI(
     title="Frontlix Lead Automation",
     version="1.0.0",
-    description="WhatsApp lead automation service — van aanvraag tot offerte tot afspraak.",
+    description="WhatsApp lead automation service, van aanvraag tot offerte tot afspraak.",
 )
 
 app.add_middleware(
@@ -61,13 +61,13 @@ app.include_router(personalized_router)
 app.include_router(pd_approve_router)
 app.include_router(pd_edit_router)
 app.include_router(pd_schedule_router)
-# Browser dev-loop. Registered LAST per Pakket 3 plan — order matters: keep pd_* untouched.
+# Browser dev-loop. Registered LAST per Pakket 3 plan, order matters: keep pd_* untouched.
 app.include_router(test_chat_router)
 
 
 @app.on_event("startup")
 async def _startup() -> None:
-    # Initial hydrate — hard fail bubbelt op zodat de app niet zonder branche-config opstart.
+    # Initial hydrate, hard fail bubbelt op zodat de app niet zonder branche-config opstart.
     hydrate_all()
     app.state.config_refresh_task = asyncio.create_task(start_background_refresh(60))
     # Pakket 4b: web-chat fallback crons. Both are no-ops if there are no eligible leads;

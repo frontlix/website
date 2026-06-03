@@ -137,11 +137,11 @@ describe('SS_CATALOG ↔ FALLBACK_PRICING', () => {
 })
 
 describe('geld-helpers', () => {
-  it('eur — nl-NL, 2 decimalen, komma', () => {
+  it('eur, nl-NL, 2 decimalen, komma', () => {
     expect(eur(1234.56)).toBe('€1.234,56')
     expect(eur(0)).toBe('€0,00')
   })
-  it('eur0 — afgerond op hele euro', () => {
+  it('eur0, afgerond op hele euro', () => {
     expect(eur0(1234.56)).toBe('€1.235')
     expect(eur0(0)).toBe('€0')
   })

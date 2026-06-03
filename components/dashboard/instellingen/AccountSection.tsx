@@ -38,7 +38,7 @@ function PasswordCard() {
         <Lock size={18} />
         <div>
           <div className={styles.cardTitle}>Wachtwoord wijzigen</div>
-          <div className={styles.cardSub}>Minimaal 8 karakters — gebruik iets sterks.</div>
+          <div className={styles.cardSub}>Minimaal 8 karakters, gebruik iets sterks.</div>
         </div>
       </div>
       <div className={styles.fields}>

@@ -87,7 +87,7 @@ export default function ContactForm() {
       bericht: formData.get('bericht') as string,
     }
 
-    /* Client-side validatie — stop als er fouten zijn */
+    /* Client-side validatie, stop als er fouten zijn */
     if (!validateFields(data.email, data.telefoon)) return
 
     setLoading(true)

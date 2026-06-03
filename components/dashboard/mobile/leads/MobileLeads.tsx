@@ -29,7 +29,7 @@ const STAGE_ORDER: Record<MobileLeadStage, number> = {
 
 export interface MobileLeadsData {
   cards: MobileLeadCard[]
-  /** leadId → telefoonnummer — voor swipe Bel/WA */
+  /** leadId → telefoonnummer, voor swipe Bel/WA */
   telefoonById: Record<string, string>
   /** Counts per stage + 'all' */
   counts: {
@@ -55,7 +55,7 @@ const DEFAULT_ADV_FILTER: AdvFilter = {
 }
 
 /**
- * MobileLeads — client-side shell voor het mobile /leads scherm.
+ * MobileLeads, client-side shell voor het mobile /leads scherm.
  *
  * State:
  *  - filter: actieve segmented chip ('all' of stage-key)
@@ -75,7 +75,7 @@ export function MobileLeads({ data }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [sheetOpen,  setSheetOpen]  = useState(false)
   const [advFilter,  setAdvFilter]  = useState<AdvFilter>(DEFAULT_ADV_FILTER)
-  // Welke kaart momenteel open-geveegd is — zodat een nieuwe veeg de vorige sluit.
+  // Welke kaart momenteel open-geveegd is, zodat een nieuwe veeg de vorige sluit.
   const [swipeOpenId, setSwipeOpenId] = useState<string | null>(null)
   const handleSwipeOpen = useCallback((id: string) => setSwipeOpenId(id), [])
 
@@ -236,7 +236,7 @@ export function MobileLeads({ data }: Props) {
                   </span>
                 )}
               </button>
-              {/* Nieuwe offerte — accent gradient */}
+              {/* Nieuwe offerte, accent gradient */}
               <Link
                 href="/leads?nieuwe-offerte=1"
                 className={styles.actionBtnPrimary}
@@ -288,7 +288,7 @@ export function MobileLeads({ data }: Props) {
             <svg className={styles.emptyIcon} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <p>Geen leads die matchen — wis filters of zoekterm.</p>
+            <p>Geen leads die matchen, wis filters of zoekterm.</p>
           </div>
         ) : (
           visible.map((lead) => (

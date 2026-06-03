@@ -11,7 +11,7 @@ export interface DashboardUserProfile {
 
 /**
  * Retourneert de huidig ingelogde Supabase-Auth user, of null als er geen
- * sessie is. Faalt nooit met een exception — RLS / network errors worden
+ * sessie is. Faalt nooit met een exception, RLS / network errors worden
  * als "niet ingelogd" behandeld zodat aanroepers altijd kunnen doorgaan
  * met een redirect-naar-login fallback.
  */
@@ -24,7 +24,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
 /**
  * Haalt de dashboard_user_profiles-rij voor de huidige user op. Retourneert
- * null als (a) niet ingelogd of (b) profile-rij ontbreekt — dat laatste is
+ * null als (a) niet ingelogd of (b) profile-rij ontbreekt, dat laatste is
  * een data-integriteit issue (de Auth Hook trigger zou 'm moeten hebben
  * gemaakt) en wordt als geen-toegang behandeld.
  */

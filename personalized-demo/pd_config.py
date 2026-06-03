@@ -1,4 +1,4 @@
-"""Personalized demo configuration — De Designmaker.
+"""Personalized demo configuration, De Designmaker.
 
 4 dienst-categorieën, elk met eigen velden die verzameld moeten worden.
 """

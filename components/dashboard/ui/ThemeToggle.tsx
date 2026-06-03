@@ -7,9 +7,9 @@ const STORAGE_KEY = 'frontlix-dashboard-theme'
 
 /**
  * Dark-mode toggle voor het dashboard. Schakelt `.dark` op de
- * `.dashboard-theme-root` wrapper (in de dashboard-layout) — die wrapper
+ * `.dashboard-theme-root` wrapper (in de dashboard-layout), die wrapper
  * omvat ZOWEL de desktop- als de mobiele chrome-boom, zodat de toggle op
- * beide viewports werkt. (Niet op <body> — anders raakt het de
+ * beide viewports werkt. (Niet op <body>, anders raakt het de
  * marketing-site.)
  *
  * Eerder targette dit de `.density-*` shell-wrapper, maar die zit alléén

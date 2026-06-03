@@ -60,7 +60,7 @@ export function PricingRuleEditor({
       return
     }
 
-    // Optimistic update — committed gaat direct mee, save loopt asynchroon.
+    // Optimistic update, committed gaat direct mee, save loopt asynchroon.
     const previous = committed
     setCommitted(parsed)
     setDisplay(formatForDisplay(parsed))
@@ -128,7 +128,7 @@ function formatForDisplay(n: number): string {
 function parseValue(s: string): number | null {
   const trimmed = s.trim()
   if (!trimmed) return null
-  // Accepteer "3,95" en "3.95" — vervang komma door punt vóór parse.
+  // Accepteer "3,95" en "3.95", vervang komma door punt vóór parse.
   // Strip duizendtal-separators (zelden gebruikt in prijslijsten, maar
   // veiligheid: een typo als "1.000,50" wordt 1000.50).
   const cleaned = trimmed.replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')

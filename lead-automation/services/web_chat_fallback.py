@@ -1,4 +1,4 @@
-"""Web-chat fallback — when the WhatsApp opening template fails to deliver.
+"""Web-chat fallback, when the WhatsApp opening template fails to deliver.
 
 Generates a one-time token for the lead, persists it, and (if enabled) emails
 the customer a magic-link to /chat/<token> so they can continue the same
@@ -35,7 +35,7 @@ def _email_html(naam: str, link: str) -> str:
   <h2 style="margin:0 0 12px;font-size:18px">Hoi {escape(naam) or 'daar'},</h2>
   <p style="margin:0 0 12px;font-size:14px;line-height:1.6">
     Het lijkt erop dat WhatsApp je niet bereikt op het door jou opgegeven nummer.
-    Geen probleem — je kunt de demo gewoon in je browser afmaken via onderstaande link.
+    Geen probleem, je kunt de demo gewoon in je browser afmaken via onderstaande link.
     De link werkt 1x en is persoonlijk voor jou.
   </p>
   <p style="margin:20px 0">
@@ -67,7 +67,7 @@ async def trigger_web_chat_fallback(lead_id: str, *, reason: str = "delivery_fai
         return lead["web_chat_token"]
 
     if not lead.get("email"):
-        print(f"[web-chat-fallback] lead {lead_id} has no email — cannot fallback (reason={reason})")
+        print(f"[web-chat-fallback] lead {lead_id} has no email, cannot fallback (reason={reason})")
         return None
 
     token = uuid.uuid4().hex

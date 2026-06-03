@@ -8,7 +8,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string }
 
 /**
  * Direct opslaan van het aantal dagen voor reminder N (1, 2 of 3) op de
- * tenant_settings-rij. Dit is alléén scheduling — geen Meta-goedkeuring
+ * tenant_settings-rij. Dit is alléén scheduling, geen Meta-goedkeuring
  * nodig. De bot leest `tenant_settings.reminder_dag_N` en stuurt dan op
  * dag N na de offerte.
  *

@@ -8,7 +8,7 @@ export type UitnodigingState = { error?: string; redirectTo?: string }
  * Een uitnodigingslink vanuit Supabase Auth loopt naar
  * /uitnodiging?code=... . Supabase verwerkt de code automatisch (cookies)
  * via dezelfde flow als wachtwoord-reset. Hier vraagt de uitgenodigde
- * medewerker zijn wachtwoord in te stellen — daarna is hij ingelogd
+ * medewerker zijn wachtwoord in te stellen, daarna is hij ingelogd
  * en sturen we 'm naar /leads.
  */
 export async function uitnodigingAction(
