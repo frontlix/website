@@ -714,6 +714,7 @@ export type Database = {
           pdf_path: string
           pdf_url: string
           regels_snapshot: Json | null
+          status: string
           totaal_incl: number
           versie: number
         }
@@ -726,6 +727,7 @@ export type Database = {
           pdf_path: string
           pdf_url: string
           regels_snapshot?: Json | null
+          status?: string
           totaal_incl: number
           versie: number
         }
@@ -738,6 +740,7 @@ export type Database = {
           pdf_path?: string
           pdf_url?: string
           regels_snapshot?: Json | null
+          status?: string
           totaal_incl?: number
           versie?: number
         }

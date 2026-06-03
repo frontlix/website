@@ -190,7 +190,10 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     bedrag: r.totaal ?? 0,
   }))
 
-  const latest = detail.offertes[0] // gesorteerd op versie desc
+  // Nieuwste ECHTE versie (verstuurd of in review bij de eigenaar), niet het
+  // dashboard-draftconcept: dat kan een lege €0-rij zijn die de werkelijke
+  // offerte zou maskeren. Lijst is gesorteerd op versie desc.
+  const latest = detail.offertes.find((o) => !o.is_concept) ?? detail.offertes[0]
   let totaal: number
   let subtotaal: number
   if (latest && typeof latest.totaal_incl === 'number') {
@@ -208,6 +211,10 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
       ? new Date(l.offerte_verstuurd_op).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
       : null
     status = op ? `Verstuurd op ${op}` : 'Verstuurd'
+  } else if (latest?.status === 'wacht_op_goedkeuring') {
+    // Bot heeft de offerte klaargezet ter review; de rij is al gearchiveerd
+    // (migratie 044) maar de eigenaar moet 'm nog goedkeuren.
+    status = 'Wacht op jouw goedkeuring'
   } else if (regels.length > 0) {
     status = 'Concept, nog niet verstuurd'
   } else {
@@ -237,11 +244,13 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
   }))
 
   // Versie-historie uit de echte offertes (read-only in de editor).
+  // Een bot-pending-rij ('wacht_op_goedkeuring') is geen concept maar ook
+  // nog niet verstuurd — markeer 'm niet als verstuurd.
   const versies = detail.offertes.map((o) => ({
     versie: o.versie,
     totaalIncl: o.totaal_incl,
     datum: shortDate(o.aangemaakt_op),
-    verstuurd: !o.is_concept,
+    verstuurd: !o.is_concept && o.status !== 'wacht_op_goedkeuring',
   }))
 
   return {
