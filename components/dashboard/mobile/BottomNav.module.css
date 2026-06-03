@@ -43,7 +43,9 @@
   /* Geen iOS dubbeltik-vertraging op de tab-tik: de klik (en dus de
      optimistische highlight) komt direct door. */
   touch-action: manipulation;
-  transition: color 0.15s ease;
+  /* BEWUST geen transition op color: de actieve kleur moet atomisch
+     verschijnen bij de tik. Een fade geeft iOS een animatie-tijdlijn die
+     bij drukte uitgesteld kan worden (tab kleurde pas bij scrollen). */
 }
 
 .tab:hover,
