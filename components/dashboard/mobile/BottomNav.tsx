@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, ClipboardList, Inbox, Calendar, Menu } from 'lucide-react'
@@ -12,6 +13,12 @@ import styles from './BottomNav.module.css'
  * Sub-routes vallen automatisch onder hun parent-tab (bv. `/leads/123`
  * → tab `leads`). Routes die niet in de map staan worden als "home"
  * beschouwd zodat er altijd één tab oplicht.
+ *
+ * Optimistisch: bij een tik kleurt de tab direct via lokale pending-state.
+ * `usePathname()` flipt namelijk pas zodra de server-gerenderde route
+ * volledig binnen is — zonder pending-state blijft de tab dus seconden
+ * "zwart" terwijl de navigatie loopt. Zodra de echte pathname commit,
+ * wist de effect de pending-state en wint de route weer.
  */
 
 type Counts = {
@@ -52,7 +59,14 @@ type Props = {
 
 export function BottomNav({ counts = {}, onOpenMeer }: Props) {
   const pathname = usePathname()
-  const active = activeTab(pathname)
+  const [pending, setPending] = useState<Tab | null>(null)
+
+  // Navigatie is gecommit — optimistische highlight niet meer nodig.
+  useEffect(() => {
+    setPending(null)
+  }, [pathname])
+
+  const active = pending ?? activeTab(pathname)
 
   const leadsCount = counts.leads ?? 0
   const inboxCount = counts.inbox ?? 0
@@ -61,6 +75,7 @@ export function BottomNav({ counts = {}, onOpenMeer }: Props) {
     <nav className={styles.nav} aria-label="Hoofdnavigatie">
       <Link
         href="/dashboard"
+        onClick={() => setPending('home')}
         className={`${styles.tab} ${active === 'home' ? styles.active : ''}`}
         aria-current={active === 'home' ? 'page' : undefined}
       >
@@ -70,6 +85,7 @@ export function BottomNav({ counts = {}, onOpenMeer }: Props) {
 
       <Link
         href="/leads"
+        onClick={() => setPending('leads')}
         className={`${styles.tab} ${active === 'leads' ? styles.active : ''}`}
         aria-current={active === 'leads' ? 'page' : undefined}
       >
@@ -86,6 +102,7 @@ export function BottomNav({ counts = {}, onOpenMeer }: Props) {
 
       <Link
         href="/inbox"
+        onClick={() => setPending('inbox')}
         className={`${styles.tab} ${active === 'inbox' ? styles.active : ''}`}
         aria-current={active === 'inbox' ? 'page' : undefined}
       >
@@ -102,6 +119,7 @@ export function BottomNav({ counts = {}, onOpenMeer }: Props) {
 
       <Link
         href="/agenda"
+        onClick={() => setPending('cal')}
         className={`${styles.tab} ${active === 'cal' ? styles.active : ''}`}
         aria-current={active === 'cal' ? 'page' : undefined}
       >

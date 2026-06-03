@@ -16,13 +16,15 @@
   min-height: 86px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .head {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Ademruimte tussen icon-box en het grote getal — zonder deze marge
+     plakte het icoon direct op het cijfer. */
+  margin-bottom: var(--space-3);
 }
 
 /* Icon-box — vierkant 32px, getint via data-tone attribute.
@@ -93,4 +95,7 @@
 .label {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  /* Klein beetje lucht onder het getal; label blijft er visueel aan
+     gekoppeld als onderschrift. */
+  margin-top: var(--space-1);
 }
