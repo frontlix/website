@@ -177,7 +177,7 @@ export function MeerSheet({
                   <span className={styles.rowTitle}>Veldwerk</span>
                   <span className={styles.rowSub}>Voor onderweg</span>
                 </span>
-                <span className={styles.rowTag}>PWA</span>
+                <span className={styles.rowTag}>In aanbouw</span>
               </Link>
             </li>
           </ul>

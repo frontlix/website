@@ -1,3 +1,13 @@
+/* Desktop/mobiel-toggle, zelfde patroon als statistieken en reviews:
+   beide takken staan in de DOM, CSS bepaalt welke zichtbaar is. */
+.desktopTree { display: block; }
+.mobileTree { display: none; }
+
+@media (max-width: 640px) {
+  .desktopTree { display: none; }
+  .mobileTree { display: block; }
+}
+
 .list {
   display: flex;
   flex-direction: column;

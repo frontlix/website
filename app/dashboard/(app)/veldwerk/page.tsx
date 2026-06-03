@@ -4,14 +4,18 @@ import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getAppointmentsForRange } from '@/lib/dashboard/agenda-queries'
 import { toAmsterdamDayKey } from '@/lib/dashboard/calendar'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
+import { MobileVeldwerk } from '@/components/dashboard/mobile/veldwerk/MobileVeldwerk'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * Veldwerk-overzicht: vandaag's afspraken voor monteurs op locatie.
- * Mobile-first, grote hit-targets. Per kaart: navigeer naar
- * /veldwerk/[lead_id] voor de phase-tracker (onderweg → klaar).
+ * Desktop toont het overzicht met grote hit-targets; per kaart navigeer
+ * je naar /veldwerk/[lead_id] voor de phase-tracker (onderweg → klaar).
+ * Op mobiel is de feature nog in aanbouw: daar rendert MobileVeldwerk
+ * een nette aankondiging (zelfde desktopTree/mobileTree-patroon als
+ * statistieken en reviews).
  */
 export default async function VeldwerkPage() {
   await requireApprovedUser()
@@ -30,32 +34,38 @@ export default async function VeldwerkPage() {
 
   return (
     <>
-      <div className="dash-section-head">
-        <div>
-          <div className="dash-section-title">Veldwerk vandaag</div>
-          <div className="dash-section-sub">
-            {todayAppts.length === 0
-              ? 'Geen afspraken vandaag'
-              : `${todayAppts.length} ${todayAppts.length === 1 ? 'klus' : 'klussen'} ingepland`}
+      <div className={styles.desktopTree}>
+        <div className="dash-section-head">
+          <div>
+            <div className="dash-section-title">Veldwerk vandaag</div>
+            <div className="dash-section-sub">
+              {todayAppts.length === 0
+                ? 'Geen afspraken vandaag'
+                : `${todayAppts.length} ${todayAppts.length === 1 ? 'klus' : 'klussen'} ingepland`}
+            </div>
           </div>
         </div>
+
+        {todayAppts.length === 0 ? (
+          <div className={styles.empty}>
+            <div className={styles.emptyTitle}>Vrije dag</div>
+            <div className={styles.emptySub}>
+              Er staan geen afspraken in de agenda voor vandaag. Check de{' '}
+              <Link href="/agenda">agenda</Link> voor komende klussen.
+            </div>
+          </div>
+        ) : (
+          <div className={styles.list}>
+            {todayAppts.map((a) => (
+              <VeldwerkCard key={a.lead_id} appt={a} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {todayAppts.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyTitle}>Vrije dag</div>
-          <div className={styles.emptySub}>
-            Er staan geen afspraken in de agenda voor vandaag. Check de{' '}
-            <Link href="/agenda">agenda</Link> voor komende klussen.
-          </div>
-        </div>
-      ) : (
-        <div className={styles.list}>
-          {todayAppts.map((a) => (
-            <VeldwerkCard key={a.lead_id} appt={a} />
-          ))}
-        </div>
-      )}
+      <div className={styles.mobileTree}>
+        <MobileVeldwerk />
+      </div>
     </>
   )
 }
