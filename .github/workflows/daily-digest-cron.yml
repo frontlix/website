@@ -35,7 +35,13 @@ jobs:
 
           # `-fsS` = stil tenzij error, fout-exit op HTTP 4xx/5xx.
           # `-w` print de status code zodat de logs leesbaar zijn.
+          # `--connect-timeout`/`--max-time` = niet ~2 min blijven hangen als de
+          # VPS even niet opneemt. `--retry ... --retry-connrefused` = een korte
+          # blip vanzelf opnieuw proberen, zodat één onbereikbaar moment niet
+          # meteen de hele run (en een faal-mail) oplevert.
           response=$(curl -fsS -X POST \
+            --connect-timeout 15 --max-time 60 \
+            --retry 4 --retry-connrefused --retry-delay 15 \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "Content-Type: application/json" \
             -w "\nHTTP %{http_code}" \
