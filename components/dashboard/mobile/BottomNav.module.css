@@ -15,6 +15,11 @@
   padding-bottom: var(--mobile-safe-area-bottom);
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
+  /* Eigen compositor-laag: iOS Safari stelt repaints van position:fixed
+     balken uit tot een scroll — daardoor kleurde de actieve tab pas blauw
+     bij het scrollen i.p.v. direct bij de tik. translateZ(0) forceert een
+     eigen laag zodat class-wissels meteen geschilderd worden. */
+  transform: translateZ(0);
 }
 
 .tab {
@@ -35,6 +40,9 @@
   text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  /* Geen iOS dubbeltik-vertraging op de tab-tik: de klik (en dus de
+     optimistische highlight) komt direct door. */
+  touch-action: manipulation;
   transition: color 0.15s ease;
 }
 
