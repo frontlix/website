@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, ClipboardList, Inbox, Calendar, Menu } from 'lucide-react'
@@ -60,6 +60,7 @@ type Props = {
 export function BottomNav({ counts = {}, onOpenMeer }: Props) {
   const pathname = usePathname()
   const [pending, setPending] = useState<Tab | null>(null)
+  const navRef = useRef<HTMLElement>(null)
 
   // Navigatie is gecommit — optimistische highlight niet meer nodig.
   useEffect(() => {
@@ -68,11 +69,26 @@ export function BottomNav({ counts = {}, onOpenMeer }: Props) {
 
   const active = pending ?? activeTab(pathname)
 
+  // iOS Safari repaint-kick: de class-wissel klopt (headless bewezen, <60ms),
+  // maar iOS schildert de fixed balk + currentColor-SVG's niet altijd opnieuw
+  // tot een scroll. Een no-op transform-wissel op de composited layer dwingt
+  // de compositor wél tot hertekenen. Op andere browsers onschadelijk.
+  useEffect(() => {
+    const el = navRef.current
+    if (!el) return
+    el.style.transform = 'translateZ(0.01px)'
+    void el.offsetHeight // forceer style/layout-flush zodat de wissel landt
+    const raf = requestAnimationFrame(() => {
+      el.style.transform = '' // terug naar de CSS translateZ(0)
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [active])
+
   const leadsCount = counts.leads ?? 0
   const inboxCount = counts.inbox ?? 0
 
   return (
-    <nav className={styles.nav} aria-label="Hoofdnavigatie">
+    <nav ref={navRef} className={styles.nav} aria-label="Hoofdnavigatie">
       <Link
         href="/dashboard"
         onClick={() => setPending('home')}

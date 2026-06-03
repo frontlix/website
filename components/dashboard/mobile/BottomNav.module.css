@@ -53,7 +53,21 @@
   color: var(--color-text);
 }
 
+/* iOS WebKit invalideert SVG's met geërfde currentColor niet altijd wanneer
+   alleen de geërfde kleur wisselt (icoon bleef zwart tot een scroll). Door de
+   kleur expliciet op de svg én het label te zetten raakt de style-recalc deze
+   elementen direct, zodat ze mét de actieve staat mee kleuren. */
+.tab svg,
+.tab .label {
+  color: inherit;
+}
+
 .active {
+  color: var(--color-primary);
+}
+
+.active svg,
+.active .label {
   color: var(--color-primary);
 }
 
