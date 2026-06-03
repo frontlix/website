@@ -80,13 +80,13 @@ describe('middleware host-based routing', () => {
     expect(res.headers.get('x-middleware-rewrite')).toMatch(/\/dashboard\/login/)
   })
 
-  it('app.frontlix.com /login MET session → redirect naar /leads (skip auth-pagina)', async () => {
+  it('app.frontlix.com /login MET session → redirect naar Overzicht (skip auth-pagina)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
     const req = makeRequest('app.frontlix.com', '/login', true)
 
     const res = await middleware(req)
 
-    expect(res.headers.get('location')).toMatch(/\/leads/)
+    expect(res.headers.get('location')).toBe('https://app.frontlix.com/')
   })
 
   it('app.frontlix.com /wachtkamer zonder session → rewrite naar /dashboard/wachtkamer (publiek)', async () => {
