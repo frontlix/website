@@ -109,16 +109,31 @@
   letter-spacing: 0.5px;
 }
 
-/* Rechts: bedrijfsnaam als brand-marker. */
+/* Midden: "Top 30 vakbedrijven"-badge, top-aligned — spiegelt .header-center
+   in pdf-template.ts (badge height 105px op A4; hier proportioneel kleiner). */
+.headCenter {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headBadge {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+/* Rechts: Schoon Straatje-logo — spiegelt .header-right img (width 220px op A4). */
 .headRight {
   text-align: right;
 }
 
-.brandName {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #002D63; /* SS-navy — vaste print-kleur */
+.headLogo {
+  display: block;
+  width: 104px;
+  height: auto;
 }
 
 /* ── Gouden accentbalk ─────────────────────────────────────────────────────

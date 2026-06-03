@@ -91,14 +91,29 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
 
           {/* ── Briefhoofd: crème header ────────────────────────────────
               Spiegelt .header in pdf-template.ts: background #FAFAF0,
-              "OFFERTE" navy #002D63 links, Nr. eronder. */}
+              "OFFERTE" navy #002D63 links, "Top 30 vakbedrijven"-badge in
+              het midden, Schoon Straatje-logo rechts (zelfde assets als de
+              echte PDF, proportioneel geschaald voor het telefoonvel). */}
           <header className={styles.head}>
             <div className={styles.headLeft}>
               <p className={styles.title}>OFFERTE</p>
               <p className={styles.docNr}>Nr. {data.nr}</p>
             </div>
+            <div className={styles.headCenter}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/schoon-straatje/top-30-vakbedrijven.png"
+                alt="Top 30 vakbedrijven"
+                className={styles.headBadge}
+              />
+            </div>
             <div className={styles.headRight}>
-              <p className={styles.brandName}>{SS_NAAM}</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/schoon-straatje/logo.png"
+                alt={SS_NAAM}
+                className={styles.headLogo}
+              />
             </div>
           </header>
 

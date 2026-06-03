@@ -436,6 +436,41 @@ export function OFullSheet({ open, onClose, title, children, foot }: OFullSheetP
     }
   }, [open])
 
+  // Terug-gebaar/knop sluit de sheet i.p.v. de hele flow te verlaten. Bij
+  // openen pushen we een history-entry (zelfde URL); popstate (terug) sluit
+  // dan alleen de sheet. Sluiten via de knop/backdrop consumeert onze entry
+  // weer via history.back() — de listener is op dat moment al verwijderd,
+  // dus dat triggert geen dubbele close. NB: we tracken de gepushte entry
+  // via een ref, níét via history.state — Next's gepatchte pushState bewaart
+  // custom state-objecten namelijk niet betrouwbaar.
+  const onCloseRef = useRef(onClose)
+  const pushedRef = useRef(false)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+  useEffect(() => {
+    if (!open) return
+    // Guard: maximaal één entry per open-cyclus (ook bij StrictMode dubbel-run).
+    if (!pushedRef.current) {
+      window.history.pushState(null, '')
+      pushedRef.current = true
+    }
+    const onPop = () => {
+      pushedRef.current = false
+      onCloseRef.current()
+    }
+    window.addEventListener('popstate', onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      // Dicht zonder pop (Sluit-knop/backdrop) → consumeer onze entry,
+      // anders blijft er een dode forward-entry in de history achter.
+      if (pushedRef.current) {
+        pushedRef.current = false
+        window.history.back()
+      }
+    }
+  }, [open])
+
   return (
     <>
       <div
