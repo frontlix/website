@@ -27,7 +27,7 @@ export async function loginAction(
   }
 
   // Check tenant_status, pending → wachtkamer, rejected → foutmelding,
-  // approved → /leads.
+  // approved → / (Overzicht).
   const { data: profile } = await supabase
     .from('dashboard_user_profiles')
     .select('tenant_status')
@@ -56,5 +56,6 @@ export async function loginAction(
   if (profile.tenant_status === 'pending') {
     return { redirectTo: '/wachtkamer' }
   }
-  return { redirectTo: '/leads' }
+  // Landen op het Overzicht (root van de app-host), niet op /leads.
+  return { redirectTo: '/' }
 }

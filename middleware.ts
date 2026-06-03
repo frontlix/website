@@ -103,10 +103,10 @@ export async function middleware(request: NextRequest) {
 
   const isPublic = PUBLIC_DASHBOARD_PATHS.has(pathname)
 
-  // Reeds ingelogd + op login/signup pagina → redirect naar /leads
+  // Reeds ingelogd + op login/signup pagina → redirect naar het Overzicht
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/leads'
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
