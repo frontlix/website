@@ -14,6 +14,25 @@ export function formatEuro(amount: number | null | undefined): string {
   return EURO_FORMATTER.format(amount).replace(/ /g, ' ')
 }
 
+/**
+ * Mensvriendelijke duur uit SECONDEN: "45s", "18m", "2u 6m", "1d 19u".
+ * Eén bron voor reactietijd-weergave (mobiel overzicht-tegel + delta-pill);
+ * voorheen toonde de overzicht-tegel de rauwe seconden ("153895 s").
+ */
+export function formatDuration(totalSeconds: number | null | undefined): string {
+  if (totalSeconds === null || totalSeconds === undefined) return '—'
+  const s = Math.max(0, Math.round(totalSeconds))
+  if (s < 60) return `${s}s`
+  const totalMin = Math.round(s / 60)
+  if (totalMin < 60) return `${totalMin}m`
+  const totalHours = Math.floor(totalMin / 60)
+  const minutes = totalMin % 60
+  if (totalHours < 24) return minutes === 0 ? `${totalHours}u` : `${totalHours}u ${minutes}m`
+  const days = Math.floor(totalHours / 24)
+  const hours = totalHours % 24
+  return hours === 0 ? `${days}d` : `${days}d ${hours}u`
+}
+
 export function formatDateNL(iso: string | null | undefined): string {
   if (!iso) return '—'
   const d = new Date(iso)

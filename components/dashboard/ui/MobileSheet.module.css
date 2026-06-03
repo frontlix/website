@@ -25,6 +25,14 @@
   flex-direction: column;
   box-shadow: var(--shadow-nav);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  /* GESLOTEN sheet mag GEEN klikken/scroll vangen. De sheet is fixed
+     (z-index 201) en wordt gesloten alleen via opacity:0 / off-screen
+     transform verborgen — zonder dit blijft 'ie een onzichtbare laag
+     bovenop de pagina die muiswiel + clicks opslokt. Op tablet+ (≥768px)
+     staat de gesloten modal gecentreerd middenin het scherm en bedekte
+     zo de inbox-chat, waardoor scrollen in het gesprek onmogelijk werd.
+     Sluit aan op het bestaande `aria-hidden={!open}` op de sheet. */
+  pointer-events: none;
 }
 
 /* Mobile: bottom-sheet (default anchor) of top-sheet (search/filters).
@@ -54,6 +62,9 @@
 }
 .sheetOpen {
   transform: translateY(0);
+  /* Open = weer interactief (geldt ook voor de ≥768px modal-variant,
+     die hieronder alleen transform/opacity overschrijft). */
+  pointer-events: auto;
 }
 
 /* Tablet+: gecentreerde modal */

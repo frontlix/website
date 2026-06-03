@@ -116,26 +116,29 @@
   cursor: not-allowed;
 }
 
-/* ── Dark mode ───────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  .root {
-    background: #1F2C33;
-  }
-  .pill {
-    background: #2A3942;
-    box-shadow: none;
-  }
-  .input {
-    color: #E9EDEF;
-  }
-  .input::placeholder {
-    color: #8696A0;
-  }
-  .sideBtn {
-    color: #8696A0;
-  }
-  .hint {
-    background: rgba(255, 255, 255, 0.05);
-    color: #F0B36B;
-  }
+/* ── Dark mode ───────────────────────────────────────────
+   Volgt de dashboard-toggle (`.dark` op .dashboard-theme-root), NIET de
+   OS-voorkeur. Voorheen `@media (prefers-color-scheme: dark)` waardoor de
+   composer als enige op de systeem-instelling reageerde i.p.v. de
+   in-app-thema-knop — dat gaf inconsistente dark mode. Zelfde kleuren,
+   andere trigger. */
+:global(.dark) .root {
+  background: #1f2c33;
+}
+:global(.dark) .pill {
+  background: #2a3942;
+  box-shadow: none;
+}
+:global(.dark) .input {
+  color: #e9edef;
+}
+:global(.dark) .input::placeholder {
+  color: #8696a0;
+}
+:global(.dark) .sideBtn {
+  color: #8696a0;
+}
+:global(.dark) .hint {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f0b36b;
 }

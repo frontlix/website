@@ -30,8 +30,8 @@ const PERIODS: ReadonlyArray<{ k: ExportPeriod; l: string }> = [
 
 /**
  * Modal voor data-export. Geactiveerd via ?export=1 in de URL. Bij submit:
- * - leads + CSV → bestaande /api/dashboard/export/leads-csv route
- * - alle andere combinaties: nog niet bedraad, toont een vriendelijke "binnenkort"
+ * - leads/offertes (csv/xlsx/pdf) → generieke /api/dashboard/export route
+ * - reviews → nog geen data-tabel, toont een vriendelijke "binnenkort"
  */
 export function ExportsModal() {
   const router = useRouter()
@@ -54,12 +54,16 @@ export function ExportsModal() {
   }
 
   const download = () => {
-    if (type === 'leads' && format === 'csv') {
-      window.location.href = `/api/dashboard/export/leads-csv?period=${period}`
-      close()
+    // Reviews heeft nog geen data-tabel in de database → niet exporteerbaar.
+    if (type === 'reviews') {
+      setInfo(
+        'Reviews-export komt binnenkort — er is nog geen reviews-data in de database om te exporteren. Leads en Offertes kun je wél als CSV, Excel of PDF downloaden.',
+      )
       return
     }
-    setInfo('Deze export-combinatie komt binnenkort beschikbaar. Voor nu kan je leads als CSV downloaden.')
+    // Leads + Offertes in elk formaat via de generieke export-route.
+    window.location.href = `/api/dashboard/export?type=${type}&format=${format}&period=${period}`
+    close()
   }
 
   return (

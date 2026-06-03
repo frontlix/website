@@ -16,6 +16,16 @@ body {
   overscroll-behavior: none;
 }
 
+/* Gedeelde theme-root: omvat de desktop- én mobiele chrome-boom. De
+   ThemeToggle zet hier `.dark` op (zie ThemeToggle.tsx). `display:contents`
+   maakt de wrapper layout-transparant — z'n kinderen gedragen zich als
+   directe kinderen van de parent, dus geen layout-impact. Custom
+   properties (de --color-* en alias-tokens) erven gewoon door display:contents
+   heen, zodat dark mode naar de zichtbare boom cascadeert. */
+.dashboard-theme-root {
+  display: contents;
+}
+
 /* ── Utility flex helpers ──────────────────────────────── */
 .dash-row {
   display: flex;

@@ -36,6 +36,15 @@ export function leadStage(l: RawLead): MobileLeadStage {
   }
 }
 
+/**
+ * Of een lead "urgent" is: wacht op eigenaar-review of de klus is
+ * geblokkeerd. Gedeeld tussen de mobile card-mapping en de desktop
+ * "Alleen urgent"-filter zodat beide dezelfde definitie gebruiken.
+ */
+export function isLeadUrgent(l: RawLead): boolean {
+  return Boolean(l.pending_eigenaar_review) || Boolean(l.klus_geblokkeerd)
+}
+
 /** Bouw het dienst-label: "Hoofdcategorie · sub1 + sub2" of alleen hoofd. */
 function dienstLabel(l: RawLead): string {
   const subs = Array.isArray(l.sub_diensten) ? l.sub_diensten.filter(Boolean) : []
@@ -68,7 +77,7 @@ export function mapLeadToCard(l: RawLead, now: number = Date.now()): MobileLeadC
     binnen: shortTimeAgo(l.bijgewerkt ?? l.aangemaakt, now),
     datum: datumLabel(l),
     bron: l.kanaal === 'web' ? 'form' : 'wa',
-    urgent: Boolean(l.pending_eigenaar_review) || Boolean(l.klus_geblokkeerd),
+    urgent: isLeadUrgent(l),
     surfaceContext: botStatusForFase(l.gesprek_fase),
   }
 }

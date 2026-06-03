@@ -84,6 +84,16 @@ export function OpeningTemplateEditor({
     return () => clearTimeout(t)
   }, [savedFlash])
 
+  // Auto-grow: textarea-hoogte volgt de inhoud (zie RemindersEditor) — geen
+  // interne scrollbalk die het muiswiel afvangt, hele tekst zichtbaar +
+  // overal klikbaar. Reageert ook op tab-wissel (andere draft → ander `text`).
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = `${ta.scrollHeight}px`
+  }, [text])
+
   const setText = (next: string) => {
     setDrafts((prev) => ({ ...prev, [activeKey]: next }))
     if (error) setError(null)

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from 'react'
 import { X } from 'lucide-react'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import styles from './MobileSheet.module.css'
 
 export interface MobileSheetProps {
@@ -32,6 +33,10 @@ export function MobileSheet({
   const onCloseRef = useRef(onClose)
   const titleId = useId()
 
+  // Body-scroll lock — gecentraliseerd + reference-counted, zodat gestapelde
+  // overlays elkaars lock niet vroegtijdig vrijgeven. Lockt alleen bij `open`.
+  useBodyScrollLock(open)
+
   // Houd de laatste onClose in een ref zodat we 'm niet als effect-dep
   // hoeven te listen — voorkomt re-mounts van listener + scroll-lock
   // bij elke parent-rerender met inline arrow `onClose={() => ...}`.
@@ -46,18 +51,11 @@ export function MobileSheet({
       if (e.key === 'Escape' && dismissible) close()
     }
     document.addEventListener('keydown', onKey)
-    // Body-scroll lock voorkomt dat de achtergrond scrolt terwijl
-    // de sheet openstaat. We restoren naar lege string (i.p.v. de
-    // gecapteerde prev-value) zodat een stack van sheets nooit body
-    // permanent gelocked achterlaat — was de oorzaak van een "scroll
-    // loopt vast"-bug op iOS Safari.
-    document.body.style.overflow = 'hidden'
     // Initial focus naar de sheet zodat keyboard-gebruikers direct
     // binnen de dialog landen (en Tab in de inhoud blijft).
     sheetRef.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
     }
   }, [open, dismissible])
 

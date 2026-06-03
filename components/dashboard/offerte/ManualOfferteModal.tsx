@@ -23,6 +23,7 @@ import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-action
 import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { StepStart } from './StepStart'
 import { StepKlant, isValidEmail } from './StepKlant'
 import { StepWerk } from './StepWerk'
@@ -103,15 +104,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const [werkAdresNotFound, setWerkAdresNotFound] = useState(false)
   const [factuurAdresNotFound, setFactuurAdresNotFound] = useState(false)
 
-  // Lock scroll while modal open — restore naar lege string i.p.v.
-  // gecapteerde prev-value zodat overlay-stacking nooit een permanente
-  // body-lock achterlaat.
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
+  // Lock scroll terwijl de modal open is — gecentraliseerd + reference-counted
+  // (de modal mount alleen wanneer open, dus `true`). De body blijft zo gelockt
+  // zolang er nóg een overlay (bv. de dagrapport-drawer) onder openstaat.
+  useBodyScrollLock(true)
 
   // matchMedia-luistraar voor mobile-viewport. Triggert ook bij rotate
   // of resize tijdens een open modal — header/footer/progress passen

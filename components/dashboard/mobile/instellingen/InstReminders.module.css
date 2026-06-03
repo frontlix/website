@@ -19,6 +19,10 @@
   background: var(--color-surface);
   border-radius: 14px;
   padding: 14px;
+}
+
+/* Bovenste rij: badge + info + dag-stepper */
+.topRow {
   display: flex;
   gap: 13px;
   align-items: center;
@@ -119,4 +123,60 @@
   margin-top: 3px;
   font-size: 11px;
   color: var(--color-danger);
+}
+
+/* ── Inklapbare berichttekst-editor ──────────────────────────────────────── */
+.editToggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.editToggle > svg:first-child {
+  color: var(--color-text-soft);
+  flex-shrink: 0;
+}
+
+/* Badge met aantal aanvragen voor deze reminder */
+.aanvraagDot {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+}
+
+.chevron {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  transition: transform 0.18s ease;
+}
+.chevronOpen {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  transition: transform 0.18s ease;
+  transform: rotate(180deg);
+}
+
+/* Editor-body — zachte scheiding boven het gedeelde template-blok. */
+.editBody {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
 }

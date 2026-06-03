@@ -1,0 +1,359 @@
+/* InstTemplateBlock — gedeelde mobiele template-editor (opening + reminders).
+   Bewerkbare textarea, variabele-chips, WA-preview, submit + aanvragen-historie. */
+
+.block {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  margin-bottom: 6px;
+}
+
+/* Bewerkbare textarea — font-size 16px voorkomt iOS auto-zoom bij focus.
+   touch-action: manipulation onderdrukt dubbeltik-zoom. */
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  font-family: inherit;
+  background: var(--color-surface);
+  box-sizing: border-box;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+.textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* Teller + herstel-knop op één rij onder de textarea. */
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 6px 2px 0;
+}
+.counter {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Variabelen-label + monospace chips */
+.varsLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+.varsHint {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.pill {
+  padding: 6px 11px;
+  border-radius: 99px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.pill:active {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+/* WhatsApp-chatpaneel (gelijk aan InstOpening) */
+.chat {
+  background: var(--wa-chat-bg);
+  border-radius: 14px;
+  padding: 14px;
+}
+.datePill {
+  width: fit-content;
+  margin: 0 auto 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #54656f;
+}
+.outBubble {
+  background: var(--wa-out-bg);
+  border-radius: 8px;
+  border-top-right-radius: 2px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--wa-in-fg);
+  white-space: pre-wrap;
+  margin-left: auto;
+  max-width: 92%;
+  width: fit-content;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+}
+.bubbleMeta {
+  font-size: 9px;
+  color: var(--wa-meta);
+  text-align: right;
+  margin-top: 4px;
+}
+.tick {
+  color: var(--wa-tick-blue);
+}
+
+/* Submit-rij: status links, knop rechts */
+.submitRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.error {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-danger);
+  margin-right: auto;
+}
+.flashOk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-success);
+  margin-right: auto;
+}
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  touch-action: manipulation;
+}
+.submitBtn:disabled {
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  cursor: default;
+}
+
+/* ── Aanvragen-historie ──────────────────────────────────────────────────── */
+.aanvragenBox {
+  margin-top: 18px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+}
+.aanvragenTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  margin-bottom: 8px;
+}
+.aanvragenList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aanvraagBlock {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.aanvraagHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.aanvraagDate {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  flex-shrink: 0;
+}
+.aanvraagToggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.chevron {
+  transition: transform 0.18s ease;
+}
+.chevronOpen {
+  transition: transform 0.18s ease;
+  transform: rotate(180deg);
+}
+
+/* Status-pill in vier tonen */
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status_amber {
+  color: var(--color-warning-strong);
+  background: var(--color-warning-bg);
+}
+.status_blue {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.status_green {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+.status_red {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+/* Notitie van Frontlix — getoond zodra gevuld, ongeacht expand-state */
+.aanvraagNotitie {
+  display: flex;
+  gap: 7px;
+  margin: 0 12px 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.notitie_amber {
+  background: var(--color-warning-bg);
+  color: var(--color-text);
+}
+.notitie_blue {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-text);
+}
+.notitie_green {
+  background: var(--color-success-bg);
+  color: var(--color-text);
+}
+.notitie_red {
+  background: var(--color-danger-bg);
+  color: var(--color-text);
+}
+.notitieIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-text-soft);
+}
+.notitieText {
+  min-width: 0;
+}
+.notitieLabel {
+  display: block;
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 1px;
+}
+
+/* Uitgeklapte body: voorgestelde tekst + acties */
+.aanvraagBody {
+  padding: 0 12px 12px;
+}
+.aanvraagText {
+  margin: 0 0 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--color-surface-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.aanvraagActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.cancelHint {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}

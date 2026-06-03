@@ -83,7 +83,10 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   outline: none;
-  resize: vertical;
+  /* Auto-grow (hoogte gezet via JS) → geen interne scrollbalk die het
+     muiswiel afvangt; resize:none want JS beheert de hoogte. */
+  resize: none;
+  overflow-y: hidden;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .textarea:focus {

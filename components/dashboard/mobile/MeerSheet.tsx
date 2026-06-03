@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { BarChart3, Star, Truck } from 'lucide-react'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
@@ -15,7 +16,13 @@ import styles from './MeerSheet.module.css'
  * Animatie: backdrop fade + sheet translateY(110% → 0) over --dur-sheet
  * met --ease-ios. Bij `open=false` returnen we null zodat de sheet niet
  * in de boom blijft hangen.
+ *
+ * Sluiten kan op drie manieren: "Sluit"-knop, tik buiten het vak, of de
+ * sheet naar beneden slepen (swipe-to-dismiss, zie de touch-handlers).
  */
+
+// Sleep-afstand (px) waarboven we bij loslaten de sheet sluiten.
+const CLOSE_THRESHOLD = 90
 
 type Props = {
   open: boolean
@@ -41,7 +48,62 @@ export function MeerSheet({
   // Lock body-scroll zolang de sheet zichtbaar is. Hook is no-op bij `false`.
   useBodyScrollLock(open)
 
+  // ── Swipe-to-dismiss ──────────────────────────────────────────────
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const startYRef = useRef(0)
+  const draggingRef = useRef(false)
+  const [dragY, setDragY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  // Na de open-animatie schakelen we naar transform-via-inline: de CSS-
+  // animatie staat op fill:forwards en zou onze sleep-transform anders
+  // blijven overschrijven (animaties winnen van inline styles).
+  const [entered, setEntered] = useState(false)
+
+  // Reset de sleep-state telkens als de sheet (opnieuw) opent, zodat een
+  // vorige sleep niet "blijft hangen" bij de volgende keer openen (de
+  // component-instance blijft gemount; alleen de render returnt null).
+  useEffect(() => {
+    if (open) {
+      setDragY(0)
+      setIsDragging(false)
+      setEntered(false)
+    }
+  }, [open])
+
   if (!open) return null
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    // Alleen slepen wanneer de inhoud bovenaan staat — anders is de
+    // neerwaartse beweging gewoon scrollen binnen de sheet.
+    if ((bodyRef.current?.scrollTop ?? 0) > 0) return
+    // Zodra je begint te slepen is de open-animatie sowieso voorbij; forceer
+    // de overstap naar inline-transform (zekerder dan enkel op animationEnd
+    // vertrouwen, dat niet altijd vuurt) zodat de sheet de vinger écht volgt.
+    setEntered(true)
+    startYRef.current = e.touches[0].clientY
+    draggingRef.current = true
+    setIsDragging(true)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!draggingRef.current) return
+    const delta = e.touches[0].clientY - startYRef.current
+    // Alleen naar beneden volgen; opwaartse beweging negeren.
+    setDragY(delta > 0 ? delta : 0)
+  }
+
+  const onTouchEnd = () => {
+    if (!draggingRef.current) return
+    draggingRef.current = false
+    setIsDragging(false)
+    if (dragY > CLOSE_THRESHOLD) {
+      setDragY(0)
+      onClose()
+    } else {
+      // Niet ver genoeg → terugveren naar de rustpositie (CSS-transition).
+      setDragY(0)
+    }
+  }
 
   return (
     <div className={styles.root} role="dialog" aria-modal="true" aria-label="Meer opties">
@@ -50,7 +112,23 @@ export function MeerSheet({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className={styles.sheet}>
+      <div
+        className={`${styles.sheet} ${entered ? styles.sheetEntered : ''}`}
+        style={{
+          transform: `translateY(${dragY}px)`,
+          // Tijdens het slepen géén transition (volgt de vinger direct);
+          // bij loslaten valt 'ie terug op de CSS-transition (terugveren).
+          transition: isDragging ? 'none' : undefined,
+        }}
+        onAnimationEnd={(e) => {
+          // Alleen de open-animatie van de sheet zelf telt (niet die van
+          // eventuele kinderen die mee-bubbelen).
+          if (e.target === e.currentTarget) setEntered(true)
+        }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <span className={styles.handle} aria-hidden="true" />
 
         <div className={styles.header}>
@@ -60,7 +138,7 @@ export function MeerSheet({
           </button>
         </div>
 
-        <div className={styles.body}>
+        <div className={styles.body} ref={bodyRef}>
           <ul className={styles.rowList}>
             <li>
               <Link href="/reviews" className={styles.row} onClick={onClose}>

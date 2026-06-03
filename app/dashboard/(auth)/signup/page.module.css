@@ -40,7 +40,7 @@
   border-radius: 10px;
   background: var(--color-bg);
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text);
   font-weight: 400;
   transition: border-color 0.15s, box-shadow 0.15s;

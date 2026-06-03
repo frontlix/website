@@ -134,6 +134,18 @@ function ReminderCard({
     return () => clearTimeout(t)
   }, [daysFlash])
 
+  // Auto-grow: de textarea-hoogte volgt de inhoud. Zonder dit krijgt een
+  // langere reminder een eigen scrollbalk die (a) het muiswiel afving zodat
+  // de pagina niet scrollde, en (b) maar een deel van het bericht toonde —
+  // waardoor je in het kleine vak moest scrollen en precies op de tekst
+  // moest klikken. Nu is het hele bericht zichtbaar én overal klikbaar.
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = `${ta.scrollHeight}px`
+  }, [tekst])
+
   const isChanged = tekst !== reminder.default
 
   const insertVariable = (v: string) => {

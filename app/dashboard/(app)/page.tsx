@@ -20,6 +20,7 @@ import {
   avgReactietijdMs,
   leadsPerDag,
 } from '@/lib/dashboard/stats-queries'
+import { formatDuration } from '@/lib/dashboard/format'
 import { getAppointmentsForMonth } from '@/lib/dashboard/agenda-queries'
 import { getLeadsList, leadsArrivedTodayAndTomorrow } from '@/lib/dashboard/lead-queries'
 import { getRecentInboundMessages } from '@/lib/dashboard/activity-feed'
@@ -555,7 +556,8 @@ function deltaSeconds(curr: number, prev: number): { value: string; positive: bo
   if (prev <= 0 || curr === prev) return undefined
   const diff = curr - prev
   const sign = diff > 0 ? '+' : '−'
-  return { value: `${sign}${Math.abs(diff)}s`, positive: diff < 0 }
+  // Mensvriendelijke duur ("+2u 6m") i.p.v. rauwe seconden ("+153894s").
+  return { value: `${sign}${formatDuration(Math.abs(diff))}`, positive: diff < 0 }
 }
 
 /**

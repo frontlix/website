@@ -20,6 +20,10 @@
 /* Tinted tag pill — bg 12% tint, fg 100% tint via CSS custom property.
    Mirrors the handoff's hex+'20' alpha trick using color-mix. */
 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
   padding: 4px 12px;
   border-radius: 99px;
   background: color-mix(in srgb, var(--tint) 12%, transparent);
@@ -88,7 +92,7 @@
   padding: 11px 12px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  font-size: 14.5px;
+  font-size: 16px;
   font-family: inherit;
   color: var(--color-text);
   background: var(--color-surface-2);
@@ -112,6 +116,129 @@
   transition: opacity 0.15s;
 }
 .addConfirm:disabled {
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  cursor: default;
+}
+
+/* ── Nieuwe-tag form met kleur- + icoonkiezer ───────────────────── */
+.addCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+/* In de kolom-layout mag het naamveld niet verticaal uitrekken. */
+.addCard .addInput {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pickerLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  margin-top: 2px;
+}
+
+/* Kleur-swatches (+ "geen kleur") */
+.swatchRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+.swatchClear {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px dashed var(--color-border-strong, var(--color-border));
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+/* Actieve swatch: donkere ring met surface-inset zodat de kleur eronder blijft. */
+.swatchActive {
+  border-color: var(--color-text);
+  box-shadow: inset 0 0 0 2px var(--color-surface);
+}
+
+/* Icoon-grid (+ "geen icoon") — auto-fill zodat het op elke breedte netjes wrapt */
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 8px;
+}
+.iconBtn {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.iconBtnActive {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+/* Actie-rij: annuleren + aanmaken */
+.addActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.cancelBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.createBtn {
+  flex: 2;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.createBtn:disabled {
   background: color-mix(in srgb, var(--color-primary) 40%, transparent);
   cursor: default;
 }

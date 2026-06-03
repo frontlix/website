@@ -21,6 +21,7 @@ import type {
 import type { TagWithCount } from '@/lib/dashboard/tags-queries'
 import type { PricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
+import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import styles from './MobileInstellingen.module.css'
 
 // Desktop gebruikt iets andere sectie-keys in de URL; map die naar onze keys
@@ -54,6 +55,8 @@ type Props = {
   tags: TagWithCount[]
   /** Notificatie-voorkeuren uit notification_preferences. */
   notifPrefs: NotificationPreferenceRow[]
+  /** Template-aanvragen (opening + reminders) voor status-historie. */
+  templateAanvragen: TemplateAanvraag[]
   /**
    * Rauwe `?section=`-param (server-side doorgegeven). Alleen als die expliciet
    * aanwezig is openen we het detail direct — anders zou elk bezoek op 'bedrijf'
@@ -70,6 +73,7 @@ export function MobileInstellingen({
   team,
   tags,
   notifPrefs,
+  templateAanvragen,
   initialSection,
 }: Props) {
   // Deeplink: ?section= opent direct het bijbehorende detail (bv. de
@@ -110,6 +114,7 @@ export function MobileInstellingen({
           <InstOpening
             bedrijfsnaam={tenant?.bedrijfsnaam ?? null}
             chatbot={tenant?.chatbot_naam ?? null}
+            aanvragen={templateAanvragen}
           />
         )}
         {view === 'reminders' && (
@@ -119,6 +124,7 @@ export function MobileInstellingen({
               2: tenant?.reminder_dag_2 ?? 5,
               3: tenant?.reminder_dag_3 ?? 8,
             }}
+            aanvragen={templateAanvragen}
           />
         )}
         {view === 'notif' && (

@@ -40,6 +40,8 @@
      volledig onder beeld blijft. */
   transform: translateY(110%);
   animation: slideUp var(--dur-sheet) var(--ease-ios) forwards;
+  /* will-change houdt het slepen vloeiend op mobiel. */
+  will-change: transform;
 }
 
 @keyframes slideUp {
@@ -47,8 +49,16 @@
   to   { transform: translateY(0); }
 }
 
+/* Na de open-animatie: animatie uit zodat de inline sleep-transform werkt,
+   en een transition zodat de sheet terugveert bij loslaten (niet ver genoeg). */
+.sheetEntered {
+  animation: none;
+  transition: transform var(--dur-sheet) var(--ease-ios);
+}
+
 .handle {
-  /* Drag-handle is puur visueel, geen drag-logica (YAGNI). */
+  /* Visueel sleep-handvat; de swipe-to-dismiss-logica zit in MeerSheet.tsx
+     (touch-handlers op de hele sheet). */
   display: block;
   width: 40px;
   height: 4px;
@@ -144,6 +154,17 @@
 .rowIconBlue {
   background: rgba(26, 86, 255, 0.12);
   color: var(--color-primary);
+}
+
+/* Dark mode: de donkere amber/violet accenten zakken weg op een donkere
+   achtergrond (te lage contrast). Alleen in .dark helderder zetten —
+   light mode blijft ongewijzigd. De tint-backgrounds (rgba) werken in
+   beide modi. */
+:global(.dark) .rowIconAmber {
+  color: #fbbf24;
+}
+:global(.dark) .rowIconViolet {
+  color: #a78bfa;
 }
 
 .rowText {

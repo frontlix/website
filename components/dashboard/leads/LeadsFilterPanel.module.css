@@ -1,0 +1,202 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Aantal-badge op de Filters-knop */
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 2px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Popover-paneel ─────────────────────────────────────── */
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 100;
+  width: 280px;
+  padding: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card-hov);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* ── Bron: segmented row ────────────────────────────────── */
+.segRow {
+  display: flex;
+  gap: 6px;
+}
+
+.seg {
+  flex: 1;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.seg:hover {
+  border-color: var(--card-hover-border);
+  color: var(--fg);
+}
+
+.seg[data-on='true'] {
+  background: rgba(26, 86, 255, 0.10);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Urgent toggle ──────────────────────────────────────── */
+.urgentBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 10px;
+  font: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.urgentBtn[data-on='true'] {
+  border-color: var(--primary);
+  background: rgba(26, 86, 255, 0.08);
+}
+
+.urgentLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.switch {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-switch-track);
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.switch[data-on='true'] {
+  background: var(--primary);
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: left 0.15s;
+}
+
+.knob[data-on='true'] {
+  left: 18px;
+}
+
+/* ── Sorteer-lijst ──────────────────────────────────────── */
+.sortList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sortItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.sortItem:hover {
+  background: var(--surface);
+}
+
+.sortItem[data-on='true'] {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.clearBtn {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.clearBtn:hover:not(:disabled) {
+  background: var(--danger-bg);
+}
+
+.clearBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -169,12 +169,13 @@
   --whatsapp:        var(--color-whatsapp);
   --backdrop:        var(--color-backdrop);
 
-  /* WhatsApp chat-palette (alleen mobiele Inbox-chat) — light */
+  /* WhatsApp chat-palette (mobiele + desktop Inbox/lead-chat) — light */
   --wa-header:        #075E54;
   --wa-chat-bg:       #ECE5DD;
   --wa-in-bg:         #FFFFFF;
   --wa-in-fg:         #111B21;
   --wa-out-bg:        #DCF8C6;
+  --wa-out-fg:        #111B21;
   --wa-surface-bg:    #D7EEFB;
   --wa-surface-fg:    #0B3F5C;
   --wa-surface-accent:#0C7AB8;
@@ -208,6 +209,31 @@
   --color-card-hover-border: rgba(26, 86, 255, 0.40);
   --color-track-bg:        rgba(255, 255, 255, 0.05);
 
+  /* ── KRITIEK: alias-tokens HER-declareren binnen .dark ──
+     De unprefixed aliassen (--bg, --surface, --fg, …) worden in :root
+     éénmalig naar hun lichte --color-* waarde uitgerekend en zó
+     doorgeërfd. Een .dark die alleen de --color-* basis-tokens
+     overschrijft verandert die reeds-uitgerekende aliassen NIET meer
+     (CSS lost var() in een custom property op bij de declaratie, niet
+     bij gebruik). Daarom moeten we de aliassen hier opnieuw declareren
+     zodat ze binnen .dark naar de DONKERE --color-* waarden oplossen.
+     Zonder dit blijft het hele dashboard (dashboard.css gebruikt alleen
+     aliassen) licht en zie je enkel diepere schaduwen = "wat meer
+     contrast". NIET verwijderen. */
+  --bg:                var(--color-bg);
+  --surface:           var(--color-surface);
+  --surface-2:         var(--color-surface-2);
+  --card-bg:           var(--color-card-bg);
+  --fg:                var(--color-text);
+  --fg-muted:          var(--color-text-muted);
+  --fg-soft:           var(--color-text-soft);
+  --border:            var(--color-border);
+  --border-strong:     var(--color-border-strong);
+  --card-hover-border: var(--color-card-hover-border);
+  --card-hover-bg:     var(--color-card-hover-bg);
+  --track-bg:          var(--color-track-bg);
+  --backdrop:          var(--color-backdrop);
+
   --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.25), 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-card-hov: 0 4px 12px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.5);
   --color-backdrop:  rgba(0, 0, 0, 0.6);  /* iets dieper in dark mode */
@@ -224,11 +250,14 @@
   --color-photo-stripe-a: #2A2A2D;
   --color-photo-stripe-b: #323237;
 
-  --wa-header:        #1F2C33;
+  /* Header bewust WA-groen houden in dark mode (merk-herkenbaarheid —
+     keuze gebruiker), terwijl de canvas/bubbels wél donker worden. */
+  --wa-header:        #075E54;
   --wa-chat-bg:       #0B141A;
   --wa-in-bg:         #1F2C33;
   --wa-in-fg:         #E9EDEF;
   --wa-out-bg:        #005C4B;
+  --wa-out-fg:        #E9EDEF;
   --wa-surface-bg:    #103E5C;
   --wa-surface-fg:    #A9D6F5;
   --wa-meta:          #8696A0;

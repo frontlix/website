@@ -6,12 +6,18 @@ import { Moon, Sun } from 'lucide-react'
 const STORAGE_KEY = 'frontlix-dashboard-theme'
 
 /**
- * Dark-mode toggle voor het dashboard. Schakelt `.dark` op `.shell` div
- * (niet op <body> — anders raakt het de marketing-site).
+ * Dark-mode toggle voor het dashboard. Schakelt `.dark` op de
+ * `.dashboard-theme-root` wrapper (in de dashboard-layout) — die wrapper
+ * omvat ZOWEL de desktop- als de mobiele chrome-boom, zodat de toggle op
+ * beide viewports werkt. (Niet op <body> — anders raakt het de
+ * marketing-site.)
  *
- * Persisteert keuze in localStorage. Past klasse direct toe op de
- * dichtstbijzijnde `.density-cozy`/`.density-compact`/`.density-roomy`
- * shell-wrapper — die wrapper exporteert de tokens-context.
+ * Eerder targette dit de `.density-*` shell-wrapper, maar die zit alléén
+ * in de desktop-boom; op mobiel staat die boom op `display:none` (nog wél
+ * in de DOM) waardoor `.dark` op de onzichtbare boom belandde en de
+ * zichtbare mobiele UI niets deed. De gedeelde root lost dat op.
+ *
+ * Persisteert keuze in localStorage.
  */
 export function ThemeToggle() {
   const [dark, setDark] = useState(false)
@@ -46,11 +52,11 @@ export function ThemeToggle() {
 }
 
 function applyDarkClass(dark: boolean) {
-  // Zoek de shell-wrapper (eerste element met density-* klasse).
-  const shell = document.querySelector(
-    '.density-cozy, .density-compact, .density-roomy',
-  )
-  if (!shell) return
-  if (dark) shell.classList.add('dark')
-  else shell.classList.remove('dark')
+  // Gedeelde theme-root die zowel de desktop- als de mobiele chrome
+  // omvat (zie dashboard-layout). Zo cascadeert `.dark` naar welke boom
+  // ook zichtbaar is op het huidige viewport.
+  const root = document.querySelector('.dashboard-theme-root')
+  if (!root) return
+  if (dark) root.classList.add('dark')
+  else root.classList.remove('dark')
 }

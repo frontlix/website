@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { X, ArrowUp, ArrowDown, Minus, MessageSquare, Send, Clock } from 'lucide-react'
 import type { DagrapportData } from '@/lib/dashboard/dagrapport-queries'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import styles from './DagrapportDrawer.module.css'
 
 /**
@@ -25,19 +26,18 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
 
-  // Escape sluit de drawer + body-scroll lock zodat de underlying page
-  // niet meescrollt terwijl we binnen het paneel scrollen.
+  // Body-scroll lock terwijl de drawer open is — gecentraliseerd +
+  // reference-counted (de drawer mount alleen bij ?dagrapport=1, dus `true`).
+  useBodyScrollLock(true)
+
+  // Escape sluit de drawer.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', onKey)
-    // Restore naar lege string i.p.v. gecapteerde prev-value zodat een
-    // stack van overlays nooit body permanent gelocked achterlaat.
-    document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
     }
     // close is stable per render maar referentieel niet — daarom geen
     // dependency-array uitbreiden; effect runt alleen bij mount/unmount.

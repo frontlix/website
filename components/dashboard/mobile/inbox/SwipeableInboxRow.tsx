@@ -24,16 +24,18 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
   const { ref, open, reset, movedRef } = useSwipeReveal()
 
   const tel = convo.telefoon
-  // WhatsApp-link: strip non-cijfers; NL-nummers (leidende 0) → 31-prefix
-  const waTel = (() => {
-    const d = (tel ?? '').replace(/\D/g, '')
-    return d.startsWith('0') ? `31${d.slice(1)}` : d
-  })()
 
   function handleTap() {
     // Bewogen tijdens drag, of rij staat uitgeschoven → terugsnappen i.p.v. navigeren.
     if (movedRef.current) { reset(); return }
     if (open !== 0) { reset(); return }
+    router.push(`/inbox?lead=${convo.leadId}`)
+  }
+
+  // WA-swipe-actie: open het gesprek IN de webapp (zelfde bestemming als een tik
+  // op de rij) i.p.v. de externe WhatsApp-app. reset() klapt de swipe-lade dicht.
+  function openConversation() {
+    reset()
     router.push(`/inbox?lead=${convo.leadId}`)
   }
 
@@ -68,20 +70,19 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
           </svg>
           <span className={styles.actionLabel}>Bel</span>
         </a>
-        <a
-          href={`https://wa.me/${waTel}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={openConversation}
           className={`${styles.actionBtn} ${styles.actionWa}`}
           tabIndex={open === 1 ? 0 : -1}
-          aria-label={`WhatsApp ${convo.naam}`}
+          aria-label={`Open WhatsApp-gesprek met ${convo.naam}`}
         >
           {/* WhatsApp-icoon */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2z"/>
           </svg>
           <span className={styles.actionLabel}>WA</span>
-        </a>
+        </button>
       </div>
 
       {/* Rechter actie-lade: Archief (verschijnt bij swipe links) */}

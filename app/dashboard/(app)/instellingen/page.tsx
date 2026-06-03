@@ -93,9 +93,11 @@ export default async function InstellingenPage({
     // section==='prijzen'; de meerkost is één begrensde leads-query.
     getPricingImpactBaseline(30),
     getTagsWithCounts(),
-    section === 'opening' || section === 'reminders'
-      ? getRecentTemplateAanvragen(20)
-      : Promise.resolve([] as TemplateAanvraag[]),
+    // Template-aanvragen altijd ophalen: de mobiele Opening/Reminders-schermen
+    // worden client-side geopend (zonder ?section=), dus we kunnen server-side
+    // niet weten of ze nodig zijn. Lichte query (limit 20) — zelfde afweging als
+    // de pricing-baseline hierboven.
+    getRecentTemplateAanvragen(20),
     getAllPrefs(),
   ])
 
@@ -161,6 +163,7 @@ export default async function InstellingenPage({
           team={team}
           tags={tags}
           notifPrefs={notifPrefs}
+          templateAanvragen={templateAanvragen}
           initialSection={sp.section}
         />
       </div>

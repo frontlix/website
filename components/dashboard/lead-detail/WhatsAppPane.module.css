@@ -11,8 +11,8 @@
 }
 
 .header {
-  /* Donkergroene WhatsApp Web-stijl, brandt door */
-  background: #075E54;
+  /* Donkergroene WhatsApp Web-stijl. Token blijft ook in dark mode groen. */
+  background: var(--wa-header);
   color: white;
   padding: 12px 16px;
   display: flex;

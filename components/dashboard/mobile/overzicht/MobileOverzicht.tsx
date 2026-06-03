@@ -13,6 +13,7 @@ import { WatNuView } from '../drilldowns/WatNuView'
 import { VandaagView } from '../drilldowns/VandaagView'
 import { ActiviteitView } from '../drilldowns/ActiviteitView'
 import type { NotifItem } from '@/components/dashboard/NotificationPanel'
+import { formatDuration } from '@/lib/dashboard/format'
 import styles from './MobileOverzicht.module.css'
 
 /**
@@ -99,8 +100,8 @@ export function MobileOverzicht({ data }: Props) {
       icon: <MiniKpiIcons.Clock size={18} />,
       iconTone: 'amber',
       label: 'Reactietijd',
-      value: String(data.miniKpis.reactietijd.value),
-      unit: 's',
+      // Mensvriendelijke duur ("1d 19u") i.p.v. rauwe seconden + "s".
+      value: formatDuration(data.miniKpis.reactietijd.value),
       delta: data.miniKpis.reactietijd.delta,
     },
     {

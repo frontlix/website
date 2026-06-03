@@ -96,7 +96,7 @@ const LIST_COLUMNS = [
  */
 export async function getLeadsList(
   filters?: LeadsFilters,
-  options: { archived?: boolean } = {},
+  options: { archived?: boolean; limit?: number } = {},
 ): Promise<LeadListItem[]> {
   const supabase = await getDashboardSupabase()
 
@@ -172,7 +172,7 @@ export async function getLeadsList(
 
   query = query
     .order('aangemaakt', { ascending: false })
-    .limit(100)
+    .limit(options.limit ?? 100)
 
   const { data, error } = await query
 

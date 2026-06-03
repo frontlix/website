@@ -1,21 +1,36 @@
 import { cookies } from 'next/headers'
-import { FileText, Filter, Plus } from 'lucide-react'
+import { FileText, Plus } from 'lucide-react'
 import { getLeadsList, countAllLeads, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
 import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
 import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
 import { LeadsFilterTabs } from '@/components/dashboard/leads/LeadsFilterTabs'
 import { WebChatToggle } from '@/components/dashboard/leads/WebChatToggle'
+import { LeadsFilterPanel } from '@/components/dashboard/leads/LeadsFilterPanel'
 import { MobileFiltersSheet } from '@/components/dashboard/leads/MobileFiltersSheet'
 import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { MobileLeads } from '@/components/dashboard/mobile/leads/MobileLeads'
-import { mapLeadToCard } from '@/components/dashboard/mobile/leads/lead-mappers'
+import {
+  mapLeadToCard,
+  leadStage,
+  isLeadUrgent,
+  type MobileLeadStage,
+} from '@/components/dashboard/mobile/leads/lead-mappers'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
 type FilterKey = 'all' | 'in_gesprek' | 'review' | 'offerte_uit' | 'ingepland' | 'afgerond' | 'archief'
+
+// Stage-volgorde voor de "Sorteer op fase"-optie (zelfde als mobile MobileLeads).
+const STAGE_ORDER: Record<MobileLeadStage, number> = {
+  gesprek: 0,
+  review: 1,
+  uit: 2,
+  gepland: 3,
+  klaar: 4,
+}
 
 function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
   switch (key) {
@@ -44,7 +59,15 @@ function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; q?: string; view?: string; kanaal?: string }>
+  searchParams: Promise<{
+    filter?: string
+    q?: string
+    view?: string
+    kanaal?: string
+    bron?: string
+    urgent?: string
+    sort?: string
+  }>
 }) {
   const sp = await searchParams
 
@@ -122,6 +145,39 @@ export default async function LeadsPage({
     })
   }
 
+  // ── Geavanceerde filters (LeadsFilterPanel) — bron / urgent / sortering ──
+  // Bron: Formulier = kanaal 'web'; WhatsApp = al het andere (incl. null),
+  // zelfde semantiek als de mobile bron-filter.
+  const bronFilter = sp.bron === 'wa' || sp.bron === 'form' ? sp.bron : null
+  if (bronFilter === 'form') {
+    displayed = displayed.filter((l) => l.kanaal === 'web')
+  } else if (bronFilter === 'wa') {
+    displayed = displayed.filter((l) => l.kanaal !== 'web')
+  }
+
+  if (sp.urgent === '1') {
+    displayed = displayed.filter((l) => isLeadUrgent(l))
+  }
+
+  // Sortering — 'binnen' (default) behoudt de server-volgorde (aangemaakt DESC).
+  const sortKey = sp.sort
+  if (sortKey === 'prijs') {
+    displayed = [...displayed].sort(
+      (a, b) => (b.totaal_prijs ?? 0) - (a.totaal_prijs ?? 0),
+    )
+  } else if (sortKey === 'naam') {
+    displayed = [...displayed].sort((a, b) =>
+      (a.naam ?? '').localeCompare(b.naam ?? '', 'nl'),
+    )
+  } else if (sortKey === 'fase') {
+    displayed = [...displayed].sort(
+      (a, b) => STAGE_ORDER[leadStage(a)] - STAGE_ORDER[leadStage(b)],
+    )
+  }
+
+  // Of er geavanceerde filters actief zijn (voor de empty-state copy).
+  const advFiltersActive = bronFilter !== null || sp.urgent === '1'
+
   const actief = allLeads.filter((l) => l.dashboard_status !== 'afgehandeld').length
 
   // chatbotNaam: default 'Surface' (geen extra query om race-conditions te vermijden;
@@ -150,16 +206,7 @@ export default async function LeadsPage({
               <FileText size={13} />
               Export
             </a>
-            <button
-              type="button"
-              className="dash-btn dash-btn-secondary"
-              disabled
-              title="Filters — binnenkort beschikbaar"
-              aria-label="Filters — binnenkort beschikbaar"
-            >
-              <Filter size={13} />
-              Filters
-            </button>
+            <LeadsFilterPanel />
             <a
               href="/leads?nieuwe-offerte=1"
               className="dash-btn dash-btn-primary"
@@ -189,7 +236,7 @@ export default async function LeadsPage({
           <div className={styles.emptyState}>
             <div className={styles.emptyTitle}>Geen leads gevonden</div>
             <div className={styles.emptySub}>
-              {search || activeFilter !== 'all'
+              {search || activeFilter !== 'all' || advFiltersActive
                 ? 'Wis filters of search om alle leads te zien.'
                 : "Zodra een aanvraag binnenkomt verschijnt 'ie hier in de pipeline."}
             </div>

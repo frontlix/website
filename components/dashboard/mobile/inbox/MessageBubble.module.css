@@ -162,7 +162,7 @@
   /* Dark mode override */
 }
 
-.dark .daySepPill {
+:global(.dark) .daySepPill {
   color: #8696A0;
   background: rgba(11, 20, 26, 0.4);
 }
@@ -186,7 +186,7 @@
   line-height: 1.4;
 }
 
-.dark .bannerPill {
+:global(.dark) .bannerPill {
   color: #8696A0;
   background: rgba(11, 20, 26, 0.4);
 }

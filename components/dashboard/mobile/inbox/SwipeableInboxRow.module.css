@@ -17,8 +17,14 @@
 .leftActions,
 .rightActions {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  /* 1px inset boven/onder: de kaart heeft `will-change: transform` (eigen
+     compositor-laag); op rijen die op een fractionele pixel landen ontstond
+     een sub-pixel-naad waar de gekleurde actie-laag (blauw/groen/rood) als
+     1px-streepje door de kaartrand schemerde. Met de inset toont die naad de
+     (grijze) achtergrond i.p.v. de actie-kleur. Tijdens een echte swipe is de
+     1px verschil onmerkbaar. */
+  top: 1px;
+  bottom: 1px;
   width: 144px; /* REVEAL = 144 */
   display: flex;
   align-items: stretch;

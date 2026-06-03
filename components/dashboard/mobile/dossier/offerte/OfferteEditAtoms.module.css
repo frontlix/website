@@ -134,6 +134,8 @@
 .numInput {
   width: 58px;
   font: inherit;
+  /* Expliciete 16px voorkomt iOS auto-zoom bij focus (font:inherit zou <16px erven). */
+  font-size: 16px;
   font-weight: 800;
   color: var(--color-primary);
   border: none;
@@ -252,7 +254,7 @@
   outline: none;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.4;
   color: var(--color-text);
 }
@@ -357,7 +359,7 @@
   outline: none;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text);
   padding: 7px 2px;
 }
@@ -370,7 +372,7 @@
 
 .unitPicker {
   font: inherit;
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-primary);
   border: none;

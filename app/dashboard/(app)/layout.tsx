@@ -83,8 +83,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Eerste 1-2 letters van de prefix; uppercase voor avatar-look.
   const userInitials = emailPrefix.slice(0, 2).toUpperCase() || 'U'
 
+  // `dashboard-theme-root` is de gedeelde wrapper waar de ThemeToggle
+  // `.dark` op zet. Hij omvat BEIDE chrome-bomen (desktop + mobiel) zodat
+  // dark mode op elk viewport werkt. `display:contents` (in dashboard.css)
+  // maakt 'm layout-transparant — identiek gedrag aan het vorige fragment.
   return (
-    <>
+    <div className="dashboard-theme-root">
       <DashboardChrome
         desktop={desktopChrome}
         bedrijfsnaam={bedrijfsnaam}
@@ -99,6 +103,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <ManualOfferteController />
       <ExportsModal />
       {!profile.onboarding_voltooid_op && <OnboardingWizard />}
-    </>
+    </div>
   )
 }

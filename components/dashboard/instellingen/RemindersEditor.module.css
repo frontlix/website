@@ -124,6 +124,7 @@
 
 .textarea {
   appearance: none;
+  width: 100%;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
@@ -132,7 +133,10 @@
   background: var(--bg);
   color: var(--fg);
   font-family: inherit;
-  resize: vertical;
+  /* Auto-grow (hoogte gezet via JS) → geen interne scrollbalk die het
+     muiswiel afvangt; resize:none want JS beheert de hoogte. */
+  resize: none;
+  overflow-y: hidden;
   min-height: 110px;
 }
 .textarea:focus {

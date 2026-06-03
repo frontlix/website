@@ -194,6 +194,35 @@
   color: rgba(0, 0, 0, 0.55);
 }
 
+/* Dark mode: de Surface-status-banner is hardcoded licht (blauw/beige).
+   Hier thema-bewust maken zodat de strip niet licht oplicht in een verder
+   donkere chat. Volgt de dashboard-toggle via :global(.dark). */
+:global(.dark) .banner {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+:global(.dark) .bannerOn {
+  background: rgba(12, 122, 184, 0.16);
+}
+:global(.dark) .bannerOff {
+  background: rgba(245, 158, 11, 0.12);
+}
+:global(.dark) .bannerIconOff {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+:global(.dark) .bannerTitleOn {
+  color: #4fb3e8;
+}
+:global(.dark) .bannerTitleOff {
+  color: #e0a050;
+}
+:global(.dark) .bannerSub {
+  color: rgba(255, 255, 255, 0.55);
+}
+:global(.dark) .toggleOff {
+  background: #3a4750;
+}
+
 /* Toggle-schakelaar 42×24 */
 .toggle {
   width: 42px;
