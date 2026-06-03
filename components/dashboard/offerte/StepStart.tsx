@@ -64,6 +64,15 @@ export function StepStart({ data, set, onAdvance, onBeforeAiFill }: Props) {
         </p>
       </div>
 
+      <div className={styles.startSearchCard}>
+        <ExistingClientSearch
+          pickedLeadId={data.existing_lead_id}
+          pickedNaam={data.naam}
+          onPick={handlePick}
+          onClear={handleClear}
+        />
+      </div>
+
       <button
         type="button"
         className={styles.startTile}
@@ -93,15 +102,6 @@ export function StepStart({ data, set, onAdvance, onBeforeAiFill }: Props) {
         </div>
         <ChevronRight size={16} className={styles.startTileChevron} />
       </button>
-
-      <div className={styles.startSearchCard}>
-        <ExistingClientSearch
-          pickedLeadId={data.existing_lead_id}
-          pickedNaam={data.naam}
-          onPick={handlePick}
-          onClear={handleClear}
-        />
-      </div>
 
       <button
         type="button"
