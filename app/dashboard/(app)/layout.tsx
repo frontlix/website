@@ -8,6 +8,7 @@ import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TopbarServer } from '@/components/dashboard/TopbarServer'
 import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
+import { DemoTourController } from '@/components/dashboard/DemoTour/DemoTourController'
 import { ExportsModal } from '@/components/dashboard/ExportsModal'
 import { DashboardChrome } from '@/components/dashboard/mobile/DashboardChrome'
 import styles from './layout.module.css'
@@ -101,6 +102,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </DashboardChrome>
       <ManualOfferteController />
       <ExportsModal />
+      <DemoTourController />
       {!profile.onboarding_voltooid_op && <OnboardingWizard />}
     </div>
   )

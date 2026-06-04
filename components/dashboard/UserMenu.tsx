@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, LogOut } from 'lucide-react'
+import { ChevronDown, LogOut, PlayCircle } from 'lucide-react'
+import Link from 'next/link'
 import { Pill } from './ui/Pill'
 import styles from './UserMenu.module.css'
 
@@ -60,8 +61,16 @@ export function UserMenu({ email }: { email: string }) {
 
           <div className={styles.popupDivider} />
 
-          {/* Bewust alleen Uitloggen: de overige menu-items (account, plan,
-              support) waren placeholders en zijn op verzoek verwijderd. */}
+          {/* Rondleiding opnieuw bekijken (opent de demo-tour) + Uitloggen.
+              Overige menu-items waren placeholders en blijven bewust weg. */}
+          <Link
+            href="?rondleiding=1"
+            className={styles.item}
+            onClick={() => setOpen(false)}
+          >
+            <PlayCircle size={14} />
+            <span>Rondleiding bekijken</span>
+          </Link>
           <a href="/logout" className={styles.itemDanger}>
             <LogOut size={14} />
             <span>Uitloggen</span>
