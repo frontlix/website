@@ -411,13 +411,13 @@ git commit -m "docs(dispatch): fase 0 afgerond — go/no-go-rapport + spec-updat
 
 | Test | Datum | Resultaat | Bevindingen |
 |---|---|---|---|
-| 0a Remote Control + app | | | |
-| 0f Taak-injectie (A: terminal-spawn / B: channels) | | | |
-| 0b Clamshell-nacht | | | |
-| 0c Thermiek 3 agents | | | |
-| 0d Tailscale 4G + SSE | | | |
-| 0e Slack-push | | | |
+| 0a Remote Control + app | 2026-06-03 | GROTENDEELS GO | Server draait (`--spawn worktree --capacity 3`, CC 2.1.161, vlag-syntax bevestigd via `--help`). Vanaf iPhone (Claude-app → Code-tab, koppeling via account, geen QR nodig) taak gestuurd; op de Mac geverifieerd: `hello.txt` met juiste inhoud + commit `3769827`. Eerste sessie draait by design in cwd (pre-created), niet in een worktree. **Nog open:** worktree-isolatie bij 2e gelijktijdige sessie + push-notificatie (notificaties stonden nog uit; "Enable notifications"-knop gezien in app). Les voor fase 1: server moet zelfstandig proces zijn (LaunchAgent), nooit kind van een andere sessie. |
+| 0f Taak-injectie (A: terminal-spawn / B: channels) | | NIET GESTART | |
+| 0b Clamshell-nacht | | NIET GESTART | pmset-baseline wel vastgelegd (Task 1) |
+| 0c Thermiek 3 agents | | NIET GESTART | |
+| 0d Tailscale 4G + SSE | | NIET GESTART | Tailscale nog niet geïnstalleerd |
+| 0e Slack-push | | NIET GESTART | |
 
-**Eindoordeel fase 0:** _(in te vullen)_
+**Eindoordeel fase 0:** ⏸️ **GEPAUZEERD op 2026-06-03 op verzoek eigenaar** (focus op andere prioriteiten). De kernaanname is wél al bewezen: telefoon → Mac → taak uitgevoerd werkt. Pauzeren is veilig: route A leunt niet op de Agent SDK, dus de 15-juni-regelwijziging raakt dit project niet. **Hervatten:** Task 2 afronden vanaf de stap "tweede sessie + notificaties aan" (zie takenlijst in dit plan); test-repo `~/dispatch-test` blijft staan.
 
-**Vlag-syntax-afwijkingen t.o.v. docs:** _(in te vullen indien gevonden)_
+**Vlag-syntax-afwijkingen t.o.v. docs:** geen — `--spawn worktree` en `--capacity N` werken exact zoals gedocumenteerd in 2.1.161.
