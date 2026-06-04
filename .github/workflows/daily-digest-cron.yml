@@ -33,19 +33,50 @@ jobs:
             exit 1
           fi
 
-          # `-fsS` = stil tenzij error, fout-exit op HTTP 4xx/5xx.
-          # `-w` print de status code zodat de logs leesbaar zijn.
-          # `--connect-timeout`/`--max-time` = niet ~2 min blijven hangen als de
-          # VPS even niet opneemt. `--retry ... --retry-connrefused` = een korte
-          # blip vanzelf opnieuw proberen, zodat één onbereikbaar moment niet
-          # meteen de hele run (en een faal-mail) oplevert.
-          response=$(curl -fsS -X POST \
+          # Bewust GEEN `-f`: we willen zelf bepalen wat een "echte" fout is,
+          # in plaats van curl de job te laten kelderen op elke 4xx/5xx of blip.
+          # `-w "\n%{http_code}"` zet de HTTP-status op een losse laatste regel.
+          # `--connect-timeout`/`--max-time` = niet eindeloos blijven hangen.
+          # `--retry ... --retry-connrefused` = een korte blip vanzelf opnieuw
+          # proberen. We vangen de curl-exitcode los op (set +e) zodat een
+          # netwerk-/verbindingsfout te onderscheiden is van een server-fout.
+          set +e
+          response=$(curl -sS -X POST \
             --connect-timeout 15 --max-time 60 \
             --retry 4 --retry-connrefused --retry-delay 15 \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "Content-Type: application/json" \
-            -w "\nHTTP %{http_code}" \
+            -w "\n%{http_code}" \
             https://app.frontlix.com/api/cron/daily-digest)
+          curl_exit=$?
+          set -e
 
           echo "Response:"
           echo "$response"
+
+          # Laatste regel van de output = de HTTP-statuscode (alleen geldig als
+          # curl een antwoord kreeg, dus als curl_exit == 0).
+          http_code=$(echo "$response" | tail -n1)
+
+          # 1) Netwerk-/verbindingsfout (curl_exit != 0, geen HTTP-antwoord).
+          #    Dit is de bekende valse-alarm-situatie: de VPS was net even niet
+          #    bereikbaar (deploy, herstart, blip). De volgende ping (5 min later)
+          #    vangt het op, dus we laten de job NIET falen — geen faalmail.
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "⚠️  VPS tijdelijk onbereikbaar (curl-exit $curl_exit) — genegeerd, volgende ping vangt het op."
+            exit 0
+          fi
+
+          # 2) Echte server-fout (5xx): dit wil je wél weten → laat de job falen.
+          if [ "$http_code" -ge 500 ]; then
+            echo "❌ Server gaf $http_code terug — echte fout, melden."
+            exit 1
+          fi
+
+          # 3) Auth-fout (401/403): het secret klopt niet meer → ook melden.
+          if [ "$http_code" = "401" ] || [ "$http_code" = "403" ]; then
+            echo "❌ $http_code — CRON_SECRET op GitHub klopt niet met de VPS."
+            exit 1
+          fi
+
+          echo "✅ OK ($http_code)"
