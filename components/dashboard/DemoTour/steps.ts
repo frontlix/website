@@ -6,6 +6,7 @@ import {
   MessageCircle,
   PartyPopper,
   PenLine,
+  Settings,
   Sparkles,
   Star,
   Users,
@@ -21,9 +22,10 @@ import { OfferteHandmatigScene } from './scenes/OfferteHandmatigScene'
 import { AgendaScene } from './scenes/AgendaScene'
 import { ReviewsScene } from './scenes/ReviewsScene'
 import { StatistiekenScene } from './scenes/StatistiekenScene'
+import { InstellingenScene } from './scenes/InstellingenScene'
 import { KlaarScene } from './scenes/KlaarScene'
 
-/** Visuele invulling (icoon + scène) per stap-id uit steps-content.ts. */
+/** Visuele invulling (icoon + scène) per hoofdstuk-id uit steps-content.ts. */
 const VISUALS: Record<string, Pick<DemoTourStep, 'Icon' | 'Scene'>> = {
   welkom: { Icon: Sparkles, Scene: WelkomScene },
   overzicht: { Icon: LayoutDashboard, Scene: OverzichtScene },
@@ -34,12 +36,13 @@ const VISUALS: Record<string, Pick<DemoTourStep, 'Icon' | 'Scene'>> = {
   agenda: { Icon: CalendarDays, Scene: AgendaScene },
   reviews: { Icon: Star, Scene: ReviewsScene },
   statistieken: { Icon: BarChart3, Scene: StatistiekenScene },
+  instellingen: { Icon: Settings, Scene: InstellingenScene },
   klaar: { Icon: PartyPopper, Scene: KlaarScene },
 }
 
-/** De 10 stappen van de rondleiding, in vaste volgorde (spec §3). */
+/** Alle hoofdstukken van de rondleiding, in vaste volgorde (spec §3). */
 export const DEMO_TOUR_STEPS: readonly DemoTourStep[] = STEP_CONTENT.map((content) => {
   const visual = VISUALS[content.id]
-  if (!visual) throw new Error(`Geen scène geregistreerd voor tourstap "${content.id}"`)
+  if (!visual) throw new Error(`Geen scène geregistreerd voor hoofdstuk "${content.id}"`)
   return { ...content, ...visual }
 })

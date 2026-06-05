@@ -13,13 +13,21 @@ export type SceneProps = {
   onSceneEnd: () => void
 }
 
+/** Soort hoofdstuk: welkomstscherm, gewone tour-stap of slotscherm. */
+export type ChapterKind = 'welcome' | 'tour' | 'outro'
+
 export type DemoTourStep = {
   id: string
-  /** korte naam in het stappenmenu links */
+  kind: ChapterKind
+  /** korte naam bij het hoofdstukpunt op de tijdbalk */
   menuLabel: string
   title: string
-  /** uitgeschreven uitleg onder het podium */
+  /** uitgeschreven uitleg naast het podium */
   uitleg: string
+  /** opsomming onder de uitleg (leeg bij welkom/slot) */
+  bullets: readonly string[]
+  /** hoofdstukduur in seconden (bepaalt de voortgangsbalk en autoplay) */
+  durSec: number
   Icon: LucideIcon
   Scene: ComponentType<SceneProps>
 }

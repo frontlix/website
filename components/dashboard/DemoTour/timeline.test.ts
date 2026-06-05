@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isComplete, phaseDuration, remainingAfter } from './timeline'
+import { cumulativeStarts, isComplete, phaseDuration, remainingAfter } from './timeline'
 
 describe('phaseDuration', () => {
   it('geeft de duur van een geldige fase', () => {
@@ -33,5 +33,15 @@ describe('remainingAfter', () => {
 
   it('komt nooit onder nul', () => {
     expect(remainingAfter(1000, 5000, 7000)).toBe(0)
+  })
+})
+
+describe('cumulativeStarts', () => {
+  it('geeft starttijden plus de totale duur als laatste element', () => {
+    expect(cumulativeStarts([7, 12, 10])).toEqual([0, 7, 19, 29])
+  })
+
+  it('werkt met een lege lijst', () => {
+    expect(cumulativeStarts([])).toEqual([0])
   })
 })
