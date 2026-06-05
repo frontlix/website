@@ -102,6 +102,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <ManualOfferteController />
       <ExportsModal />
       {!profile.onboarding_voltooid_op && <OnboardingWizard />}
+      {/* Portal-target voor de Dagrapport-drawer. Zit binnen de theme-root
+          (erft de :root-tokens én de .dark-overrides) maar buiten de mobiele
+          .main-scroller, zodat de position:fixed drawer op iOS niet desynct
+          tijdens scrollen (fixed-in-overflow-scroller bug). */}
+      <div id="dagrapport-portal-root" />
     </div>
   )
 }

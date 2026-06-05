@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { X, ArrowUp, ArrowDown, Minus, MessageSquare, Send, Clock } from 'lucide-react'
 import type { DagrapportData } from '@/lib/dashboard/dagrapport-queries'
@@ -18,6 +19,16 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  // Portal-target binnen de theme-root maar buiten de mobiele .main-scroller.
+  // Op iOS desynct een position:fixed element dat binnen een overflow-scroller
+  // leeft tijdens het scrollen (snapt terug bij loslaten); een portal hierheen
+  // lost dat op. Tot het effect draait blijft portalEl null → render niets
+  // (voorkomt hydration-mismatch).
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setPortalEl(document.getElementById('dagrapport-portal-root') ?? document.body)
+  }, [])
 
   const close = () => {
     const params = new URLSearchParams(searchParams.toString())
@@ -50,7 +61,9 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
     month: 'long',
   })
 
-  return (
+  if (!portalEl) return null
+
+  return createPortal(
     <>
       <div
         className={styles.overlay}
@@ -171,7 +184,8 @@ export function DagrapportDrawer({ data }: { data: DagrapportData }) {
           </section>
         </div>
       </aside>
-    </>
+    </>,
+    portalEl,
   )
 }
 

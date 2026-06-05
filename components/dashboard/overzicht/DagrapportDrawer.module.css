@@ -5,7 +5,8 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 100;
+  /* Sheet-tier (200+) zodat de drawer boven de mobiele BottomNav (50) ligt. */
+  z-index: 200;
   /* fade-in zonder dat de eerste paint flikkert */
   animation: fadeIn 180ms ease-out;
 }
@@ -14,12 +15,15 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: 0;
+  /* dvh i.p.v. bottom:0 → volgt de iOS dynamic viewport zodat de drawer niet
+     achter de adresbalk valt en de content bij loslaten niet wegsnapt. */
+  height: 100vh;
+  height: 100dvh;
   width: min(540px, 100vw);
   background: var(--bg);
   border-left: 1px solid var(--border);
   box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
-  z-index: 101;
+  z-index: 201;
   display: flex;
   flex-direction: column;
   /* slide-in van rechts; korte, vrolijke easing zonder over-bounce */
