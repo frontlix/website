@@ -46,21 +46,29 @@ export function AreaChart({ data, height = 170 }: Props) {
     )
   }
 
-  const min = Math.min(...data)
+  // Linker-inset voor de y-as cijfers; de lijn start hierna zodat de
+  // labels niet over de data vallen.
+  const PAD_LEFT = 26
+  // Baseline op 0 (niet min) zodat de "0"-tick klopt en de hoogte eerlijk is.
   const max = Math.max(...data)
-  const range = max - min || 1
-  const step = data.length > 1 ? width / (data.length - 1) : 0
+  const range = max || 1
+  const step = data.length > 1 ? (width - PAD_LEFT) / (data.length - 1) : 0
+
+  // y-positie voor een waarde, zelfde schaal als de lijn.
+  const yFor = (v: number) => height - (v / range) * (height - 14) - 4
 
   const points = data.map((v, i): [number, number] => {
-    const x = data.length > 1 ? i * step : width / 2
-    const y = height - ((v - min) / range) * (height - 14) - 4
-    return [x, y]
+    const x = data.length > 1 ? PAD_LEFT + i * step : (width + PAD_LEFT) / 2
+    return [x, yFor(v)]
   })
   const linePath = points
     .map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`)
     .join(' ')
-  const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`
+  const areaPath = `${linePath} L ${width},${height} L ${PAD_LEFT},${height} Z`
   const lastPoint = points[points.length - 1]
+
+  // Y-as ticks: max bovenaan, midden, 0 onderaan. Set dedupliceert bij lage max.
+  const ticks = [...new Set([max, Math.ceil(max / 2), 0])]
 
   return (
     <div ref={ref} style={{ width: '100%' }}>
@@ -75,18 +83,32 @@ export function AreaChart({ data, height = 170 }: Props) {
             <stop offset="100%" stopColor="#00CFFF" />
           </linearGradient>
         </defs>
-        {/* Subtiele gridlines op 25/50/75% hoogte */}
-        {[0.25, 0.5, 0.75].map((p) => (
-          <line
-            key={p}
-            x1="0"
-            x2={width}
-            y1={height * p}
-            y2={height * p}
-            stroke="var(--border)"
-            strokeDasharray="2 4"
-          />
-        ))}
+        {/* Gridlines + y-as cijfers op de tick-waarden */}
+        {ticks.map((t) => {
+          const gy = yFor(t)
+          return (
+            <g key={t}>
+              <line
+                x1={PAD_LEFT}
+                x2={width}
+                y1={gy}
+                y2={gy}
+                stroke="var(--border)"
+                strokeDasharray="2 4"
+              />
+              <text
+                x={0}
+                y={gy}
+                dy="0.32em"
+                fontSize={11}
+                fill="var(--fg-muted)"
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {t}
+              </text>
+            </g>
+          )
+        })}
         <path d={areaPath} fill="url(#dash-area-fill)" />
         <path
           d={linePath}

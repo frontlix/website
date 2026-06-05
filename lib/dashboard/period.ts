@@ -102,6 +102,18 @@ export function periodLabel(key: PeriodKey): string {
 }
 
 /**
+ * Aantal dagen (incl. vandaag) in een periode-range. Gebruikt om de
+ * "leads per dag"-grafiek mee te laten bewegen met de periode-filter.
+ * all-time heeft geen begindatum → gecapt op 365 dagelijkse buckets.
+ */
+export function rangeToDays(range: StatsPeriod, now: Date = new Date()): number {
+  if (!range.from) return 365
+  const fromMs = Date.parse(range.from)
+  const days = Math.floor((now.getTime() - fromMs) / 86_400_000) + 1
+  return Math.max(1, days)
+}
+
+/**
  * Vensters voor "vorige periode", gebruikt voor diff-berekeningen
  * (current vs previous). Beide hebben dezelfde lengte zodat de
  * vergelijking eerlijk is.

@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { parsePeriod, periodToRange, periodLabel } from '@/lib/dashboard/period'
+import { parsePeriod, periodToRange, periodLabel, rangeToDays } from '@/lib/dashboard/period'
 import {
   countLeads,
   countConverted,
@@ -45,6 +45,8 @@ export default async function StatistiekenPage({
   const sp = await searchParams
   const periodKey = parsePeriod(sp)
   const range = periodToRange(periodKey)
+  // De leads-per-dag-grafiek volgt de gekozen periode i.p.v. een vaste 30d.
+  const trendDays = rangeToDays(range)
 
   const [
     total,
@@ -68,7 +70,7 @@ export default async function StatistiekenPage({
     avgReactietijdMs(range),
     statusVerdeling(range),
     categorieVerdeling(range),
-    leadsPerDag(),
+    leadsPerDag(new Date(), trendDays),
     topTags(range, 10),
     omzetTotaal(range),
     getOmzetDoelMaand(),
@@ -127,7 +129,7 @@ export default async function StatistiekenPage({
         </div>
 
         <div className={styles.twoCol}>
-          <TrendLineChart title="Leads per dag (30d)" points={perDag} />
+          <TrendLineChart title={`Leads per dag · ${periodLabel(periodKey)}`} points={perDag} />
           <TopTagsList rows={tagRows} />
         </div>
       </div>
