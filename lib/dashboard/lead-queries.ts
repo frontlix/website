@@ -184,6 +184,43 @@ export async function getLeadsList(
 }
 
 /**
+ * Laatste INKOMENDE (klant) bericht-timestamp per lead, voor de "binnen"-
+ * indicator op de mobiele lead-kaart. Daar willen we de laatste klant-interactie
+ * tonen (of, zonder bericht, de binnenkomst) — NIET `leads.bijgewerkt`, want dat
+ * is een generieke updated_at die ook opspringt bij eigenaar-/systeemacties
+ * (bijv. inbox markeren als gelezen).
+ *
+ * 2-staps patroon zoals getActiveConversations: één SELECT op berichten,
+ * dan in JS dedupen op lead_id (DESC → eerste hit per lead = laatste bericht).
+ */
+export async function getLastInboundByLeadIds(
+  leadIds: string[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>()
+  if (leadIds.length === 0) return out
+
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('berichten')
+    .select('lead_id, timestamp')
+    .eq('richting', 'inkomend')
+    .in('lead_id', leadIds)
+    .order('timestamp', { ascending: false })
+    .limit(5000) // ruime veiligheidsklep tegen een onbedoeld enorme payload
+
+  if (error) {
+    console.error('[getLastInboundByLeadIds] failed:', error)
+    return out
+  }
+
+  type Row = { lead_id: string; timestamp: string | null }
+  for (const r of (data as Row[] | null) ?? []) {
+    if (r.timestamp && !out.has(r.lead_id)) out.set(r.lead_id, r.timestamp)
+  }
+  return out
+}
+
+/**
  * Telt leads die vandaag binnen zijn gekomen en die morgen verwacht zijn,
  * voor de subline op MobileOverzichtHeader ("14 leads vandaag · 4 morgen").
  *

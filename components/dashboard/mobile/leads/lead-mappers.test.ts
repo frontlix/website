@@ -24,6 +24,12 @@ describe('mapLeadToCard', () => {
   it('dienst joint hoofdcategorie + sub_diensten', () => expect(mapLeadToCard(base, now).dienst).toBe('Oprit · invegen + beschermlaag'))
   it('kanaal whatsapp → wa', () => expect(mapLeadToCard(base, now).bron).toBe('wa'))
   it('kanaal web → form', () => expect(mapLeadToCard({ ...base, kanaal: 'web' }, now).bron).toBe('form'))
-  it('binnen via shortTimeAgo', () => expect(mapLeadToCard(base, now).binnen).toBe('2m'))
+  it('binnen via shortTimeAgo (fallback aangemaakt)', () => expect(mapLeadToCard(base, now).binnen).toBe('2m'))
+  it('binnen gebruikt laatste klant-interactie als die is meegegeven', () =>
+    // aangemaakt 11:58 (2m), maar laatste inkomende bericht 11:59 (1m) → 1m
+    expect(mapLeadToCard(base, now, '2026-05-28T11:59:00Z').binnen).toBe('1m'))
+  it('binnen negeert bijgewerkt (eigenaar-acties mogen niet tellen)', () =>
+    // bijgewerkt 'nu', maar geen klant-interactie → toont binnenkomst (2m), niet 'nu'
+    expect(mapLeadToCard({ ...base, bijgewerkt: '2026-05-28T12:00:00Z' }, now, null).binnen).toBe('2m'))
   it('urgent als pending_eigenaar_review', () => expect(mapLeadToCard({ ...base, pending_eigenaar_review: true }, now).urgent).toBe(true))
 })

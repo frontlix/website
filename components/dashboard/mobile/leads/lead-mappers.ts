@@ -64,8 +64,21 @@ function datumLabel(l: RawLead): string | null {
   }).format(d)
 }
 
-/** Map een server LeadListItem naar de card-shape die de mobile UI nodig heeft. */
-export function mapLeadToCard(l: RawLead, now: number = Date.now()): MobileLeadCard {
+/**
+ * Map een server LeadListItem naar de card-shape die de mobile UI nodig heeft.
+ *
+ * `laatsteInteractieAt` is de timestamp van het laatste INKOMENDE (klant)bericht,
+ * meegegeven door de lijst-loader. De "binnen"-indicator toont die laatste
+ * klant-interactie, of (zonder bericht) de binnenkomst `aangemaakt`. Bewust
+ * NIET `bijgewerkt`: dat is een generieke updated_at die ook opspringt bij
+ * eigenaar-/systeemacties (bijv. inbox markeren als gelezen), waardoor de kaart
+ * onterecht "nu" toonde.
+ */
+export function mapLeadToCard(
+  l: RawLead,
+  now: number = Date.now(),
+  laatsteInteractieAt?: string | null,
+): MobileLeadCard {
   return {
     id: l.lead_id,
     naam: l.naam ?? 'Onbekend',
@@ -74,7 +87,7 @@ export function mapLeadToCard(l: RawLead, now: number = Date.now()): MobileLeadC
     dienst: dienstLabel(l),
     stage: leadStage(l),
     prijs: l.totaal_prijs,
-    binnen: shortTimeAgo(l.bijgewerkt ?? l.aangemaakt, now),
+    binnen: shortTimeAgo(laatsteInteractieAt ?? l.aangemaakt, now),
     datum: datumLabel(l),
     bron: l.kanaal === 'web' ? 'form' : 'wa',
     urgent: isLeadUrgent(l),

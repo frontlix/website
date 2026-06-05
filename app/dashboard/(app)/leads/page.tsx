@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { FileText, Plus } from 'lucide-react'
-import { getLeadsList, countAllLeads, type LeadListItem } from '@/lib/dashboard/lead-queries'
+import { getLeadsList, countAllLeads, getLastInboundByLeadIds, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
 import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
 import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
@@ -184,6 +184,12 @@ export default async function LeadsPage({
   // de naam is puur cosmetic in de mobile UI)
   const chatbotNaam = 'Surface'
 
+  // Laatste klant-interactie (laatste inkomende bericht) per getoonde lead, voor
+  // de "binnen"-indicator op de mobiele kaart. Bewust niet leads.bijgewerkt (zie
+  // getLastInboundByLeadIds). Eén extra query, gescoped op de zichtbare leads.
+  const lastInboundById = await getLastInboundByLeadIds(displayed.map((l) => l.lead_id))
+  const nowMs = Date.now()
+
   return (
     <>
       {/* ── Desktop tree (verborgen op ≤ 640px) ──────────────────────────── */}
@@ -256,7 +262,9 @@ export default async function LeadsPage({
       <div className={styles.mobileTree}>
         <MobileLeads
           data={{
-            cards: displayed.map((l) => mapLeadToCard(l)),
+            cards: displayed.map((l) =>
+              mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
+            ),
             telefoonById: Object.fromEntries(
               displayed.map((l) => [l.lead_id, l.telefoon ?? '']),
             ),
