@@ -73,11 +73,22 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
     if (!bootReady || appReady) return
     const timer = setInterval(() => {
       try {
-        if (iframeRef.current?.contentDocument?.querySelector('.sidebar')) setAppReady(true)
+        const doc = iframeRef.current?.contentDocument
+        if (!doc) return
+        if (doc.querySelector('.sidebar')) {
+          setAppReady(true)
+          return
+        }
+        // Vangnet: toont de demo-app toch zijn loginscherm (localStorage
+        // niet beschikbaar of geblokkeerd), log dan in via de echte knop.
+        const loginBtn = Array.from(doc.querySelectorAll<HTMLElement>('button[type="submit"]')).find(
+          (el) => /Inloggen/i.test(el.textContent ?? '')
+        )
+        loginBtn?.click()
       } catch {
-        /* nog niet bereikbaar */
+        /* iframe nog niet bereikbaar */
       }
-    }, 300)
+    }, 600)
     return () => clearInterval(timer)
   }, [bootReady, appReady])
 
