@@ -45,11 +45,24 @@ export async function getRecentNotifications(limit = 10): Promise<NotifItem[]> {
     kind: EVENT_KIND[r.event_type],
     title: r.titel,
     sub: r.body,
-    // Fallback naar /dashboard als geen lead-context (bv. dagelijkse_samenvatting).
-    href: r.lead_id ? `/dashboard/leads/${r.lead_id}` : '/dashboard',
+    href: hrefForNotification(r),
     ts: r.aangemaakt_op,
     unread: r.gelezen_op === null,
   }))
+}
+
+/**
+ * Bepaalt waar een notificatie heen linkt.
+ * - dagelijkse_samenvatting → opent direct de dagrapport-drawer op het
+ *   overzicht via de `?dagrapport=1` searchParam (i.p.v. enkel /dashboard).
+ * - met lead-context → de lead-detailpagina.
+ * - anders → het overzicht.
+ */
+function hrefForNotification(
+  r: Pick<NotificationRow, 'event_type' | 'lead_id'>,
+): string {
+  if (r.event_type === 'dagelijkse_samenvatting') return '/dashboard?dagrapport=1'
+  return r.lead_id ? `/dashboard/leads/${r.lead_id}` : '/dashboard'
 }
 
 /**
