@@ -25,7 +25,7 @@ export function WelkomScene(props: SceneProps) {
         <Reveal at={3} phase={phase}>
           <div className={styles.heroSub}>
             We volgen zo één aanvraag door het hele product, van eerste bericht tot review.
-            Klik rechtsonder op Volgende wanneer je er klaar voor bent.
+            De rondleiding speelt vanzelf af, pauzeren of terugspoelen kan altijd via de balk onderaan.
           </div>
         </Reveal>
       </div>
