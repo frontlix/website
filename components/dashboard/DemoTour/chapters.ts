@@ -49,17 +49,17 @@ export const CHAPTERS: readonly Chapter[] = [
       'Owner-acties verzamelt leads die actie vragen',
       'Je live activiteit en de agenda van vandaag',
     ],
-    durSec: 12,
+    durSec: 11,
     run: async (a) => {
       await a.closeOverlays()
       await a.goto('overzicht')
-      await a.sleep(500)
+      await a.sleep(600)
+      // wijs de kerncijfers aan; de periodetoggle (7d/28d/90d) is in de
+      // demo-app niet functioneel, dus die klikken we bewust NIET aan
       await a.cursorTo('.kpi')
-      await a.sleep(700)
-      await a.clickSeg(/90d/i)
       await a.sleep(1100)
       await a.scrollTo(390)
-      await a.sleep(1500)
+      await a.sleep(1700)
       await a.scrollTo(0)
     },
   },

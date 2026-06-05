@@ -660,7 +660,9 @@ function Analyses() {
       </div>
       <div className="card" style={{ padding: 24 }}>
         <div className="card-title" style={{ marginBottom: 14 }}>Omzet per maand (12 mnd)</div>
-        <AreaChart data={[8400, 9200, 11000, 12800, 14500, 16200, 15800, 17400, 18900, 19800, 21400, 23100]} height={240} />
+        {/* height moet binnen .area-chart (140px CSS-box) blijven, anders
+            loopt de gradient-vulling onder de kaartrand door */}
+        <AreaChart data={[8400, 9200, 11000, 12800, 14500, 16200, 15800, 17400, 18900, 19800, 21400, 23100]} height={140} />
       </div>
     </div>
   );
