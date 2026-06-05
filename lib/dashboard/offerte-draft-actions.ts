@@ -27,6 +27,7 @@
 import { revalidatePath } from 'next/cache'
 import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
+import { isReiskostenRegel } from './btw-calc'
 
 const BTW_FACTOR = 1.21
 
@@ -82,10 +83,16 @@ function computeTotaalIncl(
     const aantal = r.aantal ?? 0
     return acc + aantal * (r.stukprijs ?? 0)
   }, 0)
+  // Reiskosten zijn niet kortbaar: in het subtotaal, maar buiten de grondslag.
+  const reiskosten = regels.reduce((acc, r) => {
+    if (!isReiskostenRegel(r)) return acc
+    return acc + (r.aantal ?? 0) * (r.stukprijs ?? 0)
+  }, 0)
   // Korting clampen [0, 100]: bewust defensief, UI hoort 'm te clampen,
   // maar we vertrouwen geen client-input.
   const pct = Math.max(0, Math.min(100, kortingPct))
-  const naKorting = subtotaal * (1 - pct / 100)
+  const kortbaar = Math.max(0, subtotaal - reiskosten)
+  const naKorting = subtotaal - kortbaar * (pct / 100)
   return Math.round(naKorting * BTW_FACTOR * 100) / 100
 }
 

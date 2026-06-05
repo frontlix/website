@@ -23,7 +23,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
-import { berekenTotalen } from '@/lib/dashboard/btw-calc'
+import { berekenTotalen, isReiskostenRegel } from '@/lib/dashboard/btw-calc'
 import {
   saveDraft,
   revertConcept,
@@ -248,10 +248,14 @@ export function LeadOfferte({
       })),
     [regels],
   )
-  const totalen = useMemo(
-    () => berekenTotalen(regelTotalen.map((r) => r.totaal), kortingPct),
-    [regelTotalen, kortingPct],
-  )
+  const totalen = useMemo(() => {
+    // Reiskosten zijn niet kortbaar: uit het subtotaal halen we ze niet, maar
+    // ze tellen niet mee in de kortingsgrondslag.
+    const nietKortbaar = regelTotalen
+      .filter((r) => isReiskostenRegel({ omschrijving: r.omschrijving }))
+      .reduce((s, r) => s + r.totaal, 0)
+    return berekenTotalen(regelTotalen.map((r) => r.totaal), kortingPct, nietKortbaar)
+  }, [regelTotalen, kortingPct])
 
   // ─── Owner-only: kostprijzen + marge ────────────────────────
   const [kostprijzen, setKostprijzen] = useState<Kostprijs[]>([])

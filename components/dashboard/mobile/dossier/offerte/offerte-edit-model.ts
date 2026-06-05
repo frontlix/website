@@ -198,11 +198,11 @@ function round2(n: number): number {
 }
 
 /**
- * Totaal-formule (exact uit de handoff):
+ * Totaal-formule:
  *   sub0    = Σ lineAmount over on-regels
  *   toeslag = pct ? sub0 * value/100 : value (vast)
  *   subNa   = sub0 + Σ toeslagen
- *   korting = subNa * kortingPct/100
+ *   korting = (subNa - reiskosten) * kortingPct/100   (nooit over reiskosten)
  *   subNet  = subNa - korting
  *   btw     = subNet * btwRate
  *   totaal  = subNet + btw
@@ -225,10 +225,16 @@ export function offerteTotals(
     }))
   const tsom = toeslagRegels.reduce((s, x) => s + x.bedrag, 0)
   const subNa = sub0 + tsom
+  // Reiskosten (eenheid 'km') zijn niet kortbaar: ze zitten in subNa maar tellen
+  // niet mee in de kortingsgrondslag.
+  const reiskosten = lines
+    .filter((l) => l.on && l.unit === 'km')
+    .reduce((s, l) => s + lineAmount(l), 0)
+  const kortbaar = Math.max(0, subNa - reiskosten)
   // Geld-bedragen op centen afronden zodat float-staarten (bv. 352,17 × 0,21 =
   // 73.9557000…000007) niet doorsijpelen in korting/BTW/totaal. Elke stap rondt
   // af op de uitkomst van de vorige zodat de regels onderling optellen.
-  const korting = round2(subNa * (kortingPct / 100))
+  const korting = round2(kortbaar * (kortingPct / 100))
   const subNet = round2(subNa - korting)
   const btw = round2(subNet * btwRate(btwKey))
   const totaal = round2(subNet + btw)

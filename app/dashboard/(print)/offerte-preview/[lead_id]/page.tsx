@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { getLeadDetail } from '@/lib/dashboard/lead-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
-import { berekenTotalen } from '@/lib/dashboard/btw-calc'
+import { berekenTotalen, isReiskostenRegel } from '@/lib/dashboard/btw-calc'
 import { formatEuro } from '@/lib/dashboard/format'
 import styles from './page.module.css'
 
@@ -103,10 +103,13 @@ export default async function OffertePreviewPage({
   const subDiensten = Array.isArray(lead.sub_diensten) ? lead.sub_diensten : []
   const subDienstenLabel = subDiensten.map(formatSubDienst).filter(Boolean).join(', ')
 
-  // Totalen
+  // Totalen. Reiskosten zijn niet kortbaar, dus uit de kortingsgrondslag.
   const kortingPct = Number(lead.korting_percentage ?? 0)
   const regelTotalen = prijsregels.map((r) => Number(r.totaal ?? 0))
-  const totalen = berekenTotalen(regelTotalen, kortingPct)
+  const reiskostenTotaal = prijsregels
+    .filter((r) => isReiskostenRegel({ omschrijving: r.omschrijving, eenheid: r.eenheid }))
+    .reduce((s, r) => s + Number(r.totaal ?? 0), 0)
+  const totalen = berekenTotalen(regelTotalen, kortingPct, reiskostenTotaal)
 
   return (
     <main className={styles.page}>

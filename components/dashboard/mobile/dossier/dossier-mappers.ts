@@ -43,6 +43,9 @@ export type DossPhotoItem = { url: string | null; tag: string }
 /** De volledige data-blob die MobileLeadDossier aan z'n children doorgeeft. */
 export type MobileDossierData = {
   lead: DossierLead
+  // lead_id van de echte lead: nodig voor de offerte-editor om edits via
+  // saveDraft(leadId, ...) naar de DB te persisteren (mirror van desktop).
+  leadId: string
   telefoonRaw: string // ruwe cijfers voor tel:
   waTel: string // 31-prefixed voor wa.me
   contact: { telefoon: string; email: string; adres: string; afstand: number | null }
@@ -296,6 +299,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
 
   return {
     lead,
+    leadId: l.lead_id,
     telefoonRaw,
     waTel: telefoonRaw.startsWith('0') ? `31${telefoonRaw.slice(1)}` : telefoonRaw,
     contact: {

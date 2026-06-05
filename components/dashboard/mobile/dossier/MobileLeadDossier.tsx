@@ -44,7 +44,9 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
               vragen={data.vragen}
             />
           )}
-          {tab === 'offerte' && <DossOfferteEdit offerte={data.offerte} pdfApiRef={pdfApiRef} />}
+          {tab === 'offerte' && (
+            <DossOfferteEdit leadId={data.leadId} offerte={data.offerte} pdfApiRef={pdfApiRef} />
+          )}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}
         </div>
