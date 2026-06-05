@@ -63,7 +63,7 @@ describe('mapAnalyse', () => {
     expect(v.kpis.map((k) => k.label)).toEqual([
       'Conversie',
       'Offertes verstuurd',
-      '⌀ Offerte',
+      'Gem. offertewaarde',
       '⌀ Reactietijd',
     ])
     expect(v.kpis[0].value).toBe('44%')

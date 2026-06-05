@@ -123,7 +123,7 @@ export function mapAnalyse(d: AnalyseServerData): MobileAnalyseView {
   const kpis: AnalyseKpi[] = [
     { label: 'Conversie', value: d.leadsTotaal > 0 ? `${conversie}%` : '—', spark: trendSeries, tone: 'green' },
     { label: 'Offertes verstuurd', value: String(d.offertesVerstuurd), spark: trendSeries, tone: 'blue' },
-    { label: '⌀ Offerte', value: d.avgOfferte !== null ? eur(d.avgOfferte) : '—', spark: trendSeries, tone: 'teal' },
+    { label: 'Gem. offertewaarde', value: d.avgOfferte !== null ? eur(d.avgOfferte) : '—', spark: trendSeries, tone: 'teal' },
     { label: '⌀ Reactietijd', value: reactieLabel(d.avgReactieMs), spark: trendSeries, tone: 'amber' },
   ]
 

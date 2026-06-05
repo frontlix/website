@@ -101,7 +101,7 @@ export default async function StatistiekenPage({
             hint={total > 0 ? `${converted} van ${total}` : undefined}
           />
           <KpiCard
-            label="⌀ Offerte"
+            label="Gem. offertewaarde"
             value={avgOfferte !== null ? formatEuro(avgOfferte) : '—'}
           />
           <KpiCard
