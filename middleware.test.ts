@@ -59,6 +59,16 @@ describe('middleware host-based routing', () => {
     expect(res.status).toBe(404)
   })
 
+  it('app.frontlix.com /demo-app/Dashboard.html → asset, geen rewrite of auth-check', async () => {
+    const req = makeRequest('app.frontlix.com', '/demo-app/Dashboard.html', false)
+
+    const res = await middleware(req)
+
+    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+    expect(res.status).not.toBe(307)
+    expect(res.status).not.toBe(404)
+  })
+
   it('app.frontlix.com /leads zonder session → redirect naar /login met next param', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null })
     const req = makeRequest('app.frontlix.com', '/leads', false)

@@ -35,6 +35,9 @@ const STATIC_ASSET_EXTENSIONS = /\.(png|jpe?g|svg|gif|webp|ico|css|js|woff2?|ttf
 function isAssetPath(pathname: string): boolean {
   return pathname.startsWith('/_next') ||
          pathname.startsWith('/api') ||
+         // Ingesloten demo-app van de rondleiding: statische bestanden
+         // (.html/.jsx) die buiten de dashboard-rewrite moeten blijven.
+         pathname.startsWith('/demo-app') ||
          STATIC_ASSET_EXTENSIONS.test(pathname)
 }
 

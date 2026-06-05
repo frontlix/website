@@ -1,185 +1,302 @@
-/* Videospeler-chrome van de rondleiding: altijd donker met blauw/cyaan
-   accent (#1A56FF / #00CFFF), los van het dashboard-thema. Het podium
-   (de mini-app) houdt zijn eigen lichte productstyling. */
+/* Fullscreen rondleiding naar het claude.ai-prototype: donker decor met
+   blauwe gloed, links een macOS-browservenster met de echte app, rechts
+   de stap-uitleg, onderaan een zwevende afspeelbalk. Accent: #1A56FF
+   (blauw) naar #00CFFF (cyaan). */
 
 .backdrop {
   position: fixed;
   inset: 0;
   /* boven de OnboardingWizard (9500) zodat de tour eerst zichtbaar is */
   z-index: 9600;
-  background: rgba(4, 8, 14, 0.86);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-}
-.frame {
-  position: relative;
-  width: 100%;
-  max-width: 1120px;
-  height: min(700px, calc(100vh - 56px));
-  background: #0b111d;
-  color: #e8edf5;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(900px 500px at 12% 0%, rgba(26, 86, 255, 0.22), transparent 60%),
+    radial-gradient(700px 420px at 95% 100%, rgba(0, 207, 255, 0.1), transparent 55%),
+    #05080f;
+  color: #e8edf5;
   overflow: hidden;
 }
 
+.topProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1a56ff, #00cfff);
+  transition: width 120ms linear;
+  z-index: 3;
+}
+
+/* ── Kop ──────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 26px 38px 10px;
 }
-.headerTitle {
-  font: 800 16px/1.2 var(--font-heading);
-  color: white;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #c7d2e4;
+}
+.brandIcon {
+  color: #00cfff;
 }
 .skipBtn {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   background: transparent;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #8e9aae;
   font: inherit;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 999px;
 }
 .skipBtn:hover {
   background: rgba(255, 255, 255, 0.07);
   color: white;
 }
 
-.body {
+/* ── Hoofdindeling ────────────────────────────────────────── */
+.main {
   flex: 1;
-  display: flex;
   min-height: 0;
-  gap: 18px;
-  padding: 18px 20px;
+  display: flex;
+  align-items: stretch;
+  gap: 40px;
+  padding: 16px 38px 26px;
 }
-.stageArea {
-  flex: 1.7;
+.stageCol {
+  position: relative;
+  flex: 1.9;
   min-width: 0;
-  min-height: 0;
-  display: flex;
-}
-.stageArea > * {
-  flex: 1;
-}
-
-.explain {
-  width: 300px;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 6px;
 }
-.explainKicker {
+
+/* ── Browservenster ───────────────────────────────────────── */
+.browser {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #11151c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.browserBar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: #1a1f29;
+}
+.light {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.lightRed {
+  background: #ff5f57;
+}
+.lightYellow {
+  background: #febc2e;
+}
+.lightGreen {
+  background: #28c840;
+}
+.urlPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 4px 46px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: #aab4c6;
+}
+.viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: white;
+}
+.iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f7f8fa;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+}
+.loadingDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #1a56ff, #00cfff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  animation: loadingPulse 1s ease-in-out infinite;
 }
-.explainTitle {
+@keyframes loadingPulse {
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+/* ── Nepmuis ──────────────────────────────────────────────── */
+.cursor {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  transition: left 620ms cubic-bezier(0.45, 0, 0.25, 1),
+    top 620ms cubic-bezier(0.45, 0, 0.25, 1), opacity 250ms ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+.cursorHidden {
+  opacity: 0;
+}
+.clickRipple {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2.5px solid #1a56ff;
+  opacity: 0;
+  animation: clickRipple 600ms ease-out;
+}
+@keyframes clickRipple {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* ── Welkom/slot over de app ──────────────────────────────── */
+.intro {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(700px 400px at 30% 20%, rgba(26, 86, 255, 0.3), transparent 60%),
+    rgba(5, 8, 15, 0.93);
+}
+.introInner {
+  max-width: 520px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px;
+}
+.introTitle {
   margin: 0;
-  font: 800 20px/1.25 var(--font-heading);
+  font: 800 34px/1.15 var(--font-heading);
   color: white;
+  letter-spacing: -0.02em;
 }
-.explainBody {
+.introBody {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 15px;
   line-height: 1.65;
   color: #b9c3d4;
 }
-.bullets {
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.bullets li {
-  position: relative;
-  padding-left: 18px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: #cdd6e4;
-}
-.bullets li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1a56ff, #00cfff);
-}
 
-/* ── Bedieningsbalk ───────────────────────────────────────── */
+/* ── Zwevende afspeelbalk ─────────────────────────────────── */
 .controls {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 6;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding: 8px 16px 8px 10px;
+  border-radius: 999px;
+  background: rgba(10, 14, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
 }
 .ctrlBtn {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: none;
   background: transparent;
-  color: white;
+  color: #c7d2e4;
   cursor: pointer;
 }
 .ctrlBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
 .ctrlBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: default;
 }
 .ctrlBtn:disabled:hover {
   background: transparent;
 }
 .playBtn {
-  width: 44px;
-  height: 44px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
+  color: white;
+  cursor: pointer;
   background: linear-gradient(135deg, #1a56ff, #00cfff);
-  box-shadow: 0 4px 24px rgba(26, 86, 255, 0.45);
+  box-shadow: 0 4px 20px rgba(26, 86, 255, 0.5);
 }
 .playBtn:hover {
-  background: linear-gradient(135deg, #1a56ff, #00cfff);
-  filter: brightness(1.1);
+  filter: brightness(1.12);
 }
 
-.timeline {
+.track {
   position: relative;
-  flex: 1;
-  height: 28px;
+  width: 220px;
+  height: 24px;
 }
-.timelineRail,
-.timelineFill {
+.trackRail,
+.trackFill {
   position: absolute;
   top: 50%;
   left: 0;
@@ -187,11 +304,11 @@
   transform: translateY(-50%);
   border-radius: 999px;
 }
-.timelineRail {
+.trackRail {
   width: 100%;
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.14);
 }
-.timelineFill {
+.trackFill {
   background: linear-gradient(90deg, #1a56ff, #00cfff);
   transition: width 120ms linear;
 }
@@ -199,64 +316,112 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  border: 2px solid #0b111d;
-  background: #2a3650;
+  border: none;
+  background: #39455c;
   cursor: pointer;
   padding: 0;
 }
 .dot:hover {
-  background: #46587c;
+  background: #56678a;
 }
 .dotDone {
-  background: #00cfff;
+  background: #1a56ff;
 }
 .dotDone:hover {
-  background: #4eddff;
+  background: #4d7dff;
 }
 .dotActive {
   background: white;
-  box-shadow: 0 0 0 4px rgba(0, 207, 255, 0.25);
+  box-shadow: 0 0 0 3px rgba(0, 207, 255, 0.3);
 }
 .counter {
-  min-width: 96px;
-  text-align: right;
-  font-size: 12px;
-  font-weight: 700;
-  color: #8e9aae;
-  letter-spacing: 0.02em;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-/* ── Knoppen en foutmelding ───────────────────────────────── */
-.btnPrimary,
-.btnSecondary {
+/* ── Rechterpaneel ────────────────────────────────────────── */
+.panel {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 34px;
+}
+.stepPill {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1a56ff, #00cfff);
+  color: white;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.panelTitle {
+  margin: 0;
+  font: 800 34px/1.1 var(--font-heading);
+  color: white;
+  letter-spacing: -0.02em;
+}
+.panelBody {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #b9c3d4;
+}
+.checks {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #e8edf5;
+}
+.checkBox {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #1a56ff, #00cfff);
+  color: white;
+}
+
+/* ── Knoppen ──────────────────────────────────────────────── */
+.btnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 11px 16px;
+  margin-top: 8px;
+  padding: 12px 20px;
   border-radius: 10px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   border: none;
-}
-.btnPrimary {
-  margin-top: 6px;
   background: linear-gradient(135deg, #1a56ff, #00cfff);
   color: white;
   box-shadow: 0 4px 24px rgba(26, 86, 255, 0.4);
-}
-.btnSecondary {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: white;
-}
-.btnSecondary:hover {
-  background: rgba(255, 255, 255, 0.14);
 }
 .btnPulse {
   animation: pulseGlow 1.6s ease-in-out infinite;
@@ -271,23 +436,17 @@
   }
 }
 
-.sceneError {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
-  color: #b9c3d4;
-  font-size: 13px;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .btnPulse {
+  .cursor {
+    transition: opacity 250ms ease;
+  }
+  .btnPulse,
+  .clickRipple,
+  .loadingDot {
     animation: none;
   }
-  .timelineFill {
+  .topProgress,
+  .trackFill {
     transition: none;
   }
 }
