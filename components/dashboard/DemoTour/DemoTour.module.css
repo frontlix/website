@@ -146,13 +146,37 @@
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   background: #f7f8fa;
   color: #555;
   font-size: 13px;
   font-weight: 600;
+}
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.loadingDiag {
+  max-width: 420px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #8a93a3;
+}
+.loadingRetry {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1a56ff, #00cfff);
+  color: white;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 .loadingDot {
   width: 10px;

@@ -44,12 +44,17 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
   const [runSeq, setRunSeq] = useState(0)
   const [bootReady, setBootReady] = useState(false)
   const [appReady, setAppReady] = useState(false)
+  /** verhoog om de iframe vers te herladen (cache-bust) */
+  const [iframeSeq, setIframeSeq] = useState(1)
+  /** diagnose-regel wanneer het laden te lang duurt */
+  const [diag, setDiag] = useState<string | null>(null)
   const [cursor, setCursor] = useState<CursorState>({ x: 90, y: 90, visible: false, clickTick: 0 })
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const pausedRef = useRef(false)
   const tokenRef = useRef<RunToken>({ aborted: false })
+  const loadStartRef = useRef(0)
 
   const step = CHAPTERS[chapter]
   const isLast = chapter === CHAPTERS.length - 1
@@ -71,12 +76,17 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
   // wachten tot de demo-app echt gemount is (Babel compileert in de browser)
   useEffect(() => {
     if (!bootReady || appReady) return
+    loadStartRef.current = Date.now()
     const timer = setInterval(() => {
       try {
         const doc = iframeRef.current?.contentDocument
+        const win = iframeRef.current?.contentWindow as
+          | (Window & { React?: unknown; Babel?: unknown })
+          | null
         if (!doc) return
         if (doc.querySelector('.sidebar')) {
           setAppReady(true)
+          setDiag(null)
           return
         }
         // Vangnet: toont de demo-app toch zijn loginscherm (localStorage
@@ -85,12 +95,24 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
           (el) => /Inloggen/i.test(el.textContent ?? '')
         )
         loginBtn?.click()
-      } catch {
-        /* iframe nog niet bereikbaar */
+        // Duurt het te lang, toon dan precies wat er misgaat in de iframe.
+        if (Date.now() - loadStartRef.current > 10000) {
+          const root = doc.getElementById('root')
+          setDiag(
+            [
+              `scripts: ${doc.scripts.length}`,
+              `React: ${win?.React ? 'geladen' : 'ontbreekt'}`,
+              `Babel: ${win?.Babel ? 'geladen' : 'ontbreekt'}`,
+              `app: ${root && root.childElementCount > 0 ? 'gemount, wacht op sidebar' : 'nog leeg'}`,
+            ].join(' · ')
+          )
+        }
+      } catch (err) {
+        setDiag(`iframe niet bereikbaar: ${err instanceof Error ? err.message : 'onbekend'}`)
       }
     }, 600)
     return () => clearInterval(timer)
-  }, [bootReady, appReady])
+  }, [bootReady, appReady, iframeSeq])
 
   // hoofdstukklok: tikt zolang er afgespeeld wordt, pauze bevriest alles
   useEffect(() => {
@@ -195,16 +217,34 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
             <div className={styles.viewport}>
               {bootReady && (
                 <iframe
+                  key={iframeSeq}
                   ref={iframeRef}
-                  src="/demo-app/Dashboard.html"
+                  src={`/demo-app/Dashboard.html?v=3.${iframeSeq}`}
                   title="Frontlix demo"
                   className={styles.iframe}
                 />
               )}
               {!appReady && (
                 <div className={styles.loading}>
-                  <span className={styles.loadingDot} />
-                  De demo wordt geladen…
+                  <div className={styles.loadingRow}>
+                    <span className={styles.loadingDot} />
+                    De demo wordt geladen…
+                  </div>
+                  {diag && (
+                    <>
+                      <div className={styles.loadingDiag}>{diag}</div>
+                      <button
+                        type="button"
+                        className={styles.loadingRetry}
+                        onClick={() => {
+                          setDiag(null)
+                          setIframeSeq((s) => s + 1)
+                        }}
+                      >
+                        Opnieuw laden
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
               {/* nepmuis over het browservenster */}
