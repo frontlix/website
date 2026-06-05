@@ -48,7 +48,7 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
   const [iframeSeq, setIframeSeq] = useState(1)
   /** diagnose-regel wanneer het laden te lang duurt */
   const [diag, setDiag] = useState<string | null>(null)
-  const [cursor, setCursor] = useState<CursorState>({ x: 90, y: 90, visible: false, clickTick: 0 })
+  const [cursor, setCursor] = useState<CursorState>({ x: 90, y: 90, visible: false, clickTick: 0, durMs: 620 })
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -257,7 +257,7 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
               {/* nepmuis over het browservenster */}
               <div
                 className={`${styles.cursor} ${cursor.visible && step.kind === 'tour' ? '' : styles.cursorHidden}`}
-                style={{ left: cursor.x, top: cursor.y }}
+                style={{ left: cursor.x, top: cursor.y, transitionDuration: `${cursor.durMs}ms` }}
                 aria-hidden="true"
               >
                 {cursor.clickTick > 0 && <span key={cursor.clickTick} className={styles.clickRipple} />}

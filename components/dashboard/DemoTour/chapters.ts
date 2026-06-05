@@ -121,11 +121,15 @@ export const CHAPTERS: readonly Chapter[] = [
       'Elk veld is direct te bewerken',
       'Rechts: het hele gesprek met de klant',
     ],
-    durSec: 15,
+    durSec: 17,
     run: async (a) => {
       await a.closeOverlays()
-      await a.goto('leads/L-2087')
-      await a.sleep(1400)
+      // open het dossier zoals een gebruiker dat doet: via een échte
+      // klik op de leadkaart in de pipeline
+      await a.clickNav('Leads')
+      await a.sleep(700)
+      await a.clickText('.pipe-card', /Jeroen de Vries/i)
+      await a.sleep(1300)
       await a.clickTab(/Offerte/i)
       await a.sleep(1700)
       await a.clickTab(/Foto/i)
@@ -192,20 +196,32 @@ export const CHAPTERS: readonly Chapter[] = [
       'Offerte: alle regels en prijzen worden automatisch berekend',
       'Versturen: bekijk het voorbeeld en stuur in één klik',
     ],
-    durSec: 19,
+    durSec: 27,
     run: async (a) => {
       await a.closeOverlays()
       await a.openQuote()
-      await a.sleep(900)
+      await a.sleep(700)
+      // stap Klant: volledig invullen, zichtbaar typend
       await a.type('input[placeholder="Bv. Jan de Jong"]', 'Jan de Jong')
       await a.type('input[placeholder="06 - 12 34 56 78"]', '06 12 34 56 78')
+      await a.type('input[placeholder*="laan"]', 'Lindenlaan')
+      await a.type('input[placeholder="14"]', '14')
+      await a.type('input[placeholder="2611 GH"]', '2611 GH')
+      await a.type('input[placeholder="Delft"]', 'Delft')
+      await a.sleep(500)
+      await a.clickText('.btn.btn-primary', /Volgende/i)
+      await a.sleep(900)
+      // stap Werk: een extra dienst aanvinken en de m² aanpassen
+      await a.clickText('button', /Nieuwe beschermlaag/i)
       await a.sleep(600)
+      await a.type('input.tabular', '145')
+      await a.sleep(800)
       await a.clickText('.btn.btn-primary', /Volgende/i)
-      await a.sleep(1700)
+      // stap Offerte: de automatisch berekende regels rustig laten zien
+      await a.sleep(2300)
       await a.clickText('.btn.btn-primary', /Volgende/i)
-      await a.sleep(1700)
-      await a.clickText('.btn.btn-primary', /Volgende/i)
-      await a.sleep(1900)
+      // stap Versturen: het voorbeeld tonen, daarna netjes sluiten
+      await a.sleep(2100)
       await a.closeOverlays()
     },
   },

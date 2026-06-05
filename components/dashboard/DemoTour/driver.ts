@@ -23,6 +23,8 @@ export type CursorState = {
   visible: boolean
   /** verhoog om het klik-effect opnieuw af te spelen */
   clickTick: number
+  /** glijduur van de huidige beweging (afstands-afhankelijk) */
+  durMs: number
 }
 
 export type DriverApi = {
@@ -59,13 +61,14 @@ type DriverDeps = {
   setCursor: (updater: (c: CursorState) => CursorState) => void
 }
 
-const GLIDE_MS = 620
-const TYPE_MS = 45
+const TYPE_MS = 40
 
 export function createDriver(deps: DriverDeps): DriverApi {
   const { getIframe, getStage, isPaused, token, setCursor } = deps
 
   const doc = (): Document | null => getIframe()?.contentDocument ?? null
+  /** laatste cursorpositie, voor afstands-afhankelijke glijduur */
+  let lastPos = { x: 90, y: 90 }
 
   const sleep = async (ms: number) => {
     let remaining = ms
@@ -84,29 +87,40 @@ export function createDriver(deps: DriverDeps): DriverApi {
     return matches.find((el) => text.test(el.textContent ?? '')) ?? null
   }
 
-  /** cursor naar het midden van een element in de iframe glijden */
+  /** cursor naar het midden van een element glijden; korte hop = snel, lange beweging = rustiger */
   const glideTo = async (el: HTMLElement) => {
     const iframe = getIframe()
     const stage = getStage()
     if (!iframe || !stage) return
     el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-    await sleep(180)
+    await sleep(150)
     const er = el.getBoundingClientRect()
     const ir = iframe.getBoundingClientRect()
     const sr = stage.getBoundingClientRect()
     const x = ir.left - sr.left + er.left + er.width / 2
     const y = ir.top - sr.top + er.top + er.height / 2
-    setCursor((c) => ({ ...c, x, y, visible: true }))
-    await sleep(GLIDE_MS)
+    const dist = Math.hypot(x - lastPos.x, y - lastPos.y)
+    const durMs = Math.round(Math.max(320, Math.min(900, dist * 1.4)))
+    lastPos = { x, y }
+    setCursor((c) => ({ ...c, x, y, durMs, visible: true }))
+    await sleep(durMs + 60)
   }
 
-  /** beweeg ernaartoe, speel het klik-effect en klik het échte element */
+  /**
+   * Beweeg ernaartoe, speel het klik-effect en klik het échte element.
+   * Is het element al actief (nav-item, seg-btn of tab die al aanstaat),
+   * dan wijzen we alleen: een klik zou niets zichtbaars doen.
+   */
   const clickEl = async (el: HTMLElement | null) => {
     if (!el) return // geen nep-klikken op iets dat er niet is
     await glideTo(el)
+    if (el.classList.contains('active')) {
+      await sleep(250)
+      return
+    }
     setCursor((c) => ({ ...c, clickTick: c.clickTick + 1 }))
     el.click()
-    await sleep(380)
+    await sleep(240)
   }
 
   return {
