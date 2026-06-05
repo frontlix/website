@@ -490,7 +490,6 @@ export default async function OverzichtPage({
         </div>
       </div>
 
-      {dagrapportData && <DagrapportDrawer data={dagrapportData} />}
       </div>
 
       {/* Mobile-tree: zelfde server-data, andere widget-composition.
@@ -498,6 +497,12 @@ export default async function OverzichtPage({
       <div className={styles.mobileTree}>
         <MobileOverzicht data={mobileData} />
       </div>
+
+      {/* Dagrapport-drawer staat buiten beide trees: het is een fixed
+          overlay die zowel op desktop als mobile moet kunnen openen. Binnen
+          de desktopTree (display:none op mobile) zou 'ie op mobiel nooit
+          renderen. URL-param `?dagrapport=1` blijft de single source of truth. */}
+      {dagrapportData && <DagrapportDrawer data={dagrapportData} />}
     </>
   )
 }
