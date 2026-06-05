@@ -49,15 +49,15 @@ export function NPSDistributionBar({
         <div className={styles.legend}>
           <span>
             <span className={`${styles.legendDot} ${styles.promoters}`} />
-            <strong>Promoters</strong> (9–10): geven actief aanbevelingen
+            <strong>Promoters</strong> (4,5–5 sterren): geven actief aanbevelingen
           </span>
           <span>
             <span className={`${styles.legendDot} ${styles.passives}`} />
-            <strong>Passives</strong> (7–8): tevreden maar niet enthousiast
+            <strong>Passives</strong> (3,5–4 sterren): tevreden maar niet enthousiast
           </span>
           <span>
             <span className={`${styles.legendDot} ${styles.detractors}`} />
-            <strong>Detractors</strong> (0–6): risico op negatieve mond-tot-mond
+            <strong>Detractors</strong> (0–3 sterren): risico op negatieve mond-tot-mond
           </span>
         </div>
       </div>

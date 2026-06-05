@@ -49,13 +49,10 @@
 .score {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 14px;
   font-weight: 700;
   color: var(--fg);
-}
-.starIcon {
-  color: #f59e0b;
 }
 
 .body {

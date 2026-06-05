@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Star, ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { Pill } from '@/components/dashboard/ui/Pill'
+import { StarRating } from '@/components/dashboard/mobile/shared/StarRating'
 import styles from './ReviewCard.module.css'
 
 export type ReviewItem = {
@@ -10,7 +11,7 @@ export type ReviewItem = {
   naam: string
   plaats: string
   datum: string
-  score: number // 0-10
+  score: number // 0-5
   nps: 'promoter' | 'passive' | 'detractor'
   text: string
   published: boolean
@@ -42,8 +43,8 @@ export function ReviewCard({ review }: { review: ReviewItem }) {
         </div>
         <div className={styles.headRight}>
           <div className={styles.score}>
-            <Star size={14} className={styles.starIcon} />
-            <span className="dash-tabular">{review.score}/10</span>
+            <StarRating value={review.score} size={15} />
+            <span className="dash-tabular">{review.score.toLocaleString('nl-NL')}</span>
           </div>
           <Pill
             tone={review.nps === 'promoter' ? 'green' : review.nps === 'detractor' ? 'red' : 'gray'}

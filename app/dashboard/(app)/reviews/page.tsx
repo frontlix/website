@@ -65,7 +65,7 @@ export default async function ReviewsPage({
       naam: 'Anna Smit',
       plaats: 'Den Haag',
       datum: '2 dagen geleden',
-      score: 10,
+      score: 5,
       nps: 'promoter',
       text: 'Geweldig werk. Op tijd, schoon werk, perfecte communicatie via WhatsApp tijdens en na de klus. Aanrader!',
       published: true,
@@ -76,7 +76,7 @@ export default async function ReviewsPage({
       naam: 'Sandra Janssen',
       plaats: 'Pijnacker',
       datum: '1 week geleden',
-      score: 9,
+      score: 4.5,
       nps: 'promoter',
       text: 'Heel netjes gewerkt en eerlijk advies gekregen over de beschermlaag. Resultaat is super.',
       published: true,
@@ -87,7 +87,7 @@ export default async function ReviewsPage({
       naam: 'Erik van der Velde',
       plaats: 'Rotterdam',
       datum: '2 weken geleden',
-      score: 8,
+      score: 4,
       nps: 'passive',
       text: 'Goed werk geleverd. Aankomsttijd was iets later dan afgesproken maar verder prima.',
       published: true,
@@ -98,7 +98,7 @@ export default async function ReviewsPage({
       naam: 'Familie Kuiper',
       plaats: 'Delft',
       datum: '3 weken geleden',
-      score: 10,
+      score: 5,
       nps: 'promoter',
       text: 'Vakwerk! De terras ziet er weer als nieuw uit, dankzij de antraciet voegen prachtige uitstraling.',
       published: true,
@@ -109,7 +109,7 @@ export default async function ReviewsPage({
       naam: 'Bert Koning',
       plaats: 'Utrecht',
       datum: '1 maand geleden',
-      score: 6,
+      score: 3,
       nps: 'detractor',
       text: 'Werk goed gedaan maar prijs viel iets hoger uit dan in de offerte was aangegeven.',
       published: false,
@@ -212,8 +212,8 @@ export default async function ReviewsPage({
         <KpiCard
           label="Gemiddelde score"
           value={avgScore}
-          suffix="/10"
-          trend={[8.2, 8.4, 8.5, 8.7, 8.8, 9.0, 9.1]}
+          suffix="/5"
+          trend={[4.1, 4.2, 4.3, 4.4, 4.4, 4.5, 4.6]}
         />
         <KpiCard
           label="Response rate"
