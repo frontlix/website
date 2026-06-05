@@ -5,6 +5,12 @@
    (de échte Schoon Straatje PDF-template). Wijzigingen aan opmaak: eerst
    in pdf-template.ts afstemmen, dan hier mirrorren.
 
+   A4-GETROUW: het vel (.paper) heeft de échte A4-maten — 794px (≈210mm)
+   breed, min-height 1123px (≈297mm) hoog — en álle binnen-maten zijn 1:1
+   die van pdf-template.ts (32px titel, 40px padding, enz.). De zoom-viewport
+   eromheen verkleint het hele vel met transform:scale() tot het op de
+   schermbreedte past (fit width) en laat pinch-zoom toe (JS in de .tsx).
+
    BELANGRIJK — papier, niet thema-afhankelijk:
    Het document binnen .paper bootst gedrukt papier na en blijft licht/wit
    óók in dark mode. Alle kleuren binnen het papier zijn daarom LETTERLIJKE
@@ -56,21 +62,59 @@
   color: var(--color-text-muted);
 }
 
-/* ── Papier-container ──────────────────────────────────────────────────────
-   16px lucht rondom het vel binnen de scrollbare sheet-body. */
-.paperWrap {
+/* ── Zoom-viewport ─────────────────────────────────────────────────────────
+   Vult de sheet-body; scrollt (pan) in beide richtingen en vangt de pinch op.
+   Subtiele grijze achtergrond zodat het witte A4-vel als een 'vel op tafel'
+   leest. touch-action staat pan toe; de pinch wordt in JS afgehandeld. */
+.zoomViewport {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
+  touch-action: pan-x pan-y;
+  background: var(--color-surface-2);
 }
 
-/* Het witte A4-vel: subtiele schaduw, print-tekstkleur.
-   Spiegelt .page in pdf-template.ts. */
-.paper {
+/* ── Sizer ─────────────────────────────────────────────────────────────────
+   Reserveert de GESCHAALDE ruimte van het vel (een transform telt niet mee in
+   de layout, dus zonder deze box zou fit-width/scrollen niet kloppen).
+   --scale en --paper-h worden vanuit de .tsx gezet. Draagt de papier-schaduw
+   en afronding zodat de hoeken van de crème header netjes geklikt zijn. */
+.zoomSizer {
+  width: calc(794px * var(--scale, 0));
+  height: calc(var(--paper-h, 0px) * var(--scale, 0));
+  margin: 0 auto;
+  border-radius: 6px;
+  overflow: hidden;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* crème header loopt tot de randen */
-  font-size: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* Het witte A4-vel op échte maten. transform:scale() verkleint het zó dat het
+   geschaalde formaat exact de .zoomSizer vult (transform-origin top-left).
+   Spiegelt .page in pdf-template.ts (width 210mm, min-height 297mm, flex-kolom). */
+.paper {
+  width: 794px; /* ≈210mm @96dpi — MOET gelijk zijn aan A4_WIDTH in de .tsx */
+  min-height: 1123px; /* ≈297mm @96dpi */
+  display: flex;
+  flex-direction: column;
+  background: #fff;
   color: #1a1a1a; /* SS-print-zwart */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  transform: scale(var(--scale, 1));
+  transform-origin: top left;
+}
+
+/* Spacer duwt voorwaarden + footer naar onderen — spiegelt .page-spacer. */
+.spacer {
+  flex: 1 1 auto;
+  min-height: 24px;
+}
+
+/* Onderblok (voorwaarden + footer) — spiegelt .bottom-block. */
+.bottomBlock {
+  flex: 0 0 auto;
 }
 
 /* ── Briefhoofd — crème header ─────────────────────────────────────────────
@@ -80,21 +124,20 @@
   background: #FAFAF0; /* SS-crème — vaste print-kleur */
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 22px 20px 18px 20px;
+  align-items: center;
+  padding: 28px 40px 24px 40px;
 }
 
 .headLeft {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 /* "OFFERTE" — SS-navy, groot, bold. Spiegelt .title in pdf-template.ts
-   (font-size:32px → geschaald naar mobiel-papier 22px). */
+   (font-size 32px). */
 .title {
   margin: 0;
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 800;
   color: #002D63; /* SS-navy — vaste print-kleur */
   letter-spacing: 1px;
@@ -103,14 +146,14 @@
 
 /* "Nr. {nr}" — lichtgrijze subtitle. Spiegelt .subtitle in pdf-template.ts. */
 .docNr {
-  margin: 0;
-  font-size: 11px;
+  margin: 6px 0 0 0;
+  font-size: 12px;
   color: #6b6b6b;
   letter-spacing: 0.5px;
 }
 
 /* Midden: "Top 30 vakbedrijven"-badge, top-aligned — spiegelt .header-center
-   in pdf-template.ts (badge height 105px op A4; hier proportioneel kleiner). */
+   in pdf-template.ts (badge height 105px op A4). */
 .headCenter {
   flex: 0 0 auto;
   align-self: flex-start;
@@ -121,7 +164,7 @@
 
 .headBadge {
   display: block;
-  height: 44px;
+  height: 105px;
   width: auto;
 }
 
@@ -132,23 +175,22 @@
 
 .headLogo {
   display: block;
-  width: 104px;
+  width: 220px;
   height: auto;
 }
 
 /* ── Gouden accentbalk ─────────────────────────────────────────────────────
-   Spiegelt .accent in pdf-template.ts: height 4px, background #F5C518.
-   4px gouden band direct onder de header. */
+   Spiegelt .accent in pdf-template.ts: height 4px, background #F5C518. */
 .accentBar {
   height: 4px;
   background: #F5C518; /* SS-goud — vaste print-kleur */
 }
 
 /* ── Content-wrapper ───────────────────────────────────────────────────────
-   Spiegelt .content in pdf-template.ts: padding 24px 40px 0 40px.
-   Op mobiel reduceren naar 16px zijwaarts. */
+   Spiegelt .content in pdf-template.ts: padding 24px 40px 0 40px. */
 .content {
-  padding: 18px 16px 16px 16px;
+  padding: 24px 40px 0 40px;
+  flex: 0 0 auto;
 }
 
 /* ── Twee meta-kaarten ─────────────────────────────────────────────────────
@@ -156,8 +198,9 @@
    Side-by-side; elk met #f9fafb achtergrond + subtiele rand + 8px radius. */
 .metaGrid {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 
 .metaCard {
@@ -165,7 +208,7 @@
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 12px 12px;
+  padding: 16px 18px;
   min-width: 0; /* voorkomt overflow bij lange namen */
 }
 
@@ -177,12 +220,12 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #003F8A; /* SS-navy-2 — vaste print-kleur */
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-/* Datarijen in de kaart — klein, compact. */
+/* Datarijen in de kaart. Spiegelt .meta-card .row. */
 .metaRow {
-  font-size: 10px;
+  font-size: 11px;
   color: #4b5563;
   line-height: 1.55;
   display: flex;
@@ -198,7 +241,7 @@
 /* Klantnaam prominent bovenaan de "Voor"-kaart.
    Spiegelt .row .name in pdf-template.ts: navy, groter font. */
 .clientName {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #002D63; /* SS-navy — vaste print-kleur */
   display: block;
@@ -208,12 +251,12 @@
 /* ── Specificatie-sectietitel ──────────────────────────────────────────────
    Spiegelt .section-title in pdf-template.ts: uppercase, #003F8A. */
 .sectionTitle {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #003F8A; /* SS-navy-2 — vaste print-kleur */
-  margin: 0 0 10px 0;
+  margin: 8px 0 12px 0;
 }
 
 /* ── Regeltabel ─────────────────────────────────────────────────────────────
@@ -229,17 +272,17 @@
 .linesHead th {
   background: #002D63; /* SS-navy — vaste print-kleur */
   color: #ffffff;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 10px 10px;
+  padding: 12px 14px;
 }
 
 /* Omschrijving-kolom links uitlijnen. */
 .thDesc {
   text-align: left;
-  width: 45%;
+  width: 50%;
 }
 
 /* Numerieke kolommen rechts uitlijnen. */
@@ -247,17 +290,17 @@
   text-align: right;
 }
 
-/* Tabelcellen (lichter dan thead). */
+/* Tabelcellen. Spiegelt table.regels tbody td. */
 .cellDesc {
-  padding: 8px 10px 8px 10px;
-  font-size: 10.5px;
+  padding: 9px 14px;
+  font-size: 11px;
   color: #1f2937;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .cellNum {
-  padding: 8px 10px;
-  font-size: 10.5px;
+  padding: 9px 14px;
+  font-size: 11px;
   color: #1f2937;
   text-align: right;
   white-space: nowrap;
@@ -277,10 +320,10 @@
 
 /* Lege staat van de tabel. */
 .emptyCell {
-  padding: 18px;
+  padding: 20px;
   text-align: center;
   color: #9ca3af;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 /* ── Totalen-blok ──────────────────────────────────────────────────────────
@@ -289,18 +332,18 @@
 .totalsWrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .totals {
-  width: 65%;
+  width: 60%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .totals td {
-  padding: 7px 10px;
-  font-size: 10.5px;
+  padding: 8px 14px;
+  font-size: 11px;
   color: #4b5563;
   vertical-align: top;
   word-wrap: break-word;
@@ -314,7 +357,7 @@
   text-align: right;
   color: #1a1a1a;
   white-space: nowrap;
-  width: 40%;
+  width: 38%;
 }
 
 /* Toeslag-rijen (amber kleur, ná subtotaal).
@@ -334,19 +377,19 @@
    Spiegelt table.totals tr.subtotal in pdf-template.ts. */
 .rowSubtotal td {
   border-top: 1px solid #e5e7eb;
-  padding-top: 10px;
+  padding-top: 12px;
 }
 
 /* Grand-row: Totaal incl. BTW — navy achtergrond, witte tekst.
    Spiegelt table.totals tr.grand in pdf-template.ts. */
 .rowGrand td {
-  padding: 12px 10px;
+  padding: 14px;
 }
 
 .grandCell {
   background: #002D63; /* SS-navy — vaste print-kleur */
   color: #ffffff !important;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -356,7 +399,7 @@
   border-radius: 6px 0 0 6px;
   background: #002D63;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -364,7 +407,7 @@
   border-radius: 0 6px 6px 0;
   background: #002D63;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-align: right;
 }
@@ -379,8 +422,8 @@
    Spiegelt .toelichting in pdf-template.ts:
    #fffbeb bg, #fde68a rand, 8px radius. */
 .toelichting {
-  margin-top: 14px;
-  padding: 14px 14px;
+  margin-top: 18px;
+  padding: 16px 18px;
   background: #fffbeb; /* amber-licht — vaste print-kleur */
   border: 1px solid #fde68a; /* amber-rand — vaste print-kleur */
   border-radius: 8px;
@@ -394,25 +437,25 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #92400e; /* amber-dark — vaste print-kleur */
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 /* Toelichting-tekst — donker amber, lineair.
    Spiegelt .toelichting .text: #78350f, font-size 11px. */
 .toelichtingText {
-  font-size: 10.5px;
+  font-size: 11px;
   color: #78350f; /* amber-darker — vaste print-kleur */
   line-height: 1.6;
   white-space: pre-wrap; /* behoudt enters uit de aanhef */
 }
 
 /* ── Voorwaarden ─────────────────────────────────────────────────────────────
-   Spiegelt .voorwaarden in pdf-template.ts: 10px, #6b7280.
+   Spiegelt .voorwaarden in pdf-template.ts: 10px, #6b7280, padding 0 40px.
    Heeft een label uppercase #003F8A bovenaan. */
 .voorwaarden {
-  margin-top: 14px;
-  padding: 0 16px 12px 16px;
-  font-size: 9.5px;
+  margin-top: 18px;
+  padding: 0 40px;
+  font-size: 10px;
   color: #6b7280;
   line-height: 1.7;
 }
@@ -423,15 +466,15 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #003F8A; /* SS-navy-2 — vaste print-kleur */
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 /* ── Document-footer ─────────────────────────────────────────────────────────
    Spiegelt .footer in pdf-template.ts:
    3px #F5C518 bovenrand, #f9fafb achtergrond, gecentreerd, 9px. */
 .docFooter {
-  margin-top: 0;
-  padding: 14px 16px;
+  margin-top: 24px;
+  padding: 18px 40px;
   background: #f9fafb;
   border-top: 3px solid #F5C518; /* SS-goud — vaste print-kleur */
   font-size: 9px;
