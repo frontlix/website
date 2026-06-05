@@ -30,7 +30,8 @@ import pageStyles from '@/app/dashboard/(app)/instellingen/page.module.css'
  * - Gating is PER CEL (niet per kolom): in_app/email/push gaan op fase
  *   (KANAAL_FASE <= LIVE_FASE), maar WhatsApp is gedeeltelijk live. Alleen
  *   de events in WHATSAPP_LIVE_EVENTS hebben een interactieve WhatsApp-toggle
- *   (default aan); de overige WhatsApp-cellen blijven disabled. Zie isCellLive.
+ *   (default aan); de overige WhatsApp-cellen tonen een "Binnenkort"-label
+ *   i.p.v. een toggle. Zie isCellLive.
  */
 
 const LIVE_FASE = 3 // huidige fase, toggles voor kanalen met fase > LIVE_FASE disabled (fase 4=whatsapp)
@@ -43,15 +44,6 @@ const LIVE_FASE = 3 // huidige fase, toggles voor kanalen met fase > LIVE_FASE d
 function isCellLive(evt: NotificationEventType, kn: NotificationKanaal): boolean {
   if (kn === 'whatsapp') return WHATSAPP_LIVE_EVENTS.has(evt)
   return KANAAL_FASE[kn] <= LIVE_FASE
-}
-
-/**
- * Toont de kolom-header "Binnenkort"-badge alleen als GEEN ENKEL event in die
- * kolom live is. Push is volledig live en WhatsApp is deels live, dus in de
- * praktijk krijgt geen enkele kolom nog een badge, maar de check is generiek.
- */
-function isColumnFullyNotLive(kn: NotificationKanaal): boolean {
-  return EVENT_TYPES_ORDERED.every((evt) => !isCellLive(evt, kn))
 }
 
 export function NotificatiesEditor({
@@ -130,9 +122,6 @@ export function NotificatiesEditor({
           {KANALEN_ORDERED.map((kn) => (
             <div key={kn} className={pageStyles.notifCol}>
               {KANAAL_LABELS[kn]}
-              {isColumnFullyNotLive(kn) && (
-                <span className={styles.binnenkortBadge}>Binnenkort</span>
-              )}
             </div>
           ))}
         </div>
@@ -149,24 +138,29 @@ export function NotificatiesEditor({
               const isSaving = savingKey === key
               return (
                 <div key={kn} className={pageStyles.notifCol}>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={enabled}
-                    aria-label={`${EVENT_LABELS[evt].titel} via ${KANAAL_LABELS[kn]}`}
-                    disabled={!isLive || isSaving}
-                    onClick={() => handleToggle(evt, kn)}
-                    className={[
-                      styles.toggle,
-                      enabled ? styles.toggleOn : '',
-                      !isLive ? styles.toggleDisabled : '',
-                      isSaving ? styles.toggleSaving : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <span className={styles.toggleKnob} />
-                  </button>
+                  {isLive ? (
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={enabled}
+                      aria-label={`${EVENT_LABELS[evt].titel} via ${KANAAL_LABELS[kn]}`}
+                      disabled={isSaving}
+                      onClick={() => handleToggle(evt, kn)}
+                      className={[
+                        styles.toggle,
+                        enabled ? styles.toggleOn : '',
+                        isSaving ? styles.toggleSaving : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
+                      <span className={styles.toggleKnob} />
+                    </button>
+                  ) : (
+                    /* Nog niet beschikbaar kanaal voor dit event: net label i.p.v.
+                       een verwarrende uitgegrijsde toggle. */
+                    <span className={styles.binnenkortCell}>Binnenkort</span>
+                  )}
                 </div>
               )
             })}

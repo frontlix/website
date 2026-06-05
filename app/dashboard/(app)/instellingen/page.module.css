@@ -225,7 +225,7 @@
 }
 .notifHead {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 60px 60px 60px 60px;
+  grid-template-columns: minmax(0, 1fr) 72px 72px 72px 72px;
   gap: 12px;
   padding: 10px 14px;
   background: var(--card-bg);
@@ -238,7 +238,7 @@
 }
 .notifRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 60px 60px 60px 60px;
+  grid-template-columns: minmax(0, 1fr) 72px 72px 72px 72px;
   gap: 12px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
