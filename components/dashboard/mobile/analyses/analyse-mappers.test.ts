@@ -5,10 +5,11 @@ const base: AnalyseServerData = {
   periodKey: 'deze-maand',
   omzet: 18420,
   omzetDoelMaand: 25000,
+  // deze-maand → dagelijkse buckets (zie omzetBuckets).
   trend: [
-    { maand: '2025-06', omzet: 8400 },
-    { maand: '2025-07', omzet: 9200 },
-    { maand: '2025-08', omzet: 23100 },
+    { bucket: '2026-06-01', omzet: 8400 },
+    { bucket: '2026-06-02', omzet: 9200 },
+    { bucket: '2026-06-03', omzet: 23100 },
   ],
   leadsTotaal: 142,
   offertesVerstuurd: 98,
@@ -87,7 +88,20 @@ describe('mapAnalyse', () => {
     expect(v.trendSeries).toEqual([8400, 9200, 23100])
   })
 
-  it('derives narrow month labels from the trend (nl-NL)', () => {
-    expect(v.monthLabels).toEqual(['J', 'J', 'A']) // jun, jul, aug
+  it('maand-weergave: dag-labels (dag-van-maand) i.p.v. maand-labels', () => {
+    expect(v.monthLabels).toEqual(['1', '2', '3'])
+  })
+
+  it('kwartaal/jaar: smalle maand-labels per bucket (nl-NL)', () => {
+    const m = mapAnalyse({
+      ...base,
+      periodKey: 'dit-kwartaal',
+      trend: [
+        { bucket: '2025-06', omzet: 8400 },
+        { bucket: '2025-07', omzet: 9200 },
+        { bucket: '2025-08', omzet: 23100 },
+      ],
+    })
+    expect(m.monthLabels).toEqual(['J', 'J', 'A']) // jun, jul, aug
   })
 })

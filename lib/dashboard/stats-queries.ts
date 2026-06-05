@@ -1,5 +1,6 @@
 import { getDashboardSupabase } from './supabase-server'
-import type { StatsPeriod } from './period'
+import type { StatsPeriod, PeriodKey } from './period'
+import { omzetBuckets, type OmzetRow } from './omzet-buckets'
 
 /**
  * Aantal leads in de periode (alle, ongeacht dashboard_archived).
@@ -342,47 +343,75 @@ export async function topTags(
 }
 
 /**
- * Totale omzet in de periode = som van totaal_prijs over leads die
- * akkoord gaven (akkoord_op binnen het venster). Negeert null-prijzen.
+ * Een lead telt mee voor de omzet zodra hij "gewonnen" is: akkoord gegaan
+ * (akkoord_op) OF een afspraak geboekt (afspraak_geboekt_op). De omzet-datum
+ * is akkoord_op, anders afspraak_geboekt_op. Sluit aan op de funnel-definitie
+ * van "akkoord" (countConverted) zodat omzet en conversie consistent zijn.
  */
-export async function omzetTotaal(period: StatsPeriod): Promise<number> {
+type GewonnenLeadRow = {
+  akkoord_op: string | null
+  afspraak_geboekt_op: string | null
+  totaal_prijs: number | null
+  hoofdcategorie: string | null
+}
+
+async function fetchGewonnenOmzetRows(): Promise<
+  Array<{ wonDate: string; prijs: number; categorie: string }>
+> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('totaal_prijs').not('akkoord_op', 'is', null)
-  if (period.from) query = query.gte('akkoord_op', period.from)
-  if (period.to) query = query.lt('akkoord_op', period.to)
-  const { data, error } = await query
+  const { data, error } = await supabase
+    .from('leads')
+    .select('akkoord_op, afspraak_geboekt_op, totaal_prijs, hoofdcategorie')
+    .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null')
   if (error) {
-    console.error('[omzetTotaal] failed:', error)
-    return 0
+    console.error('[omzet] fetchGewonnenOmzetRows failed:', error)
+    return []
   }
-  type Row = { totaal_prijs: number | null }
-  return ((data as Row[] | null) ?? []).reduce((sum, r) => sum + (r.totaal_prijs ?? 0), 0)
+  const out: Array<{ wonDate: string; prijs: number; categorie: string }> = []
+  for (const r of (data as GewonnenLeadRow[] | null) ?? []) {
+    const wonDate = r.akkoord_op ?? r.afspraak_geboekt_op
+    if (!wonDate) continue
+    out.push({
+      wonDate,
+      prijs: r.totaal_prijs ?? 0,
+      categorie: r.hoofdcategorie ?? 'Onbekend',
+    })
+  }
+  return out
+}
+
+/** True als een ISO-datum binnen [from, to) valt (from optioneel = all-time). */
+function inRange(iso: string, period: StatsPeriod): boolean {
+  const ms = Date.parse(iso)
+  if (Number.isNaN(ms)) return false
+  if (period.from && ms < Date.parse(period.from)) return false
+  if (period.to && ms >= Date.parse(period.to)) return false
+  return true
 }
 
 /**
- * Omzet per hoofdcategorie in de periode (som totaal_prijs over akkoord-leads).
+ * Totale omzet in de periode = som van totaal_prijs over gewonnen leads
+ * met won-datum binnen het venster. Negeert null-prijzen.
+ */
+export async function omzetTotaal(period: StatsPeriod): Promise<number> {
+  const rows = await fetchGewonnenOmzetRows()
+  return rows
+    .filter((r) => inRange(r.wonDate, period))
+    .reduce((sum, r) => sum + r.prijs, 0)
+}
+
+/**
+ * Omzet per hoofdcategorie in de periode (gewonnen leads).
  * NULL-categorie wordt "Onbekend". DESC op omzet.
  */
 export async function omzetPerCategorie(
   period: StatsPeriod,
 ): Promise<Array<{ categorie: string; omzet: number }>> {
-  const supabase = await getDashboardSupabase()
-  let query = supabase
-    .from('leads')
-    .select('hoofdcategorie, totaal_prijs')
-    .not('akkoord_op', 'is', null)
-  if (period.from) query = query.gte('akkoord_op', period.from)
-  if (period.to) query = query.lt('akkoord_op', period.to)
-  const { data, error } = await query
-  if (error) {
-    console.error('[omzetPerCategorie] failed:', error)
-    return []
-  }
-  type Row = { hoofdcategorie: string | null; totaal_prijs: number | null }
+  const rows = await fetchGewonnenOmzetRows()
   const sums = new Map<string, number>()
-  for (const row of (data as Row[] | null) ?? []) {
-    const key = row.hoofdcategorie ?? 'Onbekend'
-    sums.set(key, (sums.get(key) ?? 0) + (row.totaal_prijs ?? 0))
+  for (const r of rows) {
+    if (!inRange(r.wonDate, period)) continue
+    sums.set(r.categorie, (sums.get(r.categorie) ?? 0) + r.prijs)
   }
   return [...sums.entries()]
     .map(([categorie, omzet]) => ({ categorie, omzet }))
@@ -390,40 +419,18 @@ export async function omzetPerCategorie(
 }
 
 /**
- * Maandelijkse omzet-reeks voor de laatste N maanden (default 12), ASC.
- * Buckets op akkoord_op-maand; lege maanden krijgen 0. Voor de area-chart.
+ * Omzet-trendreeks die het periode-filter volgt: dagelijkse buckets voor
+ * week/maand, maandelijkse voor kwartaal/jaar (zie omzetBuckets). Som van
+ * gewonnen-omzet per bucket, van periode-start t/m nu. Vervangt de oude
+ * vaste-12-maanden-reeks die niet meebewoog met het filter.
  */
-export async function omzetTrendMaandelijks(
+export async function omzetTrendVoorPeriode(
+  periodKey: PeriodKey,
   now: Date = new Date(),
-  months: number = 12,
-): Promise<Array<{ maand: string; omzet: number }>> {
-  const supabase = await getDashboardSupabase()
-  const span = Math.max(1, Math.floor(months))
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (span - 1), 1))
-  const startISO = start.toISOString()
-
-  const { data, error } = await supabase
-    .from('leads')
-    .select('akkoord_op, totaal_prijs')
-    .not('akkoord_op', 'is', null)
-    .gte('akkoord_op', startISO)
-  if (error) {
-    console.error('[omzetTrendMaandelijks] failed:', error)
-    return []
-  }
-  type Row = { akkoord_op: string; totaal_prijs: number | null }
-  const sums = new Map<string, number>()
-  for (const row of (data as Row[] | null) ?? []) {
-    const key = row.akkoord_op.slice(0, 7) // YYYY-MM
-    sums.set(key, (sums.get(key) ?? 0) + (row.totaal_prijs ?? 0))
-  }
-  const out: Array<{ maand: string; omzet: number }> = []
-  for (let i = 0; i < span; i++) {
-    const d = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1))
-    const key = d.toISOString().slice(0, 7)
-    out.push({ maand: key, omzet: sums.get(key) ?? 0 })
-  }
-  return out
+): Promise<Array<{ bucket: string; omzet: number }>> {
+  const rows = await fetchGewonnenOmzetRows()
+  const omzetRows: OmzetRow[] = rows.map((r) => ({ wonDate: r.wonDate, prijs: r.prijs }))
+  return omzetBuckets(omzetRows, periodKey, now)
 }
 
 /**

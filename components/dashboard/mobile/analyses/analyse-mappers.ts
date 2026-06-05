@@ -5,7 +5,9 @@ export type AnalyseServerData = {
   periodKey: PeriodKey
   omzet: number
   omzetDoelMaand: number | null
-  trend: Array<{ maand: string; omzet: number }>
+  /** Trend-buckets die het periode-filter volgen: 'YYYY-MM-DD' (dag, voor
+   *  week/maand) of 'YYYY-MM' (maand, voor kwartaal/jaar). */
+  trend: Array<{ bucket: string; omzet: number }>
   leadsTotaal: number
   offertesVerstuurd: number
   converted: number
@@ -70,9 +72,38 @@ function goalForPeriod(doelMaand: number | null, periodKey: PeriodKey): number {
   return doelMaand
 }
 
-/** 'YYYY-MM' → smal maand-label (nl-NL), bv. '2025-06' → 'J' (juni). */
-function monthNarrow(maand: string): string {
-  return new Date(`${maand}-01T00:00:00`).toLocaleString('nl-NL', { month: 'narrow' })
+/** 'YYYY-MM' of 'YYYY-MM-DD' → smal maand-label (nl-NL), bv. '2025-06' → 'J'. */
+function monthNarrow(bucket: string): string {
+  const ym = bucket.slice(0, 7)
+  return new Date(`${ym}-01T00:00:00`).toLocaleString('nl-NL', { month: 'narrow' })
+}
+
+/** Dag-van-maand zonder voorloopnul uit 'YYYY-MM-DD'. */
+function dayOfMonth(bucket: string): string {
+  return String(parseInt(bucket.slice(8, 10), 10))
+}
+
+/**
+ * X-as labels voor de trendgrafiek. Maandelijkse buckets (kwartaal/jaar)
+ * krijgen één smal maand-label per punt. Dagelijkse buckets (week/maand)
+ * krijgen ~5 dag-markeringen op dezelfde proportionele posities als de
+ * area-chart-punten, zodat ze ongeveer uitlijnen i.p.v. propvol te staan.
+ */
+function buildTrendLabels(
+  trend: Array<{ bucket: string; omzet: number }>,
+  periodKey: PeriodKey,
+): string[] {
+  const daily = periodKey === 'deze-week' || periodKey === 'deze-maand'
+  if (!daily) return trend.map((t) => monthNarrow(t.bucket))
+  const n = trend.length
+  if (n <= 1) return trend.map((t) => dayOfMonth(t.bucket))
+  const k = Math.min(5, n)
+  const labels: string[] = []
+  for (let i = 0; i < k; i++) {
+    const idx = Math.round((i * (n - 1)) / (k - 1))
+    labels.push(dayOfMonth(trend[idx].bucket))
+  }
+  return labels
 }
 
 const PERIOD_LABEL: Record<PeriodKey, string> = {
@@ -114,7 +145,7 @@ export function mapAnalyse(d: AnalyseServerData): MobileAnalyseView {
   return {
     hero: { omzetLabel: eur(d.omzet), goalPct: pctOf(d.omzet, goal), periodLabel: PERIOD_LABEL[d.periodKey] },
     trendSeries,
-    monthLabels: d.trend.map((t) => monthNarrow(t.maand)),
+    monthLabels: buildTrendLabels(d.trend, d.periodKey),
     kpis,
     funnel,
     diensten,

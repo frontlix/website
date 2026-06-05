@@ -12,7 +12,7 @@ import {
   topTags,
   omzetTotaal,
   omzetPerCategorie,
-  omzetTrendMaandelijks,
+  omzetTrendVoorPeriode,
   getOmzetDoelMaand,
 } from '@/lib/dashboard/stats-queries'
 import { MobileAnalyses } from '@/components/dashboard/mobile/analyses/MobileAnalyses'
@@ -74,7 +74,7 @@ export default async function StatistiekenPage({
     topTags(range, 10),
     omzetTotaal(range),
     getOmzetDoelMaand(),
-    omzetTrendMaandelijks(),
+    omzetTrendVoorPeriode(periodKey),
     omzetPerCategorie(range),
   ])
 
