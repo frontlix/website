@@ -25,7 +25,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 
 /* ── Voet (sticky) ─────────────────────────────────────────────────────────
-   "Versturen via WhatsApp" is VISUEEL/DISABLED: versturen = desktop-flow. */
+   Alleen een helper-noot: versturen gebeurt via het dashboard, niet hier. */
 
 .footWrap {
   display: flex;
@@ -33,28 +33,7 @@
   gap: 7px;
 }
 
-/* Disabled WhatsApp-knop: WhatsApp-groen is een merk-/print-kleur (geen
-   thema-token), bewust gedempt en niet klikbaar. */
-.sendBtn {
-  width: 100%;
-  border: none;
-  background: #25d366; /* WhatsApp-groen — merkkeur, niet thema-afhankelijk */
-  color: #fff;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  padding: 14px;
-  border-radius: 13px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  /* Disabled-staat: niet klikbaar, gereduceerde opacity */
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* Helper-noot onder de knop. */
+/* Helper-noot in de voet. */
 .footNote {
   margin: 0;
   text-align: center;

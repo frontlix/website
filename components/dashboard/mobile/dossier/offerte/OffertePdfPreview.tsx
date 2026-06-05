@@ -26,7 +26,6 @@
 // ──────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { MessageCircle } from 'lucide-react'
 import { OFullSheet } from './OfferteEditAtoms'
 import styles from './OffertePdfPreview.module.css'
 
@@ -223,13 +222,10 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
     '--paper-h': `${paperH}px`,
   } as CSSProperties
 
-  // Voet: visueel uitgeschakelde "Versturen via WhatsApp"-knop + helper-noot.
-  // Versturen gebeurt via het dashboard (desktop), niet hier.
+  // Voet: alleen de helper-noot. Versturen gebeurt via het dashboard (desktop),
+  // niet hier — er staat dus bewust geen verstuur-knop in de mobiele preview.
   const foot = (
     <div className={styles.footWrap}>
-      <button type="button" className={styles.sendBtn} disabled aria-disabled="true">
-        <MessageCircle size={16} aria-hidden="true" /> Versturen via WhatsApp
-      </button>
       <p className={styles.footNote}>Versturen gaat via het dashboard</p>
     </div>
   )
