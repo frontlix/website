@@ -2,10 +2,12 @@ import type { DriverApi } from './driver'
 
 /**
  * De hoofdstukken van de rondleiding (script conform het goedgekeurde
- * onboarding-document): welkom, 10 tour-stappen door de echte app, slot.
- * Elke `run` bestuurt de ingesloten demo-app via de driver-API en klikt
- * alleen op échte, zichtbare elementen. Teksten: instructieve toon,
- * bot heet Surface, nergens streepjes (huisstijl).
+ * onboarding-document, na audit bijgesteld op wat de app écht toont):
+ * welkom, 10 tour-stappen door de echte app, slot. Elke `run` bestuurt
+ * de ingesloten demo-app via de driver-API en klikt alleen op échte,
+ * zichtbare elementen. Elk hoofdstuk is zelfstandig afspeelbaar (koude
+ * start via de tijdbalk), navigeert dus zelf naar zijn scherm.
+ * Teksten: instructieve toon, bot heet Surface, nergens streepjes.
  */
 
 export type ChapterKind = 'welcome' | 'tour' | 'outro'
@@ -41,19 +43,23 @@ export const CHAPTERS: readonly Chapter[] = [
     kind: 'tour',
     menuLabel: 'Overzicht',
     title: 'Je dashboard',
-    body: 'Zodra je inlogt opent het Overzicht. Bovenaan je omzet en je doel, daaronder de leads die nú je aandacht vragen, plus je agenda en je grafiek.',
+    body: 'Zodra je inlogt opent het Overzicht. Bovenaan je kerncijfers, daaronder de leads die nú je aandacht vragen, plus je agenda en je grafiek.',
     bullets: [
-      'Je omzet deze maand, met je doel in beeld',
-      '"Wat nu?" verzamelt leads die actie vragen',
+      'Je omzet en kerncijfers van deze maand',
+      'Owner-acties verzamelt leads die actie vragen',
       'Je live activiteit en de agenda van vandaag',
     ],
-    durSec: 13,
+    durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
       await a.goto('overzicht')
-      await a.sleep(1200)
-      await a.scrollTo(420)
-      await a.sleep(1800)
+      await a.sleep(500)
+      await a.cursorTo('.kpi')
+      await a.sleep(700)
+      await a.clickSeg(/90d/i)
+      await a.sleep(1100)
+      await a.scrollTo(390)
+      await a.sleep(1500)
       await a.scrollTo(0)
     },
   },
@@ -64,20 +70,21 @@ export const CHAPTERS: readonly Chapter[] = [
     title: 'Al je leads',
     body: 'Klik in de zijbalk op Leads. Al je aanvragen staan hier in een pipeline, van het eerste gesprek tot de afgeronde klus.',
     bullets: [
-      'Vijf fasen overzichtelijk naast elkaar',
+      'Elke fase heeft zijn eigen kolom, tot en met Afgerond',
       'Filter en zoek bovenaan de pagina',
       'Klik een kaart om het dossier te openen',
     ],
-    durSec: 13,
+    durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
       await a.clickNav('Leads')
-      await a.sleep(1000)
-      await a.clickSeg(/Pipeline/i)
-      await a.sleep(1200)
-      await a.scrollTo(160)
-      await a.sleep(1200)
-      await a.scrollTo(0)
+      await a.sleep(800)
+      await a.clickTab(/Afgerond/i)
+      await a.sleep(1600)
+      await a.clickTab(/Alles/i)
+      await a.sleep(600)
+      await a.cursorTo('input[placeholder*="Zoek naam"]')
+      await a.sleep(700)
     },
   },
   {
@@ -91,13 +98,15 @@ export const CHAPTERS: readonly Chapter[] = [
       'Tabel: sorteerbaar en compact',
       'Kaarten: een rijke kaart per lead',
     ],
-    durSec: 13,
+    durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
+      await a.clickNav('Leads')
+      await a.sleep(600)
       await a.clickSeg(/Tabel/i)
-      await a.sleep(2200)
+      await a.sleep(1800)
       await a.clickSeg(/Kaarten/i)
-      await a.sleep(2200)
+      await a.sleep(1800)
       await a.clickSeg(/Pipeline/i)
     },
   },
@@ -108,7 +117,7 @@ export const CHAPTERS: readonly Chapter[] = [
     title: 'Het dossier',
     body: 'Open een lead. Links zie je alles over de klant in tabs, rechts loopt het volledige WhatsApp gesprek mee.',
     bullets: [
-      'Info · Offerte · Foto’s · Tijdlijn',
+      'Info · Offerte · Foto’s · Tijdlijn · Notities',
       'Elk veld is direct te bewerken',
       'Rechts: het hele gesprek met de klant',
     ],
@@ -137,11 +146,13 @@ export const CHAPTERS: readonly Chapter[] = [
       'Bot activeren: Surface neemt het weer over',
       'Je stelt dit per lead in',
     ],
-    durSec: 12,
+    durSec: 11,
     run: async (a) => {
       await a.closeOverlays()
+      await a.goto('leads/L-2087')
+      await a.sleep(900)
       await a.clickText('.btn.btn-ghost.btn-sm', /Bot pauzeren/i)
-      await a.sleep(2400)
+      await a.sleep(2200)
       await a.clickText('.btn.btn-ghost.btn-sm', /Bot activeren/i)
     },
   },
@@ -152,18 +163,21 @@ export const CHAPTERS: readonly Chapter[] = [
     title: 'De Inbox',
     body: 'In de Inbox staan al je WhatsApp gesprekken bij elkaar: links de lijst, in het midden het gesprek, rechts de context van de lead.',
     bullets: [
-      'Filter op Ongelezen, Bot of Actie nodig',
+      'Filter op Ongelezen, Actie of Bot',
       'Surface antwoordt live mee in het gesprek',
-      'Rechts: snel een offerte sturen of inplannen',
+      'Rechts: de context van de lead met snelle acties',
     ],
-    durSec: 13,
+    durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
       await a.clickNav('Inbox')
-      await a.sleep(1400)
-      await a.clickText('.tab', /Ongelezen/i)
-      await a.sleep(1800)
-      await a.clickText('.tab', /Alles/i)
+      await a.sleep(1200)
+      await a.clickTab(/Ongelezen/i)
+      await a.sleep(1500)
+      await a.clickTab(/Alles/i)
+      await a.sleep(500)
+      await a.cursorTo('.btn.btn-secondary.btn-sm')
+      await a.sleep(700)
     },
   },
   {
@@ -206,7 +220,7 @@ export const CHAPTERS: readonly Chapter[] = [
       'Routekaart: al je stops én de route ertussen',
       'Klik een afspraak voor de details',
     ],
-    durSec: 13,
+    durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
       await a.clickNav('Agenda')
@@ -223,18 +237,19 @@ export const CHAPTERS: readonly Chapter[] = [
     title: 'Analyses en cijfers',
     body: 'Onder Analyses zie je je cijfers in detail: omzet, gemiddelde offertewaarde en hoe zelfstandig de bot het werk doet.',
     bullets: [
-      'Omzet en conversie per periode',
-      'Gemiddelde offertewaarde',
-      'Hoe vaak de bot het zelf afhandelt',
+      'Omzet en je gemiddelde offertewaarde',
+      'Hoe zelfstandig Surface het afhandelt',
+      'Trends per maand in één grafiek',
     ],
-    durSec: 12,
+    durSec: 11,
     run: async (a) => {
       await a.closeOverlays()
       await a.clickNav('Analyses')
+      await a.sleep(800)
+      await a.cursorTo('.kpi')
+      await a.sleep(1200)
+      await a.cursorTo('.card-title')
       await a.sleep(1400)
-      await a.scrollTo(460)
-      await a.sleep(1800)
-      await a.scrollTo(0)
     },
   },
   {
@@ -242,20 +257,23 @@ export const CHAPTERS: readonly Chapter[] = [
     kind: 'tour',
     menuLabel: 'Instellingen',
     title: 'Instellingen',
-    body: 'In Instellingen richt je alles in: je bedrijf, je diensten en prijzen, de bot Surface, je team en je integraties.',
+    body: 'In Instellingen richt je alles in: je bedrijf, je prijzen en diensten, het openingsbericht van Surface en je team.',
     bullets: [
-      'Bot: welkomstbericht, openingstijden, prijzen',
-      'Diensten met je tarieven per m²',
-      'Team, Mollie en Google Calendar',
+      'Bot: openingsbericht en reminders',
+      'Prijzen en diensten met je tarieven per m²',
+      'Tags, notificaties en je team',
     ],
     durSec: 12,
     run: async (a) => {
       await a.closeOverlays()
       await a.clickNav('Instellingen')
+      await a.sleep(900)
+      await a.clickNav('Prijzen')
       await a.sleep(1400)
-      await a.scrollTo(460)
-      await a.sleep(1800)
-      await a.scrollTo(0)
+      await a.clickNav('Diensten')
+      await a.sleep(1400)
+      await a.clickNav('Team')
+      await a.sleep(1000)
     },
   },
   {

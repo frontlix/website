@@ -187,9 +187,13 @@ export function createDriver(deps: DriverDeps): DriverApi {
     },
 
     scrollTo: async (y) => {
-      doc()
-        ?.querySelector<HTMLElement>('.content')
-        ?.scrollTo({ top: y, behavior: 'smooth' })
+      const el = doc()?.querySelector<HTMLElement>('.content')
+      if (el) {
+        // klem op wat er echt te scrollen valt, zodat de beweging nooit
+        // stil wordt afgekapt of onzichtbaar blijft
+        const max = Math.max(0, el.scrollHeight - el.clientHeight)
+        el.scrollTo({ top: Math.min(y, max), behavior: 'smooth' })
+      }
       await sleep(750)
     },
   }
