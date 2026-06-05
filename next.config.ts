@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // De rondleiding sluit de demo-app in via een same-origin iframe;
+        // het globale DENY zou die iframe blokkeren. Laatste match wint,
+        // dus deze specifiekere regel versoepelt alleen /demo-app.
+        source: '/demo-app/:path*',
+        headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
+      },
     ]
   },
 
