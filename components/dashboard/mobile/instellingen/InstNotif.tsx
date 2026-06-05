@@ -26,6 +26,7 @@ import {
   EVENT_LABELS,
   KANAAL_LABELS,
   KANAAL_FASE,
+  WHATSAPP_LIVE_EVENTS,
   type NotificationEventType,
   type NotificationKanaal,
   type NotificationPreferenceRow,
@@ -42,6 +43,15 @@ const KANAAL_ICON: Record<NotificationKanaal, LucideIcon> = {
 
 // Huidige live fase, kanalen met fase > LIVE_FASE zijn disabled (fase 4 = whatsapp).
 const LIVE_FASE = 3
+
+/**
+ * Gating PER CEL: WhatsApp is deels live (alleen events in WHATSAPP_LIVE_EVENTS
+ * krijgen een interactieve toggle), overige kanalen gaan op fase.
+ */
+function isCellLive(evt: NotificationEventType, kn: NotificationKanaal): boolean {
+  if (kn === 'whatsapp') return WHATSAPP_LIVE_EVENTS.has(evt)
+  return KANAAL_FASE[kn] <= LIVE_FASE
+}
 
 type Props = {
   prefs: NotificationPreferenceRow[]
@@ -100,7 +110,7 @@ export function InstNotif({ prefs, digestTijd }: Props) {
             {KANALEN_ORDERED.map((kn) => {
               const Icon = KANAAL_ICON[kn]
               const key = `${evt}|${kn}`
-              const isLive = KANAAL_FASE[kn] <= LIVE_FASE
+              const isLive = isCellLive(evt, kn)
               return (
                 <div key={kn} className={styles.row}>
                   <Icon size={15} aria-hidden="true" className={styles.icon} />

@@ -12,6 +12,7 @@ import {
   EVENT_LABELS,
   KANAAL_LABELS,
   KANAAL_FASE,
+  WHATSAPP_LIVE_EVENTS,
   type NotificationEventType,
   type NotificationKanaal,
   type NotificationPreferenceRow,
@@ -26,12 +27,32 @@ import pageStyles from '@/app/dashboard/(app)/instellingen/page.module.css'
  * - State per (event, kanaal) wordt initieel uit `initialPrefs` opgebouwd.
  * - Klik op een toggle → optimistic update + server-action call. Bij
  *   error revert + alert.
- * - Push (fase 3) en WhatsApp (fase 4) zijn nog niet live; die kolommen
- *   tonen "Binnenkort" en hun toggles zijn disabled. Zodra notify.ts
- *   de bezorg-laag implementeert, removen we deze gate per kanaal.
+ * - Gating is PER CEL (niet per kolom): in_app/email/push gaan op fase
+ *   (KANAAL_FASE <= LIVE_FASE), maar WhatsApp is gedeeltelijk live. Alleen
+ *   de events in WHATSAPP_LIVE_EVENTS hebben een interactieve WhatsApp-toggle
+ *   (default aan); de overige WhatsApp-cellen blijven disabled. Zie isCellLive.
  */
 
 const LIVE_FASE = 3 // huidige fase, toggles voor kanalen met fase > LIVE_FASE disabled (fase 4=whatsapp)
+
+/**
+ * Bepaalt per (event, kanaal) of de toggle live/interactief is.
+ * - WhatsApp: alleen live voor events in WHATSAPP_LIVE_EVENTS (rest disabled).
+ * - Overige kanalen: live zodra hun fase <= LIVE_FASE.
+ */
+function isCellLive(evt: NotificationEventType, kn: NotificationKanaal): boolean {
+  if (kn === 'whatsapp') return WHATSAPP_LIVE_EVENTS.has(evt)
+  return KANAAL_FASE[kn] <= LIVE_FASE
+}
+
+/**
+ * Toont de kolom-header "Binnenkort"-badge alleen als GEEN ENKEL event in die
+ * kolom live is. Push is volledig live en WhatsApp is deels live, dus in de
+ * praktijk krijgt geen enkele kolom nog een badge, maar de check is generiek.
+ */
+function isColumnFullyNotLive(kn: NotificationKanaal): boolean {
+  return EVENT_TYPES_ORDERED.every((evt) => !isCellLive(evt, kn))
+}
 
 export function NotificatiesEditor({
   initialPrefs,
@@ -109,7 +130,7 @@ export function NotificatiesEditor({
           {KANALEN_ORDERED.map((kn) => (
             <div key={kn} className={pageStyles.notifCol}>
               {KANAAL_LABELS[kn]}
-              {KANAAL_FASE[kn] > LIVE_FASE && (
+              {isColumnFullyNotLive(kn) && (
                 <span className={styles.binnenkortBadge}>Binnenkort</span>
               )}
             </div>
@@ -124,7 +145,7 @@ export function NotificatiesEditor({
             {KANALEN_ORDERED.map((kn) => {
               const key = `${evt}|${kn}`
               const enabled = prefs.get(key) ?? false
-              const isLive = KANAAL_FASE[kn] <= LIVE_FASE
+              const isLive = isCellLive(evt, kn)
               const isSaving = savingKey === key
               return (
                 <div key={kn} className={pageStyles.notifCol}>

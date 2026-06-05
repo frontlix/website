@@ -108,6 +108,17 @@ export const KANAAL_FASE: Record<NotificationKanaal, 1 | 2 | 3 | 4> = {
   whatsapp: 4,
 }
 
+/** Events waarvoor het WhatsApp-kanaal live is (toggle interactief, default aan).
+ *  De rest van de WhatsApp-kolom blijft "Binnenkort"/disabled. De assistent
+ *  (schoon-straatje-assistent) checkt deze prefs voordat hij de owner-WhatsApp stuurt. */
+export const WHATSAPP_LIVE_EVENTS: ReadonlySet<NotificationEventType> = new Set([
+  'owner_review_nodig',
+  'klant_vraagt_korting',
+  'offerte_goedgekeurd',
+  'offerte_afgewezen',
+  'afspraak_ingepland',
+])
+
 export interface NotificationPreferenceRow {
   event_type: NotificationEventType
   kanaal: NotificationKanaal
