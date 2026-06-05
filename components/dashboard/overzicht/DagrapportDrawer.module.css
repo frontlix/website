@@ -89,8 +89,14 @@
 
 .body {
   flex: 1;
+  min-height: 0; /* laat de flex-child krimpen zodat overflow-y echt scrollt */
   overflow-y: auto;
-  padding: 18px 22px 24px;
+  -webkit-overflow-scrolling: touch; /* iOS momentum-scroll */
+  overscroll-behavior: contain; /* voorkomt dat de scroll doorketent naar de
+                                   (op overflow:hidden gelockte) body → "loopt vast" */
+  /* Extra bodem-padding voor de iOS safe-area zodat de laatste sectie niet
+     achter Safari's onderbalk / home-indicator verdwijnt. */
+  padding: 18px 22px calc(24px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   gap: 22px;
