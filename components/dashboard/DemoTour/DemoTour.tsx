@@ -55,6 +55,7 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
   const pausedRef = useRef(false)
   const tokenRef = useRef<RunToken>({ aborted: false })
   const loadStartRef = useRef(0)
+  const autoRetryRef = useRef(0)
 
   const step = CHAPTERS[chapter]
   const isLast = chapter === CHAPTERS.length - 1
@@ -109,6 +110,12 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
         }
       } catch (err) {
         setDiag(`iframe niet bereikbaar: ${err instanceof Error ? err.message : 'onbekend'}`)
+      }
+      // Zelfherstel: na 12s automatisch herladen met een verse URL, dat
+      // omzeilt door de browser gecachte (oude, blokkerende) headers.
+      if (Date.now() - loadStartRef.current > 12000 && autoRetryRef.current < 2) {
+        autoRetryRef.current += 1
+        setIframeSeq((s) => s + 1)
       }
     }, 600)
     return () => clearInterval(timer)
@@ -219,7 +226,7 @@ export function DemoTour({ onClose, onFinish }: DemoTourProps) {
                 <iframe
                   key={iframeSeq}
                   ref={iframeRef}
-                  src={`/demo-app/Dashboard.html?v=3.${iframeSeq}`}
+                  src={`/demo-app/Dashboard.html?v=4.${iframeSeq}`}
                   title="Frontlix demo"
                   className={styles.iframe}
                 />
