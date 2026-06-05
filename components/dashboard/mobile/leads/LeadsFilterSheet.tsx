@@ -18,7 +18,7 @@ const STAGES: { key: MobileLeadStage; label: string; tone: string }[] = [
   { key: 'review',  label: 'Owner-review', tone: 'amber' },
   { key: 'uit',     label: 'Offerte uit',  tone: 'violet' },
   { key: 'gepland', label: 'Ingepland',    tone: 'green' },
-  { key: 'klaar',   label: 'Afgerond',     tone: 'gray' },
+  { key: 'klaar',   label: 'Afgerond',     tone: 'cyan' },
 ]
 
 const ALL_STAGES = new Set<MobileLeadStage>(['gesprek', 'review', 'uit', 'gepland', 'klaar'])
