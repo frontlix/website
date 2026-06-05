@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { axisTicks } from './chart-ticks'
 
 type Props = {
   data: number[]
@@ -67,8 +68,8 @@ export function AreaChart({ data, height = 170 }: Props) {
   const areaPath = `${linePath} L ${width},${height} L ${PAD_LEFT},${height} Z`
   const lastPoint = points[points.length - 1]
 
-  // Y-as ticks: max bovenaan, midden, 0 onderaan. Set dedupliceert bij lage max.
-  const ticks = [...new Set([max, Math.ceil(max / 2), 0])]
+  // Nette integer y-as ticks (0..max) zodat geen tussenstap ontbreekt.
+  const ticks = axisTicks(max)
 
   return (
     <div ref={ref} style={{ width: '100%' }}>

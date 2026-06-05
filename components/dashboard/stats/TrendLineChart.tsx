@@ -1,3 +1,4 @@
+import { axisTicks } from '@/components/dashboard/ui/chart-ticks'
 import styles from './TrendLineChart.module.css'
 
 const VIEW_W = 320
@@ -28,8 +29,8 @@ export function TrendLineChart({
   const yFor = (count: number) =>
     VIEW_H - PAD_Y - (count / max) * (VIEW_H - PAD_Y * 2)
 
-  // Y-as ticks: max bovenaan, midden, 0 onderaan. Set dedupliceert bij lage max.
-  const ticks = [...new Set([max, Math.ceil(max / 2), 0])]
+  // Nette integer y-as ticks (0..max) zodat geen tussenstap ontbreekt.
+  const ticks = axisTicks(max)
 
   // Bouw "M x,y L x,y L x,y …" path
   const d = points
