@@ -87,31 +87,42 @@ export function MobileLeads({ data }: Props) {
       : data.counts[c.key as keyof typeof data.counts] ?? 0,
   }))
 
+  // ── Filteren (zonder sorteren) ───────────────────────────────────────────────
+  // Gedeelde helper voor zowel de zichtbare lijst als de live-telling in de
+  // filter-sheet, zodat beide gegarandeerd hetzelfde resultaat geven. Past de
+  // segmented-chip + de meegegeven geavanceerde filter + de zoekterm toe.
+  const filterCards = useCallback(
+    (f: AdvFilter): MobileLeadCard[] => {
+      let list = data.cards
+      // Segmented-chip filter
+      if (filter !== 'all') {
+        list = list.filter((c) => c.stage === filter)
+      }
+      // Advanced filter: stages
+      list = list.filter((c) => f.stages.has(c.stage))
+      // Advanced filter: bronnen
+      list = list.filter((c) => f.bronnen.has(c.bron))
+      // Advanced filter: urgentOnly
+      if (f.urgentOnly) list = list.filter((c) => c.urgent)
+      // Client-side zoeken: naam / plaats (telefoon via swipe-acties, geen tekst in card)
+      if (search) {
+        const q = search.toLowerCase()
+        list = list.filter(
+          (c) =>
+            c.naam.toLowerCase().includes(q) ||
+            c.plaats.toLowerCase().includes(q) ||
+            (data.telefoonById[c.id] ?? '').includes(q),
+        )
+      }
+      return list
+    },
+    [data.cards, data.telefoonById, filter, search],
+  )
+
   // ── Gefilterd + gesorteerde kaarten ──────────────────────────────────────────
   const visible = useMemo(() => {
-    let list = data.cards
-
-    // Segmented-chip filter
-    if (filter !== 'all') {
-      list = list.filter((c) => c.stage === filter)
-    }
-    // Advanced filter: stages
-    list = list.filter((c) => advFilter.stages.has(c.stage))
-    // Advanced filter: bronnen
-    list = list.filter((c) => advFilter.bronnen.has(c.bron))
-    // Advanced filter: urgentOnly
-    if (advFilter.urgentOnly) list = list.filter((c) => c.urgent)
-    // Client-side zoeken: naam / plaats (telefoon via swipe-acties, geen tekst in card)
-    if (search) {
-      const q = search.toLowerCase()
-      list = list.filter(
-        (c) =>
-          c.naam.toLowerCase().includes(q) ||
-          c.plaats.toLowerCase().includes(q) ||
-          (data.telefoonById[c.id] ?? '').includes(q),
-      )
-    }
-    // Sortering
+    const list = filterCards(advFilter)
+    // Sortering (verandert het aantal niet, alleen de volgorde)
     return [...list].sort((a, b) => {
       switch (advFilter.sort) {
         case 'prijs':
@@ -125,7 +136,11 @@ export function MobileLeads({ data }: Props) {
           return 0 // server levert al in aankomsstvolgorde
       }
     })
-  }, [data.cards, data.telefoonById, filter, search, advFilter])
+  }, [filterCards, advFilter])
+
+  // Live aantal voor de "Toon X leads"-knop: telt op basis van een (concept-)
+  // filter, zodat de sheet het juiste aantal toont vóór toepassen.
+  const countFor = useCallback((f: AdvFilter) => filterCards(f).length, [filterCards])
 
   // Actieve geavanceerde filters tellen (voor badge + strip)
   const advCount =
@@ -318,7 +333,7 @@ export function MobileLeads({ data }: Props) {
       <LeadsFilterSheet
         open={sheetOpen}
         value={advFilter}
-        resultCount={visible.length}
+        countFor={countFor}
         onApply={setAdvFilter}
         onClose={() => setSheetOpen(false)}
       />

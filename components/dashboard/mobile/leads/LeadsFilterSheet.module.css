@@ -135,7 +135,11 @@
 .faseChip[data-on='true'][data-tone='amber']  { background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.50); }
 .faseChip[data-on='true'][data-tone='violet'] { background: rgba(124, 58, 237, 0.12); color: #7C3AED; border-color: rgba(124, 58, 237, 0.50); }
 .faseChip[data-on='true'][data-tone='green']  { background: rgba(16, 185, 129, 0.12); color: #10B981; border-color: rgba(16, 185, 129, 0.50); }
-.faseChip[data-on='true'][data-tone='gray']   { background: rgba(148, 163, 184, 0.12); color: var(--fg-muted); border-color: rgba(148, 163, 184, 0.50); }
+/* 'gray' (Afgerond): bewust steviger dan de andere tones, want een neutrale
+   grijstint op een grijze off-achtergrond viel anders weg → leek "uit". */
+.faseChip[data-on='true'][data-tone='gray']   { background: rgba(100, 116, 139, 0.18); color: #475569; border-color: rgba(100, 116, 139, 0.60); }
+/* Dark mode: lichtere slate-tekst zodat 'Afgerond' óók op donker leesbaar/aan oogt. */
+:global(.dark) .faseChip[data-on='true'][data-tone='gray'] { background: rgba(148, 163, 184, 0.22); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.55); }
 
 /* ── Bron ────────────────────────────────────────────────────────────────────── */
 .bronRow {

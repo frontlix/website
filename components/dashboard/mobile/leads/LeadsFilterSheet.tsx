@@ -27,8 +27,8 @@ const ALL_BRONNEN = new Set<'wa' | 'form'>(['wa', 'form'])
 interface LeadsFilterSheetProps {
   open: boolean
   value: AdvFilter
-  /** Huidig aantal leads dat matcht, getoond in footer */
-  resultCount: number
+  /** Telt hoeveel leads matchen met een (concept-)filter — voor de live footer-knop */
+  countFor: (f: AdvFilter) => number
   onApply: (f: AdvFilter) => void
   onClose: () => void
 }
@@ -49,7 +49,7 @@ interface LeadsFilterSheetProps {
 export function LeadsFilterSheet({
   open,
   value,
-  resultCount,
+  countFor,
   onApply,
   onClose,
 }: LeadsFilterSheetProps) {
@@ -99,6 +99,9 @@ export function LeadsFilterSheet({
     onApply({ stages, bronnen, urgentOnly, sort })
     onClose()
   }
+
+  // Live aantal op basis van de huidige draft-keuzes (sort telt niet mee).
+  const resultCount = countFor({ stages, bronnen, urgentOnly, sort })
 
   return (
     <div className={styles.overlay}>
