@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Mail, MessageCircle, Phone, CheckCircle } from 'lucide-react'
 import { validatePhone } from '@/lib/utils'
 import { trackEvent } from '@/lib/analytics'
@@ -39,6 +39,16 @@ export default function ContactForm() {
   /* Per-veld validatiefouten */
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLFormElement>(null)
+
+  /* Prefill van het bericht-veld via ?bericht= (gebruikt door de lead-check demo-CTA).
+     Bewust window.location.search in een effect i.p.v. useSearchParams:
+     dat vermijdt een verplichte Suspense-boundary en raakt de prerendering niet. */
+  useEffect(() => {
+    const prefill = new URLSearchParams(window.location.search).get('bericht')
+    if (!prefill || !formRef.current) return
+    const veld = formRef.current.elements.namedItem('bericht') as HTMLTextAreaElement | null
+    if (veld && veld.value === '') veld.value = prefill
+  }, [])
 
   const getFieldData = useCallback((): Record<string, string> => {
     if (!formRef.current) return { naam: '', email: '', telefoon: '', bericht: '' }
