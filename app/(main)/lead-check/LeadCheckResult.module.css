@@ -347,29 +347,6 @@
   cursor: pointer;
 }
 
-/* ── lek-meter: vult zich met de score. Bewust los van de rand en volledig
-   afgerond, zodat hij als meter leest en niet als scrollbar. ── */
-.lekgutterDonker {
-  position: absolute;
-  top: 14px;
-  right: 8px;
-  bottom: 14px;
-  width: 5px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.08);
-  z-index: 2;
-}
-
-.lekgutterDonker i {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, var(--lek-drip), var(--accent));
-  border-radius: var(--radius-full);
-  transition: height 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
 /* ── druppels ── */
 .dripStage {
   position: absolute;

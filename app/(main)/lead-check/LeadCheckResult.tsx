@@ -173,14 +173,7 @@ interface Props {
 export default function LeadCheckResult({ invoer, onRestart, onAanpassen }: Props) {
   const resultaat = useMemo(() => berekenLeadCheck(invoer), [invoer])
   const verdeling = useMemo(() => lekVerdeling(invoer), [invoer])
-  const [vulling, setVulling] = useState(0)
   const [sheet, setSheet] = useState(false)
-
-  /* Lek-goot vult zich met de score; korte vertraging voor het effect */
-  useEffect(() => {
-    const t = setTimeout(() => setVulling(resultaat.score), 280)
-    return () => clearTimeout(t)
-  }, [resultaat.score])
 
   /* Score één keer naar PostHog */
   useEffect(() => {
@@ -273,9 +266,6 @@ export default function LeadCheckResult({ invoer, onRestart, onAanpassen }: Prop
 
   return (
     <div className={styles.screenDonker}>
-      <div className={styles.lekgutterDonker} aria-hidden="true">
-        <i style={{ height: `${vulling}%` }} />
-      </div>
       <Drips n={4} fall={820} />
       <div className={styles.bodyPad}>
         <div className={`${styles.eyebrowLicht} ${styles.rv}`}>Jouw lek-check · score {resultaat.score} van 100</div>
