@@ -6,7 +6,9 @@
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  min-height: calc(100dvh - var(--nav-height-mob));
+  /* svh i.p.v. dvh: past altijd binnen het eerste scherm (ook met de
+     Safari-balken zichtbaar) en verspringt niet tijdens het scrollen */
+  min-height: calc(100svh - var(--nav-height-mob));
   background: var(--bg);
   overflow: hidden;
   display: flex;

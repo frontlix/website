@@ -3,7 +3,9 @@
 .section {
   background: var(--surface);
   padding: var(--nav-height-mob) 0 0;
-  min-height: 100dvh;
+  /* svh i.p.v. dvh: de kleinste viewport-hoogte is stabiel terwijl de
+     Safari-balken in- en uitklappen; dvh liet de layout live verspringen */
+  min-height: 100svh;
 }
 
 @media (min-width: 640px) {
