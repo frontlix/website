@@ -19,6 +19,7 @@ const ALLOWED_FORM_NAMES = new Set([
   'project',
   'hero_demo',
   'personalized_demo',
+  'lead_check',
 ])
 
 /* Field_data-begrenzingen */

@@ -76,6 +76,18 @@ export default function LeadCheckResult({ invoer }: { invoer: LeadCheckInput }) 
       })
       if (!res.ok) throw new Error('mislukt')
       posthog.capture('lead_check_email_submitted', { score: resultaat.score })
+      /* Form-tracking: completed-event volgens bestaand patroon (silent fail) */
+      fetch('/api/form-tracking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: crypto.randomUUID(),
+          formName: 'lead_check',
+          fieldData: { score: String(resultaat.score) },
+          status: 'completed',
+          pageUrl: window.location.pathname,
+        }),
+      }).catch(() => {})
       setMailStatus('klaar')
     } catch {
       setMailStatus('fout')
