@@ -1,0 +1,193 @@
+/* Uitslagscherm lead-check, mobile-first */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+.gauge {
+  width: min(260px, 70vw);
+  margin: 0 auto;
+}
+
+.gaugeScore {
+  font-size: 2.4rem;
+  font-weight: 900;
+  fill: var(--color-text);
+}
+
+.gaugeLabel {
+  font-size: 0.7rem;
+  fill: var(--color-text-muted);
+}
+
+.titel {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.tekst {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  text-align: center;
+}
+
+.cijfers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cijferBlok {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.cijferWaarde {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.cijferLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.punten {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.puntenTitel {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.puntenLijst {
+  margin: 0;
+  padding-left: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.aannames {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.aannames summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.aannames p {
+  margin-top: var(--space-2);
+}
+
+.ctas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ctaSub {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+.mailForm {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mailLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.mailRij {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 16px minimaal tegen iOS-zoom (projectregel) */
+.mailInput {
+  font-size: 1rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  flex: 1;
+}
+
+.mailInput:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.mailSucces {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-6);
+  color: var(--color-success);
+  font-weight: 600;
+  text-align: center;
+}
+
+.mailFout {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: var(--space-8);
+  }
+  .cijfers {
+    flex-direction: row;
+  }
+  .cijferBlok {
+    flex: 1;
+  }
+  .mailRij {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
