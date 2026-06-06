@@ -204,22 +204,24 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Hoeveel aanvragen krijg je gemiddeld per week?</div>
               <div className={styles.qhint}>Een ruwe schatting is prima.</div>
-              <div className={styles.bignum}>
-                <div className={`${styles.bignumWaarde} ${styles.gradText}`}>{s.aanvragenPerWeek}</div>
-                <div className={styles.bignumUnit}>aanvragen / week</div>
-              </div>
-              <input
-                className={styles.slider}
-                type="range"
-                min={0}
-                max={50}
-                value={s.aanvragenPerWeek}
-                onChange={(e) => set('aanvragenPerWeek', Number(e.target.value))}
-                aria-label="Aanvragen per week"
-              />
-              <div className={styles.sliderLabels}>
-                <span>0</span>
-                <span>50+</span>
+              <div className={styles.invoerMidden}>
+                <div className={styles.bignum}>
+                  <div className={`${styles.bignumWaarde} ${styles.gradText}`}>{s.aanvragenPerWeek}</div>
+                  <div className={styles.bignumUnit}>aanvragen / week</div>
+                </div>
+                <input
+                  className={styles.slider}
+                  type="range"
+                  min={0}
+                  max={50}
+                  value={s.aanvragenPerWeek}
+                  onChange={(e) => set('aanvragenPerWeek', Number(e.target.value))}
+                  aria-label="Aanvragen per week"
+                />
+                <div className={styles.sliderLabels}>
+                  <span>0</span>
+                  <span>50+</span>
+                </div>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={() => naar(2)}>
                 Volgende →
@@ -234,10 +236,12 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Hoe snel reageer je meestal op een aanvraag?</div>
               <div className={styles.qhint}>Op een gewone werkdag, gemiddeld.</div>
-              <div className={styles.opts}>
-                {SPEED_OPTIES.map((o) => (
-                  <Opt key={o.value} label={o.label} hint={o.hint} selected={s.speed === o.value} onClick={() => set('speed', o.value)} />
-                ))}
+              <div className={styles.invoerMidden}>
+                <div className={styles.opts}>
+                  {SPEED_OPTIES.map((o) => (
+                    <Opt key={o.value} label={o.label} hint={o.hint} selected={s.speed === o.value} onClick={() => set('speed', o.value)} />
+                  ))}
+                </div>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={() => naar(3)}>
                 Volgende →
@@ -252,10 +256,12 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Ben je &#39;s avonds en in het weekend bereikbaar?</div>
               <div className={styles.qhint}>Juist dán komen veel aanvragen binnen.</div>
-              <div className={styles.opts}>
-                {AVOND_OPTIES.map((o) => (
-                  <Opt key={o.value} label={o.label} hint={o.hint} selected={s.afterhours === o.value} onClick={() => set('afterhours', o.value)} />
-                ))}
+              <div className={styles.invoerMidden}>
+                <div className={styles.opts}>
+                  {AVOND_OPTIES.map((o) => (
+                    <Opt key={o.value} label={o.label} hint={o.hint} selected={s.afterhours === o.value} onClick={() => set('afterhours', o.value)} />
+                  ))}
+                </div>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={() => naar(4)}>
                 Volgende →
@@ -270,22 +276,25 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Welk deel van je aanvragen wordt klant?</div>
               <div className={styles.qhint}>Ongeveer, je conversie.</div>
-              <div className={styles.bignum}>
-                <div className={`${styles.bignumWaarde} ${styles.gradText}`}>{s.conversiePct}%</div>
-                <div className={styles.bignumUnit}>wordt klant</div>
-              </div>
-              <input
-                className={styles.slider}
-                type="range"
-                min={1}
-                max={100}
-                value={s.conversiePct}
-                onChange={(e) => set('conversiePct', Number(e.target.value))}
-                aria-label="Conversiepercentage"
-              />
-              <div className={styles.sliderLabels}>
-                <span>1%</span>
-                <span>100%</span>
+              <div className={styles.invoerMidden}>
+                <div className={styles.bignum}>
+                  <div className={`${styles.bignumWaarde} ${styles.gradText}`}>{s.conversiePct}%</div>
+                  <div className={styles.bignumUnit}>wordt klant</div>
+                </div>
+                <input
+                  className={styles.slider}
+                  type="range"
+                  min={1}
+                  max={100}
+                  value={s.conversiePct}
+                  onChange={(e) => set('conversiePct', Number(e.target.value))}
+                  aria-label="Conversiepercentage"
+                />
+                <div className={styles.sliderLabels}>
+                  <span>1%</span>
+                  <span>100%</span>
+                </div>
+                <p className={styles.hint}>Weet je het niet precies? Een schatting is prima.</p>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={() => naar(5)}>
                 Volgende →
@@ -300,35 +309,37 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Wat levert een gemiddelde klus op?</div>
               <div className={styles.qhint}>De omzet van één opdracht, ongeveer.</div>
-              <div className={styles.bignum}>
-                <div className={`${styles.bignumWaarde} ${styles.gradText}`}>€{fmt(s.orderwaarde)}</div>
-                <div className={styles.bignumUnit}>per opdracht</div>
-              </div>
-              <div className={styles.chips}>
-                {[250, 450, 800, 1500].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    className={`${styles.chip} ${s.orderwaarde === v ? styles.chipSel : ''}`}
-                    onClick={() => set('orderwaarde', v)}
-                  >
-                    €{fmt(v)}
-                  </button>
-                ))}
-              </div>
-              <input
-                className={`${styles.slider} ${styles.sliderRuim}`}
-                type="range"
-                min={100}
-                max={3000}
-                step={50}
-                value={s.orderwaarde}
-                onChange={(e) => set('orderwaarde', Number(e.target.value))}
-                aria-label="Gemiddeld orderbedrag in euro"
-              />
-              <div className={styles.sliderLabels}>
-                <span>€100</span>
-                <span>€3.000</span>
+              <div className={styles.invoerMidden}>
+                <div className={styles.bignum}>
+                  <div className={`${styles.bignumWaarde} ${styles.gradText}`}>€{fmt(s.orderwaarde)}</div>
+                  <div className={styles.bignumUnit}>per opdracht</div>
+                </div>
+                <div className={styles.chips}>
+                  {[250, 450, 800, 1500].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`${styles.chip} ${s.orderwaarde === v ? styles.chipSel : ''}`}
+                      onClick={() => set('orderwaarde', v)}
+                    >
+                      €{fmt(v)}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  className={`${styles.slider} ${styles.sliderRuim}`}
+                  type="range"
+                  min={100}
+                  max={3000}
+                  step={50}
+                  value={s.orderwaarde}
+                  onChange={(e) => set('orderwaarde', Number(e.target.value))}
+                  aria-label="Gemiddeld orderbedrag in euro"
+                />
+                <div className={styles.sliderLabels}>
+                  <span>€100</span>
+                  <span>€3.000</span>
+                </div>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={() => naar(6)}>
                 Volgende →
@@ -343,10 +354,12 @@ export default function LeadCheckWizard() {
               </div>
               <div className={styles.qtitle}>Vragen je klanten ook elders een offerte op?</div>
               <div className={styles.qhint}>Eerlijk antwoord. Dit bepaalt hoe hard snelheid meetelt.</div>
-              <div className={styles.opts}>
-                {SHOPPEN_OPTIES.map((o) => (
-                  <Opt key={o.value} label={o.label} hint={o.hint} selected={s.shoppen === o.value} onClick={() => set('shoppen', o.value)} />
-                ))}
+              <div className={styles.invoerMidden}>
+                <div className={styles.opts}>
+                  {SHOPPEN_OPTIES.map((o) => (
+                    <Opt key={o.value} label={o.label} hint={o.hint} selected={s.shoppen === o.value} onClick={() => set('shoppen', o.value)} />
+                  ))}
+                </div>
               </div>
               <button type="button" className={`${styles.btnPrimary} ${styles.naarOnder}`} onClick={klaar}>
                 Toon mijn uitslag
