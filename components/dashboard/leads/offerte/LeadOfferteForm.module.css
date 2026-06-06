@@ -417,6 +417,25 @@
   color: var(--primary);
 }
 
+/* "Of vast bedrag"-rij onder de slider */
+.kortingVast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.kortingVastLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-soft);
+}
+
+.kortingVast .numBox {
+  width: 160px;
+  margin-left: auto;
+}
+
 /* ─── Geldigheid ─── */
 .geldig {
   display: flex;
