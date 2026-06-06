@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getSupabase } from '@/lib/supabase'
 import { berekenLeadCheck, euro, parseLeadCheckInput, verbeterpunten } from '@/lib/leadCheck'
 import { sendLeadCheckAnalysis, sendNotification } from '@/lib/mail'
 
@@ -26,6 +27,17 @@ export async function POST(request: Request) {
 
     const resultaat = berekenLeadCheck(invoer)
     const punten = verbeterpunten(invoer)
+
+    /* Lead blijvend opslaan (backup naast de mails). Bewust niet-blokkerend:
+       als de insert faalt gaan de mails gewoon door. */
+    try {
+      const { error: dbError } = await getSupabase()
+        .from('lead_check_submissions')
+        .insert({ email, score: resultaat.score, invoer })
+      if (dbError) console.error('lead-check Supabase insert error:', dbError)
+    } catch (dbErr) {
+      console.error('lead-check Supabase error:', dbErr)
+    }
 
     /* 1. Notificatie naar de eigenaar, zodat hij binnen een minuut kan opvolgen */
     await sendNotification(
