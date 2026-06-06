@@ -281,10 +281,25 @@ export default function LeadCheckResult({ invoer, onRestart, onAanpassen }: Prop
             </span>
           </div>
           <div className={styles.metricSub}>
-            ≈ €{jaarLoK}k tot €{jaarHiK}k per jaar ·{' '}
-            {klantHi <= 1 ? 'ongeveer 1 gemiste klant' : `${klantLo} tot ${klantHi} gemiste klanten`} · schatting als
-            bandbreedte
+            ≈{' '}
+            <b>
+              €{jaarLoK}k tot €{jaarHiK}k
+            </b>{' '}
+            per jaar ·{' '}
+            {klantHi <= 1 ? (
+              <>
+                ongeveer <b>1</b> gemiste klant
+              </>
+            ) : (
+              <>
+                <b>
+                  {klantLo} tot {klantHi}
+                </b>{' '}
+                gemiste klanten
+              </>
+            )}
           </div>
+          <div className={styles.metricDisclaimer}>schatting als bandbreedte</div>
         </div>
 
         <div className={styles.divider} />
