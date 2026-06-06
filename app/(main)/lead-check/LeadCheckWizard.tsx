@@ -139,9 +139,6 @@ export default function LeadCheckWizard() {
     /* ── intro ── */
     inhoud = (
       <div className={styles.screen}>
-        <div className={styles.lekgutter} aria-hidden="true">
-          <i style={{ height: '30%' }} />
-        </div>
         <Drips n={3} fall={300} />
         <div className={styles.bodyPad}>
           <div className={styles.eyebrow}>Gratis zelftest · 1 minuut</div>

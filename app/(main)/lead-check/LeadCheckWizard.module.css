@@ -215,27 +215,6 @@
   }
 }
 
-/* ── lek-meter goot rechts: vult zich met de score ── */
-.lekgutter {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 5px;
-  background: var(--track-bg);
-  z-index: 2;
-}
-
-.lekgutter i {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, var(--lek-drip), var(--accent));
-  border-radius: 99px 99px 0 0;
-  transition: height 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
 /* ── voortgang ── */
 .topbar {
   display: flex;

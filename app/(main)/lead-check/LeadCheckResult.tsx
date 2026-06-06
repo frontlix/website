@@ -211,9 +211,6 @@ export default function LeadCheckResult({ invoer, onRestart, onAanpassen }: Prop
   if (resultaat.score === 0) {
     return (
       <div className={styles.screenLicht}>
-        <div className={styles.lekgutterLicht} aria-hidden="true">
-          <i style={{ height: '3%' }} />
-        </div>
         <div className={styles.bodyPad}>
           <div className={styles.eyebrow}>Jouw lek-check · score 0 van 100</div>
           <h1 className={styles.lichtTitel}>
