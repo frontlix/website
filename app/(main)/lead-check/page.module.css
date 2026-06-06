@@ -13,3 +13,79 @@
     padding: calc(var(--nav-height) + var(--space-12)) var(--space-6) var(--space-16);
   }
 }
+
+/* Uitleg en FAQ onder de check: indexeerbare tekst, rustig vormgegeven */
+.uitleg {
+  background: var(--bg);
+  padding: var(--space-16) var(--space-4);
+}
+
+.uitlegInner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.uitlegTitel {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--fg);
+  margin-top: var(--space-6);
+}
+
+.uitlegTitel:first-child {
+  margin-top: 0;
+}
+
+.uitlegTekst {
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+.faq {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.faqItem {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+}
+
+.faqVraag {
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: var(--space-2);
+}
+
+.faqAntwoord {
+  margin: 0;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+.uitlegCta {
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+.uitlegLink {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+  .uitleg {
+    padding: var(--space-24) var(--space-6);
+  }
+}
