@@ -10,7 +10,8 @@ import { LeadInfoTab } from '@/components/dashboard/lead-detail/LeadInfoTab'
 import { WhatsAppPane } from '@/components/dashboard/lead-detail/WhatsAppPane'
 import { LeadStatusBadges } from '@/components/dashboard/leads/LeadStatusBadges'
 import { LeadTagsEditor } from '@/components/dashboard/leads/LeadTagsEditor'
-import { LeadOfferte } from '@/components/dashboard/leads/offerte/LeadOfferte'
+import { LeadOfferteForm } from '@/components/dashboard/leads/offerte/LeadOfferteForm'
+import { getManualOffertePricing } from '@/lib/dashboard/pricing-queries'
 import { LeadAfspraak } from '@/components/dashboard/leads/LeadAfspraak'
 import { LeadNotes } from '@/components/dashboard/leads/LeadNotes'
 import { LeadPhotos } from '@/components/dashboard/leads/LeadPhotos'
@@ -29,18 +30,18 @@ export default async function LeadDetailPage({
   params: Promise<{ lead_id: string }>
   searchParams: Promise<{ tab?: string }>
 }) {
-  const { user, profile } = await requireApprovedUser()
-  const isOwner = profile.is_owner === true
+  const { user } = await requireApprovedUser()
   const { lead_id } = await params
   const { tab } = (await searchParams) ?? {}
   // Op mobile verbergen we de WhatsApp-thread én de Afspraak-kaart wanneer
   // de gebruiker actief de Offerte-tab bewerkt, het scherm moet zich dan
   // focussen op de offerte-edit-flow. Desktop blijft beide kolommen tonen.
   const offerteTabActief = (tab ?? 'info') === 'offerte'
-  const [detail, allTags, leadTags] = await Promise.all([
+  const [detail, allTags, leadTags, pricing] = await Promise.all([
     getLeadDetail(lead_id),
     getAllTags(),
     getTagsForLead(lead_id),
+    getManualOffertePricing(),
   ])
 
   if (!detail) {
@@ -88,13 +89,14 @@ export default async function LeadDetailPage({
               }
               offerte={
                 <div className={styles.tabStack}>
-                  <LeadOfferte
+                  <LeadOfferteForm
+                    key={lead.lead_id}
                     leadId={lead.lead_id}
                     offertes={detail.offertes}
                     prijsregels={detail.prijsregels}
                     lead={lead}
                     fotosCount={detail.fotos.length}
-                    isOwner={isOwner}
+                    pricing={pricing}
                   />
                   {/* Afspraak-blok hoort bij de offerte-flow, maar op mobile
                       wil de gebruiker volle focus op de regel-editor, daar
@@ -150,7 +152,17 @@ export default async function LeadDetailPage({
       {/* Mobile-only: volledig scherm lead-dossier, gevoed met echte
           getLeadDetail-data via de dossier-mapper. */}
       <div className={styles.mobileTree}>
-        <MobileLeadDossier data={mapLeadDetailToDossier(detail)} />
+        <MobileLeadDossier
+          data={mapLeadDetailToDossier(detail)}
+          offerteForm={{
+            leadId: lead.lead_id,
+            lead,
+            prijsregels: detail.prijsregels,
+            offertes: detail.offertes,
+            fotosCount: detail.fotos.length,
+            pricing,
+          }}
+        />
       </div>
     </>
   )

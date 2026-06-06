@@ -1,17 +1,19 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DossierHeader } from './DossierHeader'
 import { DossierFactStrip } from './DossierFactStrip'
 import { DossierTabs } from './DossierTabs'
 import { DossInfo } from './DossInfo'
-import { DossOfferteEdit } from './offerte/DossOfferteEdit'
 import { DossFotos } from './DossFotos'
 import { DossActiviteit } from './DossActiviteit'
 import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
+import { LeadOfferteForm } from '@/components/dashboard/leads/offerte/LeadOfferteForm'
+import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
+import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import styles from './MobileLeadDossier.module.css'
 
 type Tab = 'info' | 'offerte' | 'fotos' | 'activiteit'
@@ -19,13 +21,26 @@ const TABS: Array<{ k: Tab; l: string }> = [
   { k: 'info', l: 'Info' }, { k: 'offerte', l: 'Offerte' }, { k: 'fotos', l: "Foto's" }, { k: 'activiteit', l: 'Activiteit' },
 ]
 
-export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
+/** Props voor het ingebedde desktop-offerte-formulier op mobiel. */
+export type MobileOfferteFormProps = {
+  leadId: string
+  lead: Lead
+  prijsregels: Prijsregel[]
+  offertes: Offerte[]
+  fotosCount: number
+  pricing: ManualOffertePricing
+}
+
+export function MobileLeadDossier({
+  data,
+  offerteForm,
+}: {
+  data: MobileDossierData
+  offerteForm: MobileOfferteFormProps
+}) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('info')
   const { lead } = data
-  // Brug naar de offerte-editor: de actiebalk-knop "Controleer & stuur" opent
-  // de PDF-preview die binnen DossOfferteEdit leeft (registreert openPdf hierin).
-  const pdfApiRef = useRef<{ openPdf: () => void } | null>(null)
 
   return (
     <div className={styles.root}>
@@ -44,7 +59,10 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
               vragen={data.vragen}
             />
           )}
-          {tab === 'offerte' && <DossOfferteEdit offerte={data.offerte} pdfApiRef={pdfApiRef} />}
+          {/* Offerte-tab: exact hetzelfde formulier als desktop (LeadOfferteForm),
+              ingebed (embedded) zodat het in de dossier-shell past en de eigen
+              actieknoppen verbergt — de sticky actiebalk levert hier de CTA. */}
+          {tab === 'offerte' && <LeadOfferteForm embedded {...offerteForm} />}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}
         </div>
@@ -55,17 +73,23 @@ export function MobileLeadDossier({ data }: { data: MobileDossierData }) {
           if (data.telefoonRaw) window.location.href = `tel:${data.telefoonRaw}`
         }}
         // WhatsApp → het IN-APP gesprek met deze lead (inbox-thread), niet de
-        // externe WhatsApp-app. Consistent met de leads-lijst (SwipeableLeadCard)
-        // en het overzicht, zodat je vanuit het dossier direct verder kunt chatten.
+        // externe WhatsApp-app. Consistent met de leads-lijst en het overzicht.
         onWhatsApp={() => {
           router.push(`/inbox?lead=${lead.id}`)
         }}
-        // Offerte VERSTUREN blijft de (handmatige, desktop) flow. Op de Offerte-tab
-        // opent de knop de PDF-preview ("Controleer & stuur"); op andere tabs
-        // springt-ie naar de Offerte-tab. Geen automatische send (sendOfferteMail).
-        primaryLabel={tab === 'offerte' ? 'Controleer & stuur' : undefined}
+        // Op de Offerte-tab opent de knop de PDF-preview (review-stap). Het
+        // formulier slaat zelf al automatisch op; versturen blijft de desktop-flow.
+        // Op andere tabs springt-ie naar de Offerte-tab.
+        primaryLabel={tab === 'offerte' ? 'Bekijk PDF' : undefined}
         onSendOfferte={
-          tab === 'offerte' ? () => pdfApiRef.current?.openPdf() : () => setTab('offerte')
+          tab === 'offerte'
+            ? () =>
+                window.open(
+                  `/offerte-preview/${offerteForm.leadId}`,
+                  '_blank',
+                  'noopener,noreferrer',
+                )
+            : () => setTab('offerte')
         }
       />
     </div>

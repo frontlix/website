@@ -14,6 +14,28 @@
   gap: 16px;
 }
 
+/* Subtiele, rechts-uitgelijnde save-indicator bovenaan de editor. Vaste
+   min-hoogte zodat de eerste kaart niet verspringt zodra het label verschijnt
+   of verdwijnt. */
+.saveStatus {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 16px;
+  margin-top: -4px;
+}
+
+/* Muted 'Opslaan…'; 'Opgeslagen' krijgt de success-tint via data-saved. */
+.saveLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+.saveLabel[data-saved] {
+  color: var(--color-success);
+}
+
 /* ── generieke surface-kaart ─────────────────────────────────────────────── */
 .card {
   background: var(--color-surface);

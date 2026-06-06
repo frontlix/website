@@ -216,11 +216,16 @@ export function computeTotals(
   data: ManualOfferteData
 ): TotalsComputed {
   const subtotal = rules.reduce((s, r) => s + r.totaal, 0)
-  const korstmosToeslag = data.korstmos === 'ja' ? subtotal * 0.1 : 0
-  const subtotal2 = subtotal + korstmosToeslag
+  // Reiskosten (eenheid 'km') tellen niet mee voor korstmos-toeslag noch korting.
+  const reiskosten = rules
+    .filter((r) => r.eenheid === 'km')
+    .reduce((s, r) => s + r.totaal, 0)
+  const diensten = subtotal - reiskosten
+  const korstmosToeslag = data.korstmos === 'ja' ? diensten * 0.1 : 0
   const discount = Number(data.korting_percentage) || 0
-  const kortingBedrag = subtotal2 * (discount / 100)
-  const total = subtotal2 - kortingBedrag
+  // Korting geldt over diensten + korstmos-toeslag, NOOIT over reiskosten.
+  const kortingBedrag = (diensten + korstmosToeslag) * (discount / 100)
+  const total = subtotal + korstmosToeslag - kortingBedrag
   const btw = total * 0.21
   return { subtotal, korstmosToeslag, kortingBedrag, discount, total, btw }
 }

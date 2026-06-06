@@ -104,6 +104,12 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
+  /* Lange labels (bv. "Onkruidbeheersing 4-weken") moeten binnen hun kolom
+     blijven i.p.v. door te lopen onder de stepper. rowText heeft min-width:0,
+     dus break-word laat een te lang woord netjes afbreken; hyphens maakt de
+     afbreking mooier waar de browser het ondersteunt (lang="nl"). */
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .delta {

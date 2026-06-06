@@ -14,7 +14,7 @@
 // (geen alpha-hex). Komma-decimaal in alle numerieke inputs (via de atoms).
 // ──────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import {
   FileText,
@@ -67,6 +67,8 @@ import {
 import { seedOfferteState } from './offerte-edit-seed'
 import { OffertePdfPreview, type OffertePdfData } from './OffertePdfPreview'
 import { OfferteHistorie } from './OfferteHistorie'
+import { toDraftRegels } from './offerte-edit-persist'
+import { saveDraft } from '@/lib/dashboard/offerte-draft-actions'
 import type { MobileDossierData } from '../dossier-mappers'
 import styles from './DossOfferteEdit.module.css'
 
@@ -80,8 +82,25 @@ const TONE_PRIMARY = 'var(--color-primary)'
 // OffertePdfData (spec §4.7-shape) wordt geïmporteerd uit OffertePdfPreview, // dat is de bron-of-truth voor de PDF-render en het props-contract.
 
 type DossOfferteEditProps = {
+  // lead_id van de echte lead: doelwit voor de debounced auto-save (saveDraft).
+  leadId: string
   offerte: MobileDossierData['offerte']
   pdfApiRef?: React.RefObject<{ openPdf: () => void } | null>
+}
+
+/** Compacte fingerprint van de persisteerbare state (change-detectie). */
+function persistFingerprint(
+  lines: OfferteLine[],
+  toeslagen: Toeslag[],
+  pct: number,
+  kortingNote: string,
+): string {
+  // Alleen velden die saveDraft daadwerkelijk opslaat (regels + korting).
+  // btwKey/dagen/bericht/afwijkend/adr blijven bewust buiten de fingerprint:
+  // die persisteren niet via saveDraft, dus ze hoeven geen save te triggeren.
+  const l = lines.map((x) => [x.key, x.label, x.unit, x.rate, x.area, x.m2, x.qty, x.on])
+  const t = toeslagen.map((x) => [x.key, x.mode, x.value, x.on])
+  return JSON.stringify({ l, t }) + `|${pct}|${kortingNote}`
 }
 
 // Stabiele id-teller voor nieuw toegevoegde regels/toeslagen tijdens een sessie.
@@ -127,7 +146,7 @@ function freeLine(): OfferteLine {
   }
 }
 
-export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
+export function DossOfferteEdit({ leadId, offerte, pdfApiRef }: DossOfferteEditProps) {
   // ── begin-state uit echte lead-data (lazy: seed draait één keer) ──
   const [seed] = useState(() =>
     seedOfferteState({
@@ -171,6 +190,92 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
 
   // ── live totalen ──
   const tt = offerteTotals(lines, toeslagen, pct, btwKey)
+
+  // ── debounced auto-save naar de DB (mirror van LeadOfferteForm) ──────────
+  // De editor draaide voorheen op pure lokale state; nu schrijven we elke edit
+  // (debounced 600ms) via saveDraft naar de DB, zodat de desktop-tab, de
+  // /offerte-preview-PDF en het CRM de mobiele edits weerspiegelen.
+  //
+  // LET OP — BTW: saveDraft hanteert altijd 21% (het hele systeem is 21%). De
+  // mobiele BtwKey-selector (9/0/verlegd) beïnvloedt ALLEEN de mobiele
+  // PDF-preview, niet het gepersisteerde totaal. Dat is bewust, geen bug.
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const isFirstRenderRef = useRef(true)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const idleResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastFingerprintRef = useRef<string | null>(null)
+
+  // Voert de server-call uit en beheert saveState (identiek aan flushSave).
+  const flushSave = useCallback(
+    async (curLines: OfferteLine[], curToeslagen: Toeslag[], curPct: number, curNote: string) => {
+      setSaveState('saving')
+      if (idleResetTimerRef.current) {
+        clearTimeout(idleResetTimerRef.current)
+        idleResetTimerRef.current = null
+      }
+
+      const res = await saveDraft(leadId, {
+        regels: toDraftRegels(curLines, curToeslagen),
+        kortingPct: curPct,
+        kortingOmschrijving: curNote,
+      })
+
+      if (res.ok) {
+        setSaveState('saved')
+        idleResetTimerRef.current = setTimeout(() => {
+          setSaveState('idle')
+          idleResetTimerRef.current = null
+        }, 2000)
+      } else {
+        setSaveState('idle')
+        // Fingerprint resetten zodat een retry niet als "no-op" geldt.
+        lastFingerprintRef.current = null
+        // eslint-disable-next-line no-alert
+        alert(`Opslaan mislukt: ${res.error}`)
+      }
+    },
+    [leadId],
+  )
+
+  // Debounced auto-save-effect (600ms) over de persisteerbare fingerprint.
+  useEffect(() => {
+    if (isFirstRenderRef.current) {
+      // Eerste render (mount, ook bij tab-switch): geen save, alleen baseline.
+      isFirstRenderRef.current = false
+      lastFingerprintRef.current = persistFingerprint(lines, toeslagen, pct, kortingNote)
+      return
+    }
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const fp = persistFingerprint(lines, toeslagen, pct, kortingNote)
+      if (fp === lastFingerprintRef.current) return
+      lastFingerprintRef.current = fp
+      void flushSave(lines, toeslagen, pct, kortingNote)
+    }, 600)
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+    }
+  }, [lines, toeslagen, pct, kortingNote, flushSave])
+
+  // Open timers opruimen bij unmount (StrictMode-veilig).
+  useEffect(() => {
+    return () => {
+      if (idleResetTimerRef.current) clearTimeout(idleResetTimerRef.current)
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    }
+  }, [])
+
+  // Tekst voor de subtiele save-indicator bovenaan de editor.
+  const saveLabel =
+    saveState === 'saving' ? 'Opslaan…' : saveState === 'saved' ? 'Opgeslagen' : ''
 
   // ── PDF-opener registreren in de actiebalk-ref ──
   useEffect(() => {
@@ -375,6 +480,15 @@ export function DossOfferteEdit({ offerte, pdfApiRef }: DossOfferteEditProps) {
 
   return (
     <section className={styles.wrap} aria-label="Offerte bewerken">
+      {/* Subtiele save-indicator: toont kort de auto-save-status van de editor. */}
+      <div className={styles.saveStatus} aria-live="polite">
+        {saveLabel && (
+          <span className={styles.saveLabel} data-saved={saveState === 'saved' || undefined}>
+            {saveLabel}
+          </span>
+        )}
+      </div>
+
       {/* ── 1. Factuuradres ─────────────────────────────────────────────── */}
       <section className={styles.card} data-pad="md">
         <div className={styles.factHead}>

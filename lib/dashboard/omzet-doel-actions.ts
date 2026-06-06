@@ -67,7 +67,7 @@ export async function saveOmzetDoelMaand(
   }
 
   revalidatePath('/dashboard/instellingen')
-  revalidatePath('/dashboard/overzicht')
+  revalidatePath('/dashboard') // overview-route (was '/dashboard/overzicht', bestaat niet)
 
   return { ok: true, value }
 }

@@ -7,6 +7,7 @@ import { computeRules, computeTotals } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
 import { geocodeAddress } from './geocoding'
 import type { ManualOfferteData } from './manual-offerte-types'
+import { buildLeadFieldsFromForm } from './offerte-form-mapping'
 import { renderOffertePDFBuffer, loadLogoBase64, loadBadgeBase64 } from './offerte/pdf-renderer'
 import { buildOffertePDFData, type TenantBedrijf } from './offerte/pdf-template'
 import { sendOfferteMail } from './offerte/mail-sender'
@@ -22,11 +23,6 @@ export type ManualOfferteResult =
  */
 function generateLeadId(): string {
   return `${Date.now()}-${Math.floor(Math.random() * 90000) + 10000}`
-}
-
-function trimOrNull(v: string): string | null {
-  const t = v.trim()
-  return t.length > 0 ? t : null
 }
 
 /**
@@ -69,108 +65,15 @@ export async function createManualLeadEnOfferte(
   const isReuse = Boolean(data.existing_lead_id)
   const leadId = data.existing_lead_id ?? generateLeadId()
 
-  // ── Kleur voegzand: zowel de string (legacy + bot) als de losse
-  // booleans (nieuwere queries). Bij geen kleur = beide false + string null.
-  const kleuren: string[] = []
-  if (data.kleur_naturel) kleuren.push('naturel')
-  if (data.kleur_antraciet) kleuren.push('antraciet')
-  const zandKleur = kleuren.length > 0 ? kleuren.join('+') : null
-
-  // Voegzand-type voor de leads.voegzand_type kolom: 'normaal',
-  // 'onkruidwerend', of 'beide'. Null als geen van beide actief.
-  const voegzandTypes: string[] = []
-  if (data.voegzand_normaal_actief) voegzandTypes.push('normaal')
-  if (data.voegzand_onkruidwerend_actief) voegzandTypes.push('onkruidwerend')
-  const voegzandType =
-    voegzandTypes.length === 0
-      ? null
-      : voegzandTypes.length === 1
-        ? voegzandTypes[0]
-        : 'beide'
-
-  // m² per sub-dienst, bot/PDF gebruiken deze voor regel-uitsplitsing.
-  // Alleen vullen als die sub_dienst gekozen is.
-  const m2Num = Number(data.m2) || 0
-  const invegenM2 = data.sub.includes('invegen') ? m2Num : null
-  const beschermlaagM2 = data.sub.includes('beschermlaag') ? m2Num : null
-
-  // m² per voegzand-type, de user kiest dit nu expliciet in StepWerk.
-  // Hier alleen sanitizen (Number + null voor niet-actieve types) en als
-  // safety-net terugvallen op totale m² als alleen 1 type actief is maar
-  // het m²-veld 0 staat (oude drafts vóór de m²-input bestond).
-  const normaalM2Raw = Number(data.voegzand_normaal_m2 || 0)
-  const onkruidwerendM2Raw = Number(data.voegzand_onkruidwerend_m2 || 0)
-  let voegzandNormaalM2: number | null = null
-  let voegzandOnkruidwerendM2: number | null = null
-  if (data.voegzand_normaal_actief) {
-    voegzandNormaalM2 = normaalM2Raw > 0
-      ? normaalM2Raw
-      : data.voegzand_onkruidwerend_actief ? 0 : m2Num
-  }
-  if (data.voegzand_onkruidwerend_actief) {
-    voegzandOnkruidwerendM2 = onkruidwerendM2Raw > 0
-      ? onkruidwerendM2Raw
-      : data.voegzand_normaal_actief ? 0 : m2Num
-  }
-
   const totaalIncl = Math.round((totals.total + totals.btw) * 100) / 100
 
   // Velden die we voor zowel INSERT als UPDATE delen. `lead_id` zit
-  // alleen in de INSERT-payload (de UPDATE matcht 'm in WHERE).
+  // alleen in de INSERT-payload (de UPDATE matcht 'm in WHERE). De mapping
+  // zelf leeft in offerte-form-mapping.ts zodat het nieuwe offerte-formulier
+  // exact dezelfde lead-kolommen schrijft; hier voegen we alleen de twee
+  // verzend-velden toe (die zijn send-flow-specifiek).
   const leadFields = {
-    naam: data.naam.trim(),
-    bedrijfsnaam: trimOrNull(data.bedrijf),
-    email: data.email.trim() || `${leadId}@handmatig.frontlix.nl`,
-    telefoon: data.telefoon.trim(),
-    postcode: data.postcode.trim(),
-    huisnummer: data.huisnummer.trim(),
-    straat: trimOrNull(data.straat),
-    plaats: trimOrNull(data.plaats),
-    // ── Factuur-adres: null als gelijk aan werk-adres, anders gevuld.
-    // Bij UPDATE belangrijk dat we 'm expliciet null zetten als de
-    // user 'm later weer naar "gelijk" vinkt.
-    factuur_postcode: data.factuur_zelfde ? null : trimOrNull(data.factuur_postcode),
-    factuur_huisnummer: data.factuur_zelfde ? null : trimOrNull(data.factuur_huisnummer),
-    factuur_straat: data.factuur_zelfde ? null : trimOrNull(data.factuur_straat),
-    factuur_plaats: data.factuur_zelfde ? null : trimOrNull(data.factuur_plaats),
-    // leads.hoofdcategorie is een single string-kolom; serialiseer
-    // de array: 0 keuzes → fallback 'oprit_terras_terrein' (validatie
-    // zou dit moeten voorkomen maar veilig is veilig), 1 keuze → die
-    // waarde, 2 keuzes → 'beide' (mirror van voegzand_type pattern).
-    hoofdcategorie:
-      data.hoofdcategorie.length === 0
-        ? 'oprit_terras_terrein'
-        : data.hoofdcategorie.length === 1
-          ? data.hoofdcategorie[0]
-          : 'beide',
-    sub_diensten: data.sub,
-    m2: m2Num || null,
-    invegen_m2: invegenM2,
-    beschermlaag_m2: beschermlaagM2,
-    // ── Voegzand: legacy totaal + per-type zakken/prijs/m².
-    zand_kleur: zandKleur,
-    zand_kleur_naturel: data.kleur_naturel,
-    zand_kleur_antraciet: data.kleur_antraciet,
-    voegzand_type: voegzandType,
-    voegzand_zakken:
-      Number(data.voegzand_normaal_zakken || 0) +
-      Number(data.voegzand_onkruidwerend_zakken || 0),
-    voegzand_normaal_zakken: data.voegzand_normaal_actief ? Number(data.voegzand_normaal_zakken || 0) : null,
-    voegzand_normaal_prijs_per_zak: data.voegzand_normaal_actief ? Number(data.voegzand_normaal_prijs || 0) || null : null,
-    voegzand_normaal_m2: voegzandNormaalM2,
-    voegzand_onkruidwerend_zakken: data.voegzand_onkruidwerend_actief ? Number(data.voegzand_onkruidwerend_zakken || 0) : null,
-    voegzand_onkruidwerend_prijs_per_zak: data.voegzand_onkruidwerend_actief ? Number(data.voegzand_onkruidwerend_prijs || 0) || null : null,
-    voegzand_onkruidwerend_m2: voegzandOnkruidwerendM2,
-    planten_afschermen: data.planten_afschermen_actief ? 'ja' : 'nee',
-    groene_aanslag: data.groene_aanslag,
-    korstmos: data.korstmos,
-    afstand_km: Number(data.afstand_km) || null,
-    totaal_prijs: totaalIncl,
-    extra_arbeid_minuten: Number(data.extra_arbeid_minuten) || 0,
-    extra_arbeid_personen: Number(data.extra_arbeid_personen) || 0,
-    extra_arbeid_omschrijving: trimOrNull(data.extra_arbeid_omschrijving),
-    korting_percentage: Number(data.korting_percentage) || 0,
-    korting_omschrijving: trimOrNull(data.korting_omschrijving),
+    ...buildLeadFieldsFromForm(data, leadId, totaalIncl),
     offerte_verstuurd: data.kanaal !== 'manual',
     offerte_verstuurd_op: data.kanaal !== 'manual' ? new Date().toISOString() : null,
   }

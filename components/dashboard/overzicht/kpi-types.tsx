@@ -11,16 +11,9 @@ export const KPI_KEYS: ReadonlyArray<KpiKey> = ['omzet', 'leads', 'conversie', '
 
 export type KpiUnit = 'eur' | 'count' | 'pct' | 's'
 
-/**
- * Hardcoded doelen voor v1. Worden later editable via tenant_settings.
- * Pas hier aan om de progress-donut anders te schalen.
- */
-export const KPI_DOELEN = {
-  omzet_maand: 25_000,
-  leads_week: 18,
-  conversie_pct: 70,
-  reactietijd_doel_s: 60,
-} as const
+// KPI-doelen staan in een puur .ts-bestand (zonder JSX) zodat data-helpers
+// + tests ze los kunnen importeren. Hier re-export voor bestaande imports.
+export { KPI_DOELEN } from './kpi-doelen'
 
 export type KpiMetric = {
   key: KpiKey

@@ -216,6 +216,7 @@ export default async function OverzichtPage({
     conversiePctPrev30,
     reactietijdLast7S,
     reactietijdPrev7S,
+    omzetDoelMaand,
   })
   const extraOffertesOpen = buildOpenOffertesMetric(openOffertes)
 
