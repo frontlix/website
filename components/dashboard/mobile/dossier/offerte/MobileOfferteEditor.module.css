@@ -464,11 +464,16 @@
   margin: 4px 0;
 }
 
+/* Bewerkbare %-badge: tik om handmatig een percentage te typen; de slider
+   volgt automatisch (leest Math.round(effectiveKortingPct)). */
 .kortingPctBadge {
   flex-shrink: 0;
   min-width: 64px;
-  text-align: center;
-  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 8px 10px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   background: var(--color-bg);
@@ -476,6 +481,31 @@
   font-weight: 800;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
+}
+.kortingPctBadge:focus-within {
+  border-color: var(--color-primary);
+}
+.kortingPctInput {
+  width: 3ch;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  text-align: right;
+  font: inherit;
+  font-weight: 800;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.kortingPctInput::-webkit-outer-spin-button,
+.kortingPctInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.kortingPctSuffix {
+  color: var(--color-text);
 }
 
 .kortingPresets {

@@ -732,7 +732,23 @@ export function MobileOfferteEditor({
             }
             aria-label="Actiekorting percentage"
           />
-          <span className={styles.kortingPctBadge}>{Math.round(effectiveKortingPct)}%</span>
+          <div className={styles.kortingPctBadge}>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              inputMode="numeric"
+              className={styles.kortingPctInput}
+              value={Math.round(effectiveKortingPct)}
+              onFocus={(e) => e.target.select()}
+              onChange={(e) => {
+                const pct = Math.max(0, Math.min(100, Number(e.target.value) || 0))
+                setData((s) => ({ ...s, korting_percentage: pct, korting_bedrag: 0 }))
+              }}
+              aria-label="Kortingspercentage"
+            />
+            <span className={styles.kortingPctSuffix}>%</span>
+          </div>
         </div>
         <div className={styles.kortingPresets}>
           {[10, 20, 30, 50].map((p) => (
