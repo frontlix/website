@@ -187,6 +187,14 @@ export function LeadOfferteForm({
   const rules = useMemo(() => computeRules(data, pricing), [data, pricing])
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
 
+  // Reiskosten apart tonen: die zijn niet kortbaar, dus los van het
+  // diensten-subtotaal in het live prijsoverzicht.
+  const reiskostenTotaal = useMemo(
+    () => rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
+    [rules],
+  )
+  const dienstenSubtotaal = totals.subtotal - reiskostenTotaal
+
   // Vervaldatum = vandaag + N dagen.
   const vervalDatum = useMemo(
     () => new Date(Date.now() + geldigheidDagen * 86400000),
@@ -781,42 +789,77 @@ export function LeadOfferteForm({
         </p>
       </section>
 
-      {/* ─── 10. Totalen-kaart ─── */}
+      {/* ─── 10. Live prijsoverzicht ─── */}
       <section className={styles.totals}>
+        <div className={styles.overviewHead}>
+          <span className={styles.overviewTitle}>Live prijsoverzicht</span>
+          <span className={styles.overviewUpdated}>
+            {saveState === 'saving' ? 'Opslaan…' : 'Bijgewerkt'}
+          </span>
+        </div>
+
+        {/* Afgeleide prijsregels, uitgesplitst */}
+        <div className={styles.lineList}>
+          {rules.length === 0 ? (
+            <div className={styles.lineEmpty}>Nog geen diensten geselecteerd.</div>
+          ) : (
+            rules.map((r, i) => (
+              <div className={styles.lineRow} key={`${r.desc}-${i}`}>
+                <span className={styles.lineLabel}>{r.desc}</span>
+                <span className={styles.lineMeta}>
+                  {r.aantal} {r.eenheid} × {formatEuro(r.prijs)}
+                </span>
+                <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className={styles.totalsDiv} />
+
+        {/* Samenvatting: diensten, korting (groen), reiskosten apart, BTW */}
         <div className={styles.totalsRows}>
           <div className={styles.totalsRow}>
-            <span>Subtotaal</span>
-            <span className={styles.totalsValue}>{formatEuro(totals.subtotal)}</span>
+            <span className={styles.totalsRowMuted}>Subtotaal diensten</span>
+            <span className={styles.totalsValue}>{formatEuro(dienstenSubtotaal)}</span>
           </div>
           {totals.korstmosToeslag > 0 ? (
-            <div className={`${styles.totalsRow} ${styles.totalsRowMuted}`}>
-              <span>Korstmos-toeslag (10%)</span>
+            <div className={styles.totalsRow}>
+              <span className={styles.totalsRowMuted}>Korstmos-toeslag (10%)</span>
               <span className={styles.totalsValue}>{formatEuro(totals.korstmosToeslag)}</span>
             </div>
           ) : null}
           {totals.kortingBedrag > 0 ? (
-            <div className={`${styles.totalsRow} ${styles.totalsRowMuted}`}>
-              <span>Korting ({totals.discount}%)</span>
+            <div className={`${styles.totalsRow} ${styles.kortingRow}`}>
+              <span>Actiekorting ({totals.discount}%)</span>
               <span className={styles.totalsValue}>− {formatEuro(totals.kortingBedrag)}</span>
             </div>
           ) : null}
-          <div className={styles.totalsDiv} />
+          {reiskostenTotaal > 0 ? (
+            <div className={styles.totalsRow}>
+              <span className={styles.totalsRowMuted}>Reiskosten</span>
+              <span className={styles.totalsValue}>{formatEuro(reiskostenTotaal)}</span>
+            </div>
+          ) : null}
           <div className={styles.totalsRow}>
-            <span>Excl. BTW</span>
+            <span className={styles.totalsRowMuted}>Totaal excl. BTW</span>
             <span className={styles.totalsValue}>{formatEuro(totals.total)}</span>
           </div>
-          <div className={`${styles.totalsRow} ${styles.totalsRowMuted}`}>
-            <span>BTW 21%</span>
+          <div className={styles.totalsRow}>
+            <span className={styles.totalsRowMuted}>BTW (21%)</span>
             <span className={styles.totalsValue}>{formatEuro(totals.btw)}</span>
           </div>
         </div>
 
-        <div className={styles.grand}>
-          <div>
-            <div className={styles.grandL}>Totaal incl. BTW</div>
-            <div className={styles.grandSub}>geldig t/m {formatDatumKort(vervalDatum)}</div>
+        {/* Eind-totaal: foto-2 layout, eigen brand-kleur */}
+        <div className={styles.grandLine}>
+          <div className={styles.grandLineL}>
+            <span className={styles.grandLineTitle}>Totaal incl. BTW</span>
+            <span className={styles.grandLineSub}>
+              geldig t/m {formatDatumKort(vervalDatum)}
+            </span>
           </div>
-          <div className={styles.grandV}>{formatEuro(totals.total + totals.btw)}</div>
+          <span className={styles.grandLineV}>{formatEuro(totals.total + totals.btw)}</span>
         </div>
 
         <div className={styles.actions}>

@@ -463,7 +463,73 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 16px 18px;
+  padding: 18px 20px;
+}
+
+/* ─── Kop: "Live prijsoverzicht" + bijgewerkt-indicator ─── */
+.overviewHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.overviewTitle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.overviewUpdated {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+/* ─── Uitgesplitste prijsregels ─── */
+.lineList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.lineRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.lineLabel {
+  font-size: 14px;
+  color: var(--fg);
+}
+
+.lineMeta {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.lineTotal {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  min-width: 78px;
+}
+
+.lineEmpty {
+  font-size: 13px;
+  color: var(--fg-muted);
 }
 
 .totalsRows {
@@ -484,6 +550,15 @@
   color: var(--fg-muted);
 }
 
+/* Korting altijd in het groen weergeven */
+.kortingRow {
+  color: var(--success);
+}
+
+.kortingRow .totalsValue {
+  color: var(--success);
+}
+
 .totalsValue {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -495,41 +570,48 @@
   margin: 5px 0;
 }
 
-.grand {
+/* ─── Eind-totaal (foto-2 layout, eigen brand-kleur) ─── */
+.grandLine {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--gradient);
-  color: #fff;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin: 13px 0;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 15px;
+  border-top: 2px solid var(--primary);
 }
 
-.grandL {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.92;
+.grandLineL {
+  display: flex;
+  flex-direction: column;
 }
 
-.grandSub {
+.grandLineTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+.grandLineSub {
   font-size: 11px;
-  opacity: 0.82;
-  margin-top: 2px;
+  color: var(--fg-muted);
+  margin-top: 3px;
 }
 
-.grandV {
-  font-size: 26px;
+.grandLineV {
+  font-size: 25px;
   font-weight: 900;
+  color: var(--primary);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .actions {
   display: flex;
   gap: 8px;
+  margin-top: 16px;
 }
 
 /* ─── Knoppen ─── */
