@@ -10,6 +10,7 @@ import styles from './Navbar.module.css'
 
 const navLinks = [
   { label: 'Diensten', href: '/diensten' },
+  { label: 'Lead-check', href: '/lead-check' },
   { label: 'Over ons', href: '/over-ons' },
   { label: 'Contact', href: '/contact' },
 ]

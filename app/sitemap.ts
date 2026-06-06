@@ -18,6 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/lead-check`,
+      lastModified: '2026-06-06',
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/over-ons`,
       lastModified: '2026-03-15',
       changeFrequency: 'monthly',

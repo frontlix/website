@@ -5,6 +5,7 @@ import styles from './Footer.module.css'
 const bedrijf = [
   { label: 'Over ons', href: '/over-ons' },
   { label: 'Diensten', href: '/diensten' },
+  { label: 'Lead-check', href: '/lead-check' },
   { label: 'Contact', href: '/contact' },
 ]
 

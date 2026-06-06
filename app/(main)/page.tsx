@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Hero from '@/components/sections/Hero'
 import BenefitsSection from '@/components/sections/BenefitsSection'
 import StepsSection from '@/components/sections/StepsSection'
+import LeadCheckTeaser from '@/components/sections/LeadCheckTeaser'
 import ProfilesSection from '@/components/sections/ProfilesSection'
 import FaqSection from '@/components/sections/FaqSection'
 import { faqs } from '@/lib/faq-data'
@@ -46,6 +47,7 @@ export default function HomePage() {
       <Hero />
       <BenefitsSection />
       <StepsSection />
+      <LeadCheckTeaser />
       <ProfilesSection />
       <FaqSection />
     </>
