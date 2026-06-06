@@ -9,7 +9,8 @@
 import type { RecentMessage } from './activity-feed'
 import type { LeadListItem } from './lead-queries'
 import type { Appointment } from './agenda-queries'
-import { KPI_DOELEN, type KpiKey, type KpiMetric, type ExtraMetric } from '@/components/dashboard/overzicht/kpi-types'
+import { KPI_DOELEN } from '@/components/dashboard/overzicht/kpi-doelen'
+import type { KpiKey, KpiMetric, ExtraMetric } from '@/components/dashboard/overzicht/kpi-types'
 import type { ActivityItem } from '@/components/dashboard/overzicht/LiveActivityFeed'
 
 export type FunnelRow = { label: string; count: number; pct: number }
@@ -136,6 +137,11 @@ export function buildKpiMetrics(input: {
   conversiePctPrev30: number
   reactietijdLast7S: number
   reactietijdPrev7S: number
+  /**
+   * Ingesteld maand-omzetdoel (tenant_settings.omzet_doel_maand) in euro's.
+   * null/undefined = niet ingesteld → val terug op de default-schaal.
+   */
+  omzetDoelMaand?: number | null
 }): Record<KpiKey, KpiMetric> {
   return {
     omzet: {
@@ -144,7 +150,8 @@ export function buildKpiMetrics(input: {
       value: Math.round(input.omzetMaand),
       prevValue: Math.round(input.omzetMaandPrev),
       unit: 'eur',
-      doel: KPI_DOELEN.omzet_maand,
+      // Gebruik het ingestelde doel; zonder instelling de v1-default.
+      doel: input.omzetDoelMaand ?? KPI_DOELEN.omzet_maand,
       rangeLabel: 'Lopende maand',
       compareLabel: 'vs vorige week',
       iconKind: 'wallet',
