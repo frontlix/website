@@ -202,6 +202,40 @@ export function LeadOfferteForm({
   )
   const dienstenSubtotaal = totals.subtotal - reiskostenTotaal
 
+  // Kortbare grondslag: diensten + korstmos-toeslag (nooit reiskosten). Hierover
+  // wordt de actiekorting berekend, dus ook de omrekening vast-bedrag → percentage.
+  const kortbareGrondslag = dienstenSubtotaal + totals.korstmosToeslag
+
+  // "Vast bedrag"-invoer voor de actiekorting. Het systeem werkt onderwater met
+  // een percentage (korting_percentage); een vast euro-bedrag rekenen we om naar
+  // het equivalente percentage. Lokale tekst-state zodat typen soepel blijft.
+  const [kortingEuro, setKortingEuro] = useState<string>(() => {
+    const euro = (kortbareGrondslag * (Number(data.korting_percentage) || 0)) / 100
+    return euro > 0 ? euro.toFixed(2) : ''
+  })
+
+  /** Zet de korting via percentage (slider) en sync het vast-bedrag-veld. */
+  const setKortingPct = useCallback(
+    (pct: number) => {
+      const clamped = Math.max(0, Math.min(100, pct))
+      setField('korting_percentage', clamped)
+      const euro = (kortbareGrondslag * clamped) / 100
+      setKortingEuro(euro > 0 ? euro.toFixed(2) : '')
+    },
+    [setField, kortbareGrondslag],
+  )
+
+  /** Zet de korting via een vast euro-bedrag, omgerekend naar percentage. */
+  const setKortingVastBedrag = useCallback(
+    (text: string) => {
+      setKortingEuro(text)
+      const amt = Number(text.replace(',', '.')) || 0
+      const pct = kortbareGrondslag > 0 ? Math.min(100, (amt / kortbareGrondslag) * 100) : 0
+      setField('korting_percentage', pct)
+    },
+    [setField, kortbareGrondslag],
+  )
+
   // Vervaldatum = vandaag + N dagen.
   const vervalDatum = useMemo(
     () => new Date(Date.now() + geldigheidDagen * 86400000),
@@ -753,15 +787,32 @@ export function LeadOfferteForm({
           <input
             type="range"
             min={0}
-            max={30}
+            max={100}
             step={1}
             className={styles.slider}
-            value={data.korting_percentage}
-            onChange={(e) => setField('korting_percentage', Number(e.target.value))}
+            value={Math.round(data.korting_percentage)}
+            onChange={(e) => setKortingPct(Number(e.target.value))}
             aria-label="Actiekorting percentage"
           />
-          <span className={styles.kortingPct}>{data.korting_percentage}%</span>
+          <span className={styles.kortingPct}>{Math.round(data.korting_percentage)}%</span>
           <span className={styles.kortingEur}>{formatEuro(totals.kortingBedrag)}</span>
+        </div>
+        <div className={styles.kortingVast}>
+          <span className={styles.kortingVastLabel}>Of vast bedrag</span>
+          <div className={styles.numBox}>
+            <span className={styles.numAffix}>€</span>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              inputMode="decimal"
+              className={styles.numInput}
+              value={kortingEuro}
+              placeholder="0,00"
+              onChange={(e) => setKortingVastBedrag(e.target.value)}
+              aria-label="Vast kortingsbedrag in euro"
+            />
+          </div>
         </div>
         <div className={styles.note}>
           <span className={styles.noteLabel}>Toelichting voor klant (optioneel)</span>
