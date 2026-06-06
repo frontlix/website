@@ -20,7 +20,7 @@
 // OClientNote, OAddrInput.
 // ──────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import {
   Check,
   ChevronRight,
@@ -118,7 +118,11 @@ export function MobileOfferteEditor({
   offertes,
   fotosCount,
   pricing,
-}: MobileOfferteFormProps) {
+  pdfApiRef,
+}: MobileOfferteFormProps & {
+  /** Brug voor de sticky actiebalk: opent de PDF-preview-overlay. */
+  pdfApiRef?: RefObject<{ openPdf: () => void } | null>
+}) {
   // ─── Enige bron van waarheid (gespiegeld van LeadOfferteForm) ───
   const [data, setData] = useState<ManualOfferteData>(() => mapLeadToFormData(lead))
   const [geldigheidDagen, setGeldigheidDagen] = useState<number>(
@@ -282,6 +286,21 @@ export function MobileOfferteEditor({
       }
     }
   }, [data, geldigheidDagen, flushSave])
+
+  // Sticky actiebalk-knop "Bekijk PDF" opent dezelfde nette PDF-overlay als de
+  // PDF-knop in het overzicht (i.p.v. de route-versie die mobiel slecht oogt).
+  useEffect(() => {
+    if (!pdfApiRef) return
+    pdfApiRef.current = {
+      openPdf: () => {
+        flushPending()
+        setPdfOpen(true)
+      },
+    }
+    return () => {
+      if (pdfApiRef) pdfApiRef.current = null
+    }
+  }, [pdfApiRef, flushPending])
 
   const handleSendClick = useCallback(() => {
     // Stub: verzending wordt later gekoppeld (mirror van LeadOfferteForm).
@@ -499,18 +518,30 @@ export function MobileOfferteEditor({
           <div className={`${styles.arbeidGrid} ${styles.mt8}`}>
             <div className={styles.arbeidCell}>
               <span className={styles.arbeidLabel}>Minuten</span>
-              <OStepper
-                value={data.extra_arbeid_minuten}
-                onChange={(v) => setField('extra_arbeid_minuten', v)}
-                step={5}
+              <input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                className={styles.arbeidInput}
+                value={data.extra_arbeid_minuten || ''}
+                placeholder="0"
+                onChange={(e) =>
+                  setField('extra_arbeid_minuten', Number(e.target.value) || 0)
+                }
               />
             </div>
             <div className={styles.arbeidCell}>
               <span className={styles.arbeidLabel}>Personen</span>
-              <OStepper
-                value={data.extra_arbeid_personen}
-                onChange={(v) => setField('extra_arbeid_personen', Math.max(1, v))}
+              <input
+                type="number"
                 min={1}
+                inputMode="numeric"
+                className={styles.arbeidInput}
+                value={data.extra_arbeid_personen || ''}
+                placeholder="1"
+                onChange={(e) =>
+                  setField('extra_arbeid_personen', Math.max(1, Number(e.target.value) || 1))
+                }
               />
             </div>
             <div className={styles.arbeidCell}>
@@ -534,23 +565,23 @@ export function MobileOfferteEditor({
                   suffix="zak"
                 />
               </div>
-              <div className={styles.controlRow}>
-                <span className={styles.controlRowLabel}>Invegen-m²</span>
-                <ONumField
-                  value={data.voegzand_normaal_m2}
-                  onChange={(v) => setVoegzandNormaal({ voegzand_normaal_m2: v })}
-                  align="right"
-                />
-              </div>
-              <div className={styles.controlRow}>
-                <span className={styles.controlRowLabel}>Prijs per zak</span>
-                <ONumField
-                  value={data.voegzand_normaal_prijs}
-                  onChange={(v) => setVoegzandNormaal({ voegzand_normaal_prijs: v })}
-                  prefix="€"
-                  dec
-                  align="right"
-                />
+              <div className={styles.zandLine}>
+                <span className={styles.zandUnit}>
+                  <ONumField
+                    value={data.voegzand_normaal_m2}
+                    onChange={(v) => setVoegzandNormaal({ voegzand_normaal_m2: v })}
+                  />
+                  <span className={styles.zandUnitLbl}>m²</span>
+                </span>
+                <span className={styles.zandUnit}>
+                  <ONumField
+                    value={data.voegzand_normaal_prijs}
+                    onChange={(v) => setVoegzandNormaal({ voegzand_normaal_prijs: v })}
+                    prefix="€"
+                    dec
+                  />
+                  <span className={styles.zandUnitLbl}>per zak</span>
+                </span>
               </div>
             </div>
 
@@ -564,23 +595,23 @@ export function MobileOfferteEditor({
                   suffix="zak"
                 />
               </div>
-              <div className={styles.controlRow}>
-                <span className={styles.controlRowLabel}>Invegen-m²</span>
-                <ONumField
-                  value={data.voegzand_onkruidwerend_m2}
-                  onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_m2: v })}
-                  align="right"
-                />
-              </div>
-              <div className={styles.controlRow}>
-                <span className={styles.controlRowLabel}>Prijs per zak</span>
-                <ONumField
-                  value={data.voegzand_onkruidwerend_prijs}
-                  onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_prijs: v })}
-                  prefix="€"
-                  dec
-                  align="right"
-                />
+              <div className={styles.zandLine}>
+                <span className={styles.zandUnit}>
+                  <ONumField
+                    value={data.voegzand_onkruidwerend_m2}
+                    onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_m2: v })}
+                  />
+                  <span className={styles.zandUnitLbl}>m²</span>
+                </span>
+                <span className={styles.zandUnit}>
+                  <ONumField
+                    value={data.voegzand_onkruidwerend_prijs}
+                    onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_prijs: v })}
+                    prefix="€"
+                    dec
+                  />
+                  <span className={styles.zandUnitLbl}>per zak</span>
+                </span>
               </div>
             </div>
           </div>

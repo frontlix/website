@@ -75,7 +75,9 @@
    Spiegelt .page in pdf-template.ts (width 210mm, min-height 297mm, flex-kolom). */
 .paper {
   width: 794px; /* ≈210mm @96dpi — MOET gelijk zijn aan A4_WIDTH in de .tsx */
-  min-height: 1123px; /* ≈297mm @96dpi */
+  /* Content-hoogte i.p.v. vaste A4-hoogte: bij korte offertes geen groot
+     leeg vel / gat onder de totalen. Het vel groeit mee voor lange offertes. */
+  min-height: auto;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -85,10 +87,11 @@
   transform-origin: top left;
 }
 
-/* Spacer duwt voorwaarden + footer naar onderen — spiegelt .page-spacer. */
+/* Vaste kleine tussenruimte vóór voorwaarden/footer (geen flex-grow meer, dus
+   de footer plakt direct onder de content i.p.v. naar de A4-bodem geduwd). */
 .spacer {
-  flex: 1 1 auto;
-  min-height: 24px;
+  flex: 0 0 auto;
+  height: 28px;
 }
 
 /* Onderblok (voorwaarden + footer) — spiegelt .bottom-block. */

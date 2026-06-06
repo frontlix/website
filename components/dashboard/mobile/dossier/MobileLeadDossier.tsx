@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DossierHeader } from './DossierHeader'
 import { DossierFactStrip } from './DossierFactStrip'
@@ -41,6 +41,10 @@ export function MobileLeadDossier({
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('info')
   const { lead } = data
+  // Brug naar de PDF-preview-overlay binnen de editor, zodat de sticky
+  // actiebalk-knop "Bekijk PDF" dezelfde nette overlay opent (i.p.v. de
+  // route-versie die mobiel slecht oogt).
+  const pdfApiRef = useRef<{ openPdf: () => void } | null>(null)
 
   return (
     <div className={styles.root}>
@@ -62,7 +66,9 @@ export function MobileLeadDossier({
           {/* Offerte-tab: mobiele accordion-editor. Zelfde datamodel + rekenwerk
               + persistentie als de desktop-vorm, dus identieke totalen. De sticky
               actiebalk levert daarnaast de PDF-CTA. */}
-          {tab === 'offerte' && <MobileOfferteEditor {...offerteForm} />}
+          {tab === 'offerte' && (
+            <MobileOfferteEditor {...offerteForm} pdfApiRef={pdfApiRef} />
+          )}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}
         </div>
@@ -83,12 +89,7 @@ export function MobileLeadDossier({
         primaryLabel={tab === 'offerte' ? 'Bekijk PDF' : undefined}
         onSendOfferte={
           tab === 'offerte'
-            ? () =>
-                window.open(
-                  `/offerte-preview/${offerteForm.leadId}`,
-                  '_blank',
-                  'noopener,noreferrer',
-                )
+            ? () => pdfApiRef.current?.openPdf()
             : () => setTab('offerte')
         }
       />
