@@ -46,6 +46,12 @@ type Props = {
   offertes: Offerte[]
   fotosCount?: number
   pricing: ManualOffertePricing
+  /**
+   * Embedded in de mobiele dossier-shell: verbergt de eigen actieknoppen
+   * (de dossier-actiebalk levert de CTA) en gebruikt geen eigen horizontale
+   * padding (de .tabBody van het dossier doet dat al). Default false (desktop).
+   */
+  embedded?: boolean
 }
 
 /** Display-only toelichtingen, gekeyed op sectie. Niet gepersisteerd. */
@@ -84,6 +90,7 @@ export function LeadOfferteForm({
   lead,
   fotosCount = 0,
   pricing,
+  embedded = false,
 }: Props) {
   // ─── Enige bron van waarheid ───────────────────────────────
   const [data, setData] = useState<ManualOfferteData>(() => mapLeadToFormData(lead))
@@ -288,7 +295,7 @@ export function LeadOfferteForm({
     saveState === 'saving' ? 'Opslaan…' : saveState === 'saved' ? 'Opgeslagen' : ''
 
   return (
-    <div className={styles.qf}>
+    <div className={`${styles.qf} ${embedded ? styles.embedded : ''}`}>
       {/* ─── 1. Status-strip ─── */}
       <div className={styles.status}>
         <div className={styles.version}>v3</div>
@@ -806,10 +813,12 @@ export function LeadOfferteForm({
             rules.map((r, i) => (
               <div className={styles.lineRow} key={`${r.desc}-${i}`}>
                 <span className={styles.lineLabel}>{r.desc}</span>
-                <span className={styles.lineMeta}>
-                  {r.aantal} {r.eenheid} × {formatEuro(r.prijs)}
+                <span className={styles.lineRight}>
+                  <span className={styles.lineMeta}>
+                    {r.aantal} {r.eenheid} × {formatEuro(r.prijs)}
+                  </span>
+                  <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
                 </span>
-                <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
               </div>
             ))
           )}
@@ -862,14 +871,18 @@ export function LeadOfferteForm({
           <span className={styles.grandLineV}>{formatEuro(totals.total + totals.btw)}</span>
         </div>
 
-        <div className={styles.actions}>
-          <button type="button" className={styles.btnSecondary} onClick={handlePdfClick}>
-            <FileText size={15} aria-hidden /> PDF
-          </button>
-          <button type="button" className={styles.btnPrimary} onClick={handleSendClick}>
-            <MessageCircle size={15} aria-hidden /> Versturen via WhatsApp
-          </button>
-        </div>
+        {/* In de mobiele dossier-shell leveren we de CTA via de sticky
+            actiebalk; daar verbergen we de eigen knoppen. */}
+        {!embedded ? (
+          <div className={styles.actions}>
+            <button type="button" className={styles.btnSecondary} onClick={handlePdfClick}>
+              <FileText size={15} aria-hidden /> PDF
+            </button>
+            <button type="button" className={styles.btnPrimary} onClick={handleSendClick}>
+              <MessageCircle size={15} aria-hidden /> Versturen via WhatsApp
+            </button>
+          </div>
+        ) : null}
       </section>
 
       {toast ? (

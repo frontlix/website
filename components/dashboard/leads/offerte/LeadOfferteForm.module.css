@@ -498,15 +498,26 @@
 }
 
 .lineRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  display: flex;
   align-items: baseline;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .lineLabel {
   font-size: 14px;
   color: var(--fg);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Rechtergroep: meta (gedempt) + regeltotaal, samen nowrap zodat het bedrag
+   altijd netjes rechts uitlijnt en de label-tekst links mag afbreken. */
+.lineRight {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .lineMeta {
@@ -524,7 +535,6 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: right;
-  min-width: 78px;
 }
 
 .lineEmpty {
@@ -698,6 +708,22 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
+/* ─── Embedded in mobiele dossier-shell ─── */
+/* De .tabBody van het dossier levert al 16px horizontale padding + bodem-ruimte,
+   dus het formulier gebruikt hier géén eigen horizontale padding. */
+.embedded {
+  padding: 6px 0 12px;
+  gap: 14px;
+}
+.embedded .card,
+.embedded .totals {
+  padding: 14px 14px;
+  border-radius: 12px;
+}
+.embedded .status {
+  padding: 11px 12px;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 720px) {
   .grid2 {
@@ -705,5 +731,47 @@
   }
   .arbeid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Smalle telefoons: compactere typografie + spacing zodat niets afkapt of
+   overloopt en de prijsregels netjes uitlijnen. */
+@media (max-width: 560px) {
+  .qf {
+    gap: 14px;
+  }
+  .card {
+    padding: 14px 14px;
+  }
+  .cardHead {
+    padding-bottom: 10px;
+  }
+  .cardTitle {
+    font-size: 11.5px;
+  }
+  .lineList {
+    gap: 13px;
+  }
+  .lineLabel,
+  .lineTotal {
+    font-size: 13.5px;
+  }
+  .lineMeta {
+    font-size: 11.5px;
+  }
+  .lineRight {
+    gap: 10px;
+  }
+  .grandLineTitle {
+    font-size: 16px;
+  }
+  .grandLineV {
+    font-size: 22px;
+  }
+  .zandRow {
+    gap: 10px;
+  }
+  .arbeid {
+    gap: 10px;
   }
 }

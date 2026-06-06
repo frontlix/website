@@ -152,7 +152,17 @@ export default async function LeadDetailPage({
       {/* Mobile-only: volledig scherm lead-dossier, gevoed met echte
           getLeadDetail-data via de dossier-mapper. */}
       <div className={styles.mobileTree}>
-        <MobileLeadDossier data={mapLeadDetailToDossier(detail)} />
+        <MobileLeadDossier
+          data={mapLeadDetailToDossier(detail)}
+          offerteForm={{
+            leadId: lead.lead_id,
+            lead,
+            prijsregels: detail.prijsregels,
+            offertes: detail.offertes,
+            fotosCount: detail.fotos.length,
+            pricing,
+          }}
+        />
       </div>
     </>
   )
