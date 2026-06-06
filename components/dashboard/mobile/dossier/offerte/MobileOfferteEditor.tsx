@@ -715,24 +715,27 @@ export function MobileOfferteEditor({
         open={openKorting}
         onToggle={() => setOpenKorting((o) => !o)}
       >
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          className={styles.slider}
-          value={Math.round(effectiveKortingPct)}
-          onChange={(e) =>
-            setData((s) => ({
-              ...s,
-              korting_percentage: Number(e.target.value),
-              korting_bedrag: 0,
-            }))
-          }
-          aria-label="Actiekorting percentage"
-        />
+        <div className={styles.kortingSliderRow}>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            className={styles.slider}
+            value={Math.round(effectiveKortingPct)}
+            onChange={(e) =>
+              setData((s) => ({
+                ...s,
+                korting_percentage: Number(e.target.value),
+                korting_bedrag: 0,
+              }))
+            }
+            aria-label="Actiekorting percentage"
+          />
+          <span className={styles.kortingPctBadge}>{Math.round(effectiveKortingPct)}%</span>
+        </div>
         <div className={styles.kortingPresets}>
-          {[0, 10, 25, 50].map((p) => (
+          {[10, 20, 30, 50].map((p) => (
             <button
               key={p}
               type="button"
