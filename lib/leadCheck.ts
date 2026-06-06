@@ -90,6 +90,34 @@ export function verbeterpunten(input: LeadCheckInput): string[] {
   return punten.slice(0, 3)
 }
 
+export interface LekVerdeling {
+  /** Aandeel van het maand-lek (hoog-band) door trage reactie overdag. */
+  reactieMaand: number
+  /** Aandeel van het maand-lek (hoog-band) door avond- en weekendgaten. */
+  avondMaand: number
+  /** Kwalitatief effect van offerte-shoppen: dempt het lek of telt het volledig mee. */
+  shoppenEffect: 'volledig' | 'gedempt' | 'sterk_gedempt'
+}
+
+/**
+ * Verdeelt het geschatte maand-lek over zijn twee bronnen, naar rato van de
+ * factoren uit de formule. Shoppen is in dit conservatieve model een
+ * dempfactor (multiplier ≤ 1), geen aparte geldbron, en blijft dus kwalitatief.
+ */
+export function lekVerdeling(input: LeadCheckInput): LekVerdeling {
+  const totaal = berekenLeadCheck(input).omzetMaand.hoog
+  const wReactie = BASE[input.speed]
+  const wAvond = AFTERHOURS_BONUS[input.afterhours]
+  const som = wReactie + wAvond
+  const reactieMaand = som > 0 ? totaal * (wReactie / som) : 0
+  return {
+    reactieMaand,
+    avondMaand: som > 0 ? totaal - reactieMaand : 0,
+    shoppenEffect:
+      input.shoppen === 'meestal' ? 'volledig' : input.shoppen === 'soms' ? 'gedempt' : 'sterk_gedempt',
+  }
+}
+
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n))
 }

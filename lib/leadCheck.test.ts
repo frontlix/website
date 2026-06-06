@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { berekenLeadCheck, verbeterpunten, parseLeadCheckInput, type LeadCheckInput } from './leadCheck'
+import {
+  berekenLeadCheck,
+  lekVerdeling,
+  verbeterpunten,
+  parseLeadCheckInput,
+  type LeadCheckInput,
+} from './leadCheck'
 
 const basis: LeadCheckInput = {
   aanvragenPerWeek: 10,
@@ -62,6 +68,24 @@ describe('verbeterpunten', () => {
   it('geeft geen punten bij perfect profiel', () => {
     const punten = verbeterpunten({ ...basis, speed: '5min', afterhours: 'altijd', conversiePct: 40, shoppen: 'zelden' })
     expect(punten).toEqual([])
+  })
+})
+
+describe('lekVerdeling', () => {
+  it('verdeelt het maand-lek naar rato van de factoren', () => {
+    const r = berekenLeadCheck(basis)
+    const v = lekVerdeling(basis)
+    // basis: wReactie 0.30, wAvond 0.12 → 30/42 en 12/42 van het hoog-band-bedrag
+    expect(v.reactieMaand).toBeCloseTo(r.omzetMaand.hoog * (0.3 / 0.42), 5)
+    expect(v.reactieMaand + v.avondMaand).toBeCloseTo(r.omzetMaand.hoog, 5)
+    expect(v.shoppenEffect).toBe('volledig')
+  })
+
+  it('geeft nul-verdeling bij perfecte opvolging', () => {
+    const v = lekVerdeling({ ...basis, speed: '5min', afterhours: 'altijd', shoppen: 'zelden' })
+    expect(v.reactieMaand).toBe(0)
+    expect(v.avondMaand).toBe(0)
+    expect(v.shoppenEffect).toBe('sterk_gedempt')
   })
 })
 

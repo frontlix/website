@@ -187,6 +187,16 @@
   --color-note-fg:        #B45309;
   --color-note-text:      #5A4214;
   --color-switch-track:   #E4E4EA;
+
+  /* Lead-check (Druppels-design) — donker uitslagscherm + druppel-accenten.
+     Bewust aparte tokens: dit diepe nachtblauw is exclusief voor het
+     lek-check-uitslagmoment, niet voor de rest van de marketing-site. */
+  --lek-dark-1:        #0A1130;
+  --lek-dark-2:        #0B1640;
+  --lek-dark-3:        #081026;
+  --lek-primary-soft:  #5AA0FF;  /* lichtere blauwstop voor gradient-tekst op donker */
+  --lek-drip:          #3A8BFF;  /* druppel-gradient-start */
+  --lek-accent-soft:   #7FE9FF;  /* licht cyaan voor accenten op donker */
 }
 
 /* ─────────────────────────────────────────────────────────
