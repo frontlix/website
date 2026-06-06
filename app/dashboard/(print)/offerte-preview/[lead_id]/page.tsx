@@ -105,6 +105,9 @@ export default async function OffertePreviewPage({
 
   // Totalen. Reiskosten zijn niet kortbaar, dus uit de kortingsgrondslag.
   const kortingPct = Number(lead.korting_percentage ?? 0)
+  // Vast-bedrag-modus: het euro-bedrag is al via het effectieve percentage
+  // verrekend in berekenTotalen; we laten dan alleen het %-label weg.
+  const kortingIsVastBedrag = Number(lead.korting_bedrag ?? 0) > 0
   const regelTotalen = prijsregels.map((r) => Number(r.totaal ?? 0))
   const reiskostenTotaal = prijsregels
     .filter((r) => isReiskostenRegel({ omschrijving: r.omschrijving, eenheid: r.eenheid }))
@@ -256,7 +259,7 @@ export default async function OffertePreviewPage({
               {kortingPct > 0 && totalen.kortingBedrag > 0 ? (
                 <tr className={styles.korting}>
                   <td>
-                    Actiekorting ({kortingPct}%)
+                    {kortingIsVastBedrag ? 'Actiekorting' : `Actiekorting (${kortingPct}%)`}
                     {lead.korting_omschrijving ? `, ${lead.korting_omschrijving}` : ''}
                   </td>
                   <td className={styles.amount}>− {formatEuro(totalen.kortingBedrag)}</td>

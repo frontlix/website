@@ -11,7 +11,7 @@ import { DossActiviteit } from './DossActiviteit'
 import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
-import { LeadOfferteForm } from '@/components/dashboard/leads/offerte/LeadOfferteForm'
+import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import styles from './MobileLeadDossier.module.css'
@@ -59,10 +59,10 @@ export function MobileLeadDossier({
               vragen={data.vragen}
             />
           )}
-          {/* Offerte-tab: exact hetzelfde formulier als desktop (LeadOfferteForm),
-              ingebed (embedded) zodat het in de dossier-shell past en de eigen
-              actieknoppen verbergt — de sticky actiebalk levert hier de CTA. */}
-          {tab === 'offerte' && <LeadOfferteForm embedded {...offerteForm} />}
+          {/* Offerte-tab: mobiele accordion-editor. Zelfde datamodel + rekenwerk
+              + persistentie als de desktop-vorm, dus identieke totalen. De sticky
+              actiebalk levert daarnaast de PDF-CTA. */}
+          {tab === 'offerte' && <MobileOfferteEditor {...offerteForm} />}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}
         </div>

@@ -1,0 +1,691 @@
+/* ── MobileOfferteEditor.module.css ────────────────────────────────────────
+   Mobiele, sectioned (accordion) offerte-editor. Hergebruikt het dossier-
+   kaart-uiterlijk (radius 14, surface-bg, iconBadge) en het live-prijs-
+   overzicht-patroon uit LeadOfferteForm. Alle kleuren via tokens; accent
+   strikt blauw→cyaan; korstmos-toggle blauw (--color-primary).
+
+   ACCORDION-ANIMATIE: de body is altijd in de DOM (zichtbaar in print/no-JS).
+   Bij open animeren we UITSLUITEND `transform` (translateY van -6px → 0) en
+   eindigen volledig zichtbaar (opacity 1). De dichte staat verbergt de body
+   via grid-template-rows 0fr → 1fr (height-collapse, geen opacity:0-eindstaat).
+   ────────────────────────────────────────────────────────────────────────── */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Geen eigen horizontale padding: de .tabBody van het dossier doet dat al. */
+  padding: 4px 0 120px; /* bottom-padding houdt content vrij van de sticky actiebalk */
+}
+
+/* Subtiele save-indicator bovenaan. */
+.saveStatus {
+  min-height: 16px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.saveLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  transition: color 0.2s;
+}
+
+.saveLabel[data-saved] {
+  color: var(--color-success);
+}
+
+/* ── Accordion-kaart ─────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Kop = tikbare rij (icon + titel/summary + chevron). ≥44px hit-target. */
+.cardHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+}
+
+.iconBadge {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  /* Zachte accent-achtergrond, blauw. */
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.cardSummary {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chev {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform 0.2s var(--ease-ios);
+}
+
+.chev[data-open] {
+  transform: rotate(90deg);
+}
+
+/* Body-collapse: grid 0fr (dicht) → 1fr (open). Géén opacity-eindstaat. */
+.bodyClip {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s var(--ease-ios);
+}
+
+.bodyClip[data-open] {
+  grid-template-rows: 1fr;
+}
+
+.bodyInner {
+  overflow: hidden;
+}
+
+/* Inhoud schuift bij openen alleen via transform omhoog→op-plaats. Eindigt
+   volledig zichtbaar (transform none, opacity 1) — print-/no-JS-veilig. */
+.body {
+  padding: 0 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: translateY(-6px);
+  transition: transform 0.28s var(--ease-ios);
+}
+
+.bodyClip[data-open] .body {
+  transform: translateY(0);
+}
+
+/* ── Velden (klantgegevens) ──────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fieldLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.labelHint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Algemene tekst-input (≥16px tegen iOS-zoom). */
+.input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  font: inherit;
+  font-size: 16px;
+  color: var(--color-text);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+/* Toggle-rij: label links, OSwitch rechts. */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.toggleRowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.toggleRowLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.toggleRowSub {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 1px;
+}
+
+/* Info-melding (afwijkend factuuradres). */
+.factInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+/* Sub-sectie-kop binnen een body. */
+.subHead {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Verticale stack onder een subHead. */
+.subStack {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Verticale stack zonder gap-spreiding (toggle-rijen dicht op elkaar). */
+.subStackTight {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mt8 {
+  margin-top: 8px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+/* Rij: label links, control rechts. */
+.controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.controlRowLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Extra arbeid (3-koloms grid) ────────────────────────────────────────── */
+
+.arbeidGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+}
+
+.arbeidCell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.arbeidLabel {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Read-only / bordered waarde-box, rechts uitgelijnd. */
+.valueBox {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  padding: 9px 11px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Voegzand sub-kaarten ────────────────────────────────────────────────── */
+
+.zandCard {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-card-bg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zandName {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+/* Kleur-pills. */
+.kleuren {
+  display: flex;
+  gap: 10px;
+}
+
+.pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.pill[data-on] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-strong);
+}
+
+/* ── Extra diensten chips ────────────────────────────────────────────────── */
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  min-height: 44px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.check[data-on] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.checkBox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border-strong);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--color-white);
+}
+
+.check[data-on] .checkBox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* ── Actiekorting ────────────────────────────────────────────────────────── */
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-primary);
+  margin: 4px 0;
+}
+
+.kortingPresets {
+  display: flex;
+  gap: 8px;
+}
+
+.kortingPreset {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 4px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.kortingPreset[data-on] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+}
+
+.kortingEur {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-success);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Geldigheid ──────────────────────────────────────────────────────────── */
+
+.geldigQuick {
+  display: flex;
+  gap: 8px;
+}
+
+.geldigQuickBtn {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 4px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.geldigQuickBtn[data-on] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+}
+
+.geldigDate {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.geldigDate strong {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+/* ── Live prijsoverzicht (vast, onder de secties) ─────────────────────────── */
+
+.totals {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overviewHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.overviewTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.overviewUpdated {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.overviewUpdated[data-saved] {
+  color: var(--color-success);
+}
+
+.lineList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.lineEmpty {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.lineRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lineLabel {
+  font-size: 13px;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+}
+
+.lineRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.lineMeta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lineTotal {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.div {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.totalsRows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.totalsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.totalsRowMuted {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.totalsValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Korting-rij: groen. */
+.kortingRowLine {
+  color: var(--color-success);
+}
+
+.kortingRowLine .totalsValue {
+  color: var(--color-success);
+}
+
+/* Eind-totaal. */
+.grandLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.grandLineL {
+  display: flex;
+  flex-direction: column;
+}
+
+.grandLineTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.grandLineSub {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.grandLineV {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Acties ──────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btnSecondary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 11px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  flex: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: 11px;
+  background: var(--color-gradient);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.historieLink {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}

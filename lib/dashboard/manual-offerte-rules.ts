@@ -224,7 +224,12 @@ export function computeTotals(
   const korstmosToeslag = data.korstmos === 'ja' ? diensten * 0.1 : 0
   const discount = Number(data.korting_percentage) || 0
   // Korting geldt over diensten + korstmos-toeslag, NOOIT over reiskosten.
-  const kortingBedrag = (diensten + korstmosToeslag) * (discount / 100)
+  // korting_bedrag > 0 ⇒ vast-bedrag-modus (gecapt op de grondslag),
+  // anders percentage-modus.
+  const base = diensten + korstmosToeslag
+  const kortingBedrag = Number(data.korting_bedrag) > 0
+    ? Math.min(Number(data.korting_bedrag), base)
+    : base * (discount / 100)
   const total = subtotal + korstmosToeslag - kortingBedrag
   const btw = total * 0.21
   return { subtotal, korstmosToeslag, kortingBedrag, discount, total, btw }

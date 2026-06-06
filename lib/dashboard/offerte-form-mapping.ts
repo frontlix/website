@@ -133,6 +133,7 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     extra_arbeid_personen: Number(lead.extra_arbeid_personen) || 1,
     extra_arbeid_omschrijving: lead.extra_arbeid_omschrijving ?? '',
     korting_percentage: Number(lead.korting_percentage) || 0,
+    korting_bedrag: Number(lead.korting_bedrag) || 0,
     korting_omschrijving: lead.korting_omschrijving ?? '',
     // notitie/kanaal/onderhoud_weken blijven op DEFAULTS (geen lead-kolom).
   }
@@ -247,6 +248,7 @@ export function buildLeadFieldsFromForm(
     extra_arbeid_personen: Number(data.extra_arbeid_personen) || 0,
     extra_arbeid_omschrijving: trimOrNull(data.extra_arbeid_omschrijving),
     korting_percentage: Number(data.korting_percentage) || 0,
+    korting_bedrag: Number(data.korting_bedrag) || 0,
     korting_omschrijving: trimOrNull(data.korting_omschrijving),
   }
 }

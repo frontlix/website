@@ -74,6 +74,9 @@ export type ManualOfferteData = {
   extra_arbeid_personen: number
   extra_arbeid_omschrijving: string
   korting_percentage: number
+  // Vaste actiekorting in euro. > 0 ⇒ vast-bedrag-modus (overruled het
+  // percentage), 0 ⇒ percentage-modus. Gecapt op de kortbare grondslag.
+  korting_bedrag: number
   korting_omschrijving: string
   // verzending
   notitie: string
@@ -140,6 +143,7 @@ export const DEFAULTS: ManualOfferteData = {
   extra_arbeid_personen: 0,
   extra_arbeid_omschrijving: '',
   korting_percentage: 0,
+  korting_bedrag: 0,
   korting_omschrijving: '',
   notitie: '',
   kanaal: 'mail',

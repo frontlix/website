@@ -380,6 +380,7 @@ export type Database = {
           kanaal: string
           klus_geblokkeerd: boolean
           korstmos: string | null
+          korting_bedrag: number
           korting_omschrijving: string | null
           korting_percentage: number | null
           lat: number | null
@@ -481,6 +482,7 @@ export type Database = {
           kanaal?: string
           klus_geblokkeerd?: boolean
           korstmos?: string | null
+          korting_bedrag?: number
           korting_omschrijving?: string | null
           korting_percentage?: number | null
           lat?: number | null
@@ -582,6 +584,7 @@ export type Database = {
           kanaal?: string
           klus_geblokkeerd?: boolean
           korstmos?: string | null
+          korting_bedrag?: number
           korting_omschrijving?: string | null
           korting_percentage?: number | null
           lat?: number | null

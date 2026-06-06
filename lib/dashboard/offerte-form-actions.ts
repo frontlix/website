@@ -77,17 +77,35 @@ export async function saveOfferteForm(
     // doorgeven (inclusief de korstmos-regel): subtotaal − korting × BTW.
     // Korting geldt nooit over reiskosten (eenheid 'km'). Zo lopen
     // leads.totaal_prijs en offertes.totaal_incl niet uit elkaar.
-    const kortingPct = Math.max(0, Math.min(100, Number(data.korting_percentage) || 0))
+    // Eén unified resolutie voor beide korting-modi:
+    //  - korting_bedrag > 0  ⇒ vast euro-bedrag, gecapt op de grondslag.
+    //  - anders              ⇒ percentage over de grondslag.
+    // De grondslag (base) = subtotaal − reiskosten (diensten + korstmos-
+    // regel). We rekenen het vaste bedrag terug naar een effectief
+    // percentage (effectivePct) zodat saveDraft én de PDF — die beide met
+    // het percentage rekenen — exact hetzelfde euro-bedrag produceren.
     const subtotaal = regelsVoorDraft.reduce((s, r) => s + r.aantal * r.prijs, 0)
     const reiskosten = regelsVoorDraft
       .filter((r) => r.eenheid === 'km')
       .reduce((s, r) => s + r.aantal * r.prijs, 0)
-    const kortbaar = Math.max(0, subtotaal - reiskosten)
-    const totaalIncl = round2((subtotaal - kortbaar * (kortingPct / 100)) * BTW_FACTOR)
+    const base = Math.max(0, subtotaal - reiskosten)            // diensten + korstmos-regel
+    const vast = Number(data.korting_bedrag) || 0
+    const euroKorting = vast > 0
+      ? Math.min(vast, base)
+      : base * (Math.max(0, Math.min(100, Number(data.korting_percentage) || 0)) / 100)
+    const effectivePct = base > 0 ? Math.min(100, (euroKorting / base) * 100) : 0
+    const totaalIncl = round2((subtotaal - euroKorting) * BTW_FACTOR)
 
     // ── 6. Lead-velden bijwerken ───────────────────────────────────
+    // Schrijf het GERESOLVEERDE percentage (effectivePct) plus het vaste
+    // bedrag (data.korting_bedrag, via buildLeadFieldsFromForm). De PDF
+    // rekent met korting_percentage, dus die moet het effectieve pct zijn.
     const leadFields = {
-      ...buildLeadFieldsFromForm(data, leadId, totaalIncl),
+      ...buildLeadFieldsFromForm(
+        { ...data, korting_percentage: effectivePct },
+        leadId,
+        totaalIncl,
+      ),
       offerte_geldigheid_dagen: Number(geldigheidDagen) || null,
     }
     const admin = getDashboardAdmin()
@@ -111,7 +129,9 @@ export async function saveOfferteForm(
 
     return await saveDraft(leadId, {
       regels,
-      kortingPct: Number(data.korting_percentage) || 0,
+      // Effectief pct (vast bedrag teruggerekend), zodat saveDraft's eigen
+      // totaal-berekening en de PDF exact euroKorting reproduceren.
+      kortingPct: effectivePct,
       kortingOmschrijving: data.korting_omschrijving ?? '',
     })
   } catch (err) {

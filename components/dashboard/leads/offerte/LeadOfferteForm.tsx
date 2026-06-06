@@ -202,39 +202,15 @@ export function LeadOfferteForm({
   )
   const dienstenSubtotaal = totals.subtotal - reiskostenTotaal
 
-  // Kortbare grondslag: diensten + korstmos-toeslag (nooit reiskosten). Hierover
-  // wordt de actiekorting berekend, dus ook de omrekening vast-bedrag → percentage.
+  // Kortbare grondslag: diensten + korstmos-toeslag (nooit reiskosten). Dient als
+  // label/grondslag voor de actiekorting en om het slider-percentage af te leiden.
   const kortbareGrondslag = dienstenSubtotaal + totals.korstmosToeslag
 
-  // "Vast bedrag"-invoer voor de actiekorting. Het systeem werkt onderwater met
-  // een percentage (korting_percentage); een vast euro-bedrag rekenen we om naar
-  // het equivalente percentage. Lokale tekst-state zodat typen soepel blijft.
-  const [kortingEuro, setKortingEuro] = useState<string>(() => {
-    const euro = (kortbareGrondslag * (Number(data.korting_percentage) || 0)) / 100
-    return euro > 0 ? euro.toFixed(2) : ''
-  })
-
-  /** Zet de korting via percentage (slider) en sync het vast-bedrag-veld. */
-  const setKortingPct = useCallback(
-    (pct: number) => {
-      const clamped = Math.max(0, Math.min(100, pct))
-      setField('korting_percentage', clamped)
-      const euro = (kortbareGrondslag * clamped) / 100
-      setKortingEuro(euro > 0 ? euro.toFixed(2) : '')
-    },
-    [setField, kortbareGrondslag],
-  )
-
-  /** Zet de korting via een vast euro-bedrag, omgerekend naar percentage. */
-  const setKortingVastBedrag = useCallback(
-    (text: string) => {
-      setKortingEuro(text)
-      const amt = Number(text.replace(',', '.')) || 0
-      const pct = kortbareGrondslag > 0 ? Math.min(100, (amt / kortbareGrondslag) * 100) : 0
-      setField('korting_percentage', pct)
-    },
-    [setField, kortbareGrondslag],
-  )
+  // Effectief kortingspercentage puur voor weergave + sliderpositie. De echte
+  // korting kan een vast bedrag (data.korting_bedrag) of een percentage zijn;
+  // totals.kortingBedrag is altijd het uiteindelijke euro-bedrag.
+  const effectiveKortingPct =
+    kortbareGrondslag > 0 ? (totals.kortingBedrag / kortbareGrondslag) * 100 : 0
 
   // Vervaldatum = vandaag + N dagen.
   const vervalDatum = useMemo(
@@ -790,11 +766,17 @@ export function LeadOfferteForm({
             max={100}
             step={1}
             className={styles.slider}
-            value={Math.round(data.korting_percentage)}
-            onChange={(e) => setKortingPct(Number(e.target.value))}
+            value={Math.round(effectiveKortingPct)}
+            onChange={(e) =>
+              setData((s) => ({
+                ...s,
+                korting_percentage: Number(e.target.value),
+                korting_bedrag: 0,
+              }))
+            }
             aria-label="Actiekorting percentage"
           />
-          <span className={styles.kortingPct}>{Math.round(data.korting_percentage)}%</span>
+          <span className={styles.kortingPct}>{Math.round(effectiveKortingPct)}%</span>
           <span className={styles.kortingEur}>{formatEuro(totals.kortingBedrag)}</span>
         </div>
         <div className={styles.kortingVast}>
@@ -807,9 +789,9 @@ export function LeadOfferteForm({
               step="0.01"
               inputMode="decimal"
               className={styles.numInput}
-              value={kortingEuro}
+              value={data.korting_bedrag || ''}
               placeholder="0,00"
-              onChange={(e) => setKortingVastBedrag(e.target.value)}
+              onChange={(e) => setField('korting_bedrag', Number(e.target.value) || 0)}
               aria-label="Vast kortingsbedrag in euro"
             />
           </div>
@@ -891,7 +873,11 @@ export function LeadOfferteForm({
           ) : null}
           {totals.kortingBedrag > 0 ? (
             <div className={`${styles.totalsRow} ${styles.kortingRow}`}>
-              <span>Actiekorting ({totals.discount}%)</span>
+              <span>
+                {data.korting_bedrag > 0
+                  ? 'Actiekorting (vast bedrag)'
+                  : `Actiekorting (${Math.round(effectiveKortingPct)}%)`}
+              </span>
               <span className={styles.totalsValue}>− {formatEuro(totals.kortingBedrag)}</span>
             </div>
           ) : null}
