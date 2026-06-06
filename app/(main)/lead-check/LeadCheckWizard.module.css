@@ -23,6 +23,31 @@
     box-shadow: 0 40px 100px rgba(10, 20, 60, 0.3);
     border: 1px solid var(--color-border-soft);
   }
+
+  /* Desktop heeft hoogte zat in het 820px-frame: oorspronkelijke ruime maten */
+  .bodyPad {
+    padding: var(--space-4) 28px 30px;
+  }
+  .btnPrimary {
+    height: 58px;
+  }
+  .topbar {
+    padding: 18px 28px 0;
+  }
+  .qnum {
+    margin-top: 6px;
+  }
+  .qtitle {
+    font-size: 29px;
+    margin: 12px 0 7px;
+  }
+  .opts {
+    gap: 11px;
+    margin-top: 24px;
+  }
+  .opt {
+    padding: 18px;
+  }
 }
 
 .screen {
@@ -37,7 +62,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) 28px 30px;
+  padding: var(--space-3) 28px 24px;
   min-height: 0;
 }
 
@@ -63,7 +88,7 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  height: 58px;
+  height: 54px;
   border-radius: 17px;
   border: none;
   cursor: pointer;
@@ -222,7 +247,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 28px 0;
+  padding: 12px 28px 0;
 }
 
 .terugKnop {
@@ -269,19 +294,21 @@
   font-weight: 700;
   color: var(--fg-muted);
   letter-spacing: 0.04em;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .qnum b {
   color: var(--primary);
 }
 
+/* Compact op telefoon zodat ook de langste vraag (5 opties) zonder
+   scrollen past; desktop-maten staan in de 640px-query onderaan */
 .qtitle {
-  font-size: 29px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.13;
-  margin: 12px 0 7px;
+  margin: 8px 0 6px;
   color: var(--fg);
 }
 
@@ -305,15 +332,15 @@
 .opts {
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  margin-top: 24px;
+  gap: 9px;
+  margin-top: 16px;
 }
 
 .opt {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px;
+  padding: 14px 16px;
   border-radius: var(--radius-lg);
   cursor: pointer;
   border: 1.5px solid var(--border);
