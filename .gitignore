@@ -1,4 +1,6 @@
 .env.local
+.env
+.vscode/
 node_modules/
 .next/
 out/
