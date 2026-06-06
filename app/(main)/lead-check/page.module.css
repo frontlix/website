@@ -1,52 +1,13 @@
-/* Sectie rond de lead-check-wizard, mobile-first */
+/* Sectie rond de lead-check: full-bleed op mobiel, zachte omgeving
+   met geframede kaart op desktop. */
 .section {
-  background: var(--color-bg);
-  padding: calc(var(--nav-height-mob) + var(--space-8)) var(--space-4) var(--space-16);
-  min-height: 100vh;
-}
-
-.inner {
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
-}
-
-.heading {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: var(--color-text);
-}
-
-/* Gradient-accent volgens brand-regel (background-clip op tekst) */
-.headingAccent {
-  background: var(--color-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.subtext {
-  font-size: var(--text-base);
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  max-width: 520px;
+  background: var(--surface);
+  padding: var(--nav-height-mob) 0 0;
+  min-height: 100dvh;
 }
 
 @media (min-width: 640px) {
   .section {
-    padding: calc(var(--nav-height) + var(--space-12)) var(--space-6) var(--space-24);
-  }
-  .subtext {
-    font-size: var(--text-lg);
+    padding: calc(var(--nav-height) + var(--space-12)) var(--space-6) var(--space-16);
   }
 }

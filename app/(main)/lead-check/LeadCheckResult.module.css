@@ -1,157 +1,324 @@
-/* Uitslagscherm lead-check, mobile-first */
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6) var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  align-items: stretch;
-}
+/* Uitslagscherm lead-lek-check (design "Druppels").
+   Drie varianten: donkere onthulling, perfecte score (licht), geen aanvragen (licht). */
 
-.gauge {
-  width: min(260px, 70vw);
-  margin: 0 auto;
-}
-
-.gaugeScore {
-  font-size: 2.4rem;
-  font-weight: 900;
-  fill: var(--color-text);
-}
-
-.gaugeLabel {
-  font-size: 0.7rem;
-  fill: var(--color-text-muted);
-}
-
-.titel {
-  font-size: var(--text-2xl);
-  font-weight: 800;
-  color: var(--color-text);
-  text-align: center;
-}
-
-.tekst {
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  text-align: center;
-}
-
-.cijfers {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.cijferBlok {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  text-align: center;
-}
-
-.cijferWaarde {
-  font-size: var(--text-2xl);
-  font-weight: 800;
-  color: var(--color-primary);
-}
-
-.cijferLabel {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.punten {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.puntenTitel {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.puntenLijst {
-  margin: 0;
-  padding-left: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-
-.aannames {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-
-.aannames summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.aannames p {
-  margin-top: var(--space-2);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.ctaSub {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  text-align: center;
-  margin: 0;
-}
-
-.mailForm {
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.mailLabel {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-
-.mailRij {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-/* 16px minimaal tegen iOS-zoom (projectregel) */
-.mailInput {
-  font-size: 1rem;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  color: var(--color-text);
+/* ── schermen ── */
+.screenDonker {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  color: var(--color-white);
+  background:
+    radial-gradient(circle at 78% 12%, rgba(0, 207, 255, 0.2), transparent 42%),
+    radial-gradient(circle at 12% 88%, rgba(26, 86, 255, 0.3), transparent 46%),
+    linear-gradient(165deg, var(--lek-dark-1) 0%, var(--lek-dark-2) 55%, var(--lek-dark-3) 100%);
 }
 
-.mailInput:focus {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 1px;
+.screenLicht {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  background: var(--bg);
+}
+
+.bodyPad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) 28px 30px;
+  min-height: 0;
+  position: relative;
+}
+
+.bodyCentered {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6) 28px 30px;
+}
+
+/* ── gedeelde atomen ── */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.eyebrowLicht {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lek-accent-soft);
+}
+
+.gradText {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 58px;
+  border-radius: 17px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: var(--gradient);
+  color: var(--color-white);
+  box-shadow: 0 12px 32px rgba(26, 86, 255, 0.34);
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+}
+
+.btnPrimary:active {
+  transform: scale(0.98);
+}
+
+.btnPrimary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.btnWit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  border-radius: 17px;
+  width: 100%;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: var(--color-white);
+  color: var(--primary);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  transition: transform 0.12s ease;
+  text-decoration: none;
+  margin-top: 16px;
+}
+
+.btnWit:active {
+  transform: scale(0.98);
+}
+
+.btnWit:focus-visible {
+  outline: 2px solid var(--lek-accent-soft);
+  outline-offset: 2px;
+}
+
+.btnGhost {
+  height: 52px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  transition: opacity 0.2s;
+}
+
+.btnGhost:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btnGhost:focus-visible {
+  outline: 2px solid var(--lek-accent-soft);
+  outline-offset: 2px;
+}
+
+/* ── donkere uitslag ── */
+.donkerTitel {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.16;
+  margin: 10px 0 0;
+  color: var(--color-white);
+}
+
+.metricLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 16px;
+}
+
+.metricBedrag {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin-top: 6px;
+}
+
+/* Lichtere gradient-variant: leesbaar op het diepe nachtblauw */
+.metricBedrag span {
+  background: linear-gradient(135deg, var(--lek-primary-soft), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.metricSub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 15px 0;
+}
+
+.leakHead {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 2px;
+}
+
+.leakrow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 0;
+}
+
+.leakrow + .leakrow {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leakDrop {
+  width: 10px;
+  height: 14px;
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--lek-drip), var(--accent));
+  border-radius: 50% 50% 50% 50% / 62% 62% 40% 40%;
+  filter: drop-shadow(0 0 5px rgba(0, 207, 255, 0.4));
+}
+
+.leakDropDry {
+  background: rgba(255, 255, 255, 0.16);
+  filter: none;
+}
+
+.leakLabel {
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.leakLabel small {
+  display: block;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 1px;
+}
+
+.leakWaarde {
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+.leakWaardeDry {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.anker {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.anker b {
+  color: var(--lek-accent-soft);
+  font-weight: 800;
+}
+
+.acties {
+  margin-top: auto;
+}
+
+/* ── mail-capture ── */
+.emailcap {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 10px;
+}
+
+.emailcap input {
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-white);
+  font-family: inherit;
+  font-size: 1rem; /* 16px minimaal tegen iOS-zoom (projectregel) */
+  padding: 0 16px;
+}
+
+.emailcap input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.emailcap input:focus {
+  outline: none;
+  border-color: var(--lek-accent-soft);
+}
+
+.sentOk {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(88, 224, 255, 0.12);
+  border: 1px solid rgba(88, 224, 255, 0.28);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.mailFout {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin: 0;
 }
 
 .honeypot {
@@ -162,32 +329,274 @@
   opacity: 0;
 }
 
-.mailSucces {
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-6);
-  color: var(--color-success);
-  font-weight: 600;
+.assump {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-top: 14px;
+}
+
+.assumpLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ── lek-goten ── */
+.lekgutterDonker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 2;
+}
+
+.lekgutterDonker i,
+.lekgutterLicht i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, var(--lek-drip), var(--accent));
+  border-radius: 99px 99px 0 0;
+  transition: height 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lekgutterLicht {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--track-bg);
+  z-index: 2;
+}
+
+/* ── druppels ── */
+.dripStage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.drip {
+  position: absolute;
+  top: -16px;
+  width: 9px;
+  height: 13px;
+  background: linear-gradient(180deg, var(--lek-drip), var(--accent));
+  border-radius: 50% 50% 50% 50% / 62% 62% 40% 40%;
+  filter: drop-shadow(0 0 6px rgba(0, 207, 255, 0.5));
+  animation-name: dripFall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+}
+
+@keyframes dripFall {
+  0% {
+    transform: translateY(0) scaleY(0.8);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(var(--fall, 440px)) scaleY(1.25);
+    opacity: 0;
+  }
+}
+
+/* ── lichte varianten (perfect / geen aanvragen) ── */
+.lichtTitel {
+  font-size: 31px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  margin: 14px 0 0;
+  color: var(--fg);
+}
+
+.bodyCentered .lichtTitel {
+  font-size: 30px;
+  line-height: 1.1;
+  margin: 14px auto 0;
+  max-width: 15ch;
+}
+
+.lichtTekst {
+  font-size: 15.5px;
+  color: var(--fg-muted);
+  line-height: 1.55;
+  margin: 16px 0 0;
+  max-width: 30ch;
+}
+
+.bodyCentered .lichtTekst {
+  margin: 16px auto 28px;
+  max-width: 28ch;
+}
+
+.perfectMidden {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 }
 
-.mailFout {
-  color: var(--color-danger);
-  font-size: var(--text-sm);
-  margin: 0;
+.perfectNul {
+  font-size: 96px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
-@media (min-width: 640px) {
-  .card {
-    padding: var(--space-8);
+.perfectLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  letter-spacing: 0.04em;
+}
+
+.opnieuwLink {
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-align: center;
+  margin-top: 14px;
+  cursor: pointer;
+}
+
+/* ── onthul-animatie ── */
+.rv {
+  animation: rise 0.55s ease both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  .cijfers {
-    flex-direction: row;
+  to {
+    opacity: 1;
+    transform: none;
   }
-  .cijferBlok {
-    flex: 1;
+}
+
+/* ── aannames-sheet ── */
+.sheetWrap {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheetScrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 30, 0.55);
+  animation: fade 0.25s ease;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
   }
-  .mailRij {
-    flex-direction: row;
-    align-items: stretch;
+  to {
+    opacity: 1;
   }
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  background: var(--color-white);
+  color: var(--fg);
+  border-radius: 26px 26px 0 0;
+  padding: 10px 26px 28px;
+  max-height: 80%;
+  overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.sheetGrab {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  margin: 4px auto 16px;
+}
+
+.sheetEyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.sheetTitel {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.sheetTekst {
+  font-size: 13.5px;
+  color: var(--fg-muted);
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+
+.assumprow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.assumprow:last-of-type {
+  border-bottom: none;
+}
+
+.assumprow b {
+  font-weight: 700;
+}
+
+.assumprow span {
+  color: var(--fg-muted);
+  text-align: right;
+}
+
+.sheet .btnPrimary {
+  margin-top: 18px;
 }
