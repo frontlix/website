@@ -520,7 +520,7 @@
 .lineTotal {
   font-size: 14px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--fg);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: right;
