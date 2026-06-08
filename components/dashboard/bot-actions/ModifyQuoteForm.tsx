@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Edit3 } from 'lucide-react'
 import { useBotAction } from './use-bot-action'
 import type { Lead } from '@/lib/dashboard/database.types'
+import { NlNumberInput } from '@/components/dashboard/NlNumberInput'
 import styles from './BotActions.module.css'
 
 type Fields = {
@@ -72,14 +73,11 @@ export function ModifyQuoteForm({ lead }: { lead: Lead }) {
         </label>
         <label className={styles.field}>
           Korting (%)
-          <input
-            type="number"
+          <NlNumberInput
             min={0}
             max={100}
             value={fields.korting_percentage}
-            onChange={(e) =>
-              update('korting_percentage', Number(e.target.value))
-            }
+            onChange={(v) => update('korting_percentage', v)}
             className={styles.input}
           />
         </label>
