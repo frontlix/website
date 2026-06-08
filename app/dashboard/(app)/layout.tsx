@@ -28,11 +28,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .select('bedrijfsnaam')
       .limit(1)
       .maybeSingle(),
+    // Badge = aantal ACTIEVE leads: niet-gearchiveerd en niet 'afgehandeld'.
+    // LET OP: een kale .neq('dashboard_status','afgehandeld') sluit in PostgREST
+    // óók de rijen met NULL-status uit (NULL <> x is 'unknown', niet true),
+    // terwijl die leads wél actief zijn (de leads-pagina telt ze ook mee).
+    // Daarom expliciet: status IS NULL OF status <> 'afgehandeld'. Zo matcht de
+    // badge het aantal op de leads-pagina, en zakt 'ie zodra een lead op
+    // 'afgehandeld' (Afgerond) komt te staan.
     supabase
       .from('leads')
       .select('lead_id', { count: 'exact', head: true })
       .eq('dashboard_archived', false)
-      .neq('dashboard_status', 'afgehandeld'),
+      .or('dashboard_status.is.null,dashboard_status.neq.afgehandeld'),
     supabase
       .from('leads')
       .select('lead_id', { count: 'exact', head: true })
