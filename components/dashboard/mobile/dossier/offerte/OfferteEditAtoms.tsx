@@ -13,20 +13,11 @@ import { useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import { Minus, Plus, Eye, StickyNote, Pencil } from 'lucide-react'
 import styles from './OfferteEditAtoms.module.css'
+import { parseNl, toCommaStr } from '@/lib/dashboard/number-nl'
 
 // De SS-eenheden voor de vrije-regel UnitPicker. Bewust hier hardgecodeerd
 // (en niet uit het model geïmporteerd) zodat dit bestand domein-loos blijft.
 const UNIT_OPTIONS = ['m²', 'stuk', 'm', 'uur', 'post', 'zak', 'rol', 'km', 'minuut'] as const
-
-// Komma → punt: NL-decimaalteken naar parse-baar formaat.
-function parseNl(raw: string): number {
-  return parseFloat(raw.replace(',', '.'))
-}
-
-// Tonen met komma als decimaalteken (spiegelbeeld van parseNl).
-function toCommaStr(n: number): string {
-  return String(n).replace('.', ',')
-}
 
 // ── OStepper ───────────────────────────────────────────────────────────────
 // Tikbaar getal met ± knoppen. Tik op het getal → input; Enter/blur commit
