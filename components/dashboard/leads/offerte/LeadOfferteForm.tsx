@@ -35,6 +35,7 @@ import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import { formatEuro } from '@/lib/dashboard/format'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
+import { NlNumberInput } from '@/components/dashboard/NlNumberInput'
 import styles from './LeadOfferteForm.module.css'
 
 type Props = {
@@ -783,16 +784,13 @@ export function LeadOfferteForm({
           <span className={styles.kortingVastLabel}>Of vast bedrag</span>
           <div className={styles.numBox}>
             <span className={styles.numAffix}>€</span>
-            <input
-              type="number"
+            <NlNumberInput
               min={0}
-              step="0.01"
-              inputMode="decimal"
               className={styles.numInput}
-              value={data.korting_bedrag || ''}
+              value={data.korting_bedrag || 0}
               placeholder="0,00"
-              onChange={(e) => setField('korting_bedrag', Number(e.target.value) || 0)}
-              aria-label="Vast kortingsbedrag in euro"
+              onChange={(v) => setField('korting_bedrag', v || 0)}
+              ariaLabel="Vast kortingsbedrag in euro"
             />
           </div>
         </div>
