@@ -789,6 +789,7 @@ export function LeadOfferteForm({
               className={styles.numInput}
               value={data.korting_bedrag || 0}
               placeholder="0,00"
+              blankWhenZero
               onChange={(v) => setField('korting_bedrag', v || 0)}
               ariaLabel="Vast kortingsbedrag in euro"
             />

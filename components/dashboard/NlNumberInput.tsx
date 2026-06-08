@@ -10,6 +10,8 @@ type Props = {
   className?: string
   placeholder?: string
   ariaLabel?: string
+  /** Toon een leeg veld i.p.v. "0" bij waarde 0 (zodat de placeholder verschijnt). */
+  blankWhenZero?: boolean
 }
 
 /**
@@ -17,13 +19,13 @@ type Props = {
  * tijdens het typen een tekststaat vast zodat de komma niet wordt weggeklokt;
  * commit (parsen + clampen) gebeurt op blur. Lege/ongeldige invoer → 0.
  */
-export function NlNumberInput({ value, onChange, min, max, className, placeholder, ariaLabel }: Props) {
+export function NlNumberInput({ value, onChange, min, max, className, placeholder, ariaLabel, blankWhenZero }: Props) {
   const [focused, setFocused] = useState(false)
-  const [text, setText] = useState(value ? toCommaStr(value) : '')
+  const [text, setText] = useState(blankWhenZero && value === 0 ? '' : toCommaStr(value))
 
   useEffect(() => {
-    if (!focused) setText(value ? toCommaStr(value) : '')
-  }, [value, focused])
+    if (!focused) setText(blankWhenZero && value === 0 ? '' : toCommaStr(value))
+  }, [value, focused, blankWhenZero])
 
   const commit = () => {
     setFocused(false)
