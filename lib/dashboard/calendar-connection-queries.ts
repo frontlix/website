@@ -61,3 +61,24 @@ export async function deleteConnection(tenantId: string): Promise<void> {
   const { error } = await admin.from('calendar_connections').delete().eq('tenant_id', tenantId)
   if (error) throw new Error(`Ontkoppelen faalde: ${error.message}`)
 }
+
+/** Leest het versleutelde refresh-token van de (enige) connectie-rij. */
+export async function getEncryptedRefreshToken(): Promise<string | null> {
+  const admin = getDashboardAdmin()
+  const { data } = await admin
+    .from('calendar_connections')
+    .select('refresh_token_encrypted')
+    .limit(1)
+    .maybeSingle()
+  return data?.refresh_token_encrypted ?? null
+}
+
+/** Werkt de gekozen calendar_id bij op de connectie-rij van deze tenant. */
+export async function updateCalendarId(tenantId: string, calendarId: string): Promise<void> {
+  const admin = getDashboardAdmin()
+  const { error } = await admin
+    .from('calendar_connections')
+    .update({ calendar_id: calendarId, updated_at: new Date().toISOString() })
+    .eq('tenant_id', tenantId)
+  if (error) throw new Error(`Agenda-keuze opslaan faalde: ${error.message}`)
+}
