@@ -110,6 +110,8 @@ function computeRegelTotaal(regel: DraftRegelInput): number {
  *     - Heeft de lead al verzonden versies? Dan concept.versie = max+1.
  *     - Geen verzonden versies? Dan concept.versie = 1.
  *  3. REPLACE alle prijsregels van deze lead met de payload-regels.
+ *     Wipe-guard: een lege payload wordt geweigerd zolang er nog
+ *     prijsregels in de DB staan (anders wist een lege auto-save alles).
  *  4. Update lead.korting_percentage + lead.korting_omschrijving.
  *  5. Update offertes.totaal_incl + offertes.korting_pct op de concept-rij.
  *  6. revalidatePath voor lead-detail (& leads-overzicht).
@@ -127,6 +129,30 @@ export async function saveDraft(
     if (!leadId) return { ok: false, error: 'leadId ontbreekt.' }
 
     const admin = getDashboardAdmin()
+
+    // ── Wipe-guard ─────────────────────────────────────────────────
+    // Een lege payload mag nooit bestaande prijsregels wissen: een save
+    // die zonder regels binnenkomt (glitch, niet-gehydrateerde state)
+    // zou anders in stap 3 de complete offerte leegtrekken. Een vers
+    // concept zonder regels in de DB mag wél door, daar valt niets te
+    // verliezen.
+    if (payload.regels.length === 0) {
+      const { count: bestaandeRegels, error: countErr } = await admin
+        .from('prijsregels')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_id', leadId)
+      if (countErr) {
+        return { ok: false, error: `Regels controleren mislukt: ${countErr.message}` }
+      }
+      if ((bestaandeRegels ?? 0) > 0) {
+        return {
+          ok: false,
+          error:
+            'Lege opslag geweigerd: dit zou alle prijsregels wissen. ' +
+            'Laat minstens één regel staan of gebruik "Terug naar verzonden versie".',
+        }
+      }
+    }
 
     // ── 2. Concept-rij ophalen of aanmaken ─────────────────────────
     const { data: bestaandConcept, error: conceptErr } = await admin
