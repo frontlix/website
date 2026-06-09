@@ -6,14 +6,14 @@ const USERINFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v2/userinfo'
 const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/calendar']
 
 function clientId(): string {
-  const v = process.env.GOOGLE_CLIENT_ID
-  if (!v) throw new Error('GOOGLE_CLIENT_ID ontbreekt')
+  const v = process.env.GOOGLE_CALENDAR_CLIENT_ID
+  if (!v) throw new Error('GOOGLE_CALENDAR_CLIENT_ID ontbreekt')
   return v
 }
 
 function clientSecret(): string {
-  const v = process.env.GOOGLE_CLIENT_SECRET
-  if (!v) throw new Error('GOOGLE_CLIENT_SECRET ontbreekt')
+  const v = process.env.GOOGLE_CALENDAR_CLIENT_SECRET
+  if (!v) throw new Error('GOOGLE_CALENDAR_CLIENT_SECRET ontbreekt')
   return v
 }
 

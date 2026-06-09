@@ -3,8 +3,8 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { buildConsentUrl, redirectUri } from './google-oauth'
 
 beforeAll(() => {
-  process.env.GOOGLE_CLIENT_ID = 'test-client-id'
-  process.env.GOOGLE_CLIENT_SECRET = 'test-secret'
+  process.env.GOOGLE_CALENDAR_CLIENT_ID = 'test-client-id'
+  process.env.GOOGLE_CALENDAR_CLIENT_SECRET = 'test-secret'
   process.env.NEXT_PUBLIC_SITE_URL_DASHBOARD = 'http://localhost:3000'
 })
 
