@@ -95,7 +95,7 @@ export function IntegratiesSection({ connected, googleEmail, calendarId }: Integ
             <div className={styles.statusRow}>
               <span className={styles.statusLabel}>Gekoppeld account</span>
               <span>
-                <strong>{googleEmail ?? 'onbekend account'}</strong> (agenda: {calendarId ?? 'primary'})
+                <strong>{googleEmail ?? 'onbekend account'}</strong>
               </span>
             </div>
 
