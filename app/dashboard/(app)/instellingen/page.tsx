@@ -20,6 +20,8 @@ import {
   type ServiceOffering,
   type TeamMember,
 } from '@/components/dashboard/instellingen/SettingSections'
+import { IntegratiesSection } from '@/components/dashboard/instellingen/IntegratiesSection'
+import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
@@ -38,6 +40,7 @@ const ALLOWED_SECTIONS = [
   'reminders',
   'notificaties',
   'team',
+  'integraties',
   'account',
   'avg',
 ] as const satisfies readonly SettingsSection[]
@@ -108,6 +111,10 @@ export default async function InstellingenPage({
   const tags = tagsRaw as TagWithCount[]
   const templateAanvragen = aanvragenRaw as TemplateAanvraag[]
 
+  // Agenda-koppeling: alleen de desktop-sectie 'integraties' gebruikt deze
+  // status, dus alleen dan ophalen (service-role read, zonder het token).
+  const gcalStatus = section === 'integraties' ? await getConnectionStatus() : null
+
   return (
     <>
       <div className={styles.desktopTree}>
@@ -145,6 +152,13 @@ export default async function InstellingenPage({
               />
             )}
             {section === 'team' && <TeamSection members={team} />}
+            {section === 'integraties' && gcalStatus && (
+              <IntegratiesSection
+                connected={gcalStatus.connected}
+                googleEmail={gcalStatus.googleEmail}
+                calendarId={gcalStatus.calendarId}
+              />
+            )}
             {section === 'account' && <AccountWrapper email={user?.email ?? ''} />}
             {section === 'avg' && <AvgWrapper />}
           </div>

@@ -11,6 +11,7 @@ import {
   Bell,
   BellRing,
   Users,
+  Calendar,
   Lock,
   Shield,
 } from 'lucide-react'
@@ -24,6 +25,7 @@ export type SettingsSection =
   | 'reminders'
   | 'notificaties'
   | 'team'
+  | 'integraties'
   | 'account'
   | 'avg'
 
@@ -40,6 +42,7 @@ const ITEMS: ReadonlyArray<{
   { key: 'reminders',    label: 'Reminders',        Icon: Bell },
   { key: 'notificaties', label: 'Notificaties',     Icon: BellRing },
   { key: 'team',         label: 'Team',             Icon: Users },
+  { key: 'integraties',  label: 'Agenda',           Icon: Calendar },
   { key: 'account',      label: 'Account',          Icon: Lock },
   { key: 'avg',          label: 'AVG / Privacy',    Icon: Shield },
 ]
