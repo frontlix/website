@@ -2,10 +2,8 @@
 // AgendaEvent-vorm. Vervangt de AG_EVENTS-mock op de lees-kant van /agenda.
 
 import type { Appointment } from '@/lib/dashboard/agenda-queries'
+import { durationUntilWorkdayEndMin } from '@/lib/dashboard/agenda-event'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
-
-// De DB kent géén eindtijd/duur per afspraak → we tonen een schatting.
-export const DEFAULT_DURATION_MIN = 90
 
 /** 'HH:MM' (Europe/Amsterdam) uit een ISO/UTC-timestamp. */
 export function amsterdamTime(iso: string): string {
@@ -55,7 +53,8 @@ export function appointmentAdres(a: {
  * Mapt echte afspraken naar mobiele AgendaEvent's, gesorteerd op datum+tijd.
  *
  * Keuzes (geen rijkere data in de DB):
- *  - start = Amsterdam-tijd van `afspraak_geboekt_op`; end = start + DEFAULT_DURATION_MIN.
+ *  - start = Amsterdam-tijd van `afspraak_geboekt_op`; end = einde werkdag
+ *    (17:00), want een klus beslaat een hele werkdag.
  *  - kind = 'klus' (DB kent geen plaatsbezoek/bel/eigen-onderscheid).
  *  - current = de afspraak loopt NU (absolute tijd binnen [start, start+duur]).
  */
@@ -68,7 +67,9 @@ export function mapAppointmentsToAgendaEvents(
     .filter((a): a is Appointment & { afspraak_geboekt_op: string } => !!a.afspraak_geboekt_op)
     .map((a) => {
       const start = amsterdamTime(a.afspraak_geboekt_op)
-      const end = addMinutes(start, DEFAULT_DURATION_MIN)
+      const [sh, sm] = start.split(':').map(Number)
+      const durationMin = durationUntilWorkdayEndMin(sh, sm)
+      const end = addMinutes(start, durationMin)
       const startMs = new Date(a.afspraak_geboekt_op).getTime()
       const m2 = typeof a.m2 === 'number' ? a.m2 : undefined
       return {
@@ -85,7 +86,7 @@ export function mapAppointmentsToAgendaEvents(
         telefoon: a.telefoon ?? undefined,
         afstandKm: a.afstand_km ?? null,
         done: a.dashboard_status === 'afgehandeld',
-        current: startMs <= nowMs && nowMs < startMs + DEFAULT_DURATION_MIN * 60_000,
+        current: startMs <= nowMs && nowMs < startMs + durationMin * 60_000,
       }
     })
     .sort((x, y) => `${x.date} ${x.start}`.localeCompare(`${y.date} ${y.start}`))
