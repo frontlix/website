@@ -11,12 +11,13 @@
  * nieuwe formulier exact dezelfde lead-kolommen schrijven.
  */
 
+import { DEFAULTS, type ManualOfferteData } from './manual-offerte-types'
 import {
-  DEFAULTS,
-  type ManualOfferteData,
-  type Hoofdcategorie,
-  type SubDienst,
-} from './manual-offerte-types'
+  mapBotSubDiensten,
+  mapBotHoofdcategorie,
+  dashboardHoofdcategorieToDb,
+  dashboardSubDienstenToDb,
+} from './bot-dienst-mapping'
 import type { Lead } from './database.types'
 
 /** Trim, en geef null terug bij lege string. Identiek aan de helper in
@@ -27,42 +28,18 @@ function trimOrNull(v: string): string | null {
   return t.length > 0 ? t : null
 }
 
-const VALID_HOOFDCATEGORIE: ReadonlySet<Hoofdcategorie> = new Set([
-  'oprit_terras_terrein',
-  'onkruidbeheersing',
-])
-
-const VALID_SUB: ReadonlySet<SubDienst> = new Set([
-  'invegen',
-  'preventieve_onkruid',
-  'beschermlaag',
-  'onderhoud',
-])
-
 /**
  * Init het formulier vanuit een bestaande Lead. Inverse van de leadFields-
  * mapping: start vanaf DEFAULTS en override met wat de lead aanlevert. Geen
  * string-parsing — adres-velden staan al opgesplitst in losse kolommen.
  */
 export function mapLeadToFormData(lead: Lead): ManualOfferteData {
-  // ── hoofdcategorie: single string-kolom → array ──────────────────
-  let hoofdcategorie: Hoofdcategorie[]
-  if (lead.hoofdcategorie === 'beide') {
-    hoofdcategorie = ['oprit_terras_terrein', 'onkruidbeheersing']
-  } else if (
-    lead.hoofdcategorie &&
-    VALID_HOOFDCATEGORIE.has(lead.hoofdcategorie as Hoofdcategorie)
-  ) {
-    hoofdcategorie = [lead.hoofdcategorie as Hoofdcategorie]
-  } else {
-    hoofdcategorie = []
-  }
-
-  // ── sub_diensten: filter op geldige SubDienst-waarden ────────────
-  // 'onderhoud' bewust behouden ook al toont de form-UI 'm misschien niet.
-  const sub: SubDienst[] = (lead.sub_diensten ?? []).filter(
-    (s): s is SubDienst => VALID_SUB.has(s as SubDienst),
-  )
+  // ── hoofdcategorie + sub_diensten: vertaal de bot-keys naar de dashboard-
+  // vorm (plan_X_weken → 'onderhoud' + interval, onkruidbeheersing_zakelijk →
+  // 'onkruidbeheersing'). Zonder deze vertaling viel de onkruid-dienst weg en
+  // toonde de editor EUR 0 diensten. Gedeeld met de auto-prijsregels-mapper.
+  const hoofdcategorie = mapBotHoofdcategorie(lead.hoofdcategorie)
+  const { sub, onderhoudWeken } = mapBotSubDiensten(lead.sub_diensten, lead.hoofdcategorie)
 
   // ── voegzand_type stuurt de actief-flags ─────────────────────────
   const vt = lead.voegzand_type
@@ -101,6 +78,7 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     // werk
     hoofdcategorie,
     sub,
+    onderhoud_weken: onderhoudWeken ?? DEFAULTS.onderhoud_weken,
     m2: Number(lead.m2) || DEFAULTS.m2,
     // voegzand
     voegzand_normaal_actief: voegzandNormaalActief,
@@ -135,7 +113,7 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     korting_percentage: Number(lead.korting_percentage) || 0,
     korting_bedrag: Number(lead.korting_bedrag) || 0,
     korting_omschrijving: lead.korting_omschrijving ?? '',
-    // notitie/kanaal/onderhoud_weken blijven op DEFAULTS (geen lead-kolom).
+    // notitie/kanaal blijven op DEFAULTS (geen lead-kolom).
   }
 }
 
@@ -211,17 +189,12 @@ export function buildLeadFieldsFromForm(
     factuur_huisnummer: data.factuur_zelfde ? null : trimOrNull(data.factuur_huisnummer),
     factuur_straat: data.factuur_zelfde ? null : trimOrNull(data.factuur_straat),
     factuur_plaats: data.factuur_zelfde ? null : trimOrNull(data.factuur_plaats),
-    // leads.hoofdcategorie is een single string-kolom; serialiseer
-    // de array: 0 keuzes → fallback 'oprit_terras_terrein' (validatie
-    // zou dit moeten voorkomen maar veilig is veilig), 1 keuze → die
-    // waarde, 2 keuzes → 'beide' (mirror van voegzand_type pattern).
-    hoofdcategorie:
-      data.hoofdcategorie.length === 0
-        ? 'oprit_terras_terrein'
-        : data.hoofdcategorie.length === 1
-          ? data.hoofdcategorie[0]
-          : 'beide',
-    sub_diensten: data.sub,
+    // leads.hoofdcategorie + sub_diensten: serialiseer terug naar de bot-
+    // waarden (onkruidbeheersing → onkruidbeheersing_zakelijk, 'onderhoud' →
+    // plan_X_weken) zodat een dashboard-save het interval + de categorie
+    // behoudt en de bot de lead nog steeds als onkruidbeheersing herkent.
+    hoofdcategorie: dashboardHoofdcategorieToDb(data.hoofdcategorie),
+    sub_diensten: dashboardSubDienstenToDb(data.sub, data.onderhoud_weken),
     m2: m2Num || null,
     invegen_m2: invegenM2,
     beschermlaag_m2: beschermlaagM2,

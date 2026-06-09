@@ -8,33 +8,8 @@ import { formatEuro, formatRelative, gesprekFaseLabel } from '@/lib/dashboard/fo
 import { DIENST_LABELS } from '@/lib/dashboard/manual-offerte-types'
 import type { SubDienst } from '@/lib/dashboard/manual-offerte-types'
 import type { LeadListItem } from '@/lib/dashboard/lead-queries'
+import { leadStatusMeta } from '@/lib/dashboard/lead-status-meta'
 import styles from './LeadsTable.module.css'
-
-// ── Status-meta tabel ────────────────────────────────────────────────────────
-type PillTone = 'blue' | 'amber' | 'green' | 'red' | 'gray'
-type StatusMeta = { label: string; tone: PillTone }
-
-const STATUS_META: Record<string, StatusMeta> = {
-  nieuw:             { label: 'Nieuw',              tone: 'blue'  },
-  in_gesprek:        { label: 'In gesprek',         tone: 'blue'  },
-  wacht_bevestiging: { label: 'Wacht op bevestig.', tone: 'amber' },
-  info_compleet:     { label: 'Klaar voor offerte', tone: 'amber' },
-  offerte_verstuurd: { label: 'Offerte verstuurd',  tone: 'amber' },
-  goedgekeurd:       { label: 'Goedgekeurd',        tone: 'green' },
-  afgewezen:         { label: 'Afgewezen',          tone: 'red'   },
-  handoff:           { label: 'Handover',           tone: 'red'   },
-}
-
-/** Geeft label + tone terug voor een status-string (of defaults). */
-function pillToneFor(s: string | null): PillTone {
-  if (!s) return 'gray'
-  return (STATUS_META[s] ?? { tone: 'gray' }).tone
-}
-
-function statusMeta(s: string | null): StatusMeta {
-  if (!s) return { label: '—', tone: 'gray' }
-  return STATUS_META[s] ?? { label: s.replace(/_/g, ' '), tone: 'gray' }
-}
 
 function humanize(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -89,9 +64,9 @@ const COLUMNS: Array<Column<LeadListItem>> = [
     label: 'Status',
     mobile: 'primary',
     render: (row) => {
-      const meta = statusMeta(row.status)
+      const meta = leadStatusMeta(row.status)
       return (
-        <Pill tone={pillToneFor(row.status)} dot>
+        <Pill tone={meta.tone} dot>
           {meta.label}
         </Pill>
       )
