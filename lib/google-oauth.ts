@@ -70,3 +70,45 @@ export async function fetchGoogleEmail(accessToken: string): Promise<string | nu
   const json = (await res.json()) as { email?: string }
   return json.email ?? null
 }
+
+const CALENDAR_LIST_ENDPOINT = 'https://www.googleapis.com/calendar/v3/users/me/calendarList'
+
+/** Wisselt een refresh_token in voor een vers access_token. Gooit bij fout. */
+export async function refreshAccessToken(refreshToken: string): Promise<string> {
+  const res = await fetch(TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: clientId(),
+      client_secret: clientSecret(),
+    }),
+  })
+  if (!res.ok) throw new Error(`Token-refresh faalde: ${res.status} ${await res.text()}`)
+  const json = (await res.json()) as { access_token?: string }
+  if (!json.access_token) throw new Error('Geen access_token van Google bij refresh')
+  return json.access_token
+}
+
+export interface GoogleCalendar {
+  id: string
+  summary: string
+  primary: boolean
+}
+
+/** Haalt de lijst van kalenders van het gekoppelde account op. Gooit bij fout. */
+export async function listCalendars(accessToken: string): Promise<GoogleCalendar[]> {
+  const res = await fetch(CALENDAR_LIST_ENDPOINT, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) throw new Error(`Kalenderlijst ophalen faalde: ${res.status} ${await res.text()}`)
+  const json = (await res.json()) as {
+    items?: Array<{ id?: string; summary?: string; primary?: boolean }>
+  }
+  return (json.items ?? []).map((item) => ({
+    id: item.id ?? '',
+    summary: item.summary ?? '',
+    primary: !!item.primary,
+  }))
+}
