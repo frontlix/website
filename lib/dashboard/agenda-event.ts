@@ -5,23 +5,32 @@ import type { Appointment } from './agenda-queries'
  * Duurschatting, kleur-mapping, tijd-formatting.
  */
 
-const MIN_DURATION = 60
-const MAX_DURATION = 8 * 60
-const M2_PER_HOUR = 40 // grove schatting: ~40m² straatwerk per uur
+/**
+ * Einde van de werkdag (Europe/Amsterdam, 24-uurs). Een klus beslaat bij
+ * Schoon Straatje een volledige werkdag, dus elke afspraak loopt van zijn
+ * starttijd tot dit uur. De DB kent geen aparte eindtijd per afspraak.
+ */
+export const WORKDAY_END_HOUR = 17
+
+/** Minimale blok-duur (min) als een afspraak laat op de dag zou starten. */
+const MIN_DURATION = 30
 
 /**
- * Schat de duur (in minuten) van een afspraak. Gebruikt m² wanneer
- * beschikbaar (klus-afspraken); anders 60 minuten default (intake /
- * offerte-review / inkoop).
- *
- * Rondt af op halve uren, clampt 60-480 min.
+ * Duur (in minuten) van een starttijd tot het einde van de werkdag (17:00).
+ */
+export function durationUntilWorkdayEndMin(hour: number, minute: number): number {
+  return Math.max(MIN_DURATION, WORKDAY_END_HOUR * 60 - (hour * 60 + minute))
+}
+
+/**
+ * Duur (in minuten) van een afspraak: van de starttijd tot het einde van de
+ * werkdag, want een klus beslaat een hele werkdag. Valt terug op een uur als
+ * de afspraak (nog) geen tijd heeft.
  */
 export function estimateDurationMinutes(a: Appointment): number {
-  const m2 = a.m2 ?? null
-  if (!m2 || m2 <= 0) return MIN_DURATION
-  const rawHours = m2 / M2_PER_HOUR
-  const halfHours = Math.max(2, Math.min(16, Math.round(rawHours * 2)))
-  return Math.max(MIN_DURATION, Math.min(MAX_DURATION, halfHours * 30))
+  if (!a.afspraak_geboekt_op) return 60
+  const { hour, minute } = amsterdamHourMinutes(a.afspraak_geboekt_op)
+  return durationUntilWorkdayEndMin(hour, minute)
 }
 
 export type Tone = 'blue' | 'green' | 'amber' | 'red'

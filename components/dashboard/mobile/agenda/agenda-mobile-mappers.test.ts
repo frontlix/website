@@ -7,7 +7,6 @@ import {
   appointmentAdres,
   buildMobileWeekDays,
   mapAppointmentsToAgendaEvents,
-  DEFAULT_DURATION_MIN,
 } from './agenda-mobile-mappers'
 
 // Minimale Appointment-factory voor de tests (alleen velden die de mapper raakt).
@@ -74,17 +73,19 @@ describe('mapAppointmentsToAgendaEvents', () => {
     expect(ev.lead).toBe('L9')
     expect(ev.kind).toBe('klus')
     expect(ev.start).toBe('09:00')
-    expect(ev.end).toBe('10:30')
+    // Een klus beslaat de hele werkdag: van de starttijd tot 17:00.
+    expect(ev.end).toBe('17:00')
     expect(ev.date).toBe('2026-05-13')
     expect(ev.m2).toBe(62)
     expect(ev.dienst).toBe('oprit')
     expect(ev.current).toBe(false)
   })
 
-  it('markeert current wanneer NU binnen [start, start+duur] valt', () => {
+  it('markeert current wanneer NU binnen [start, einde werkdag] valt', () => {
+    // 07:00 UTC = 09:00 Amsterdam; werkdag-eind 17:00 → duur 8 uur.
     const startIso = '2026-05-13T07:00:00.000Z'
-    const during = new Date(new Date(startIso).getTime() + 30 * 60_000)
-    const after = new Date(new Date(startIso).getTime() + (DEFAULT_DURATION_MIN + 5) * 60_000)
+    const during = new Date(new Date(startIso).getTime() + 30 * 60_000) // 09:30, binnen
+    const after = new Date(new Date(startIso).getTime() + (8 * 60 + 5) * 60_000) // 17:05, na
     expect(mapAppointmentsToAgendaEvents([appt({ afspraak_geboekt_op: startIso })], during)[0].current).toBe(true)
     expect(mapAppointmentsToAgendaEvents([appt({ afspraak_geboekt_op: startIso })], after)[0].current).toBe(false)
   })
