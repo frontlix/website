@@ -9,6 +9,7 @@ import {
   Bell,
   Sparkles,
   Users,
+  Calendar,
   ChevronRight,
   Check,
   X,
@@ -32,6 +33,7 @@ export const INST_LUCIDE: Record<InstSection['icon'], LucideIcon> = {
   bell: Bell,
   spark: Sparkles,
   users: Users,
+  calendar: Calendar,
 }
 
 // Re-exported for consumers that need the full icon set

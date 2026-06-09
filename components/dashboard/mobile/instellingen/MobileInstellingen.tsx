@@ -11,6 +11,7 @@ import { InstOpening } from './InstOpening'
 import { InstReminders } from './InstReminders'
 import { InstNotif } from './InstNotif'
 import { InstTags } from './InstTags'
+import { IntegratiesSection } from '@/components/dashboard/instellingen/IntegratiesSection'
 import { buildInstGroups } from './instellingen-mock'
 import type {
   TenantSettings,
@@ -38,6 +39,7 @@ const DETAIL_KEYS = new Set([
   'reminders',
   'notif',
   'tags',
+  'integraties',
 ])
 
 type Props = {
@@ -57,6 +59,8 @@ type Props = {
   notifPrefs: NotificationPreferenceRow[]
   /** Template-aanvragen (opening + reminders) voor status-historie. */
   templateAanvragen: TemplateAanvraag[]
+  /** Google-Agenda-koppelstatus voor het Agenda-detailscherm (null = nog niet opgehaald). */
+  gcalStatus?: { connected: boolean; googleEmail: string | null; calendarId: string | null } | null
   /**
    * Rauwe `?section=`-param (server-side doorgegeven). Alleen als die expliciet
    * aanwezig is openen we het detail direct, anders zou elk bezoek op 'bedrijf'
@@ -74,6 +78,7 @@ export function MobileInstellingen({
   tags,
   notifPrefs,
   templateAanvragen,
+  gcalStatus,
   initialSection,
 }: Props) {
   // Deeplink: ?section= opent direct het bijbehorende detail (bv. de
@@ -134,6 +139,13 @@ export function MobileInstellingen({
           />
         )}
         {view === 'tags' && <InstTags tags={tags} />}
+        {view === 'integraties' && (
+          <IntegratiesSection
+            connected={gcalStatus?.connected ?? false}
+            googleEmail={gcalStatus?.googleEmail ?? null}
+            calendarId={gcalStatus?.calendarId ?? null}
+          />
+        )}
       </MobileDrilldownLayer>
     </div>
   )
