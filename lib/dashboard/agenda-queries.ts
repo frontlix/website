@@ -1,5 +1,6 @@
 import { getDashboardSupabase } from './supabase-server'
 import { toAmsterdamDayKey } from './calendar'
+import { appointmentInstantIso } from './appointment-instant'
 import type { Lead } from './database.types'
 
 export type Appointment = Pick<
@@ -7,6 +8,8 @@ export type Appointment = Pick<
   | 'lead_id'
   | 'naam'
   | 'telefoon'
+  | 'afspraak_datum'
+  | 'afspraak_starttijd'
   | 'afspraak_geboekt_op'
   | 'dashboard_status'
   | 'status'
@@ -25,6 +28,8 @@ const SELECT_COLUMNS = [
   'lead_id',
   'naam',
   'telefoon',
+  'afspraak_datum',
+  'afspraak_starttijd',
   'afspraak_geboekt_op',
   'dashboard_status',
   'status',
@@ -40,13 +45,33 @@ const SELECT_COLUMNS = [
 ].join(', ')
 
 /**
- * Haalt alle leads op met een `afspraak_geboekt_op`-tijdstip dat in
- * Europe/Amsterdam-tijdzone in de gevraagde maand valt.
+ * Mapt ruwe leads-rijen naar Appointments waarbij `afspraak_geboekt_op` de
+ * UTC-instant van de AFSPRAAK ZELF bevat (afgeleid uit afspraak_datum +
+ * afspraak_starttijd, precies wat ook naar Google Agenda gaat) in plaats van
+ * het tijdstip waarop geboekt werd.
  *
- * De DB slaat tijdstempels in UTC op. Een afspraak om 30 april 22:30 UTC
- * is in NL al 1 mei 00:30, die hoort bij mei. Daarom widenen we de
- * UTC-query met 1 dag aan beide kanten en filteren we daarna in JS op
- * Amsterdam-dagkey die in de gevraagde maand valt.
+ * De rest van de agenda-weergave (week/maand/route/mobiel/veldwerk/overzicht)
+ * leest `afspraak_geboekt_op` als het afspraakmoment en blijft zo onveranderd
+ * werken. Rijen zonder geldige afspraakdatum vallen weg: dat zijn geen
+ * geboekte afspraken (bv. een offerte-lead) en horen niet op de agenda.
+ */
+function toAppointmentsOnDate(rows: Appointment[]): Appointment[] {
+  const out: Appointment[] = []
+  for (const r of rows) {
+    const instant = appointmentInstantIso(r.afspraak_datum, r.afspraak_starttijd)
+    if (!instant) continue
+    out.push({ ...r, afspraak_geboekt_op: instant })
+  }
+  out.sort((a, b) =>
+    (a.afspraak_geboekt_op ?? '').localeCompare(b.afspraak_geboekt_op ?? ''),
+  )
+  return out
+}
+
+/**
+ * Haalt alle afspraken op waarvan de `afspraak_datum` in de gevraagde maand
+ * valt. `afspraak_datum` is een kale lokale datum (YYYY-MM-DD), dus geen
+ * tijdzone-correctie nodig.
  */
 export async function getAppointmentsForMonth(
   year: number,
@@ -54,56 +79,51 @@ export async function getAppointmentsForMonth(
 ): Promise<Appointment[]> {
   const supabase = await getDashboardSupabase()
 
-  // Wider UTC-query: 1 dag eerder + 1 dag later dan de maand zelf.
-  // Dit dekt CEST (UTC+2) en CET (UTC+1) overal, late-avond UTC kan
-  // nooit verder dan 2 uur in de volgende NL-dag terechtkomen.
-  const queryStart = new Date(Date.UTC(year, month - 1, 0)).toISOString()  // dag 0 = laatste dag prev maand
-  const queryEnd = new Date(Date.UTC(year, month, 2)).toISOString()        // 2e van volgende maand
+  const mm = month.toString().padStart(2, '0')
+  const monthStart = `${year}-${mm}-01`
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const monthEnd = `${year}-${mm}-${lastDay.toString().padStart(2, '0')}`
 
   const { data, error } = await supabase
     .from('leads')
     .select(SELECT_COLUMNS)
-    .not('afspraak_geboekt_op', 'is', null)
-    .gte('afspraak_geboekt_op', queryStart)
-    .lt('afspraak_geboekt_op', queryEnd)
-    .order('afspraak_geboekt_op', { ascending: true })
+    .not('afspraak_datum', 'is', null)
+    .gte('afspraak_datum', monthStart)
+    .lte('afspraak_datum', monthEnd)
 
   if (error) {
     console.error('[getAppointmentsForMonth] failed:', error)
     return []
   }
 
-  const monthPrefix = `${year}-${month.toString().padStart(2, '0')}`
-  const all = (data as unknown as Appointment[] | null) ?? []
-
-  // Filter: alleen afspraken waarvan de NL-dagkey in de gevraagde maand valt
-  return all.filter((a) => {
-    if (!a.afspraak_geboekt_op) return false
-    return toAmsterdamDayKey(a.afspraak_geboekt_op).startsWith(monthPrefix)
-  })
+  return toAppointmentsOnDate((data as unknown as Appointment[] | null) ?? [])
 }
 
 /**
- * Variant voor de week-view: pakt afspraken in een UTC-range. Caller
- * (parseWeekParam) wident al met 1 dag aan beide kanten zodat de
- * Amsterdam-dagkey-conversie correct werkt.
+ * Variant voor de week-view (en veldwerk): pakt afspraken waarvan de
+ * `afspraak_datum` in de gevraagde range valt. De caller geeft een UTC-range
+ * (met buffer); we leiden daar de Amsterdam-dagkeys uit af om op de kale
+ * `afspraak_datum` te kunnen filteren. De weergave-laag filtert daarna toch
+ * exact op de zichtbare dagen.
  */
 export async function getAppointmentsForRange(
   queryStart: string,
   queryEnd: string,
 ): Promise<Appointment[]> {
   const supabase = await getDashboardSupabase()
+  const startKey = toAmsterdamDayKey(queryStart)
+  const endKey = toAmsterdamDayKey(queryEnd)
+
   const { data, error } = await supabase
     .from('leads')
     .select(SELECT_COLUMNS)
-    .not('afspraak_geboekt_op', 'is', null)
-    .gte('afspraak_geboekt_op', queryStart)
-    .lt('afspraak_geboekt_op', queryEnd)
-    .order('afspraak_geboekt_op', { ascending: true })
+    .not('afspraak_datum', 'is', null)
+    .gte('afspraak_datum', startKey)
+    .lte('afspraak_datum', endKey)
 
   if (error) {
     console.error('[getAppointmentsForRange] failed:', error)
     return []
   }
-  return (data as unknown as Appointment[] | null) ?? []
+  return toAppointmentsOnDate((data as unknown as Appointment[] | null) ?? [])
 }
