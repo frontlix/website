@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
 import { toAmsterdamDayKey } from './calendar'
+import { callBotLeadApi, botApiError } from './bot-api-client'
 
 export type AgendaActionResult = { ok: true } | { ok: false; error: string }
 
@@ -39,13 +40,14 @@ export async function completeAppointment(leadId: string): Promise<AgendaActionR
 }
 
 /**
- * Verzet de afspraak naar een nieuw tijdstip. De agenda plaatst afspraken op
- * `afspraak_datum` + `afspraak_starttijd` (de echte afspraakdatum), dus
- * schrijven we die velden, afgeleid uit het nieuwe moment in Amsterdam-tijd.
- * `afspraak_geboekt_op` (het oorspronkelijke boekmoment) blijft ongemoeid.
+ * Verzet de afspraak naar een nieuw tijdstip. Loopt via de bot-API, zodat het
+ * langs exact hetzelfde pad gaat als een verzetting via WhatsApp/web:
+ *  - het Google-event wordt meeverzet (oud event verwijderd, nieuw aangemaakt),
+ *  - de klant krijgt een bevestiging (WhatsApp/email, best-effort),
+ *  - afspraak_datum + afspraak_starttijd worden in Supabase bijgewerkt.
  *
- * NB: dit synct (nog) niet met Google Agenda; dat doet de bot bij boekingen
- * via WhatsApp/web. Een dashboard-verzetting past alleen de Frontlix-agenda aan.
+ * De UI geeft een ISO-tijdstip door; de bot verwacht datum (YYYY-MM-DD) +
+ * starttijd (HH:MM) in Amsterdam-tijd, dus we zetten dat hier om.
  */
 export async function rescheduleAppointment(
   leadId: string,
@@ -61,21 +63,18 @@ export async function rescheduleAppointment(
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd.' }
 
-  const iso = new Date(ms).toISOString()
-  const afspraakDatum = toAmsterdamDayKey(iso)
-  const afspraakStarttijd = new Intl.DateTimeFormat('nl-NL', {
+  const datum = toAmsterdamDayKey(new Date(ms).toISOString()) // YYYY-MM-DD
+  const starttijd = new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(new Date(ms))
+  }).format(new Date(ms)) // HH:MM
 
-  const { error } = await supabase
-    .from('leads')
-    .update({ afspraak_datum: afspraakDatum, afspraak_starttijd: afspraakStarttijd })
-    .eq('lead_id', leadId)
-
-  if (error) return { ok: false, error: error.message }
+  const result = await callBotLeadApi(leadId, 'reschedule', { datum, starttijd })
+  if (!result.ok) {
+    return { ok: false, error: botApiError(result, 'Verzetten mislukt.') }
+  }
 
   revalidateAgenda(leadId)
   return { ok: true }

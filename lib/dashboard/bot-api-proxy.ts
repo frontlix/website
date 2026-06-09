@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getCurrentUser, getCurrentUserProfile } from './auth'
+import { callBotLeadApi } from './bot-api-client'
 
 /**
  * Gemeenschappelijke proxy-handler voor de `/api/dashboard/lead/[id]/*`
@@ -97,17 +98,7 @@ export async function proxyToBotApi(
   const authFail = await requireApprovedUserForApi()
   if (authFail) return authFail
 
-  // 2) Config: bot-API URL + token.
-  const botUrl = process.env.DASHBOARD_API_URL
-  const token = process.env.DASHBOARD_API_TOKEN
-  if (!botUrl || !token) {
-    return NextResponse.json(
-      { ok: false, error: 'Bot-API niet geconfigureerd (DASHBOARD_API_URL / DASHBOARD_API_TOKEN)' },
-      { status: 503 },
-    )
-  }
-
-  // 3) Body 1-op-1 doorforwarden (mag leeg zijn voor de POSTs zonder payload).
+  // 2) Body 1-op-1 doorforwarden (mag leeg zijn voor de POSTs zonder payload).
   let body: unknown = {}
   if (req.headers.get('content-length') && req.headers.get('content-length') !== '0') {
     try {
@@ -117,28 +108,7 @@ export async function proxyToBotApi(
     }
   }
 
-  try {
-    const res = await fetch(`${botUrl}/dashboard-api/lead/${encodeURIComponent(leadId)}/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    })
-
-    const text = await res.text()
-    let data: unknown
-    try {
-      data = JSON.parse(text)
-    } catch {
-      data = { ok: res.ok, message: text }
-    }
-    return NextResponse.json(data, { status: res.status })
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'Bot-API niet bereikbaar' },
-      { status: 502 },
-    )
-  }
+  // 3) Doorsturen naar de bot via de gedeelde client (URL + token + token-auth).
+  const result = await callBotLeadApi(leadId, endpoint, body)
+  return NextResponse.json(result.data, { status: result.status })
 }
