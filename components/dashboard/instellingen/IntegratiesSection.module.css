@@ -93,3 +93,43 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pickerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.select {
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pickerHint {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.pickerOk {
+  font-size: 13px;
+  color: var(--primary);
+}
+.pickerError {
+  font-size: 13px;
+  color: #c0392b;
+}
