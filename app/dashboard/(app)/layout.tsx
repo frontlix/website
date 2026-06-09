@@ -4,6 +4,7 @@ import {
   getRecentNotifications,
   getUnreadNotificationCount,
 } from '@/lib/dashboard/notification-queries'
+import { toAmsterdamDayKey } from '@/lib/dashboard/calendar'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { TopbarServer } from '@/components/dashboard/TopbarServer'
 import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
@@ -40,11 +41,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .select('lead_id', { count: 'exact', head: true })
       .eq('dashboard_archived', false)
       .or('dashboard_status.is.null,dashboard_status.neq.afgehandeld'),
+    // Komende afspraken = afspraken vanaf vandaag, op de ECHTE afspraakdatum
+    // (afspraak_datum), niet op het boekmoment.
     supabase
       .from('leads')
       .select('lead_id', { count: 'exact', head: true })
-      .not('afspraak_geboekt_op', 'is', null)
-      .gte('afspraak_geboekt_op', new Date().toISOString()),
+      .not('afspraak_datum', 'is', null)
+      .gte('afspraak_datum', toAmsterdamDayKey(new Date().toISOString())),
     // Bel-feed + ongelezen-badge voor de mobiele shell-header (zelfde
     // queries als de desktop-Topbar). Desktop heeft z'n eigen TopbarServer.
     getRecentNotifications(15),

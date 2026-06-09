@@ -4,10 +4,10 @@ const { builder, mockFrom } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const builder: any = {}
   builder.select = vi.fn(() => builder)
-  builder.gte = vi.fn(() => builder)
-  builder.lt = vi.fn(() => builder)
   builder.not = vi.fn(() => builder)
-  builder.order = vi.fn(() => Promise.resolve({ data: [], error: null }))
+  builder.gte = vi.fn(() => builder)
+  // `.lte` is de terminal call in de chain: hij resolvet de query-Promise.
+  builder.lte = vi.fn(() => Promise.resolve({ data: [], error: null }))
   const mockFrom = vi.fn(() => builder)
   return { builder, mockFrom }
 })
@@ -16,15 +16,18 @@ vi.mock('./supabase-server', () => ({
   getDashboardSupabase: async () => ({ from: mockFrom }),
 }))
 
-import { getAppointmentsForMonth } from './agenda-queries'
+import { getAppointmentsForMonth, getAppointmentsForRange } from './agenda-queries'
+
+function resolveWith(rows: unknown[]) {
+  builder.lte.mockReturnValueOnce(Promise.resolve({ data: rows, error: null }))
+}
 
 function reset() {
   builder.select.mockClear()
-  builder.gte.mockClear()
-  builder.lt.mockClear()
   builder.not.mockClear()
-  builder.order.mockClear()
-  builder.order.mockReturnValue(Promise.resolve({ data: [], error: null }))
+  builder.gte.mockClear()
+  builder.lte.mockClear()
+  builder.lte.mockReturnValue(Promise.resolve({ data: [], error: null }))
   mockFrom.mockClear()
   mockFrom.mockReturnValue(builder)
 }
@@ -32,91 +35,79 @@ function reset() {
 describe('getAppointmentsForMonth', () => {
   beforeEach(reset)
 
-  it('queryt leads met afspraak_geboekt_op in een tijdzone-bewuste range', async () => {
-    builder.order.mockReturnValueOnce(
-      Promise.resolve({
-        data: [
-          {
-            lead_id: 'L1',
-            naam: 'Jan',
-            telefoon: '06-1',
-            afspraak_geboekt_op: '2026-05-05T10:00:00Z',
-            dashboard_status: 'opgevolgd',
-            status: 'akkoord',
-          },
-        ],
-        error: null,
-      })
-    )
-
-    const result = await getAppointmentsForMonth(2026, 5)
-
+  it('queryt leads op afspraak_datum binnen de maand', async () => {
+    await getAppointmentsForMonth(2026, 5)
     expect(mockFrom).toHaveBeenCalledWith('leads')
-    expect(builder.not).toHaveBeenCalledWith('afspraak_geboekt_op', 'is', null)
-    // UTC-grenzen wijden 1 dag aan beide kanten om Europe/Amsterdam (CEST/CET)
-    // shifts op te vangen
-    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-04-30T00:00:00.000Z')
-    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-06-02T00:00:00.000Z')
-    expect(builder.order).toHaveBeenCalledWith('afspraak_geboekt_op', { ascending: true })
-    expect(result).toHaveLength(1)
-    expect(result[0].lead_id).toBe('L1')
+    expect(builder.not).toHaveBeenCalledWith('afspraak_datum', 'is', null)
+    expect(builder.gte).toHaveBeenCalledWith('afspraak_datum', '2026-05-01')
+    expect(builder.lte).toHaveBeenCalledWith('afspraak_datum', '2026-05-31')
   })
 
-  it('december → januari: lt-grens loopt door naar volgend jaar', async () => {
+  it('december: maand-grenzen blijven binnen december', async () => {
     await getAppointmentsForMonth(2026, 12)
-    expect(builder.gte).toHaveBeenCalledWith('afspraak_geboekt_op', '2026-11-30T00:00:00.000Z')
-    expect(builder.lt).toHaveBeenCalledWith('afspraak_geboekt_op', '2027-01-02T00:00:00.000Z')
+    expect(builder.gte).toHaveBeenCalledWith('afspraak_datum', '2026-12-01')
+    expect(builder.lte).toHaveBeenCalledWith('afspraak_datum', '2026-12-31')
   })
 
-  it('houdt afspraak die in UTC laat-april valt maar in NL al mei is', async () => {
-    // 30 april 22:30 UTC = 1 mei 00:30 in NL (zomertijd)
-    builder.order.mockReturnValueOnce(
-      Promise.resolve({
-        data: [
-          {
-            lead_id: 'EDGE',
-            naam: 'Edge',
-            telefoon: '06-9',
-            afspraak_geboekt_op: '2026-04-30T22:30:00Z',
-            dashboard_status: null,
-            status: 'akkoord',
-          },
-        ],
-        error: null,
-      })
-    )
-
+  it('plaatst de afspraak op afspraak_datum + starttijd, niet op het boekmoment', async () => {
+    resolveWith([
+      {
+        lead_id: 'L1',
+        naam: 'Jan',
+        afspraak_datum: '2026-05-13',
+        afspraak_starttijd: '09:00',
+        // boekmoment moet genegeerd worden:
+        afspraak_geboekt_op: '2026-05-01T12:00:00.000Z',
+      },
+    ])
     const result = await getAppointmentsForMonth(2026, 5)
     expect(result).toHaveLength(1)
-    expect(result[0].lead_id).toBe('EDGE')
+    // 13 mei 09:00 Amsterdam (CEST, +2u) = 07:00 UTC
+    expect(result[0].afspraak_geboekt_op).toBe('2026-05-13T07:00:00.000Z')
   })
 
-  it('filtert UTC-laat-mei afspraak die in NL al juni is uit', async () => {
-    // 31 mei 22:30 UTC = 1 juni 00:30 in NL → hoort bij juni, niet mei
-    builder.order.mockReturnValueOnce(
-      Promise.resolve({
-        data: [
-          {
-            lead_id: 'JUNE',
-            naam: 'June',
-            telefoon: '06-1',
-            afspraak_geboekt_op: '2026-05-31T22:30:00Z',
-            dashboard_status: null,
-            status: 'akkoord',
-          },
-        ],
-        error: null,
-      })
-    )
-
+  it('filtert leads zonder afspraakdatum eruit (geen echte afspraak)', async () => {
+    resolveWith([
+      {
+        lead_id: 'NODATE',
+        naam: 'Offerte-lead',
+        afspraak_datum: null,
+        afspraak_starttijd: null,
+        afspraak_geboekt_op: '2026-05-07T10:00:00.000Z',
+      },
+      { lead_id: 'OK', naam: 'Echt', afspraak_datum: '2026-05-20', afspraak_starttijd: '10:00' },
+    ])
     const result = await getAppointmentsForMonth(2026, 5)
-    expect(result).toHaveLength(0)
+    expect(result.map((r) => r.lead_id)).toEqual(['OK'])
   })
 
   it('returnt lege array bij error', async () => {
-    builder.order.mockReturnValueOnce(
-      Promise.resolve({ data: null, error: { message: 'oops' } })
-    )
+    builder.lte.mockReturnValueOnce(Promise.resolve({ data: null, error: { message: 'oops' } }))
     expect(await getAppointmentsForMonth(2026, 5)).toEqual([])
+  })
+})
+
+describe('getAppointmentsForRange', () => {
+  beforeEach(reset)
+
+  it('queryt op afspraak_datum tussen de Amsterdam-dagkeys van de range', async () => {
+    // queryStart/queryEnd zijn UTC met buffer (zoals parseWeekParam levert).
+    await getAppointmentsForRange('2026-06-07T22:00:00.000Z', '2026-06-15T22:00:00.000Z')
+    expect(builder.not).toHaveBeenCalledWith('afspraak_datum', 'is', null)
+    // 07 jun 22:00 UTC = 08 jun 00:00 NL; 15 jun 22:00 UTC = 16 jun NL
+    expect(builder.gte).toHaveBeenCalledWith('afspraak_datum', '2026-06-08')
+    expect(builder.lte).toHaveBeenCalledWith('afspraak_datum', '2026-06-16')
+  })
+
+  it('synthetiseert het afspraakmoment uit datum + starttijd', async () => {
+    resolveWith([
+      { lead_id: 'W1', naam: 'Week', afspraak_datum: '2026-06-11', afspraak_starttijd: '08:00' },
+    ])
+    const result = await getAppointmentsForRange(
+      '2026-06-07T22:00:00.000Z',
+      '2026-06-15T22:00:00.000Z',
+    )
+    // 11 jun 08:00 Amsterdam (CEST) = 06:00 UTC
+    expect(result[0].afspraak_geboekt_op).toBe('2026-06-11T06:00:00.000Z')
   })
 })
