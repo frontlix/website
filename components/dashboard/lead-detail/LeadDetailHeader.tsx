@@ -12,6 +12,7 @@ import {
 import { Avatar } from '@/components/dashboard/ui/Avatar'
 import { Pill } from '@/components/dashboard/ui/Pill'
 import type { Lead } from '@/lib/dashboard/database.types'
+import { headerStatusMeta } from '@/lib/dashboard/lead-status-meta'
 import styles from './LeadDetailHeader.module.css'
 
 /**
@@ -23,6 +24,8 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
   const adres = [lead.straat ? `${lead.straat} ${lead.huisnummer ?? ''}`.trim() : null, `${lead.postcode ?? ''} ${lead.plaats ?? ''}`.trim()]
     .filter(Boolean)
     .join(', ')
+
+  const status = headerStatusMeta(lead)
 
   return (
     <div className={styles.wrap}>
@@ -37,8 +40,8 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
         <div className={styles.identity}>
           <div className={styles.nameRow}>
             <h1 className={styles.naam}>{lead.naam}</h1>
-            <Pill tone={statusTone(lead.dashboard_status)} dot>
-              {statusLabel(lead.dashboard_status)}
+            <Pill tone={status.tone} dot>
+              {status.label}
             </Pill>
           </div>
           <div className={styles.metaRow}>
@@ -94,29 +97,6 @@ export function LeadDetailHeader({ lead }: { lead: Lead }) {
       </div>
     </div>
   )
-}
-
-function statusTone(status: Lead['dashboard_status']): 'blue' | 'green' | 'gray' | 'amber' | 'red' {
-  switch (status) {
-    case 'afgehandeld':     return 'green'
-    case 'opgevolgd':        return 'blue'
-    case 'no_show':          return 'amber'
-    case 'geen_interesse':   return 'red'
-    case 'archief':          return 'gray'
-    default:                 return 'green'  // 'open' → "In gesprek"
-  }
-}
-
-function statusLabel(status: Lead['dashboard_status']): string {
-  const labels: Record<NonNullable<Lead['dashboard_status']>, string> = {
-    open:           'In gesprek',
-    opgevolgd:      'Opgevolgd',
-    afgehandeld:    'Afgehandeld',
-    no_show:        'No show',
-    geen_interesse: 'Geen interesse',
-    archief:        'Gearchiveerd',
-  }
-  return status ? labels[status] : 'In gesprek'
 }
 
 function formatRelative(iso: string): string {
