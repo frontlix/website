@@ -111,9 +111,10 @@ export default async function InstellingenPage({
   const tags = tagsRaw as TagWithCount[]
   const templateAanvragen = aanvragenRaw as TemplateAanvraag[]
 
-  // Agenda-koppeling: alleen de desktop-sectie 'integraties' gebruikt deze
-  // status, dus alleen dan ophalen (service-role read, zonder het token).
-  const gcalStatus = section === 'integraties' ? await getConnectionStatus() : null
+  // Agenda-koppeling: zowel de desktop-sectie 'integraties' als het mobiele
+  // Agenda-detailscherm (client-side geopend, zonder ?section=) gebruiken deze
+  // status, dus altijd ophalen (lichte service-role read, zonder het token).
+  const gcalStatus = await getConnectionStatus()
 
   return (
     <>
@@ -178,6 +179,7 @@ export default async function InstellingenPage({
           tags={tags}
           notifPrefs={notifPrefs}
           templateAanvragen={templateAanvragen}
+          gcalStatus={gcalStatus}
           initialSection={sp.section}
         />
       </div>

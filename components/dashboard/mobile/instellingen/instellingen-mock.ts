@@ -9,7 +9,7 @@
 
 export type InstSection = {
   k: string
-  icon: 'building' | 'users' | 'euro' | 'list' | 'wa' | 'bell' | 'spark' | 'tag'
+  icon: 'building' | 'users' | 'euro' | 'list' | 'wa' | 'bell' | 'spark' | 'tag' | 'calendar'
   l: string
   s: string
   tint: string
@@ -54,6 +54,7 @@ export function buildInstGroups(counts: InstCounts = {}): InstGroup[] {
       { k: 'diensten', icon: 'list', l: 'Diensten', s: diensten, tint: IC.blue },
       { k: 'opening', icon: 'wa', l: 'Openingsbericht', s: 'WhatsApp-template', tint: IC.wa },
       { k: 'reminders', icon: 'bell', l: 'Reminders', s: 'Automatische opvolging', tint: IC.amber },
+      { k: 'integraties', icon: 'calendar', l: 'Agenda', s: 'Google Agenda koppelen', tint: IC.blue },
     ] },
     { group: 'Voorkeuren', items: [
       { k: 'notif', icon: 'spark', l: 'Notificaties', s: 'Per kanaal instellen', tint: IC.violet },
