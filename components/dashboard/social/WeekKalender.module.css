@@ -1,0 +1,148 @@
+/* Week-strip. Leunt op .dash-card voor de buitenrand. */
+
+.kaart {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weekTitel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.navBtn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.navNu {
+  padding: 0 10px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-soft);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.navNu:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+/* ── Dag-strip: zeven gelijke kolommen ─────────────────── */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.dag {
+  display: flex;
+  flex-direction: column;
+  min-height: 84px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.dagVandaag {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.dagKop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.dagNaam {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.dagNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.dagPosts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px;
+  flex: 1;
+}
+
+.dagLeeg {
+  color: var(--fg-muted);
+  font-size: 13px;
+  opacity: 0.5;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 6px;
+  border-radius: 7px;
+  background: var(--surface-2);
+}
+
+.chipTijd {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-soft);
+}
+
+/* Op smalle schermen verandert dit alleen het desktop-blok; de mobile-tree
+   gebruikt MobileSocial. Maar voor de tussengrootte: laat de chips ademen. */
+@media (max-width: 900px) {
+  .strip {
+    gap: 4px;
+  }
+  .dag {
+    min-height: 72px;
+  }
+}

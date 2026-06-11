@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Parallel fetchen: tenant-info + sidebar-counts (open leads, komende
   // afspraken). Counts vullen de badges in de Sidebar, geven de klant
   // direct zicht op werk-in-uitvoering zonder elke pagina te openen.
-  const [settingsRes, openLeadsRes, upcomingApptsRes, notifications, unreadCount] = await Promise.all([
+  const [settingsRes, openLeadsRes, upcomingApptsRes, socialPendingRes, notifications, unreadCount] = await Promise.all([
     supabase
       .from('tenant_settings')
       .select('bedrijfsnaam')
@@ -48,6 +48,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .select('lead_id', { count: 'exact', head: true })
       .not('afspraak_datum', 'is', null)
       .gte('afspraak_datum', toAmsterdamDayKey(new Date().toISOString())),
+    // Aantal posts dat op akkoord wacht. RLS (tenant_id = auth.uid() plus
+    // is_approved_dashboard_user) filtert automatisch op de juiste tenant,
+    // dus geen extra where-clause nodig. Voedt de Social-badge in de sidebar.
+    supabase
+      .from('social_posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'ter_goedkeuring'),
     // Bel-feed + ongelezen-badge voor de mobiele shell-header (zelfde
     // queries als de desktop-Topbar). Desktop heeft z'n eigen TopbarServer.
     getRecentNotifications(15),
@@ -61,6 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const counts = {
     leads: openLeadsRes.count ?? 0,
     agenda: upcomingApptsRes.count ?? 0,
+    social: socialPendingRes.count ?? 0,
     // Inbox + Reviews: nog geen aparte unread/pending state in DB,     // toon geen badge zolang we niet weten wat er actief is.
   }
 

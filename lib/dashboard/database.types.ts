@@ -1061,6 +1061,308 @@ export type Database = {
         }
         Relationships: []
       }
+      social_content_items: {
+        Row: {
+          id: string
+          tenant_id: string
+          media_type: string
+          storage_path: string
+          public_url: string
+          context: string | null
+          bron: string
+          wa_media_id: string | null
+          bestandsgrootte: number | null
+          status: string
+          aangemaakt_op: string
+          bijgewerkt_op: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          media_type: string
+          storage_path: string
+          public_url: string
+          context?: string | null
+          bron: string
+          wa_media_id?: string | null
+          bestandsgrootte?: number | null
+          status?: string
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          media_type?: string
+          storage_path?: string
+          public_url?: string
+          context?: string | null
+          bron?: string
+          wa_media_id?: string | null
+          bestandsgrootte?: number | null
+          status?: string
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_content_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          id: string
+          tenant_id: string
+          content_item_id: string | null
+          pijler: string
+          content_type: string
+          visual_type: string
+          visual_url: string | null
+          visual_postiz_id: string | null
+          visual_postiz_path: string | null
+          geplande_datum: string
+          weeknummer: number | null
+          jaar: number | null
+          status: string
+          postiz_batch_id: string | null
+          goedgekeurd_door: string | null
+          goedgekeurd_op: string | null
+          afgewezen_reden: string | null
+          herinnering_verstuurd_op: string | null
+          aangemaakt_op: string
+          bijgewerkt_op: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          content_item_id?: string | null
+          pijler: string
+          content_type: string
+          visual_type: string
+          visual_url?: string | null
+          visual_postiz_id?: string | null
+          visual_postiz_path?: string | null
+          geplande_datum: string
+          weeknummer?: number | null
+          jaar?: number | null
+          status?: string
+          postiz_batch_id?: string | null
+          goedgekeurd_door?: string | null
+          goedgekeurd_op?: string | null
+          afgewezen_reden?: string | null
+          herinnering_verstuurd_op?: string | null
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          content_item_id?: string | null
+          pijler?: string
+          content_type?: string
+          visual_type?: string
+          visual_url?: string | null
+          visual_postiz_id?: string | null
+          visual_postiz_path?: string | null
+          geplande_datum?: string
+          weeknummer?: number | null
+          jaar?: number | null
+          status?: string
+          postiz_batch_id?: string | null
+          goedgekeurd_door?: string | null
+          goedgekeurd_op?: string | null
+          afgewezen_reden?: string | null
+          herinnering_verstuurd_op?: string | null
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "social_posts_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "social_content_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_goedgekeurd_door_fkey"
+            columns: ["goedgekeurd_door"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      social_post_varianten: {
+        Row: {
+          id: string
+          post_id: string
+          platform: string
+          caption: string
+          youtube_titel: string | null
+          ingeschakeld: boolean
+          platform_instellingen: Json | null
+          postiz_post_id: string | null
+          postiz_status: string | null
+          postiz_url: string | null
+          postiz_error: string | null
+          postiz_synced_op: string | null
+          aangemaakt_op: string
+          bijgewerkt_op: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          platform: string
+          caption: string
+          youtube_titel?: string | null
+          ingeschakeld?: boolean
+          platform_instellingen?: Json | null
+          postiz_post_id?: string | null
+          postiz_status?: string | null
+          postiz_url?: string | null
+          postiz_error?: string | null
+          postiz_synced_op?: string | null
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          platform?: string
+          caption?: string
+          youtube_titel?: string | null
+          ingeschakeld?: boolean
+          platform_instellingen?: Json | null
+          postiz_post_id?: string | null
+          postiz_status?: string | null
+          postiz_url?: string | null
+          postiz_error?: string | null
+          postiz_synced_op?: string | null
+          aangemaakt_op?: string
+          bijgewerkt_op?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_post_varianten_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_kanaal_instellingen: {
+        Row: {
+          id: string
+          tenant_id: string
+          kanaal: string
+          postiz_integratie_id: string | null
+          actief: boolean
+          audit_status: string | null
+          gekoppeld_op: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          kanaal: string
+          postiz_integratie_id?: string | null
+          actief?: boolean
+          audit_status?: string | null
+          gekoppeld_op?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          kanaal?: string
+          postiz_integratie_id?: string | null
+          actief?: boolean
+          audit_status?: string | null
+          gekoppeld_op?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_kanaal_instellingen_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      social_nudge_log: {
+        Row: {
+          id: string
+          tenant_id: string
+          verzonden_op: string
+          voorraad_op_moment: number | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          verzonden_op?: string
+          voorraad_op_moment?: number | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          verzonden_op?: string
+          voorraad_op_moment?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_nudge_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      social_integration_state: {
+        Row: {
+          platform: string
+          tenant_id: string
+          laatste_refresh: string | null
+          laatste_check: string | null
+          disconnected_sinds: string | null
+        }
+        Insert: {
+          platform: string
+          tenant_id: string
+          laatste_refresh?: string | null
+          laatste_check?: string | null
+          disconnected_sinds?: string | null
+        }
+        Update: {
+          platform?: string
+          tenant_id?: string
+          laatste_refresh?: string | null
+          laatste_check?: string | null
+          disconnected_sinds?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_integration_state_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
