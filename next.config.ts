@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   // bij launch met missing chromium.
   serverExternalPackages: ['puppeteer'],
 
+  // Video's (5 tot 25 MB) gaan via uploadMediaAsset(formData) als Server
+  // Action. Zonder verhoogde limiet faalt de upload met 413 Payload Too
+  // Large voordat de actie wordt aangeroepen (default is 1 MB).
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '30mb',
+    },
+  },
+
   // Sta dev-toegang vanaf het lokale LAN toe (telefoon op zelfde WiFi).
   // Zonder deze whitelist logt Next.js 15 een cross-origin warning en kan
   // het _next/* chunks of HMR-payload anders behandelen, wat op iPhone

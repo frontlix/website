@@ -13,6 +13,7 @@ import {
   Star,
   MessageCircle,
   Phone,
+  Share2,
   X,
 } from 'lucide-react'
 import { UserMenu } from './UserMenu'
@@ -31,6 +32,7 @@ type Counts = {
   leads?: number
   agenda?: number
   reviews?: number
+  social?: number
 }
 
 function buildWorkspaceItems(counts: Counts): NavItem[] {
@@ -61,6 +63,14 @@ function buildWorkspaceItems(counts: Counts): NavItem[] {
       label: 'Reviews',
       Icon: Star,
       badge: counts.reviews ? { value: String(counts.reviews), tone: 'live' } : undefined,
+    },
+    {
+      href: '/social',
+      label: 'Social media',
+      Icon: Share2,
+      badge: counts.social
+        ? { value: String(counts.social), tone: 'live' }
+        : undefined,
     },
     { href: '/statistieken', label: 'Analyses', Icon: BarChart3 },
     {
