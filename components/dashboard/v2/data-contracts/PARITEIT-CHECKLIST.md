@@ -1,0 +1,577 @@
+# Pariteit-checklist: v2 vs bestaand dashboard
+
+Status per feature. Te dichten = mist/fout/gedeeltelijk (hoog eerst).
+
+
+## Instellingen  (mist 7, fout 0, gedeeltelijk 4)
+
+- **[hoog] ❌ MIST, PRIJZEN SECTIE (volledige editor met Wat-Als simulator)**
+  - KRITIEK: v1 PrijzenEditor bevat: (1) tab-categorisatie (Reiniging, Invegen, Onkruid, Reiskosten, Overig) per regel_key, (2) PricingRuleEditor per regel (inline-editing, auto-save per blur), (3) WatAlsSimulator (hypothetische prijsvergelijking), (4) sticky bottom-bar met real-time omzet-effect (computeRevenueDelta), (5) alles-opslaan batch met updatePricingRulesBatch, (6) saved-flash indicator. v2 PAGE.TSX haalt pricing_rules op maar BINDT ze niet in props (comment: 'v2 toont prijzen (nog) niet in dit onderdeel'). v2 DienstenPanel toont alleen service_offerings (diensten toggles), GEEN prijzen. Hele prijzen-editor ontbreekt. Porting: volledige PrijzenEditor + helpers naar v2.
+  - bron: `/components/dashboard/instellingen/PrijzenEditor.tsx + /components/dashboard/instellingen/PricingRuleEditor.tsx + /components/dashboard/instellingen/WatAlsSimulator.tsx`
+- **[hoog] ❌ MIST, Tags (CRUD: maken, bewerken, verwijderen)**
+  - KRITIEK: v1 TagsManager (grid overzicht) + TagEditor (modal voor create/edit). Per tag: naam, kleur (hex), icon (uit ICON_REGISTRY, bv. MapPin, Star). Server-actions: createTag, updateTag, deleteTag. TagWithCount (naam + icon + kleur + count-op-leads). v2 MIST volledig. Tags-sectie in bestaande SettingsNav is NIET in v2 SettingsNav. Porting: TagsManager + TagEditor + tag-icons + alle server-actions naar v2.
+  - bron: `/components/dashboard/instellingen/TagsManager.tsx + /components/dashboard/instellingen/TagEditor.tsx + /components/dashboard/instellingen/tag-icons.tsx`
+- **[hoog] ❌ MIST, Integraties (Google Agenda: connect, select calendar, disconnect)**
+  - KRITIEK: v1 IntegratiesSection: Google Agenda koppel-flow (connected boolean → gekoppeld account tonen, calendar-picker dropdown, connect/opnieuw-koppelen/ontkoppelen knoppen, status/error display). Server-endpoints: /api/integrations/google-calendar/{calendars,select-calendar,disconnect,authorize}. v2 KanalenPanel: hardcoded CHANNELS demo-lijst (WhatsApp, Google Reviews, Google Agenda, Website-formulier, Klusvergelijk) met status-dot en koppel-knop, maar GEEN werkende flow. Google Agenda koppeling is NIET geïmplementeerd. Porting: IntegratiesSection (of aangepaste versie) naar v2.
+  - bron: `/components/dashboard/instellingen/IntegratiesSection.tsx`
+- **[hoog] ❌ MIST, Account (wachtwoord wijzigen, e-mailadres wijzigen)**
+  - KRITIEK: v1 AccountSection: twee kaarten (PasswordCard, EmailCard). PasswordCard: huidig wachtwoord + nieuw (2× herhaal), updatePasswordAction server-action. EmailCard: nieuw e-mailadres, updateEmailAction ('Wijziging aanvragen'). Status/error inline. v2 MIST volledig. Account-sectie in SettingsNav (Lock icon) is NIET in v2. Porting: AccountSection + beide server-actions naar v2.
+  - bron: `/components/dashboard/instellingen/AccountSection.tsx (PasswordCard + EmailCard)`
+- **[hoog] ❌ MIST, AVG / Privacy (data export, account verwijderen)**
+  - KRITIEK: v1 AvgSection: twee kaarten. ExportCard: 'Vraag export aan' (requestDataExportAction). DeleteCard: 'Verwijder mijn account' met bevestiging ('VERWIJDEREN' typen), requestAccountDeleteAction, redirect naar /login. Beide tonen status/error inline. v2 MIST volledig. AVG-sectie (Shield icon) is NIET in v2. Porting: AvgSection + beide server-actions naar v2.
+  - bron: `/components/dashboard/instellingen/AvgSection.tsx (ExportCard + DeleteCard)`
+- **[middel] ❌ MIST, Bot-Vernieuw-knop (BotRefreshButton)**
+  - v1 page.tsx toont BotRefreshButton in dash-section-head, boven de sectie-content. Knop triggert bot-configuratie-refresh (waarschijnlijk server-action). v2 MIST deze knop. Belangrijk voor dev-cycle: wijzigingen in instellingen moeten bot-config triggeren. Porting: BotRefreshButton naar v2 page layout.
+  - bron: `/components/dashboard/bot-actions/BotRefreshButton.tsx`
+- **[middel] ❌ MIST, Mobile-tree (MobileInstellingen component)**
+  - v1 page.tsx rendert zowel desktopTree (nav + content) als mobileTree (MobileInstellingen). MobileInstellingen is aparte component voor mobile-optimized instellingen-layout. v2 page.tsx MIST mobileTree volledig, geeft alleen InstellingenClient-output (geen mobile-specifiek). Porting: MobileInstellingen-logica naar v2 of via responsive CSS aanpassen.
+  - bron: `/components/dashboard/mobile/instellingen/MobileInstellingen.tsx`
+- **[hoog] 🟡 DEELS, Navigatiemenu/sectie-picker**
+  - v2 heeft SettingsNav maar mist 5 secties die v1 heeft: Tags (Tag icon), Integraties (Calendar icon), Account (Lock icon), AVG (Shield icon). v2 heeft extra secties (Beschikbaarheid, Surface, Kanalen, Offertes, Abonnement) die v1 niet heeft. Voor volledige pariteit: v2 SettingsNav uitbreiden met alle 11 items, of eerst bepalen of v1-secties die v2 niet heeft echt obsoleet zijn.
+  - bron: `/components/dashboard/instellingen/SettingsNav.tsx`
+- **[hoog] 🟡 DEELS, Thuisbasis voor routekaart (Werkgebied)**
+  - v1 TenantBaseForm (postcode + huisnummer + label + geocoding) is volledig. v2 BedrijfsprofielPanel toont basis als read-only string ('Vertrekadres'), geen bewerkingsveld. Geocoding-flow (postcode.tech lookup) werkt in v1, niet gewired in v2. Werkstraal-slider wél in v2 aanwezig. Porting: TenantBaseForm-logica (saveTenantBase server-action, geocoding) naar v2.
+  - bron: `/components/dashboard/instellingen/TenantBaseForm.tsx → v2: /components/dashboard/v2/instellingen/panels/BedrijfsprofielPanel.tsx`
+- **[hoog] 🟡 DEELS, Notificaties (preferences per event-type × kanaal)**
+  - v1 NotificatiesEditor: toggle-grid (EVENT_TYPES_ORDERED × KANALEN_ORDERED), per cel: toggle met fase-gating (isCellLive), WhatsApp partial-live (WHATSAPP_LIVE_EVENTS), daily-digest-tijd setter (setDailyDigestTijdAction), push-permission-flow (enablePush/disablePush). v2 MeldingenPanel: eenvoudige list, per NotificationSetting (titel + sub + aan) een toggle. GEEN grid, GEEN kanaal-dimensie (in_app/email/push/whatsapp), GEEN daily-digest-tijd. Functionaliteit ERNSTIG GEDEELTELIJK: alleen de aan/uit-toggle per 'melding', geen granulariteit per kanaal.
+  - bron: `/components/dashboard/instellingen/NotificatiesEditor.tsx → v2: /components/dashboard/v2/instellingen/panels/MeldingenPanel.tsx`
+- **[middel] 🟡 DEELS, Kanalen-integratie (WhatsApp, Google Reviews, Website-formulier, Klusvergelijk)**
+  - v2 KanalenPanel toont hardcoded kanalen-list (CHANNELS demo-data), status-dot + koppel-knop per kanaal. GEEN werkende backend-implementatie. In v1 zijn integraties verspreid (Google Agenda in IntegratiesSection, WhatsApp/website-formulier waarschijnlijk elders ingesteld). v2 wil dit centraliseren maar is incompleet.
+  - bron: `/components/dashboard/v2/instellingen/panels/KanalenPanel.tsx`
+
+## Lead-dossier / lead-detail  (mist 15, fout 0, gedeeltelijk 7)
+
+- **[hoog] ❌ MIST, Bot-actie: Offerte goedkeuren en naar klant sturen (ApproveQuoteButton)**
+  - ApproveQuoteButton in de bestaande offerte-sidebar stuurt de huidige offerte naar de klant (PDF + bevestigingsmail). V2 toont geen knop hiervoor in OffertesTab. Uitwerking: Knop toevoegen in OffertesTab (wellicht per offerte-rij) met versie-nummer en bevestigingsdialog.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/ApproveQuoteButton.tsx`
+- **[middel] ❌ MIST, Activiteit-timeline tab**
+  - De bestaande versie toont een Activiteit-/Tijdlijn-tab met alle lead-events (berichten in/uit, foto's geupload, offertes verstuurd, notities toegevoegd, status-wijzigingen, afspraken geboekt). Gebruikersource: aggregateActivityTimeline(detail). V2 toont dit helemaal niet. Voorkeur: apart Activiteit-tab-paneel naast Info/Offertes/Foto's/Notities in DossierView.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadActivityTimeline.tsx`
+- **[middel] ❌ MIST, Toelichting-veld (custom notities op lead)**
+  - LeadToelichtingBlock laadt/slaat de lead.toelichting veld op. Dit is een apart, gratis-tekstveld waar de eigenaar interne notities over de lead kan plaatsen (anders dan de team-notities in de Notities-tab). V2 ondersteunt dit niet.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/LeadToelichtingBlock.tsx`
+- **[middel] ❌ MIST, Bot-acties: Afspraak plannen/verplaatsen (AppointmentForm)**
+  - De bestaande LeadAfspraak-sectie bevat AppointmentForm met twee modes: 'book' (plan afspraak) en 'reschedule' (verplaats bestaande). V2 ondersteunt niet het plannen/verplaatsen van afspraken via dashboard. Uitwerking: Voeg een Afspraken-block toe in InfoTab of een apart 'Afspraken'-tab (spiegelend de LeadAfspraak.tsx structuur).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/AppointmentForm.tsx, LeadAfspraak.tsx`
+- **[middel] ❌ MIST, Bot-actie: Offerte aanpassen en opnieuw sturen (ModifyQuoteForm)**
+  - ModifyQuoteForm (bestaand) stelt offerte-parameters aan (m², korting, extra arbeid, voegzand) en genereert een nieuwe versie. V2 ondersteunt dit niet. Uitwerking: In OffertesTab of naast LeadOfferteForm een 'Aanpassen + sturen'-knop (parallel aan inline-edit van LeadOfferteForm).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/ModifyQuoteForm.tsx`
+- **[middel] ❌ MIST, Notitie verwijderen**
+  - LeadNotes (bestaand) biedt per-notitie-verwijdering via deleteNote server-action. V2's NotitiesTab toont geen verwijderings-knop. Uitwerking: Knop toevoegen per notitie (gelijk aan bestaande LeadNotes).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadNotes.tsx`
+- **[middel] ❌ MIST, Tags bewerken (LeadTagsEditor)**
+  - LeadTagsEditor (bestaand) in de Info-tab biedt tag-chips + add/remove + create new tag. V2 ondersteunt tags niet. Uitwerking: LeadTagsEditor-component toevoegen in DossierView (wellicht onder Info-tab of als eigen sectie).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadTagsEditor.tsx`
+- **[middel] ❌ MIST, Dashboard-status en bot-status badges**
+  - LeadStatusBadges (bestaand) toont Bot-status (statusveld), Gesprek-fase en Dashboard-status (dropdown). V2 toont geen daarvan. Uitwerking: LeadStatusBadges-component (of vereenvoudigde versie) toevoegen in InfoTab of als aparte sectie.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadStatusBadges.tsx`
+- **[middel] ❌ MIST, Afspraak weergeven en bewerken**
+  - LeadAfspraak toont geplande afspraak (datum/tijd) als read-only blok + AppointmentForm (book/reschedule). V2 ondersteunt geen afspraak-display/edit. Uitwerking: Afspraak-gegevens toevoegen aan dossier-data (afspraak_datum, afspraak_starttijd) en WeergaveBlock + AppointmentForm-integration in InfoTab.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadAfspraak.tsx`
+- **[laag] ❌ MIST, Web-chat panel (fallback voor web-klanten)**
+  - De bestaande versie toont een apart Web-chat-paneel voor klanten zonder WhatsApp (kanaal='web'), met magic-link, token-expiry-status, en acties (mail opnieuw versturen, token regenereren). V2 ondersteunt dit helemaal niet. Uitwerking: ApplicableView moet controleren op kanaal en optioneel WebChatPanel renderen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/WebChatPanel.tsx`
+- **[laag] ❌ MIST, Bot-actie: AVG-verwijdering (AvgDeleteButton)**
+  - AvgDeleteButton in LeadDangerZone verwijdert permanent alle lead-data. V2 heeft geen verwijderings-optie. Uitwerking: Button toevoegen in DossierView (wellicht onder een 'Acties'-menu of in de footer, met type-to-confirm).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/AvgDeleteButton.tsx, LeadDangerZone.tsx`
+- **[laag] ❌ MIST, Bot-actie: Review-verzoek blokkeren (BlokkeerReviewToggle)**
+  - BlokkeerReviewToggle slaat klus_geblokkeerd in, wat voorkomt dat Surface een NPS-vraag na de klus stuurt. V2 ondersteunt dit niet. Uitwerking: Toggle toevoegen in DossierView (naast archiveren of in een 'Instellingen'-paneel).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/BlokkeerReviewToggle.tsx`
+- **[laag] ❌ MIST, Bot-actie: Surface-config herladen (BotRefreshButton)**
+  - BotRefreshButton forceert een Surface-reload wanneer tenant_settings of pricing_rules veranderd zijn. Dit is een globale actie (niet per lead), maar kan in DossierView nuttig zijn als fallback. V2 ondersteunt dit niet.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/bot-actions/BotRefreshButton.tsx`
+- **[laag] ❌ MIST, Foto-lightbox / viewer**
+  - LeadPhotos (bestaand) biedt een grid + lightbox (PhotoLightbox component) met foto-analyse-badge. V2's FotosTab toont foto-placeholders zonder lightbox/viewer. Uitwerking: PhotoLightbox-component toevoegen in v2's FotosTab.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadPhotos.tsx, PhotoLightbox.tsx`
+- **[laag] ❌ MIST, Danger Zone (Acties-sectie)**
+  - LeadDangerZone (bestaand) groepeerd archivering, review-blokkering en AVG-verwijdering. V2 ondersteunt geen 'Acties'-sectie. Uitwerking: Deze acties verspreid toevoegen of in een aparte Acties-modal organiseren.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadDangerZone.tsx`
+- **[hoog] 🟡 DEELS, Inline editable lead-gegevens (Info-tab)**
+  - De bestaande LeadInfoTab toont een 2-koloms KLANT|WERK-layout met hover→pencil→inline-edit op elk veld (naam, telefoon, email, adres, m², voegzand, etc.). V2's InfoTab toont de gegevens als read-only (contact, dienst, checklist, bijzonderheden). Ontbreken: 1) Inline-edit per veld via EditableField-component; 2) Toelichting-block (Lead-toelichting-veld, aparte editor).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/LeadInfoTab.tsx, EditableField.tsx, LeadToelichtingBlock.tsx`
+- **[hoog] 🟡 DEELS, Offerte-formulier (inline edit + preview)**
+  - V2's OffertesTab toont offertes als read-only lijst + regels-preview. LeadOfferteForm (bestaand) biedt VOLLEDIGE inline-edit: m², korting, extra arbeid, voegzand, geldigheid-dagen, met live-totaal-berekening, auto-save (debounce), en knoppen (PDF-preview, naar klant sturen, concept/aanpassingen). V2 is slechts een preview. Voorkeur: OffertesTab uitbreiden met inline-edit, of een separate modal/wizard-flow waarin de volledige LeadOfferteForm wordt ingesloten.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/offerte/LeadOfferteForm.tsx`
+- **[hoog] 🟡 DEELS, Offerte-wizard / modale offerte-editor**
+  - V2 dispatcht 'rb:new-offerte'-event om een offerte-wizard te openen, maar deze wizard-component is niet in v2-dossier geïntegreerd. De bestaande app toont LeadOfferteForm inline in de Offerte-tab. V2 moet hetzelfde kunnen: ofwel inline in OffertesTab, ofwel in een modal/wizard die via dezelfde event geactiveerd wordt.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/offerte/LeadOfferteForm.tsx`
+- **[hoog] 🟡 DEELS, Lead-gegevens opslaan (server-actions)**
+  - EditableField (bestaand) roept updateLeadField server-action aan voor elk veld. V2's InfoTab is read-only en biedt geen server-save. Voorkeur: EditableField-component hergebruiken in v2's InfoTab.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/EditableField.tsx`
+- **[middel] 🟡 DEELS, Foto-strip / fotostrip in chat**
+  - V2's ChatPanel en FotosTab tonen foto-placeholders zonder echte afbeeldingen (placeholder-component). V2 bouwt geen foto-URLs; mapper levert alleen placeholder-labels ('Foto 1', 'Foto 2'). Bij integrat met echte fotos moet PhotoPlaceholder vervangen door echte <Image> component.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/dossier/PhotoPlaceholder.tsx`
+- **[laag] 🟡 DEELS, Lead-detail header met snelkoppelingen**
+  - DossierView toont een kop met naam, status-pill, gearchiveerd-label, meta-info en knoppen (Notitie, Archief, Offerte versturen). LeadDetailHeader (bestaand) levert meer metadata: adres, telefoon, email, relatieve tijd. V2's kop is een vereenvoudigde versie. Verbetering: meer contact-info toevoegen in de kop (telefoon, email), of deze informatie van LeadDetailHeader spiegelen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/LeadDetailHeader.tsx`
+- **[laag] 🟡 DEELS, Bot-status strip (LeadBotStatus)**
+  - LeadBotStatus toont fase-label (Info verzamelen / Offerte verstuurd / Onderhandelen / Datum kiezen / Afspraak bevestigd), beschrijving ('Vraagt om m² bevestiging...'), Lead-ID en pauzeer-toggle. V2's SurfaceStrip toont fase + actie maar minder context. Verbetering: meer metadata toevoegen (Lead-ID, pauzeer-button directeur aanwezig in DossierView).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/lead-detail/LeadBotStatus.tsx, SurfaceStrip.tsx`
+
+## Leads (lijst/pipeline)  (mist 13, fout 0, gedeeltelijk 9)
+
+- **[hoog] ❌ MIST, Filter-tabs (7 statustabs: Alles, In gesprek, Owner-review, Offerte uit, Ingepland, Afgerond, Archief)**
+  - V2 LeadsView toon alleen 2 views (pipeline/lijst). De 7-tab status-filter (LeadsFilterTabs) is niet geïmplementeerd. Moet URL-param ?filter= ondersteunen en count-badges per tab tonen. HERGEBRUIKEN: LeadsFilterTabs.tsx en matchesFilter() logica uit bestaande page.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsFilterTabs.tsx`
+- **[hoog] ❌ MIST, Web-chat/Geen WhatsApp toggle (separate filter naast tabs)**
+  - WebChatToggle toont count van web-only leads (kanaal=web) en filtert cumulatief. V2 ontbreekt dit. Moet URL-param ?kanaal=web ondersteunen. HERGEBRUIKEN: WebChatToggle.tsx en kanaalFilter logica.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/WebChatToggle.tsx`
+- **[hoog] ❌ MIST, Kaarten-view (grid van kanban-style cards)**
+  - V2 ontbreekt volledig: LeadsKaarten toont leads in auto-fill grid met gradient header-bands, status-pills, avatar+naam+adres, m²/diensten/prijs footer. HERGEBRUIKEN: LeadsKaarten.tsx en hele bijbehorende logica.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsKaarten.tsx`
+- **[hoog] ❌ MIST, Archief-tab + aparte query getLeadsList(undefined, { archived: true })**
+  - Bestaande: activeFilter === 'archief' triggers apart query. Archief-tab in FilterTabs. V2 applyLeadsFilters ontbreekt archief-logica. HERGEBRUIKEN: matchesFilter(lead, 'archief') logica, aparte query-call.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 102-107, 124)`
+- **[middel] ❌ MIST, Realtime toast-meldingen (nieuwe leads)**
+  - LeadsRealtimeToast luistert op Supabase realtime-kanaal (INSERT op leads-tabel) en toont toast-notificatie met lead-naam + Open-link. Auto-dismiss na 8s, router.refresh(). V2 ontbreekt dit volledig. HERGEBRUIKEN: LeadsRealtimeToast.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsRealtimeToast.tsx`
+- **[middel] ❌ MIST, Export-knop (CSV export)**
+  - Bestaande page: href=/leads?export=1 (FileText-icon knop). Triggert API-route /api/dashboard/export/leads-csv die CSV genereert met headers+leads. V2 ontbreekt export-functie volledig. HERGEBRUIKEN: export-knop uit page.tsx, API-route blijft identiek.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (line 208-214) en /app/api/dashboard/export/leads-csv/route.ts`
+- **[middel] ❌ MIST, Nieuwe offerte snelkoppeling**
+  - Bestaande page: href=/leads?nieuwe-offerte=1 (Plus-icon knop). Dit triggert waarschijnlijk een modal/dialog. V2 ontbreekt volledig. HERGEBRUIKEN: knop uit page.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (line 216-222)`
+- **[middel] ❌ MIST, Mobiel-responsieve filters (MobileFiltersSheet)**
+  - Bestaande pagina: MobileFiltersSheet wrapper die LeadsFilterTabs + WebChatToggle in een sheet toont op mobiel (≤640px). V2 ontbreekt mobiele filter-strategie. HERGEBRUIKEN: MobileFiltersSheet.tsx, MobileSheet-component.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/MobileFiltersSheet.tsx`
+- **[middel] ❌ MIST, URL-params cookie-fallback (leads_view cookie voor view-keuze)**
+  - Bestaande: cookie 'leads_view' perkeert view-keuze, server leest cookieStore bij geen ?view= param. V2 state-based enkel, geen cookie-persistentie. HERGEBRUIKEN: cookie-logica uit LeadsViewSwitcher.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsViewSwitcher.tsx (lines 18-21, 68-72)`
+- **[middel] ❌ MIST, Actief-count vs. totaal-count display**
+  - Bestaande: LiveDot + '{actief} actief · {total} totaal' in kop. V2 ontbreekt counts. Actief = niet-afgehandelde leads. HERGEBRUIKEN: count-berekening en display uit page.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 181-204)`
+- **[middel] ❌ MIST, Tab-counts stabiel bijhouden (counts berekenen over ALLE leads, niet gefilterde view)**
+  - Bestaande: counts Record per tab over ALLE leads upfront, dus counts blijven stabil terwijl je filters aanpast. V2 doet dit niet: zou dynamisch count per tab moeten. HERGEBRUIKEN: counts-berekening-logica lines 113-121 page.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 113-121)`
+- **[laag] ❌ MIST, Live-indicator dot in kop**
+  - LiveDot-component toont animatie-indicator in de sectie-kop. V2 ontbreekt dit. HERGEBRUIKEN: LiveDot.tsx component en import.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/LiveDot.tsx`
+- **[laag] ❌ MIST, Mobiele leads-weergave (MobileLeads component tree)**
+  - Bestaande page: <div mobileTree> met MobileLeads-component + mapLeadToCard helpers. V2 ontbreekt volledig. HERGEBRUIKEN: MobileLeads + mobile lead-mappers voor de mobiele weergave.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/leads/MobileLeads.tsx`
+- **[hoog] 🟡 DEELS, Geavanceerde filter-panel (Bron: Form/WhatsApp, Urgent, Sorteer op)**
+  - V2 LeadsSearch is alleen een zoekbalk. LeadsFilterPanel (desktop-popover) biedt Bron, Urgent, Sortering-opties ontbreekt. URL-params: ?bron=form/?wa, ?urgent=1, ?sort=prijs/naam/fase. HERGEBRUIKEN: LeadsFilterPanel.tsx, setParam logica, BRONNEN/SORTS-opties.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsFilterPanel.tsx`
+- **[hoog] 🟡 DEELS, View-switcher (Pipeline / Tabel / Kaarten) met 3 opties**
+  - V2 ViewSwitcher biedt slechts 2 views (Lijst/Pipeline). Bestaande versie heeft 3: Pipeline, Tabel, Kaarten. V2 mist de Kaarten-view volledig. HERGEBRUIKEN: LeadsViewSwitcher.tsx, cookie-logic, LeadsKaarten.tsx voor kaarten-weergave.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsViewSwitcher.tsx en LeadsKaarten.tsx`
+- **[hoog] 🟡 DEELS, Tabel-view met kolommen (Naam, Dienst, m², Status, Gespreksfase, Offerte, Tijd)**
+  - V2 LeadsList is te basaal: alleen 7 vaste kolommen zonder verdere configuratie. Bestaande LeadsTable is veel rijker: kolom-definitions via COLUMNS array, mobiel+desktop responsive via TableToCards, speciale rendering per kolom (Avatar, Pill, formatting). HERGEBRUIKEN: LeadsTable.tsx volledig, COLUMNS-array, TableToCards-component.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsTable.tsx`
+- **[hoog] 🟡 DEELS, Kop-secties: Leads-titel, actief-count, live-dot, export-knop, filters-popover, offerte-knop**
+  - V2 LeadsView heeft minimale kop (title + controls). Bestaande page: dash-section-head met LiveDot (realtime indicator), actief/totaal counts, FileText-export knop, LeadsFilterPanel popover, Plus-offerte knop. HERGEBRUIKEN: hele kop-structuur uit page.tsx, LiveDot-component, buttons.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 197-224)`
+- **[hoog] 🟡 DEELS, Server-side filtering logica (applyLeadsFilters, mapLeadsToV2, buildPipelineFromLeads)**
+  - V2 heeft applyLeadsFilters al in leads-mappers. Maar: bestaande page doet meer: archief-tab-aparte-query, tab-counts berekenen, webCount tellen, STAGE_ORDER constant, bronFilter+urgent-filter logica. V2 ontbreekt: archief-ondersteuning, tab-counts, separate archief-query.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 35-180) en /components/dashboard/v2/leads/leads-mappers.ts`
+- **[middel] 🟡 DEELS, Zoekbalk met debounce (search op naam/telefoon/adres)**
+  - V2 LeadsSearch werkt met Enter/submit, niet met debounce. Bestaande LeadsSearchBar debounceert 250ms en synct live met URL-param ?q=. V2 should use debounce i.p.v. submit-on-enter. HERGEBRUIKEN: LeadsSearchBar.tsx debounce-logica.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsSearchBar.tsx`
+- **[middel] 🟡 DEELS, Pipeline-view met 5 kolommen (In gesprek, Offerte review, Offerte uit, Ingepland, Afgerond)**
+  - V2 pipeline-layout is simpel (div grid). Bestaande pipeline gebruikt dash-pipeline-track/dash-pipe-col CSS-klassen, stage-matching op gesprek_fase+dashboard_status, count-pills, disabled '+'-knop per kolom. V2 mist stage-koppen-styling en '+' knop. HERGEBRUIKEN: LeadsPipeline.tsx STAGES-array en styling-klassen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsPipeline.tsx`
+- **[middel] 🟡 DEELS, Lead-card in pipeline met prijs OF m²-pill in head**
+  - V2 LeadCard toont altijd waarde/tijd/status. Bestaande card: head heeft avatar+naam+plaats, prijs BOLD aan rechterzijde (of m²-pill als geen prijs), meta met m²+dienst, foot met bron+tijd. HERGEBRUIKEN: bestaande LeadCard.tsx styling.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadCard.tsx`
+- **[middel] 🟡 DEELS, Search-param read (searchParams: Promise, zelfde structuur)**
+  - V2 leest alleen q/bron/urgent/sort. Bestaande leest ook filter/kanaal/view. V2 pagina moet filter/?kanaal/?view? ondersteunen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/leads/page.tsx (lines 61-70) vs /app/dashboard/v2/leads/page.tsx (lines 28-33)`
+
+## Overzicht  (mist 13, fout 0, gedeeltelijk 7)
+
+- **[hoog] ❌ MIST, Header action-buttons (Focus-modus, Export, Nieuwe offerte)**
+  - Bestaande page.tsx heeft dash-section-actions met 4 buttons: Focus-modus (Eye icon), Afspraken anchor (mobile), Export leads CSV, Nieuwe offerte. v2 page rendert geen header-section met action buttons. Hergebruiken: kan als apart shell-section boven de grid, of in een HeaderBar-component voor v2.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.tsx lines 329-361`
+- **[hoog] ❌ MIST, KPI Module (hero card + tabs + mini-grid)**
+  - Bestaande KpiModule.tsx (de (app)-versie) is het volledige KPI-blok met: KpiHeroCard (met donut-progress naar doel, icon-badge, delta met ArrowUp/Down, 'Uitschieter'-flame-badge), KpiTabs (4 server-side tabs: Omzet/Leads/Conversie/Reactietijd), KpiMiniCard (2x2 mini-grid + optional extra metric). v2 KpiTiles.tsx is veel simpeler: 2x2 grid zonder hero, tabs, of donut. Bestaande structuur veel uitgebreider. Hergebruiken: volledige KpiModule component uit (app) als drop-in, met eventueel mappers bijstellen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/KpiModule.tsx, KpiHeroCard.tsx, KpiMiniCard.tsx, KpiTabs.tsx`
+- **[hoog] ❌ MIST, Lead-instroom chart (AreaChart) + Trend Stats (4-vaks)**
+  - Bestaande page.tsx toont AreaChart met trendData + onder de chart een 4-vaks TrendStats strip met labels: Lead-instroom, Conversie, Owner-acties, Gem. ticket. v2 heeft geen trend-chart sectie. Hergebruiken: AreaChart component, TrendStat components (4x), KpiModule staat los in v2 dus deze chart is niet geïntegreerd.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/AreaChart.tsx, components/dashboard/overzicht/TrendStat.tsx`
+- **[hoog] ❌ MIST, Trechter (funnel widget deze week)**
+  - Bestaande Trechter.tsx toont de conversie-trechter (welke % leads door welke fase zijn gekomen). v2 rendert dit niet. Hergebruiken: Trechter component + buildFunnelRows helper uit overzicht-data.ts.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/Trechter.tsx, /Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/overzicht-data.ts`
+- **[hoog] ❌ MIST, Live Activity Feed (met tab-filter: Alles, Chat, Offerte, Agenda, Nieuw)**
+  - Bestaande LiveActivityFeed.tsx is een client-component met 5-tab filter (Alles/wa/quote/appt/new), 'NET BINNEN · N' counter, en feed-rijen met color-coded left-border per type + lead-link. v2 rendert geen activity-feed. Hergebruiken: volledige LiveActivityFeed component + buildActivityFeed helper.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/LiveActivityFeed.tsx, lib/dashboard/overzicht-data.ts`
+- **[hoog] ❌ MIST, DagrapportDrawer (slide-out drawer met dag-stats)**
+  - Bestaande DagrapportDrawer.tsx is een fixed-position portal-overlay-drawer die toont wanneer ?dagrapport=1. Bevat dag-statistieken vs gisteren, Surface-activiteit, etc. v2 rendert dit niet. Hergebruiken: volledige DagrapportDrawer component, getDagrapport() helper, URL-param logic.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/DagrapportDrawer.tsx, lib/dashboard/dagrapport-queries.ts`
+- **[hoog] ❌ MIST, Mobile Overzicht (MobileOverzicht component + data-mapping)**
+  - Bestaande page.tsx bouwt MobileOverzichtData blob (voornaam, leads vandaag/morgen, aiBrief, omzet, miniKpis, urgent items, vandaag-afspraken, activity, notifications) en rendert MobileOverzicht in mobileTree @media. v2 heeft geen mobile-variant. Hergebruiken: MobileOverzicht component + alle data-mappers + mobileTree styling.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/overzicht/MobileOverzicht.tsx, app/dashboard/(app)/page.tsx lines 245-311, 497-500`
+- **[hoog] ❌ MIST, URL-driven state: ?trend, ?kpi, ?focus, ?dagrapport params**
+  - v2 page.tsx haalt searchParams niet op. Bestaande page.tsx gebruikt ?trend=7d|28d|90d (trend-range), ?kpi=omzet|leads|... (KPI-tab), ?focus=live (focus-modus), ?dagrapport=1 (drawer). v2 kan deze parameters opnemen en via mappers doorvoeren.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.tsx lines 72-81, 88-93`
+- **[hoog] ❌ MIST, Key helper functions: werkdagenTotEindeMaand, deltaPercent, deltaPercentagePoints, deltaSeconds, getInitials, mapEerstDitDoenToUrgentItems, pickAppointmentsForToday, mapLiveActivityToMobile**
+  - Bestaande page.tsx bevat 8 helper-functies onderaan (lines 511-714) voor mobile data-mapping. v2 heeft mappers in overzicht-mappers.ts (mapBriefData, mapActionRows, etc.) maar mist de mobile-specifieke helpers (werkdagenTotEindeMaand, getInitials, mapEerstDitDoenToUrgentItems, pickAppointmentsForToday, mapLiveActivityToMobile). Deze zijn nodig voor de MobileOverzicht-path.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.tsx lines 511-714`
+- **[middel] ❌ MIST, Trend Range Toggle (7d/28d/90d selector)**
+  - Bestaande page.tsx fetch trend-data voor configurable range (default 28d, URL-param ?trend=7d|28d|90d). v2 page.tsx hardcoded `leadsPerDag(now, 10)` (10 dagen). TrendRangeToggle.tsx bestaat niet in v2. Hergebruiken: TrendRangeToggle component + trend-range logic (trendRange state, hrefFor helpers).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/TrendRangeToggle.tsx`
+- **[middel] ❌ MIST, LiveActivityFocus (full-width focus mode via ?focus=live)**
+  - Bestaande page.tsx heeft focus-mode check: als ?focus=live, rendert alleen LiveActivityFocus (standalone full-width). v2 heeft geen focus-mode logic. Hergebruiken: LiveActivityFocus component + focusMode check.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/LiveActivityFocus.tsx`
+- **[laag] ❌ MIST, LiveDot (live-indicator in header)**
+  - Bestaande page.tsx toont LiveDot in dash-section-sub. v2 heeft geen live-pulse-indicator. Hergebruiken: LiveDot component uit overzicht/ui, toevoegen aan BriefCard statusLine of header.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/LiveDot.tsx`
+- **[laag] ❌ MIST, Conditional rendering: EerstDitDoen alleen als actions.length > 0**
+  - Bestaande page.tsx rendert EerstDitDoen alleen als eerstDitDoenActies.length > 0 (line 379-384), anders verdwijnt hele sectie. v2 ActionList.tsx staat altijd in de grid. Hergebruiken: conditional logic voor ActionList of merge in page-level layout.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.tsx lines 379-384`
+- **[hoog] 🟡 DEELS, SurfaceDailySummary (AI samenvatting banner)**
+  - Bestaande SurfaceDailySummary.tsx is een banner met 'Dag in cijfers' + Dagrapport-link. v2 integreert de summary-tekst in BriefCard.body maar mist de banner-styling, icon-badge, 'Bekijk dagrapport'-link. Hergebruiken: SurfaceDailySummary component direct in v2 page, of samensmelten met BriefCard.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/SurfaceDailySummary.tsx`
+- **[hoog] 🟡 DEELS, EerstDitDoen (owner review action list)**
+  - v2 heeft ActionList.tsx die de layout doet, maar bestaande EerstDitDoen.tsx heeft meer visuele details: card-head met subtitle ('N acties · gesorteerd op urgentie & waarde'), twee Pill-badges (hot/warm counts), rode/amber idx-nummers per rij, wachtijd-badge rechts. v2 mapActionRows doet de basis, maar mist rendering details. Hergebruiken: EerstDitDoen component als drop-in vervanger van ActionList, of merge de styling-details in ActionList.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/EerstDitDoen.tsx`
+- **[hoog] 🟡 DEELS, CSS layout: two-column grid (left 2fr trend+funnel, right 1fr activity+appts)**
+  - v2 page.module.css heeft .grid { gridTemplateColumns: 1.45fr 1fr }, wat anders is dan bestaande (2fr 1fr). Bestaande heeft ook .desktopTree / .mobileTree toggle via display:contents @media. v2 mist mobile-tree toggle. Hergebruiken: mainGrid + colLeft/colRight CSS-layout, desktop/mobile tree-toggle.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.module.css`
+- **[middel] 🟡 DEELS, Greeting Title (time-dependent greeting + voornaam)**
+  - v2 heeft static greeting in BriefCard.tsx (mapBriefData). Bestaande GreetingTitle.tsx is een client-component die elke minuut refresh + tab-visibility tracking doet. v2 mist het live-update-mechanisme. Hergebruiken: GreetingTitle component + zijn interval/visibility-logic kan in BriefCard ingepast worden.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/overzicht/GreetingTitle.tsx`
+- **[middel] 🟡 DEELS, Komende afspraken list (upcoming appointments)**
+  - Bestaande page.tsx rendert upcomingAppts in een lijst met datum-kalender-blok, naam, time+phone, en status-Pill. AgendaCard.tsx in v2 is gelijk in doel maar mist: datum-kalender-styling (MAA blok + dag-nummer), telefoonnummer-weergave, status-Pill. v2 toont alleen tijd+titel+sub. Hergebruiken: de bestaande layout-code voor appt-rows, of merge de details in v2.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/page.tsx lines 437-490`
+- **[middel] 🟡 DEELS, Server queries: leadsArrivedTodayAndTomorrow, getRecentNotifications, etc.**
+  - v2 page.tsx haalt core queries op (leads, converted, trend, appts, allLeads), maar bestaande page.tsx heeft meer: leadsArrivedTodayAndTomorrow (voor mobile header), getRecentNotifications (bel-feed), getUnreadNotificationCount (badge). v2 kan deze toevoegen via dezelfde lib imports.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/lead-queries.ts, notification-queries.ts, activity-feed.ts`
+- **[middel] 🟡 DEELS, LeadsPerDag trend-data + range-logic**
+  - v2 page.tsx haalt leadsPerDag(now, 10) op, hardcoded 10 dagen. Bestaande page.tsx haalt leadsPerDag(now, trendDays) op waar trendDays komt uit RANGE_DAYS[trendRange]. v2 kan trendRange uit searchParams halen en aanpassen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/stats-queries.ts`
+
+## Inbox  (mist 18, fout 0, gedeeltelijk 7)
+
+- **[hoog] ❌ MIST, Filter-tabs (Alles / Ongelezen / Actie)**
+  - De bestaande inbox heeft InboxFilterTabs met 3 filter-opties (all/unread/action) en dynamische counts. V2 accepteert geen ?filter=... parameter en rendert geen filter-UI. Hergebruiken: InboxFilterTabs component uit /components/dashboard/inbox/InboxFilterTabs.tsx en matchesFilter() logica uit page.tsx. De v2 page.tsx moet searchParams ook accepteren en filteren vóór UI-render.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/InboxFilterTabs.tsx`
+- **[hoog] ❌ MIST, Zoekfunctionaliteit (?q=...)**
+  - De bestaande inbox heeft InboxSearch met live-debounce en URL-sync via ?q=. V2 geeft geen zoekbar en filters geen conversations op naam/telefoon/bericht-preview. Hergebruiken: InboxSearch component en de server-side filter-logica uit page.tsx (lines 75-81). Toevoegen aan v2 ThreadList-header.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/InboxSearch.tsx`
+- **[hoog] ❌ MIST, Bot-status strip (Surface: 'wat doet ie nu')**
+  - De bestaande inbox toont een groene strip 'Surface: [status]' onder de thread-header (botStatusForFase()). V2 ChatPane toont niets van de bot-status of fase-gebaseerde suggestiontekst. Hergebruiken: botStatusForFase() helper en add een strip in ChatPane.tsx onder de head. Het suggestiontekst is al via suggestieVoorContext() in inbox-mappers.ts.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/fase-labels.ts (botStatusForFase)`
+- **[hoog] ❌ MIST, Lead-context: Status-pills (status + fase)**
+  - V2 toont geen status. LeadContextPane heeft hele Section voor Status met twee pills: status-label (Afgerond/Afgewezen/etc.) en fase-label (Fase: [fase]). Toevoegen: statusTone() + statusLabel() + faseLabel() helpers en twee Pill-rijen in LeadContext-rechter kolom.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 63-73`
+- **[hoog] ❌ MIST, ConversationsList: Status-pills + Actie-badge + prijs-pill**
+  - V2 ThreadList toont alleen naam + preview + unread-badge. Bestaande ConversationsList toont per rij: Avatar, naam, preview, EN drie pills (fase-status, optionele Actie-badge bij needsAction, optionele prijs-pill). ThreadList moet deze velden van toThreads() krijgen; inbox-mappers moet gesprekFase + needsAction + totaalPrijs mappen naar ThreadList.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/ConversationsList.tsx lines 69-82`
+- **[hoog] ❌ MIST, Page layout: Breakpoint-responsive grid**
+  - Bestaande inbox.page.tsx heeft complexe responsive grid (3 kolommen > 1200px, 2 kolommen > 800px, mobile tree ≤ 640px). V2 page.module.css heeft alleen 330px 1fr 330px grid zonder media queries. Toevoegen: @media rules voor <1200px (verberg context) en <800px (toggle list/detail).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.module.css lines 34-74`
+- **[hoog] ❌ MIST, Page layout: Mobile-tree (MobileChatDetail + MobileInboxList)**
+  - Bestaande pagina heeft twee render-trees: desktopTree (grid) + mobileTree (MobileChatDetail / MobileInboxList switcher). V2 heeft alleen InboxClient met 3 kaarten. Toevoegen: mobileTree en de mobile-componenten voor ≤ 640px.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.tsx lines 210-227`
+- **[hoog] ❌ MIST, URL-preservation: ?lead=... + filter + search in nav**
+  - InboxClient selectThread() doet router.push() zonder filter/search params. Bestaande preservedQuery handhaaft ?filter= en ?q= tussen page-renders. Toevoegen: router.push() moet de huidige URL-params lezen en meenemen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.tsx lines 87-90`
+- **[middel] ❌ MIST, Search-parameter persistentie in thread-selectie**
+  - De bestaande inbox handhaaft ?filter=... en ?q=... wanneer je een gesprek aanklikt (preservedQuery). V2 vervangt de URL gewoon met ?lead=... en verliest context. Opvangen: in InboxClient selectThread(), de huidige URL-params lezen en meenemen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.tsx lines 87-90`
+- **[middel] ❌ MIST, Lead-context: Adres + plaats-combinatie**
+  - V2 toont alleen plaats. LeadContextPane toont ook volledige adres (straat + huisnummer + postcode + plaats) in een compacte Werk-sectie. Toevoegen aan inbox-mappers.ts: adres-formatie van InboxLeadContext-velden.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 33-38`
+- **[middel] ❌ MIST, Lead-context: Werk-sectie (m2, foto-count, diensten)**
+  - V2 toont geen foto's of oppervlakte. LeadContextPane.tsx runt CompactRow() voor adres, m2, diensten, fotocounts. Toevoegen: deze velden aan inbox-mappers context-prop en de CompactRow UI aan LeadContext.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 76-82`
+- **[middel] ❌ MIST, Lead-context: Offerte-box (bedrag + verstuurd-datum)**
+  - V2 LeadContext toont 'Waarde' als 2x2-grid-tile. Bestaande LeadContextPane heeft aparte Section 'Offerte' met grote gradient bedrag-display en verstuurd-datum. Hergebruiken: offerteBox styling en logica (alleen tonen als prijs > 0).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 85-97`
+- **[middel] ❌ MIST, Lead-context: Snelle acties (4 buttons)**
+  - V2 LeadContext is puur read-only. LeadContextPane heeft 4 quick-action links: notitie toevoegen, lead-gegevens aanpassen, offerte opnieuw versturen, archiveren. Hergebruiken: actionsList + actionRow styling en links uit LeadContextPane.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 99-131`
+- **[middel] ❌ MIST, Mobile: MobileContextButton (Info-knop in thread-header)**
+  - Op <1200px (maar ≥ 800px) opent info-knop een MobileSheet met LeadContextPane. V2 heeft geen mobile-sheet implementatie. Toevoegen: MobileContextButton wrapper die op media-break zichtbaar wordt.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/MobileContextButton.tsx`
+- **[middel] ❌ MIST, Mobile: data-pane attribute (list vs detail toggle)**
+  - Bestaande grid heeft `data-pane={selectedLeadId ? 'detail' : 'list'}` die CSS media-regels triggert. V2 heeft geen data-attribute. Toevoegen aan v2 page.tsx layout.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.module.css lines 61-73`
+- **[laag] ❌ MIST, Lead-context: Tags-sectie**
+  - V2 toont geen tags. LeadContextPane heeft Section 'Tags' met tag-chip-lijst en '+ Tag' button. Momenteel placeholder ('Geen tags'), maar moet aangesloten op toekomstige tags-feature. Hergebruiken: UI-structuur, voor nu als placeholder.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx lines 133-141`
+- **[laag] ❌ MIST, ThreadList: Jij: -prefix in preview voor uitgaande berichten**
+  - Bestaande ConversationsList toont 'Jij: ' prefix wanneer laatsteBericht.richting === 'uitgaand'. V2 threadList preview toon dit niet. Toevoegen aan previewVoor() in inbox-mappers.ts.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/ConversationsList.tsx lines 64-66`
+- **[laag] ❌ MIST, Desktop: Disabled Filter + Refresh buttons (headers)**
+  - Bestaande inbox toont twee disabled icon-buttons in colHead (Filter, Refresh). V2 ThreadList.tsx heeft geen header-buttons. Toevoegen als placeholders (later implementatie).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/inbox/page.tsx lines 109-127`
+- **[hoog] 🟡 DEELS, Lead-context paneel (rechtse kolom): volledige velden**
+  - V2 LeadContext toont alleen: Dienst + Waarde. Bestaande LeadContextPane toont veel meer: Avatar + naam + lead_id, Status-pills (status + fase), Werk-sectie (adres, oppervlakte, diensten, fotocounts), Offerte-box (bedrag + verstuurd-datum), Snelle acties (4 buttons: notitie/edit/offerte/archiveren), Tags-sectie. Hergebruiken: LeadContextPane component uit /components/dashboard/inbox/LeadContextPane.tsx, aanpassen voor v2 InboxConversation['context'] prop-shape.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/inbox/LeadContextPane.tsx`
+- **[middel] 🟡 DEELS, Lead-context: V2_BASE URL routing**
+  - V2 LeadContext.tsx linkt naar `/dashboard/v2/leads/[id]` (lines 47). Bestaande LeadContextPane linkt naar `/leads/[id]` (no prefix). Als v2 een aparte leads-pagina heeft, is dit OK; anders moet het naar bestaande /leads/[id] linken.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/inbox/LeadContext.tsx lines 47-48`
+- **[laag] 🟡 DEELS, Conversations-lijst koppelingen naar lead-detail**
+  - De bestaande ConversationsList linkt naar /inbox?lead=... (intra-inbox). V2 ThreadList-rijen zijn buttons die de URL via router.push() aanpassen. Beide werken, maar v2 biedt geen directe links naar /leads/[id]. Toevoegen: optionele context-menu of rechts-klik op ThreadList-rijen voor `/leads/[id]` link.
+  - bron: `N/A - UI-toevoeging`
+- **[laag] 🟡 DEELS, ChatPane: Status-label op berichten ('Verzonden', 'Gelezen')**
+  - V2 ChatMessage heeft optionele 'status' veld (zie InboxDemo berichten met 'Verzonden'). ChatPane rendert dit in .meta (lines 73-76). Bestaande LeadConversation doet hetzelfde. Logica moet in toChatMessages() van inbox-mappers.ts: Bericht.status → ChatMessage.status mapping.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/inbox/ChatPane.tsx lines 73-76`
+- **[laag] 🟡 DEELS, InboxBotToggle: alternatief UI-design**
+  - Bestaande inbox gebruikt InboxBotToggle (pill-form: groen/oranje + Pause/Play icon + label). V2 ChatPane heeft Toggle UI in header in 'blue soft' surface. Beide werken, maar design verschilt. Huidge V2-design is schoner; geen wijziging nodig.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/inbox/ChatPane.tsx lines 55-60`
+- **[laag] 🟡 DEELS, WhatsAppComposer: error-banner voor 24u-window**
+  - Bestaande WhatsAppComposer toont AlertCircle error-banner wanneer versturen faalt (bv. 24u-venster gesloten). V2 InboxClient.tsx handelt errors af in sendError state (line 175-179), maar toont dezelfde AlertCircle-banner. Status: OK, maar locatie anders (fixed bottom-center i.p.v. onder composer).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/v2/inbox/page.module.css lines 42-56`
+- **[laag] 🟡 DEELS, Chatpane/composer: Placeholder-text conditie**
+  - V2 ChatPane input placeholder is altijd 'Typ een bericht…'. Bestaande WhatsAppComposer toont ander placeholder wanneer bot NIET gepauzeerd. V2 verstuurt alleen wanneer botGepauzeerd=true, dus placeholder is OK, maar kan verbeterd door dynamic placeholder per surface-state.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/inbox/ChatPane.tsx line 121`
+
+## Agenda  (mist 19, fout 0, gedeeltelijk 8)
+
+- **[hoog] ❌ MIST, View Toggle (Week/Maand/Routekaart segmented buttons)**
+  - Bestaand: `ViewToggle` component (lines 270-293 page.tsx) toont 3 links voor week/maand/routekaart-views met actieve state. v2 `AgendaHeader` heeft geen view-toggle, slechts 1 hardcoded layout (week).
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 270-293; components/dashboard/agenda/AgendaMonthNav.tsx`
+- **[hoog] ❌ MIST, Maand-view met kalender**
+  - Bestaand: volledige `MonthView` (lines 152-195) haalt maandafspraken op via `getAppointmentsForMonth()`, bouwt `appointmentsByDay` Map, toont kalender-grid via `AgendaCalendar` component (met dag-cellen, afspraken per cel, overflow-logic). v2 heeft nul maand-UI.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 152-195; components/dashboard/agenda/AgendaCalendar.tsx`
+- **[hoog] ❌ MIST, Maand-navigatie (vorige/volgende maand)**
+  - Bestaand: `MonthView` construeert prev/next-maand-links (lines 165-166) en toont ze in ActionBar met kalender-icoon + 'Vandaag'. v2 heeft geen maand-UI.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 165-186; components/dashboard/agenda/AgendaMonthNav.tsx`
+- **[hoog] ❌ MIST, Kalender-grid met afspraken per dag**
+  - Bestaand: `AgendaCalendar` (7×6 raster, WEEKDAYS-header) toont per cel: dagnum (met vandaag-highlight), max 3 afspraken als `AgendaAppointmentBlock` (naam + tijd), overflow-badge '+N meer'. v2 heeft geen maand-grid.
+  - bron: `components/dashboard/agenda/AgendaCalendar.tsx; components/dashboard/agenda/AgendaAppointmentBlock.tsx`
+- **[hoog] ❌ MIST, Routekaart-view met Google Maps / SVG-fallback**
+  - Bestaand: volledige `RouteView` (lines 198-266) haalt routekaart-afspraken op, toont `AgendaRouteMap` die: (1) met Google Maps API/Map ID → interactieve client-component `AgendaRouteView` met DirectionsRenderer + InfoWindow + live km/rijtijd, (2) zonder → SVG-fallback met routelijn + pinkoppelingen (BASIS + route-tips). v2 heeft nul routekaart.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 198-266; components/dashboard/agenda/AgendaRouteMap.tsx; components/dashboard/agenda/AgendaRouteView.tsx`
+- **[hoog] ❌ MIST, Routekaart: Google Maps interactieve kaart**
+  - Bestaand: `AgendaRouteView.tsx` (100+ regels) client-component: APIProvider + Map + AdvancedMarkers per stop + InfoWindow on click + DirectionsRenderer per dag (echte route met optimalisatie). Functies: stop aanraken = InfoWindow + 'Open in Google Maps' deep-link, dag-tab wisselen = ander-kleur-route. v2 heeft geen Google Maps.
+  - bron: `components/dashboard/agenda/AgendaRouteView.tsx`
+- **[hoog] ❌ MIST, Routekaart: SVG fallback (schematische route)**
+  - Bestaand: `AgendaRouteMap` fallback (lines 87-155) toont SVG met route-lijn + pinkoppelingen, gebaseerd op `buildRouteDays()` output. v2 `RouteMap.tsx` toont alleen de mini-statische SVG (geen echte afspraken-integratie).
+  - bron: `components/dashboard/agenda/AgendaRouteMap.tsx lines 87-155; components/dashboard/v2/agenda/RouteMap.tsx (stub)`
+- **[hoog] ❌ MIST, Routekaart: Dagindeling sidebar met stops + km/rijtijd**
+  - Bestaand: `AgendaRouteMap` sidebar (lines 129-153) toont: 'Dagindeling' card met DayBlocks (per dag: dayLabel, totalKm, stops-list met pinIndex-nummers, naam, plaats, m2, tijd). v2 geen routekaart-sidebar.
+  - bron: `components/dashboard/agenda/AgendaRouteMap.tsx lines 129-153`
+- **[hoog] ❌ MIST, Routekaart: Dag-tabs (hele week / per dag focus)**
+  - Bestaand: `AgendaRouteMap` header tabs (lines 102-116) + focusDay-param: 'Hele week' link + per-dag-tabjes. Klik → URL-param `dag=YYYY-MM-DD`, kaart toont enkel die dag, fallback-SVG-route adapteert. v2 geen dag-tabs.
+  - bron: `components/dashboard/agenda/AgendaRouteMap.tsx lines 102-116; RouteView page.tsx lines 212-215`
+- **[hoog] ❌ MIST, Afspraakdetail-modal: verzetten (reschedule)**
+  - Bestaand: `rescheduleAppointment()` server-action bestaat (lib/dashboard/agenda-actions.ts lines 52-81), haalt Google-event + klant-notificatie langs bot-API. v2 `AppointmentDetail` modal heeft GEEN 'Verzetten'-knop of -logica. Opmerking in AgendaView.tsx lines 8-9: 'follow-up'.
+  - bron: `lib/dashboard/agenda-actions.ts lines 52-81`
+- **[hoog] ❌ MIST, Komende 7 dagen sidebar (afspraken-lijst + werk-uren totaal)**
+  - Bestaand: `AgendaUpcomingList` (sidebar, lines 143-145) toont 'Komende 7 dagen' card met alle afspraken van de week (kleurband + naam + datum+tijd + plaats+m2). Subheader toont aantallen: 'N afspraken · X uur werk'. v2 heeft geen sidebar.
+  - bron: `components/dashboard/agenda/AgendaUpcomingList.tsx`
+- **[hoog] ❌ MIST, Mobiele agenda-view (apart van desktop, altijd week-weergave)**
+  - Bestaand: `MobileAgenda` component (import lines 22-27, render lines 88-90) toont altijd week-data, losstaand van desktop-view (week/maand/routekaart). Mobileweek is separate fetch (lines 60-73). v2 heeft geen mobiele implementatie.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 22-27, 60-90; components/dashboard/mobile/agenda/MobileAgenda.tsx`
+- **[hoog] ❌ MIST, Google Maps API integratie (routekaart met echte weg-directions)**
+  - Bestaand: `AgendaRouteView` (100+ regels) gebruikt `@vis.gl/react-google-maps` APIProvider, Map, DirectionsService/Renderer, optimalisatie. Env-vars: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY + NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID. v2 heeft geen Google Maps.
+  - bron: `components/dashboard/agenda/AgendaRouteView.tsx; app/dashboard/(app)/agenda/page.tsx lines 40-85`
+- **[middel] ❌ MIST, Routekaart: Optimalisatie-tips sidebar**
+  - Bestaand: `buildTip()` functie (lines 338-345) genereert tips als één dag >400km ('overweeg te combineren'). TipCard toont tips sidebar boven. v2 geen tips.
+  - bron: `components/dashboard/agenda/AgendaRouteMap.tsx lines 338-345`
+- **[middel] ❌ MIST, Op te volgen sidebar (follow-ups: owner-reviews + stale offertes)**
+  - Bestaand: `AgendaFollowupList` (sidebar, line 145) async-component haalt via `getOwnerFollowups()` + `getStaleOfferteFollowups()` leads op die actie nodig hebben. Toont max 6 items als cards (naam + reden-badge + link naar lead). v2 geen follow-up sidebar.
+  - bron: `components/dashboard/agenda/AgendaUpcomingList.tsx lines 108-145; lib/dashboard/agenda-followups.ts`
+- **[middel] ❌ MIST, Uur-labels en halfuur-raster (07:00-18:00 in week-grid)**
+  - Bestaand: `AgendaWeekGrid` (lines 12-14, 48-70) toont links uur-labels (7-18) en 22-rijen met 2 halfuur-cellen per uur. Afspraken positioneren via grid-row. v2 `WeekGrid` heeft geen uur-raster, slechts flat-list per dag.
+  - bron: `components/dashboard/agenda/AgendaWeekGrid.tsx lines 12-14, 48-70`
+- **[middel] ❌ MIST, Afspraak-blok positioning: startuur/einduur met duur-schatting**
+  - Bestaand: `AgendaWeekGrid` berekent halfuur-offset uit afspraak-starttijd + `estimateDurationMinutes()`, positioneert via CSS grid-row (lines 80-103). v2 `WeekGrid` toont slechts `tijd · duur`-tekst, geen spatial positioning.
+  - bron: `components/dashboard/agenda/AgendaWeekGrid.tsx lines 80-103`
+- **[middel] ❌ MIST, Tenant-base coördinaten (basis-locatie voor routekaart)**
+  - Bestaand: `getTenantBase()` haalt basis-coördinaten (bv. Biervliet) op (lines 205-208). Passed naar `AgendaRouteMap`. v2 geen basis-integratie.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 205-208; lib/dashboard/tenant-base.ts`
+- **[laag] ❌ MIST, Google Calendar integratie (afspraken uit Google Calendar)**
+  - Bestaand: verwijzing in title/aria-label ('binnenkort beschikbaar' + 'Surface plant nu automatisch in via WhatsApp'), suggereert toekomstige Google Calendar sync. Niet actief in huide code, maar relevante feature voor roadmap.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 131-132`
+- **[hoog] 🟡 DEELS, Week-navigatie: vorige/volgende week buttons**
+  - Bestaand: `WeekView` (lines 107-149) toont ← → navigatie-buttons (links naar `/agenda?week=...`), ook 'Vandaag'-button. v2 `AgendaHeader` heeft nav-buttons (lines 24-31) maar ze zijn niet wired (geen `onClick`, geen router-push, geen `href`). Buttons are visually present but functionally empty.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 117-127; components/dashboard/v2/agenda/AgendaHeader.tsx lines 24-31`
+- **[hoog] 🟡 DEELS, Nieuwe afspraak inplannen (handmatig, modal)**
+  - Bestaand: 'Afspraak'-button is disabled (title: 'binnenkort beschikbaar', lines 128-137, 246-255). v2 `NewAppointmentModal` (components/dashboard/v2/agenda/NewAppointmentModal.tsx) toont modal met velden: titel/dag/tijd/duur (allemaal demo-static, niet editable). 'Opslaan'-button doet niets concreets (dummy-click). Noch bestaand noch v2 hebben echt afspraken-creatie.
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 128-137; components/dashboard/v2/agenda/NewAppointmentModal.tsx`
+- **[hoog] 🟡 DEELS, Search-params handling: week/month/view/dag URL-params**
+  - Bestaand: page.tsx haalt `searchParams` (week/month/view/dag), parseert via `parseWeekParam()` / `parseMonthParam()`. v2 page.tsx haalt week-param en parseert, maar v2-header nav-buttons doen geen URL-push (buttons zijn dummy).
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 44-55; app/dashboard/v2/agenda/page.tsx lines 25-35`
+- **[middel] 🟡 DEELS, Afspraakdetail-modal: deadline-typen met speciale UI**
+  - Bestaand: geen aparte deadline-handling in (app)-agenda. v2 `AppointmentDetail` (lines 26-64) implementeert aparte UI voor type==='deadline': 'Offerte verloopt'-tekst + 'Stuur herinnering'-button met hardcoded demo-content ('€395 verloopt om 16:00'). Geen backend-koppeling (demo-only).
+  - bron: `components/dashboard/v2/agenda/AppointmentDetail.tsx lines 26-64`
+- **[middel] 🟡 DEELS, Route & contact-modal: navigatie/bel/WhatsApp knoppen**
+  - v2 `RouteContactModal` (lines 43-56) toont 3 knoppen: 'Start navigatie' (primary), 'Bel' + 'WhatsApp' (secondary). Buttons zijn aanwezig maar niet geimplementeerd (geen `onClick`-logica, dummy-state).
+  - bron: `components/dashboard/v2/agenda/RouteContactModal.tsx lines 43-56`
+- **[middel] 🟡 DEELS, Afspraken-kleurering op basis van status (tone: blue/green/amber/red)**
+  - Bestaand: `appointmentTone()` (agenda-event.ts lines 42-50) bepaalt kleur via dashboard_status (afgehandeld=green, openstaand=blue, no_show=red). v2 mappers gebruiken simplified logic: alle bekende afspraken→'klus' (green), no_show→'intern' (muted), geen amber/red states.
+  - bron: `lib/dashboard/agenda-event.ts lines 42-50; components/dashboard/v2/agenda/agenda-mappers.ts lines 43-46`
+- **[middel] 🟡 DEELS, Responsieve layout: desktop-tree + mobile-tree**
+  - Bestaand: CSS-scheidingslijn `styles.desktopTree` + `styles.mobileTree` (lines 87-90). v2 geen expliciete mobiele variantafhandeling (geheel v2 is desktop-focus).
+  - bron: `app/dashboard/(app)/agenda/page.tsx lines 87-90; app/dashboard/v2/agenda/page.module.css`
+- **[laag] 🟡 DEELS, Afspraak-checklist (demo: hogedruk/impregnatie/afzetlint)**
+  - v2 `AppointmentDetail` (lines 55-57) toont hardcoded checklist-tekst ('hogedrukspuit · impregnatiemiddel · afzetlint'). Bestaand heeft geen aparte checklist-UI. Dit is v2-specific, maar niet aan echte data gekoppeld.
+  - bron: `components/dashboard/v2/agenda/AppointmentDetail.tsx lines 55-57`
+
+## Reviews  (mist 14, fout 0, gedeeltelijk 5)
+
+- **[hoog] ❌ MIST, KPI-kaarten: NPS-score, Gemiddelde score, Response rate, Reviews dit jaar**
+  - Bestaande versie gebruikt KpiCard-component met 4 KPI's (NPS, avgScore, response rate, reviews count met trends). V2 heeft geen KPI-sectie, alleen ScoreColumn met gemiddelde-score-header en verdeling per ster. De NPS-score specifieke KPI ontbreekt.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 205-229) en /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/KpiCard`
+- **[hoog] ❌ MIST, NPS-berekening: (promoters - detractors) / total * 100**
+  - Bestaande versie berekent NPS-score: Math.round(((promoters - detractors) / total) * 100). V2 toont gemiddelde-score en sterklasse-verdeling, maar geen NPS-score-KPI.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 144-146)`
+- **[middel] ❌ MIST, Paginatitel & sectie-header: 'Reviews & klanttevredenheid'**
+  - V2 heeft geen zichtbare titel/header-structuur zoals de bestaande versie (dash-section-head met title en sub). ScoreColumn en ReviewList hebben aparte titels, maar geen page-level header met NPS-score + aantal reviews + response rate in één regel.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 166-172)`
+- **[middel] ❌ MIST, Demo-banner: duidelijk label dat data placeholder is**
+  - Bestaande versie toont expliciet: 'Voorbeelddata, zodra Surface na elke klus een review-vraag verstuurt verschijnen hier echte reviews.' V2 heeft geen equivalent demo-banner of disclaimer.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 199-202)`
+- **[middel] ❌ MIST, Wachtende reviews sectie (PendingReviewRow) met Send-icoon en 'Vraag review'-knop**
+  - Bestaande versie toont onder 'In afwachting'-filter: lijst van PendingReviewRow met avatar, naam, klus-datum, plaats, days-since, 'Nog niet gevraagd'/'X dagen geleden gevraagd' pill, en Send-knop voor 'Vraag review'. V2 behandelt wachtende reviews en beantwoorde reviews uniform in ReviewList (geen aparte 'pending'-sectie-look).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/PendingReviewRow.tsx`
+- **[middel] ❌ MIST, NPS-tone/sentiment-pill (Promoter/Passive/Detractor)**
+  - Bestaande ReviewCard toont NPS-tone als Pill met kleur-toon (groen voor promoter, rood voor detractor, grijs voor passive). V2 ReviewRow toont geen NPS-tone pill; alleen 'Beantwoord'-badge of -knop.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewCard.tsx (regel 49-53)`
+- **[middel] ❌ MIST, Published-status pill ('Gepubliceerd' groen met dot, of 'Niet gepubliceerd' amber)**
+  - Bestaande ReviewCard toont published-status onderaan (Pill met tone en optioneel dot). V2 ReviewRow heeft geen published-status-weergave.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewCard.tsx (regel 60-64)`
+- **[middel] ❌ MIST, Open lead-link (ArrowUpRight-icoon) per review**
+  - Bestaande ReviewCard toont '/leads/{leadId}'-link in footer van de kaart. V2 ReviewRow heeft geen open-lead-link.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewCard.tsx (regel 65-68)`
+- **[middel] ❌ MIST, Mobile Reviews-sectie (MobileReviews-component met ReviewScoreHeader, ReviewsTabs, ReviewCard interactief)**
+  - Bestaande versie heeft MobileReviews met uitgebreide mobile-specifieke UX (tabs, interactieve draft-tracking, toast-notificaties, templates voor snelle antwoorden). V2 heeft geen mobile-specifieke component; desktop-component zakt in op mobile via CSS-grid.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/reviews/MobileReviews.tsx`
+- **[middel] ❌ MIST, Response rate percentage (68% in voorbeeld)**
+  - Bestaande versie toont 'Response rate' KPI (68%). V2 ontbreekt dit KPI volledig. Dit is een belangrijke metric.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 219-223)`
+- **[laag] ❌ MIST, Knop: 'Exporteer rapport' (disabled, voor toekomstige feature)**
+  - Bestaande versie heeft een disabled 'Exporteer rapport'-knop in de header (FileText-icoon). V2 ontbreekt deze knop volledig. Nodig voor parity.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 175-184)`
+- **[laag] ❌ MIST, Knop: 'Stuur reviewverzoek' (disabled, voor toekomstige feature)**
+  - Bestaande versie heeft een disabled 'Stuur reviewverzoek'-knop in de header (Send-icoon). V2 ontbreekt deze knop volledig. Nodig voor parity.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 185-194)`
+- **[laag] ❌ MIST, Trending-grafieken in KPI-kaarten (sparkline charts per KPI)**
+  - Bestaande KpiCard toont trend-array (7 punten) als sparkline-chart. V2 ontbreekt deze trend-visualisatie.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/KpiCard`
+- **[laag] ❌ MIST, Hoeveelheid reviews 'dit jaar' KPI**
+  - Bestaande versie toont 'Reviews dit jaar' KPI (reviews.length + 42 = 47 in voorbeeld). V2 toont 'totaal reviews' (47) maar geen time-scoped variatie.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/reviews/page.tsx (regel 224-228)`
+- **[hoog] 🟡 DEELS, NPS-verdeling-visualisatie (stacked bar met promoters/passives/detractors)**
+  - Bestaande versie heeft NPSDistributionBar met horizontale stacked-bar (flex-based segments) + legend met legenda-uitleg per categorie. V2 heeft geen stacked-bar visualization. ScoreColumn toont wel sterklasse-verdeling (1-5 sterren), maar niet de NPS-categorieën (promoter/passive/detractor).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/NPSDistributionBar.tsx`
+- **[hoog] 🟡 DEELS, Filter-tabs: 'Alle reviews', 'In afwachting', 'Aandacht nodig' (detractors)**
+  - Bestaande versie heeft ReviewsFilterTabs met 3 filters: 'all', 'pending', 'detractor' met counts. V2 ReviewList heeft slechts 2 filters: 'alle' en 'open' (onbeantwoord). De 'detractor'-filter (aandacht nodig) ontbreekt volledig.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewsFilterTabs.tsx`
+- **[hoog] 🟡 DEELS, Review-cards: verticale kaart-layout met avatar, naam, plaats, datum, score + sterren, NPS-tone (pill), body-text, published-status**
+  - Bestaande ReviewCard heeft: avatar + identity (naam/plaats/datum) linksboven, score+stars+NPS-pill rechtsboven, body-text onderaan met published-status-pill + open-lead-link. V2 ReviewRow is horizontaal inline-layout (chip/avatar linkjes, naam + sterren + meta inline, beantwoord-badge/knop rechts). Structureel anders; ReviewCard.tsx geeft beter visueel design.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewCard.tsx`
+- **[middel] 🟡 DEELS, Filter persisting via URL-params (searchParams.filter)**
+  - Bestaande versie: URL-parameter voor filter (all/pending/detractor), gebundeld in ReviewsFilterTabs (client-component). V2: filter via lokale state (useState) in ReviewsClient, geen URL-persisting. URL-persistence verloren.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/reviews/ReviewsFilterTabs.tsx`
+- **[middel] 🟡 DEELS, Filterbare reviews-rijen: max 6 items in v2, alle items in bestaande (met kaart-grid)**
+  - V2 limiteert ReviewList tot 6 items (slice(0, 6)). Bestaande versie toont alle gefilterde reviews in kaart-grid (4-koloms responsive). Capping verlaagt de informatie-dichte.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/reviews/ReviewsClient.tsx (regel 56)`
+
+## Analyses (statistieken)  (mist 6, fout 0, gedeeltelijk 6)
+
+- **[hoog] ❌ MIST, Verdeling per status (DistributionBars)**
+  - Bestaande statistieken tonen een DistributionBars-kaart (status-verdeling: bijv. 'Inkomend', 'Offerte', 'Akkoord' met percentage-balken). V2 mist dit volledig — noch de component noch de data-mapper. Oplossing: statusVerdeling query hergebruiken, DistributionBars-component kopiëren naar v2, en in AnalysesClient integreren in de twoCol/split-grid.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/stats/DistributionBars.tsx & statusVerdeling query`
+- **[hoog] ❌ MIST, Verdeling per categorie (DistributionBars)**
+  - Bestaande toon categorie-verdeling (bijv. 'Gevelreiniging', 'Dakgoot' enz. als percentage-balken). V2 mist dit — noch component noch mapper. Oplossing: categorieVerdeling query hergebruiken, DistributionBars integreren, in split-grid naast funnel plaatsen (zoals bestaande twoCol-layout).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/stats/DistributionBars.tsx & categorieVerdeling query`
+- **[hoog] ❌ MIST, Top-tags (TopTagsList)**
+  - Bestaande toon top-10 tags als eenvoudige lijstkaart (naam + count). V2 mist dit volledig. topTags query wordt niet gedraaid in v2 page.tsx. Oplossing: topTags query toevoegen, TopTagsList component kopiëren/porten, in grid integreren.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/stats/TopTagsList.tsx & topTags query`
+- **[hoog] ❌ MIST, Mobile-responsive render (MobileAnalyses wrapper)**
+  - Bestaande page.tsx rendert desktop-component + MobileAnalyses via desktop/mobileTree CSS-toggle. V2 mist MobileAnalyses-integratie volledig. Oplossing: page.tsx aanpassen om MobileAnalyses aan te roepen (pas data-contract aan), en page.module.css media-queries toevoegen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/analyses/MobileAnalyses.tsx`
+- **[hoog] ❌ MIST, Statistieken per status & categorie verdeling (data-mapping)**
+  - V2 page.tsx roept statusVerdeling() en categorieVerdeling() niet op. Bestaande wel. Oplossing: queries toevoegen aan v2 page.tsx, in analyses-mappers converter voor DistributionBars-form maken.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/stats-queries.ts (statusVerdeling, categorieVerdeling)`
+- **[laag] ❌ MIST, Omzet-doelstelling (maand) getOmzetDoelMaand**
+  - Bestaande page.tsx roept getOmzetDoelMaand() op (regel 76) maar gebruikt het niet in rendering. V2 mist de query volledig. Waarschijnlijk voor dashboard-doel-tracking. Oplossing: query toevoegen aan v2 page.tsx (als eerder, optioneel voor toekomstig use).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/stats-queries.ts (getOmzetDoelMaand)`
+- **[hoog] 🟡 DEELS, Pagina-structuur & layout (desktop-tree)**
+  - v2 heeft AnalysesClient (interactief) maar mist de desktop-only stylesheet (.desktopTree/.mobileTree toggle). v2 rendert altijd voor desktop; mobiele versie (MobileAnalyses) is niet geïmplementeerd. Oplossing: page.module.css uit bestaande statistieken overnemen voor media-queries, en MobileAnalyses-wrapper toevoegen aan v2 page.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/statistieken/page.tsx & page.module.css`
+- **[middel] 🟡 DEELS, Periode-keuze (PeriodSelector dropdown)**
+  - v2 heeft PeriodeTabs (pills: Week/Maand/Kwartaal), maar biedt slechts 3 opties. De bestaande PeriodSelector biedt 5 opties (deze-week, deze-maand, dit-kwartaal, dit-jaar, all-time). Bestaande opties 'dit-jaar' en 'all-time' ontbreken in v2 (alleen logica, geen design). Oplossing: parsePeriode() accepteert al beide; voeg logica toe om deze extra periodes in v2 te steunen (als extra pills of fallback naar bestaande selector).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/stats/PeriodSelector.tsx`
+- **[middel] 🟡 DEELS, Trend-grafiek (leads per dag, TrendLineChart)**
+  - Bestaande toon 'Leads per dag' als SVG-lijn (custom chart). V2 has OmzetLeadsChart (omzet + leads dual-axis), maar TrendLineChart (alleen leads, eenvoudig design) is niet opgenomen. leadsPerDag query wordt door v2 gebruikt, maar niet in een eenvoudige leads-only trendlijn. Gedeeltelijk omdat omzet-trend bestaat maar niet de originele simplistische leads-per-dag-lijn.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/stats/TrendLineChart.tsx & leadsPerDag query`
+- **[middel] 🟡 DEELS, Titel 'Statistieken' en pagina-kop**
+  - V2 AnalysesClient toont 'Analyses' (niet 'Statistieken') en hint 'klik op een punt in de grafiek' (bestaande: 'Periode: [label]'). Ontbreekt: subtitel met periode-label. Oplossing: periodLabel in AnalysesClient opnemen.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/statistieken/page.tsx (h1, subtitle)`
+- **[laag] 🟡 DEELS, Omzet totaal (omzetTotaal query & weergave)**
+  - V2 draait omzetTotaal query en mapPeriodeReeks mappt het naar PeriodeReeks.totaal (compact label in mini-stats). Bestaande statistieken tonen dit niet expliciet (geen 'Totaal omzet' KPI). V2 gedeeltelijk omdat de data aanwezig is maar niet in dezelfde directe vorm als bestaande (meer in mini-stats dan prominent).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/stats-queries.ts (omzetTotaal)`
+- **[laag] 🟡 DEELS, Inzichten / Surface-insights**
+  - V2 rendert hardcoded demo-inzichten (Surface-API nog niet beschikbaar). Bestaande statistieken tonen dit niet. V2 is proto met hardcoded data; geen pariteit nodig, maar moet blijven als placeholder.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/analyses/InzichtenCard.tsx & analyses-data.ts (INZICHTEN demo)`
+
+## App-niveau (chrome + globale features)  (mist 18, fout 0, gedeeltelijk 6)
+
+- **[hoog] ❌ MIST, Desktop Sidebar (left navigation panel)**
+  - Bestaande versie: Sidebar.tsx met volledige navigation (Overzicht, Inbox, Leads, Agenda, Reviews, Analyses, Veldwerk, Instellingen), bedrijfsnaam-header, UserMenu onderaan. V2 heeft alleen glas-pill-nav in de header, geen zijbalk. Ontbreekt: links-gepositioneerde persistent nav, bedrijfsnaam-display in sidebar-header, disabled-state voor 'Veldwerk'. Te hergebruiken: Sidebar.tsx-logica en styling.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Sidebar.tsx`
+- **[hoog] ❌ MIST, Topbar met zoek-knop, thema-toggle en notificatie-bel**
+  - Bestaande versie: Topbar.tsx met search-form, ⌘K focus-trigger, LeadsViewSwitcher, 'Nieuwe offerte'-knop, ThemeToggle, NotificationPanel met bell-icon en badge. V2 shell: heeft 'Nieuwe offerte'-knop en avatar, maar geen topbar. Ontbreekt compleet: header-zoek, ⌘K support, LeadsViewSwitcher, NotificationPanel (bell + dropdown). Te hergebruiken: TopbarServer.tsx, Topbar.tsx client logic, NotificationPanel.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/TopbarServer.tsx`
+- **[hoog] ❌ MIST, NotificationPanel (bel met dropdown, mark-as-read)**
+  - Bestaande versie: volledige NotificationPanel.tsx met bel-knop, dropdown-lijst, ongelezen-badge (unreadCount), markNotificationReadAction, markAllReadAction server-actions. V2 heeft geen notifications-UI ergens. Ontbreekt: bel-icoon in header, notification-dropdown, ongelezen teller, 'Mark all read'-knop. Te hergebruiken: NotificationPanel.tsx (client), TopbarServer.tsx (fetches via getRecentNotifications + getUnreadNotificationCount).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/NotificationPanel.tsx, /Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/notifications/read-actions.ts`
+- **[hoog] ❌ MIST, UserMenu (met avatar, email, logout)**
+  - Bestaande versie: UserMenu.tsx in Sidebar footer, dropdown met avatar + initials + naam (uit email-prefix) + 'Owner-account' badge + Uitloggen-link. V2 shell: heeft avatar rechtsboven als link naar /instellingen, maar geen dropdown-menu en geen logout-functie. Ontbreekt: avatar-dropdown, profiel-info-strip, logout-link. Te hergebruiken: UserMenu.tsx component (aanpassen voor v2 header positioning).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/UserMenu.tsx`
+- **[hoog] ❌ MIST, Logout-flow**
+  - Bestaande versie: UserMenu.tsx en MeerSheet.tsx linken naar /logout (GET route). V2 heeft geen logout-UI. Ontbreekt: logout-knop/link in header of user-menu. Te hergebruiken: bestaande /logout route (auth-layer), UserMenu.tsx logout-link.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/UserMenu.tsx (line 65), /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/MeerSheet.tsx (line 215)`
+- **[hoog] ❌ MIST, Mobile chrome (bottom nav, sheet, top header)**
+  - Bestaande versie: volledige DashboardChrome+MobileShell+BottomNav+MeerSheet-stack voor <641px, met mobile-speficieke header + notifications-sheet + meer-sheet. V2 is desktop-only (geen mobile-targeting op breakpoints). Ontbreekt: volledig mobile-layout, bottom-nav, mesheet, mobile-notificaties-sheet, mobile-veldwerk-component. Te hergebruiken: mobile/* componenten.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/DashboardChrome.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/MobileShell.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/BottomNav.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/mobile/MeerSheet.tsx`
+- **[hoog] ❌ MIST, Veldwerk-pagina en -component (fieldwork tracking)**
+  - Bestaande versie: Volledige /veldwerk pagina (app/dashboard/(app)/veldwerk/) met VeldwerkPhases.tsx (monteur-stepper met fase-tracking) en mobile-variant (MobileVeldwerk.tsx). V2 heeft /veldwerk in demo-data als 'binnenkort' maar geen werkende pagina. Ontbreekt: veldwerk-pagina-impl, VeldwerkPhases-component, phase-tracking-UI. Te hergebruiken: VeldwerkPhases.tsx + veldwerk page files.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/veldwerk/page.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/veldwerk/VeldwerkPhases.tsx`
+- **[middel] ❌ MIST, ThemeToggle (dark/light mode)**
+  - Bestaande versie: ThemeToggle.tsx in Topbar (desktop) en MeerSheet (mobile), localStorage-persistent, `.dark` class op `.dashboard-theme-root`. V2 heeft geen theme-toggle UI ergens (alleen CSS-tokens voorbereid). Ontbreekt: toggle-knop in header/topbar. Te hergebruiken: ThemeToggle.tsx component (werkt al met gedeelde `.dashboard-theme-root` root).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/ThemeToggle.tsx`
+- **[middel] ❌ MIST, ExportsModal (data-export UI)**
+  - Bestaande versie: ExportsModal.tsx geactiveerd via ?export=1 query-param, met type/format/period-selectie, downloads via /api/dashboard/export. V2 heeft geen export-UI. Ontbreekt: export-knop, modal, format-keuze. Te hergebruiken: ExportsModal.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ExportsModal.tsx`
+- **[middel] ❌ MIST, OnboardingWizard (7-staps setup-flow)**
+  - Bestaande versie: OnboardingWizard.tsx getoond wanneer !profile.onboarding_voltooid_op, 7 stappen, completeOnboardingAction server-action. V2 heeft geen onboarding. Ontbreekt: wizard-modal, stap-logica, progress-bar, skip-functie. Te hergebruiken: OnboardingWizard.tsx + completeOnboardingAction.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/OnboardingWizard.tsx, /Users/christiaantromp/Desktop/Frontlix website/lib/dashboard/onboarding-actions.ts`
+- **[middel] ❌ MIST, Page title & subtitle in header (route-meta)**
+  - Bestaande versie: Topbar toont dynamische title + subtitle per route (bijv. '/leads' → 'Leads' + 'Alle aanvragen...'). V2 shell heeft geen title/subtitle area. Ontbreekt: pagina-context-display in header. Te hergebruiken: Topbar.tsx getMeta() logica.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx (lines 20-40, ROUTE_TITLES const)`
+- **[middel] ❌ MIST, Route metadata (query-title + subtitle mapping)**
+  - Bestaande versie: ROUTE_TITLES dict in Topbar.tsx. V2 heeft geen route-titel-mapping. Ontbreekt: titel + subtitle per route in header. Te hergebruiken: ROUTE_TITLES const + getMeta-logica.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx (lines 20-40)`
+- **[middel] ❌ MIST, Search form en submit-handler (nav naar /leads?q=...)**
+  - Bestaande versie: Topbar.tsx heeft search-form met onSubmit-handler die naar /leads?q=... navigeert. V2 heeft geen search-UI. Ontbreekt: search-input, form, query-redirect. Te hergebruiken: Topbar.tsx search-section.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx (lines 99-110, 67-74)`
+- **[laag] ❌ MIST, LeadsViewSwitcher (table ↔ kanban toggle)**
+  - Bestaande versie: LeadsViewSwitcher in Topbar, switcht leads-page tussen table en pipeline-kanban-view. V2 leads-pagina (v2/leads/page.tsx) toont alleen 1 view (table). Ontbreekt: view-switcher-knop, toggle-logica. Te hergebruiken: LeadsViewSwitcher.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/leads/LeadsViewSwitcher.tsx`
+- **[laag] ❌ MIST, MobileSearchSheet (mobile ↔ desktop search UI)**
+  - Bestaande versie: MobileSearchSheet.tsx in Topbar, apart mobile-search-drawer. V2 heeft geen mobile-search-ondersteuning. Ontbreekt: mobile-search-sheet. Te hergebruiken: MobileSearchSheet.tsx.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/ui/MobileSearchSheet.tsx`
+- **[laag] ❌ MIST, Dagrapport-drawer (portal + fixed-in-overflow workaround)**
+  - Bestaande versie: Layout-wrapper voert `<div id='dagrapport-portal-root' />` in, buitengepositioneerd voor iOS fixed-in-overflow-scroller fix. V2 layout voert dit niet in. Ontbreekt: portal-target div. Te hergebruiken: layout-snippet (div met id).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/layout.tsx (line 119)`
+- **[laag] ❌ MIST, Keyboard shortcuts (⌘K / Ctrl+K → search focus)**
+  - Bestaande versie: Topbar luistert op keydown voor ⌘K / Ctrl+K en focust search-input. V2 heeft geen keyboard-shortcut-ondersteuning. Ontbreekt: ⌘K-handler. Te hergebruiken: Topbar.tsx useEffect (lines 56-65).
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx (lines 56-65)`
+- **[laag] ❌ MIST, Mobile nav toggle event (hamburger → sidebar open/close)**
+  - Bestaande versie: Topbar.tsx dispatcht 'frontlix-toggle-mobile-nav' event, Sidebar.tsx luistert erop. V2 is desktop-only, geen hamburger/sidebar. Ontbreekt: mobile-nav-toggle event-system. Te hergebruiken: event-dispatch-patroon als mobiel wordt geimplementeerd.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Topbar.tsx (line 15), /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Sidebar.tsx (lines 94-98)`
+- **[middel] 🟡 DEELS, NavBadges (aantal-indicatoren) op navigatie-items**
+  - V2 shell toont badges in glas-pill-nav (Leads: 14, Agenda: 4), maar: (1) geen tone-variatie (bestaande heeft 'live', 'muted' tones), (2) geen onderscheid tussen getal-badges en 'Binnenkort'-badges (Veldwerk). V2 navItems zijn flat-getypeerd; disabled-state ontbreekt. V2 haalt counts via getV2ShellData (parallel queries), pariteit met old layout is aanwezig, maar UI-rendering mist tone/disabled.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/Sidebar.tsx (NavLink component, lines 159-205)`
+- **[middel] 🟡 DEELS, Layout shell wrapper (>.dashboard-theme-root, display:contents)**
+  - Bestaande versie: `.dashboard-theme-root` wrapper met `display:contents`, omvat desktop+mobile chrome. V2: `rbRoot` div, geen `.dashboard-theme-root`. Status: v2 heeft aparte root-klasse; thema-toggle zou moeten herkonfigureren om op v2 root te werken of beide roots.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/layout.tsx (lines 99-121), /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/ui/Shell.tsx (line 58)`
+- **[laag] 🟡 DEELS, ManualOfferteController (offerte-wizard trigger)**
+  - Bestaande versie: ManualOfferteController in layout, luistert op ?nieuwe-offerte=1 query-param. V2 heeft NewOfferteMount in layout, luistert op 'rb:new-offerte' CustomEvent. Beide systemen bestaan naast elkaar; V2 event-model is een alternatieve implementatie. Status: beiden aanwezig maar met twee verschillende triggering-mechanismes.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/components/dashboard/offerte/ManualOfferteController.tsx, /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/offerte/NewOfferteMount.tsx`
+- **[laag] 🟡 DEELS, Global auth + user profile loading (requireApprovedUser)**
+  - Bestaande versie: Layout.tsx vereist requireApprovedUser(), fetcht user/profile parallel met notificaties. V2 layout haalt via getV2ShellData() (v2Session()), geen explicit auth-check in layout. V2 relies op middleware voor auth. Status: beide hebben auth, maar v2 delegeert aan middleware, old haalt user/profile via server-functions.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/layout.tsx (line 19), /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/shell-data.ts (line 23)`
+- **[laag] 🟡 DEELS, Counts-caching (open leads, upcoming appts badges)**
+  - Beide versies fetchen parallel via Promise.all. Bestaande: explicit counts-object gefilterd per badge-toon. V2: getV2ShellData returnt nav met badges ge-mapped. Status: beide implementaties bestaan; v2 doet hetzelfde dus pariteit is OK.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/layout.tsx (lines 26-65), /Users/christiaantromp/Desktop/Frontlix website/components/dashboard/v2/shell-data.ts (lines 28-56)`
+- **[laag] 🟡 DEELS, Dashboard CSS design-system (density-cozy, tokens)**
+  - Bestaande versie: importeert @/styles/dashboard.css, shell-wrapper heeft `density-cozy` class. V2 importeert @/styles/rebrand-tokens.css (nieuw design-system). Beiden hebben eigen CSS-baseline; v2 is rebrand, oude is legacy. Status: beide staan naast elkaar; v2 is gedeelte van migratie.
+  - bron: `/Users/christiaantromp/Desktop/Frontlix website/app/dashboard/(app)/layout.tsx (line 16), /Users/christiaantromp/Desktop/Frontlix website/app/dashboard/v2/layout.tsx (line 11)`

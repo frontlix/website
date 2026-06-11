@@ -1,0 +1,54 @@
+.panel {
+  margin-top: 10px;
+  background: color-mix(in srgb, var(--rb-blue) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rb-blue) 15%, transparent);
+  border-radius: var(--rb-r-chip);
+  padding: 10px 13px;
+}
+
+.head {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--rb-blue);
+}
+
+.hint {
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+
+.compactRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.chip {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip-sm);
+  color: var(--rb-blue);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.chip:hover {
+  background: var(--rb-blue-soft);
+}
+
+.chipSm {
+  font-size: 10.5px;
+  padding: 3px 7px;
+  border-radius: 6px;
+}

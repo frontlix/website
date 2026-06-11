@@ -1,0 +1,929 @@
+/* Gedeelde stijlen voor de instellingen-panelen (rechterkaart-inhoud). */
+
+/* Lokale aanvullende kleuren die (nog) geen --rb-token hebben. Gescoped op
+   de paneel-wortel zodat ze niets buiten dit gebied raken. Afgeleid van de
+   prototype-waarden (amber-waarschuwing, rode laatste-reminder, blauw-eind
+   van het abonnement-verloop). */
+.vars {
+  --rb-warn: #f5a623; /* statusstip / waarschuwing */
+  --rb-warn-ink: #b07408; /* tekst op amber */
+  --rb-danger: #dc2626; /* derde reminder (rood) */
+  --rb-blue-light: #3d74ff; /* gradient-eind abonnementkaart */
+}
+
+/* ── Lijst-rij met divider (diensten, beschikbaarheid, meldingen, regels) ── */
+.list {
+  margin-top: 14px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.rowSub {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+/* ── Secties met bovenrand (werkgebied, maanddoel, aanbetaling) ── */
+.section {
+  margin-top: 18px;
+  border-top: 1px solid var(--rb-line);
+  padding-top: 18px;
+}
+
+.sectionTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.sectionSub {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 3px;
+}
+
+/* ── Grids ── */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.gridTop {
+  margin-top: 20px;
+}
+
+.gridInline {
+  margin-top: 12px;
+}
+
+.sliderBlock {
+  margin-top: 14px;
+}
+
+/* ── Logo-blok ── */
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--rb-blue), var(--rb-cyan-bright));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.logoHint {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+  margin-top: 5px;
+}
+
+/* ── Werkstraal-slider ── */
+.sliderHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sliderLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.sliderValue {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--rb-blue);
+}
+
+.slider {
+  width: 100%;
+  margin-top: 8px;
+  accent-color: var(--rb-blue);
+  height: 6px;
+  cursor: pointer;
+}
+
+.sliderScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+/* ── Vertrekadres-formulier (bewerkbaar, saveTenantBase) ── */
+.baseForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.baseFull {
+  grid-column: 1 / -1;
+}
+
+.baseActions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.geoBtn {
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 10px 18px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--rb-shadow-btn-strong);
+  transition:
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.geoBtn:hover {
+  filter: brightness(1.05);
+}
+
+.geoBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.baseStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: var(--rb-r-chip);
+}
+
+.baseStatusOk {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.baseStatusErr {
+  color: var(--rb-danger);
+  background: color-mix(in srgb, var(--rb-danger) 10%, transparent);
+}
+
+.baseStatusInfo {
+  color: var(--rb-muted);
+  background: var(--rb-field);
+}
+
+.baseCoords {
+  font-family: var(--rb-font);
+  font-weight: 700;
+}
+
+/* ── Maanddoel ── */
+.goalGrid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 14px;
+  margin-top: 12px;
+  align-items: end;
+}
+
+.goalHint {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  padding-bottom: 12px;
+}
+
+.strong {
+  color: var(--rb-ink);
+  font-weight: 700;
+}
+
+/* ── Diensten-prijsveld ── */
+.priceBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 0 12px;
+  transition: border-color 0.15s ease;
+}
+
+.priceBox:focus-within {
+  border-color: var(--rb-blue);
+}
+
+.priceCur {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--rb-muted);
+}
+
+.priceInput {
+  width: 52px;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 9px 0;
+  text-align: right;
+}
+
+.priceUnit {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  white-space: nowrap;
+}
+
+.addBtn {
+  margin-top: 16px;
+}
+
+/* ── Beschikbaarheid ── */
+.dayName {
+  font-size: 14.5px;
+  font-weight: 700;
+  width: 110px;
+}
+
+.dayTime {
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--rb-field);
+  border-radius: var(--rb-r-field);
+  padding: 8px 14px;
+}
+
+.dayTimeOn {
+  color: var(--rb-ink);
+}
+
+.dayTimeOff {
+  color: var(--rb-muted);
+}
+
+/* Bewerkbare werktijden (begin + eind) per dag */
+.dayTimes {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeInput {
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.timeInput:focus {
+  border-color: var(--rb-blue);
+}
+
+.timeSep {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.note {
+  margin-top: 18px;
+  background: var(--rb-field);
+  border-radius: var(--rb-r-card-sm);
+  padding: 12px 16px;
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  line-height: 1.55;
+}
+
+/* ── Demo-indicatie (placeholder-panelen, nog niet aan echte data) ── */
+.demoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  padding: 3px 10px;
+}
+
+.demoNote {
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--rb-field);
+  border: 1px dashed var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+  padding: 11px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--rb-muted);
+}
+
+.demoNoteIcon {
+  color: var(--rb-blue);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.demoPill {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  padding: 4px 12px;
+}
+
+/* ── Kanalen ── */
+.channelRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.channelRow:last-child {
+  border-bottom: none;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotOk {
+  background: var(--rb-success);
+}
+
+.dotWarn {
+  background: var(--rb-warn-ink);
+}
+
+/* Grijs bolletje in demo-modus (geen echte gekoppeld-status). */
+.dotDemo {
+  background: rgba(33, 42, 69, 0.22);
+}
+
+/* Neutrale placeholder-kaart voor secties die nog demo zijn (bv. Abonnement). */
+.placeholderCard {
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+  padding: 28px 24px;
+  text-align: center;
+  color: var(--rb-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.channelPill {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+  border-radius: var(--rb-r-pill);
+  padding: 4px 12px;
+}
+
+/* ── Openingsbericht ── */
+.metaWarn {
+  margin-top: 16px;
+  padding: 11px 14px;
+  background: color-mix(in srgb, var(--rb-warn) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rb-warn) 30%, transparent);
+  border-radius: var(--rb-r-chip);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--rb-ink);
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.tab {
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 7px 15px;
+  cursor: pointer;
+  border: none;
+  background: var(--rb-field);
+  color: var(--rb-muted);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.tab:hover {
+  background: rgba(33, 42, 69, 0.06);
+}
+
+.tabActive,
+.tabActive:hover {
+  background: var(--rb-blue);
+  color: #fff;
+}
+
+.tplGrid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  margin-top: 14px;
+  align-items: start;
+}
+
+.fieldLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.textarea {
+  width: 100%;
+  margin-top: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 11px 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.textarea:focus {
+  border-color: var(--rb-blue);
+}
+
+.tplFoot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.charCount {
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+.resetLink {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--rb-font);
+}
+
+.previewLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  margin-bottom: 6px;
+}
+
+/* ── Reminders ── */
+.reminderCard {
+  margin-top: 14px;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+  overflow: hidden;
+}
+
+.reminderHead {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 16px;
+  background: var(--rb-field);
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.reminderBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.badge1 {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.badge2 {
+  background: color-mix(in srgb, var(--rb-warn) 16%, transparent);
+  color: var(--rb-warn-ink);
+}
+
+.badge3 {
+  background: color-mix(in srgb, var(--rb-danger) 10%, transparent);
+  color: var(--rb-danger);
+}
+
+.reminderLabel {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.reminderSub {
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+.reminderTiming {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.dayInput {
+  width: 44px;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: 9px;
+  padding: 7px 0;
+  text-align: center;
+  outline: none;
+}
+
+.dayInput:focus {
+  border-color: var(--rb-blue);
+}
+
+.reminderBody {
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  gap: 14px;
+  padding: 14px 16px;
+  align-items: start;
+}
+
+.reminderTextarea {
+  width: 100%;
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 10px 13px;
+  resize: vertical;
+  outline: none;
+}
+
+.reminderTextarea:focus {
+  border-color: var(--rb-blue);
+}
+
+/* ── Offertes ── */
+.geldigStepper {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 4px 6px;
+}
+
+.geldigBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--rb-muted);
+  transition: background 0.12s ease;
+}
+
+.geldigBtn:hover:not(:disabled) {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+.geldigBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.geldigValue {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 16px;
+  min-width: 92px;
+  text-align: center;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  border-top: 1px solid var(--rb-line);
+  padding-top: 16px;
+}
+
+/* ── Team ── */
+.memberAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.memberOwner {
+  background: var(--rb-blue);
+  color: #fff;
+}
+
+.memberStaff {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.rolePill {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 4px 12px;
+}
+
+.roleOwner {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.roleStaff {
+  background: var(--rb-field);
+  color: var(--rb-muted);
+}
+
+/* ── Abonnement ── */
+.planCard {
+  margin-top: 20px;
+  border-radius: 18px;
+  padding: 20px 24px;
+  background: linear-gradient(150deg, var(--rb-blue), var(--rb-blue-light));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.planKicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.planName {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.planFeatures {
+  font-size: 12.5px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.planRight {
+  text-align: right;
+}
+
+.planPrice {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.planPer {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.planBtn {
+  margin-top: 6px;
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: #fff;
+  padding: 7px 14px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+}
+
+.planBtn:hover {
+  filter: brightness(0.97);
+}
+
+.billGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.billTile {
+  background: var(--rb-field);
+  border-radius: var(--rb-r-card-sm);
+  padding: 12px 16px;
+}
+
+.billLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.billValue {
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.invoicesTitle {
+  margin-top: 18px;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.invoiceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 13.5px;
+}
+
+.invoiceRow:last-child {
+  border-bottom: none;
+}
+
+.invoiceMonth {
+  font-weight: 700;
+  flex: 1;
+}
+
+.invoiceAmount {
+  font-weight: 800;
+}
+
+.invoiceLink {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--rb-font);
+}
+
+/* ── Stub-placeholder (panels die stage B vult) ── */
+.stub {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 28px 24px;
+  background: var(--rb-field);
+  border: 1px dashed var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+}
+
+.stubIcon {
+  color: var(--rb-blue);
+}
+
+.stubTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.stubText {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  line-height: 1.55;
+  max-width: 52ch;
+}
+
+.stubMeta {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}

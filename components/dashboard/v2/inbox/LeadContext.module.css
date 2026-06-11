@@ -1,0 +1,127 @@
+.card {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.headBody {
+  min-width: 0;
+}
+
+.naam {
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plaats {
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+/* ── Dienst-/waarde-tegels ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tile {
+  background: var(--rb-field);
+  border-radius: var(--rb-r-chip);
+  padding: 9px 12px;
+  min-width: 0;
+}
+
+.tileLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.tileValue {
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Onderste actie-knoppen ── */
+.actions {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 11px 0;
+  border-radius: var(--rb-r-pill);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.primary {
+  color: #fff;
+  background: var(--rb-blue);
+  box-shadow: var(--rb-shadow-btn);
+}
+
+.primary:hover {
+  filter: brightness(1.05);
+}
+
+.secondary {
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.secondary:hover {
+  filter: brightness(0.98);
+}

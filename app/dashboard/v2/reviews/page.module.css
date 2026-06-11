@@ -1,0 +1,26 @@
+/* Reviews-pagina (rebrand v2). Twee kolommen naast elkaar: links de
+   score-kolom (340px, gemiddelde + verdeling + per-kanaal), rechts de
+   "Alle reviews"-lijst. Het vlak vult exact de hoogte van het app-frame
+   (geen pagina-scroll); de lijst scrollt intern via zijn eigen min-height:0,
+   net als de andere v2-pagina's. */
+.page {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: stretch;
+  height: 100%;
+  min-height: 0;
+}
+
+.page > * {
+  min-height: 0;
+}
+
+/* Onder 1100px: stapel de score-kolom boven de lijst; geen vaste hoogte
+   meer, zodat de pagina mee mag groeien op smalle schermen. */
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}

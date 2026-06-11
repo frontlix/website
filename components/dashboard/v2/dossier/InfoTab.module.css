@@ -1,0 +1,173 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 24px;
+}
+
+/* ── Contact ── */
+.contact {
+  margin-top: 2px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.contactIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rb-muted);
+  flex-shrink: 0;
+}
+
+.contactMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.contactLabel {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+}
+
+.contactValue {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.waChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+  border-radius: var(--rb-r-pill);
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+/* ── Dienst & werk ── */
+.dienst {
+  font-size: 14px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.werkChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-pill);
+  padding: 5px 11px;
+}
+
+.m2Chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border-radius: var(--rb-r-pill);
+  padding: 5px 11px;
+}
+
+.spaced {
+  margin-top: 16px;
+}
+
+/* ── Checklist ── */
+.checklist {
+  margin-top: 6px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12.5px;
+}
+
+.checkDot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: rgba(33, 42, 69, 0.08);
+  color: var(--rb-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkDone {
+  background: var(--rb-success);
+  color: #fff;
+}
+
+.checkText {
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.checkTextDone {
+  color: var(--rb-ink);
+}
+
+/* ── Bijzonderheden ── */
+.bijzonder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tegel {
+  background: var(--rb-field);
+  border-radius: var(--rb-r-field);
+  padding: 8px 12px;
+}
+
+.tegelLabel {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+}
+
+.tegelValue {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+/* ── Fotostrip ── */
+.fotoStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}

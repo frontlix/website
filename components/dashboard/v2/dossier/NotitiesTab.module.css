@@ -1,0 +1,71 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 10px 14px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--rb-muted);
+}
+
+.input:focus {
+  border-color: var(--rb-blue);
+}
+
+.addBtn {
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 0 18px;
+  border-radius: var(--rb-r-field);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+  flex-shrink: 0;
+}
+
+.addBtn:hover {
+  filter: brightness(1.05);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.note {
+  background: var(--rb-note);
+  border-radius: var(--rb-r-chip);
+  padding: 10px 14px;
+  margin-top: 10px;
+}
+
+.noteText {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.noteMeta {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+  margin-top: 4px;
+}

@@ -1,0 +1,151 @@
+/* Lokale review-accentkleuren die niet in de gedeelde rebrand-tokens
+   staan (gradient-eind van de score-header + verdelingsbalken), uit het
+   prototype. Hier eenmalig gedefinieerd i.p.v. verspreid als losse hex. */
+.column {
+  --rev-grad-end: #3d74ff;
+  --rev-bar-high: #f5a623;
+  --rev-bar-low: #a6adc7;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+
+/* ── Gemiddelde-score-header (blauwe gradient) ── */
+.scoreHeader {
+  border-radius: var(--rb-r-card);
+  padding: 26px 28px;
+  background: linear-gradient(150deg, var(--rb-blue), var(--rev-grad-end));
+  color: #fff;
+  box-shadow: 0 16px 36px rgba(26, 86, 255, 0.3);
+}
+
+.headerLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.78;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.scoreValue {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.scoreMeta {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+/* ── Verdeling + per-kanaal kaarten ── */
+.block {
+  padding: 20px 26px;
+}
+
+.kanaalBlock {
+  flex: 1;
+  min-height: 0;
+}
+
+.blockTitle {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Verdeling-balken */
+.bars {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barStar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--rb-muted);
+  width: 26px;
+}
+
+.barStarIcon {
+  fill: var(--rb-muted);
+}
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: rgba(33, 42, 69, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.barFillHigh {
+  background: var(--rev-bar-high);
+}
+
+.barFillLow {
+  background: var(--rev-bar-low);
+}
+
+.barCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  width: 20px;
+  text-align: right;
+}
+
+/* Per kanaal */
+.kanaalList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.kanaalRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.kanaalNaam {
+  font-weight: 700;
+  flex: 1;
+}
+
+.kanaalScore {
+  font-weight: 800;
+}
+
+.kanaalAantal {
+  color: var(--rb-muted);
+  font-size: 12px;
+}

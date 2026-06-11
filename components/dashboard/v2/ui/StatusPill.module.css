@@ -1,0 +1,31 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: var(--rb-r-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.hot {
+  background: var(--rb-status-hot-bg);
+  color: var(--rb-status-hot-ink);
+}
+
+.new {
+  background: var(--rb-status-new-bg);
+  color: var(--rb-status-new-ink);
+}
+
+.plan {
+  background: var(--rb-status-plan-bg);
+  color: var(--rb-status-plan-ink);
+}
+
+.sent {
+  background: var(--rb-status-sent-bg);
+  color: var(--rb-status-sent-ink);
+}

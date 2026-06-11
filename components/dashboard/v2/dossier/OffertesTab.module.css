@@ -1,0 +1,159 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.newLink {
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.newLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Offerte-rij ── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  margin-top: 10px;
+  border-radius: var(--rb-r-chip);
+  border: 1px solid var(--rb-line);
+  background: var(--rb-card);
+}
+
+.concept {
+  border: 1.5px solid var(--rb-blue);
+  /* lichte translucent blue-soft, token-gebaseerd */
+  background: color-mix(in srgb, var(--rb-blue-soft) 40%, #fff);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.concept:hover {
+  background: color-mix(in srgb, var(--rb-blue-soft) 60%, #fff);
+}
+
+.docIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rb-r-field);
+  background: var(--rb-field-2);
+  color: var(--rb-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.docIconConcept {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.rowMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nr {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 2px 8px;
+}
+
+.tagConcept {
+  color: var(--rb-blue);
+  background: #fff;
+}
+
+.tagDone {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.rowSub {
+  font-size: 11px;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+.totaal {
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.openBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  border-radius: var(--rb-r-pill);
+  padding: 6px 11px 6px 13px;
+  flex-shrink: 0;
+}
+
+/* ── Regels-preview ── */
+.spaced {
+  margin-top: 16px;
+}
+
+.regels {
+  margin-top: 6px;
+}
+
+.regel {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 12.5px;
+}
+
+.calc {
+  color: var(--rb-muted);
+  font-size: 11px;
+}
+
+.bedrag {
+  font-weight: 700;
+}
+
+.totaalRow {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 9px;
+  font-size: 13.5px;
+  font-weight: 800;
+}

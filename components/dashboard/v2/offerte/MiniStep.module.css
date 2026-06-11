@@ -1,0 +1,19 @@
+.btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  color: var(--rb-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.12s ease;
+}
+
+.btn:hover {
+  background: rgba(33, 42, 69, 0.04);
+}

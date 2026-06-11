@@ -1,0 +1,246 @@
+.shell {
+  position: relative;
+  /* App-frame: vaste viewporthoogte; de content-kolom is de scroll-container
+     (zie .content). Zo voegt niets buiten de content document-scroll toe. */
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Aurora-wash (3 radiale gradients achter de content) ──
+   De wrapper knipt de negatief-gepositioneerde gradients af, zodat ze geen
+   extra scrollhoogte/-breedte aan de pagina toevoegen. */
+.auroraWrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.aurora {
+  position: absolute;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.aurora1 {
+  width: 900px;
+  height: 600px;
+  left: -180px;
+  top: -220px;
+  background: var(--rb-aurora-1);
+}
+
+.aurora2 {
+  width: 800px;
+  height: 560px;
+  right: -160px;
+  top: -120px;
+  background: var(--rb-aurora-2);
+}
+
+.aurora3 {
+  width: 700px;
+  height: 480px;
+  left: 380px;
+  bottom: -260px;
+  background: var(--rb-aurora-3);
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  /* Benut brede schermen; cap voorkomt extreem uitrekken op ultrawide. */
+  max-width: 1840px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 40px;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.brandName {
+  display: block;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.brandTenant {
+  display: block;
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+/* ── Glas-pill-navigatie ── */
+.nav {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--rb-r-pill);
+  padding: 6px;
+  margin: 0 auto;
+  box-shadow: var(--rb-shadow-nav);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--rb-r-pill);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.navItem:hover {
+  color: var(--rb-ink);
+}
+
+.navItemActive,
+.navItemActive:hover {
+  background: var(--rb-blue);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(26, 86, 255, 0.32);
+}
+
+.navBadge {
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  border-radius: var(--rb-r-pill);
+  padding: 1px 7px;
+}
+
+.navBadgeActive {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* ── Rechts: nieuwe offerte + avatar ── */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Demo-indicator: alleen zichtbaar zonder sessie (dev-preview). */
+.demoPill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-warn-ink);
+  background: var(--rb-warn-soft);
+  padding: 7px 14px;
+  border-radius: var(--rb-r-pill);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.demoPill:hover {
+  filter: brightness(0.97);
+}
+
+.newBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 11px 18px 11px 16px;
+  border-radius: var(--rb-r-pill);
+  box-shadow: 0 6px 18px rgba(26, 86, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+}
+
+.newBtn:hover {
+  filter: brightness(1.05);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--rb-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease;
+}
+
+.avatarActive {
+  border: 2px solid var(--rb-blue);
+}
+
+/* ── Content ── */
+.content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 40px 24px;
+}
+
+@media (max-width: 1100px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+}

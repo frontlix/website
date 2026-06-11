@@ -1,0 +1,16 @@
+/* De shell-content geeft al padding (4px 40px 48px). De pagina vult de
+   resterende hoogte zodat het weekgrid net als in het prototype meeschaalt. */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Het weekgrid staat full-width onder de kop en vult de resterende hoogte.
+   De kolommen scrollen intern (in WeekGrid), de app-frame zelf scrollt niet. */
+.grid {
+  flex: 1;
+  min-height: 0;
+  margin-top: 18px;
+}

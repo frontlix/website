@@ -1,0 +1,23 @@
+/* Lokale review-accentkleuren: niet in de gedeelde rebrand-tokens, dus
+   hier gescoped gedefinieerd (amber ster + gedimde lege ster uit het
+   prototype). Geen hardcoded hex verspreid door de markup. */
+.row {
+  --rev-star: #f5a623;
+  --rev-star-empty: rgba(33, 42, 69, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.full {
+  fill: var(--rev-star);
+}
+
+.empty {
+  fill: var(--rev-star-empty);
+}
+
+.emptyDark {
+  fill: rgba(255, 255, 255, 0.35);
+}

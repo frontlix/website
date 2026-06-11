@@ -1,0 +1,239 @@
+.rail {
+  border-left: 1px solid var(--rb-line);
+  background: #fff;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.marge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-pill);
+  padding: 3px 10px;
+}
+
+.scroll {
+  margin-top: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ── Klantkaart ── */
+.klant {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  background: var(--rb-field);
+  border-radius: var(--rb-r-chip);
+  margin-bottom: 8px;
+}
+
+.klantAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.klantText {
+  min-width: 0;
+}
+
+.klantNaam {
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.klantAdres {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.geenKlant {
+  border: 1.5px dashed var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 12px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--rb-muted);
+  margin-bottom: 8px;
+}
+
+/* ── Regels ── */
+.regel {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 12px;
+  align-items: center;
+}
+
+.regelText {
+  min-width: 0;
+}
+
+.regelNaam {
+  font-weight: 700;
+}
+
+.regelMeta {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+}
+
+.regelBedrag {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.toeslag {
+  color: var(--rb-blue);
+}
+
+.korting {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--rb-mint-ink);
+  align-items: center;
+}
+
+/* ── Voet ── */
+.foot {
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.btwRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+.totaalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 2px solid var(--rb-ink);
+}
+
+.totaalLabel {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.totaalBedrag {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.valid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.validOk {
+  color: var(--rb-mint-ink);
+}
+
+.validWarn {
+  color: #b5832a;
+}
+
+.knoppen {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ghostBtn,
+.primBtn {
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 0;
+  border-radius: var(--rb-r-chip);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.ghostBtn {
+  color: var(--rb-muted);
+  background: var(--rb-field-2);
+  flex: 1;
+}
+
+.ghostBtn:hover {
+  filter: brightness(0.97);
+}
+
+.primBtn {
+  color: #fff;
+  background: var(--rb-blue);
+  box-shadow: var(--rb-shadow-btn);
+  flex: 2;
+}
+
+.primBtn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.primBtn:disabled {
+  background: #c3cadc;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* "›" volgende-pijl: een ChevronLeft gespiegeld. */
+.flip {
+  transform: scaleX(-1);
+}

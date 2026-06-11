@@ -1,0 +1,50 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+.naam {
+  font-weight: 700;
+}
+
+.omzet {
+  font-weight: 800;
+}
+
+.pct {
+  color: var(--rb-muted);
+  font-weight: 600;
+}
+
+.track {
+  height: 9px;
+  background: rgba(33, 42, 69, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 5px;
+  background: rgba(26, 86, 255, 0.22);
+}
+
+.barLead {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--rb-blue), var(--rb-cyan));
+}

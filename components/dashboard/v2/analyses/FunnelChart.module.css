@@ -1,0 +1,49 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.stap {
+  font-weight: 700;
+}
+
+.n {
+  font-weight: 800;
+}
+
+.pct {
+  color: var(--rb-muted);
+  font-weight: 600;
+}
+
+.track {
+  height: 10px;
+  background: rgba(33, 42, 69, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 5px;
+}
+
+.barSuccess {
+  background: var(--rb-success);
+}
+
+.barCyan {
+  background: var(--rb-cyan);
+}
+
+.barBlue {
+  background: var(--rb-blue);
+}

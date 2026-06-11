@@ -101,7 +101,14 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isPublic = PUBLIC_DASHBOARD_PATHS.has(pathname)
+  // Rebrand v2 preview (/v2/*): in dev zonder login bereikbaar zodat de
+  // nieuwe look snel te vergelijken is (draait op demo-data, geen PII). In
+  // productie blijft 'ie achter auth. Verwijderen zodra v2 het bestaande
+  // dashboard vervangt.
+  const isV2Preview = pathname === '/v2' || pathname.startsWith('/v2/')
+  const isPublic =
+    PUBLIC_DASHBOARD_PATHS.has(pathname) ||
+    (isV2Preview && process.env.NODE_ENV !== 'production')
 
   // Reeds ingelogd + op login/signup pagina → redirect naar het Overzicht
   if (user && (pathname === '/login' || pathname === '/signup')) {

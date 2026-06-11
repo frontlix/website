@@ -1,0 +1,230 @@
+/* Google Agenda-koppelpaneel (Integraties). v2-look, var(--rb-*)-tokens,
+   afgeleid van de gedeelde panels.module.css zodat alles binnen het
+   instellingen-gebied consistent oogt. */
+
+/* ── Kop met icoon + status-pill ── */
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.headIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.headBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.headTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.headTitle {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.headSub {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 3px;
+  line-height: 1.5;
+  max-width: 56ch;
+}
+
+/* ── Body ── */
+.body {
+  margin-top: 20px;
+  border-top: 1px solid var(--rb-line);
+  padding-top: 18px;
+}
+
+/* Gekoppeld account-regel */
+.accountRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--rb-field);
+  border-radius: var(--rb-r-card-sm);
+}
+
+.accountLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.accountValue {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  margin-left: auto;
+  word-break: break-all;
+}
+
+/* ── Agenda-kiezer ── */
+.picker {
+  margin-top: 18px;
+}
+
+.pickerLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.select {
+  flex: 1;
+  min-width: 200px;
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rb-ink);
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 10px 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.select:focus {
+  border-color: var(--rb-blue);
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pickerHint {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 8px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border-radius: var(--rb-r-chip);
+}
+
+.statusOk {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.statusErr {
+  color: var(--rb-danger);
+  background: color-mix(in srgb, var(--rb-danger) 10%, transparent);
+}
+
+/* ── Actie-knoppen (anchors + buttons) ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.intro {
+  font-size: 13px;
+  color: var(--rb-muted);
+  line-height: 1.55;
+  max-width: 56ch;
+}
+
+/* Anchor-knoppen die de v2 Button-look spiegelen (OAuth-redirect kan geen
+   <button> zijn, het is een echte navigatie naar /authorize). */
+.btnLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 11px 20px;
+  text-decoration: none;
+  transition:
+    filter 0.15s ease,
+    background 0.15s ease;
+}
+
+.btnPrimary {
+  background: var(--rb-blue);
+  color: #fff;
+  box-shadow: var(--rb-shadow-btn-strong);
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.05);
+}
+
+.btnSecondary {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.btnSecondary:hover {
+  filter: brightness(0.98);
+}
+
+/* Live-only-melding: koppelen werkt alleen op de productie-site (OAuth-callback
+   is daar geregistreerd), zelfde gedrag als v1 IntegratiesSection. */
+.liveNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 11px 14px;
+  background: color-mix(in srgb, var(--rb-warn) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rb-warn) 30%, transparent);
+  border-radius: var(--rb-r-chip);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--rb-ink);
+}
+
+.liveNoteIcon {
+  color: var(--rb-warn-ink);
+  flex-shrink: 0;
+  margin-top: 1px;
+}

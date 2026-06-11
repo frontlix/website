@@ -1,0 +1,49 @@
+.wrap {
+  position: relative;
+}
+
+.svg {
+  display: block;
+}
+
+.axisText {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--rb-muted);
+  font-family: var(--rb-font);
+}
+
+.axisTextActive {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--rb-blue);
+  font-family: var(--rb-font);
+}
+
+.dot {
+  cursor: pointer;
+  transition: r 0.12s ease;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: var(--rb-ink);
+  color: #fff;
+  border-radius: var(--rb-r-chip);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(33, 42, 69, 0.25);
+  pointer-events: none;
+}
+
+.tipOmzet {
+  color: var(--rb-blue-soft);
+}
+
+.tipLeads {
+  color: var(--rb-cyan-bright);
+}

@@ -1,0 +1,108 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Frontlix Dashboard — REBRAND v2 design tokens ("Concept 5 + aurora").
+   Bron: design-handoff `CShell.jsx` (object CC) + README design-tokens.
+
+   Alle tokens zijn gescoped onder `.rbRoot` zodat ze NIET lekken naar de
+   marketingsite of het bestaande dashboard. De v2-shell zet `.rbRoot` op
+   z'n root-element; elke v2-module gebruikt uitsluitend `var(--rb-*)`.
+   ───────────────────────────────────────────────────────────────────── */
+
+.rbRoot {
+  /* ── Kleuren ── */
+  --rb-bg: #eef3fc; /* paginakleur (aurora eroverheen) */
+  --rb-card: #ffffff; /* kaarten */
+  --rb-ink: #212a45; /* primaire tekst */
+  --rb-muted: #7a83a6; /* secundaire tekst */
+  --rb-blue: #1a56ff; /* primair accent / CTA */
+  --rb-blue-soft: #e4ebff; /* accent-achtergrond (pills, actief) */
+  --rb-blue-ink: #1a56ff; /* tekst op blue-soft */
+  --rb-cyan: #00b8e6; /* logo/Surface */
+  --rb-cyan-bright: #00cfff; /* gradient-eind */
+  --rb-mint: #dff5ea; /* succes-pill achtergrond */
+  --rb-mint-ink: #1e8a5e; /* succes-pill tekst */
+  --rb-success: #2bc48a; /* checkmarks, "verstuurd" */
+  --rb-note: #fff8e6; /* notitie-kaartjes (geel) */
+  --rb-warn-ink: #b07408; /* amber "let op"-tekst (waarschuwingen, validatie) */
+  --rb-warn-soft: rgba(245, 166, 35, 0.14); /* amber waarschuwings-achtergrond */
+  --rb-line: rgba(33, 42, 69, 0.07); /* hairline borders/dividers */
+  --rb-field: #f8f9fd; /* veld-/tegel-achtergrond (bijzonderheden, info) */
+  --rb-field-2: #f1f3f9; /* segmented-container achtergrond */
+
+  /* WhatsApp-gesprek */
+  --rb-wa-bg: #ede7de; /* chat-achtergrond */
+  --rb-wa-in: #ffffff; /* inkomende bubbel (klant) */
+  --rb-wa-out: #d9f4c7; /* uitgaande bubbel (Surface/jij) */
+
+  /* Status-pills (zie ccStatusPill) */
+  --rb-status-hot-bg: #e4ebff;
+  --rb-status-hot-ink: #1a56ff;
+  --rb-status-new-bg: #dff5ea;
+  --rb-status-new-ink: #1e8a5e;
+  --rb-status-plan-bg: rgba(0, 184, 230, 0.12);
+  --rb-status-plan-ink: #0b7fa8;
+  --rb-status-sent-bg: rgba(33, 42, 69, 0.06);
+  --rb-status-sent-ink: #7a83a6;
+
+  /* ── Typografie ── */
+  --rb-font: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+
+  /* ── Radii ── */
+  --rb-r-card: 24px;
+  --rb-r-card-sm: 16px;
+  --rb-r-field: 10px;
+  --rb-r-chip: 12px;
+  --rb-r-chip-sm: 8px;
+  --rb-r-pill: 9999px;
+
+  /* ── Schaduwen ── */
+  --rb-shadow-card: 0 2px 16px rgba(33, 42, 69, 0.06);
+  --rb-shadow-btn: 0 5px 14px rgba(26, 86, 255, 0.3);
+  --rb-shadow-btn-strong: 0 6px 18px rgba(26, 86, 255, 0.3);
+  --rb-shadow-modal: 0 40px 100px rgba(14, 21, 38, 0.4);
+  --rb-shadow-dropdown: 0 10px 28px rgba(33, 42, 69, 0.1);
+  --rb-shadow-nav: 0 2px 12px rgba(33, 42, 69, 0.07);
+  --rb-shadow-knob: 0 1px 4px rgba(33, 42, 69, 0.25);
+
+  /* Aurora-wash (radiale gradients, zie Shell.module.css .aurora*) */
+  --rb-aurora-1: radial-gradient(closest-side, rgba(26, 86, 255, 0.2), transparent);
+  --rb-aurora-2: radial-gradient(closest-side, rgba(0, 207, 255, 0.18), transparent);
+  --rb-aurora-3: radial-gradient(closest-side, rgba(26, 86, 255, 0.1), transparent);
+}
+
+/* Basis-reset binnen de v2-tree (raakt niets erbuiten). */
+.rbRoot,
+.rbRoot * {
+  box-sizing: border-box;
+}
+
+.rbRoot {
+  background: var(--rb-bg);
+  color: var(--rb-ink);
+  font-family: var(--rb-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Gedeelde tekst-helpers (mogen overal in v2 gebruikt worden). */
+.rbRoot .rb-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+/* Verberg de browser-scrollbars in de hele v2-tree; scrollen blijft werken.
+   Geldt voor de hoofd-content-kolom en alle interne scrollers (Instellingen,
+   inbox-kolommen, pipeline, enz.). */
+.rbRoot::-webkit-scrollbar,
+.rbRoot *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.rbRoot,
+.rbRoot * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* oude Edge/IE */
+}

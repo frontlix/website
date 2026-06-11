@@ -1,0 +1,172 @@
+.card {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  padding: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 22px 16px;
+  border-bottom: 1px solid var(--rb-line);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-pill);
+  padding: 3px 11px;
+  white-space: nowrap;
+}
+
+/* ── Lijst ── */
+.list {
+  margin-top: 6px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 13px 22px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  transition: background 0.12s ease;
+}
+
+.row:hover {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+.rowActive,
+.rowActive:hover {
+  background: var(--rb-blue-soft);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.avatarActive {
+  background: #fff;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.topLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.naam {
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.naamUnread {
+  font-weight: 800;
+}
+
+.tijd {
+  font-size: 11px;
+  color: var(--rb-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bottomLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview {
+  font-size: 12px;
+  color: var(--rb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  min-width: 0;
+}
+
+.previewUnread {
+  font-weight: 600;
+  color: var(--rb-ink);
+}
+
+.unread {
+  font-size: 10.5px;
+  font-weight: 800;
+  background: var(--rb-blue);
+  color: #fff;
+  border-radius: var(--rb-r-pill);
+  padding: 1px 7px;
+  flex-shrink: 0;
+}
+
+/* ── Lege staat ── */
+.empty {
+  padding: 32px 22px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.emptySub {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--rb-muted);
+  margin-top: 4px;
+}

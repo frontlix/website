@@ -1,0 +1,277 @@
+.card {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rb-line);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.headMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.naam {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--rb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.surfaceToggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-pill);
+  padding: 7px 8px 7px 14px;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.surfaceToggleOff {
+  background: var(--rb-field-2);
+}
+
+.surfaceLabel {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--rb-blue);
+  white-space: nowrap;
+}
+
+.surfaceLabelOff {
+  color: var(--rb-muted);
+}
+
+/* ── Berichtenvlak (WhatsApp-look, gelijk aan het dossier) ── */
+.stream {
+  flex: 1;
+  min-height: 0;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--rb-wa-bg);
+}
+
+.bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  align-self: flex-start;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rowMine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.sender {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-mint-ink);
+  margin-bottom: 3px;
+  padding: 0 4px;
+}
+
+.bubble {
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 10px 15px;
+  box-shadow: 0 1px 6px rgba(33, 42, 69, 0.06);
+  word-break: break-word;
+}
+
+.bubbleIn {
+  border-radius: 18px 18px 18px 6px;
+  background: var(--rb-wa-in);
+  color: var(--rb-ink);
+}
+
+.bubbleMine {
+  border-radius: 18px 18px 6px 18px;
+  background: var(--rb-wa-out);
+  color: var(--rb-ink);
+}
+
+.meta {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+  margin-top: 3px;
+  padding: 0 4px;
+}
+
+/* ── Surface-suggestie-strip ── */
+.suggestie {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-card-sm);
+  padding: 11px 16px;
+  flex-shrink: 0;
+}
+
+.suggestieLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-blue);
+  flex-shrink: 0;
+}
+
+.suggestieText {
+  font-size: 12.5px;
+  flex: 1;
+  line-height: 1.45;
+  color: var(--rb-ink);
+}
+
+.useBtn {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 7px 13px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--rb-shadow-btn);
+  transition: filter 0.15s ease;
+}
+
+.useBtn:hover {
+  filter: brightness(1.05);
+}
+
+/* ── "Surface staat uit"-strip ── */
+.paused {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-card-sm);
+  padding: 11px 16px;
+  flex-shrink: 0;
+}
+
+.pausedText {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  flex: 1;
+  line-height: 1.45;
+}
+
+.zetAanBtn {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  padding: 7px 13px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: filter 0.15s ease;
+}
+
+.zetAanBtn:hover {
+  filter: brightness(0.98);
+}
+
+/* ── Invoer ── */
+.composer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--rb-line);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  font-size: 13px;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border-radius: var(--rb-r-pill);
+  padding: 11px 18px;
+  border: none;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--rb-muted);
+}
+
+.sendBtn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--rb-blue);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--rb-shadow-btn);
+  transition: filter 0.15s ease;
+}
+
+.sendBtn:hover {
+  filter: brightness(1.05);
+}

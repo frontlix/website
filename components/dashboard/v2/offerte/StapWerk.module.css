@@ -1,0 +1,313 @@
+.grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 14px;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--rb-r-card-sm);
+  border: 1px solid var(--rb-line);
+  padding: 15px 20px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Diensten ── */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 8px 16px;
+  background: var(--rb-field);
+  color: var(--rb-muted);
+  border: 1px solid var(--rb-line);
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+.chipOn,
+.chipOn:hover {
+  background: var(--rb-blue);
+  color: #fff;
+  border-color: transparent;
+}
+
+.chipVast {
+  cursor: default;
+}
+
+.dienstRegel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 8px 14px;
+  font-size: 12.5px;
+}
+
+.dienstNaam {
+  font-weight: 700;
+  flex: 1;
+}
+
+.m2Box {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: 9px;
+  padding: 4px 8px;
+}
+
+.unit {
+  color: var(--rb-muted);
+  font-size: 10.5px;
+}
+
+.dienstMeta {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+}
+
+.dienstBedrag {
+  font-weight: 800;
+  min-width: 64px;
+  text-align: right;
+}
+
+/* ── Oppervlakte ── */
+.opp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.oppVeld {
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 9px 13px;
+  width: 84px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.oppUnit {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-muted);
+}
+
+.note {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+  margin-top: 8px;
+}
+
+.noteSmall {
+  font-size: 11px;
+  color: var(--rb-muted);
+  margin-top: 9px;
+}
+
+/* ── Voegzand ── */
+.autoNote {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rb-blue);
+}
+
+.zandRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+  font-size: 13px;
+}
+
+.dim {
+  opacity: 0.65;
+}
+
+.zandNaam {
+  font-weight: 700;
+  width: 112px;
+  flex-shrink: 0;
+}
+
+.prijsBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.euro {
+  color: var(--rb-muted);
+}
+
+.prijsInput {
+  width: 34px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  text-align: right;
+}
+
+.perUnit {
+  color: var(--rb-muted);
+  font-size: 10.5px;
+}
+
+.zakBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--rb-field);
+  border-radius: 9px;
+  padding: 4px 8px;
+  margin-left: auto;
+}
+
+.zakVal {
+  min-width: 20px;
+  text-align: center;
+}
+
+.zandBedrag {
+  font-weight: 800;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* ── Conditie ── */
+.conditie {
+  display: flex;
+  gap: 28px;
+  margin-top: 8px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.condLabel {
+  font-size: 11px;
+  color: var(--rb-muted);
+  font-weight: 600;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 3px;
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-pill);
+  padding: 3px;
+  margin-top: 4px;
+}
+
+.seg {
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 5px 13px;
+  background: transparent;
+  color: var(--rb-muted);
+  border: none;
+  cursor: pointer;
+}
+
+.segSm {
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 5px 13px;
+  background: transparent;
+  color: var(--rb-muted);
+  border: none;
+  cursor: pointer;
+}
+
+.segActive {
+  background: #fff;
+  color: var(--rb-ink);
+  box-shadow: 0 1px 4px rgba(33, 42, 69, 0.12);
+}
+
+.afstand {
+  margin-left: auto;
+  text-align: right;
+}
+
+.afstandVal {
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 7px;
+}
+
+.afstandAuto {
+  font-size: 10.5px;
+  color: var(--rb-mint-ink);
+  font-weight: 700;
+}
+
+.korstmosNote {
+  font-size: 11.5px;
+  color: var(--rb-blue);
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ── Planten afschermen ── */
+.planten {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 13px;
+}
+
+.plantNaam {
+  font-weight: 700;
+  flex: 1;
+}

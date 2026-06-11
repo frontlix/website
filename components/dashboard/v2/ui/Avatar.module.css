@@ -1,0 +1,20 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.soft {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.gradient {
+  background: linear-gradient(135deg, var(--rb-blue), var(--rb-cyan-bright));
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(26, 86, 255, 0.3);
+}
