@@ -1,0 +1,31 @@
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.pill {
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--rb-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.pill:hover {
+  color: var(--rb-ink);
+}
+
+.pillActive {
+  background: var(--rb-blue);
+  color: #fff;
+  box-shadow: var(--rb-shadow-btn);
+}
+
+.pillActive:hover {
+  color: #fff;
+}

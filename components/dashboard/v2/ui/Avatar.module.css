@@ -1,0 +1,55 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Vaste blauw-zachte chip (variant="soft"). */
+.soft {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+}
+
+.gradient {
+  background: linear-gradient(135deg, var(--rb-blue), var(--rb-cyan-bright));
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(26, 86, 255, 0.3);
+}
+
+/* Per-persoon tinten (gekozen op naam-hash). */
+.tint1 {
+  background: var(--rb-avatar-1-bg);
+  color: var(--rb-avatar-1-ink);
+}
+.tint2 {
+  background: var(--rb-avatar-2-bg);
+  color: var(--rb-avatar-2-ink);
+}
+.tint3 {
+  background: var(--rb-avatar-3-bg);
+  color: var(--rb-avatar-3-ink);
+}
+.tint4 {
+  background: var(--rb-avatar-4-bg);
+  color: var(--rb-avatar-4-ink);
+}
+.tint5 {
+  background: var(--rb-avatar-5-bg);
+  color: var(--rb-avatar-5-ink);
+}
+.tint6 {
+  background: var(--rb-avatar-6-bg);
+  color: var(--rb-avatar-6-ink);
+}
+.tint7 {
+  background: var(--rb-avatar-7-bg);
+  color: var(--rb-avatar-7-ink);
+}
+.tint8 {
+  background: var(--rb-avatar-8-bg);
+  color: var(--rb-avatar-8-ink);
+}

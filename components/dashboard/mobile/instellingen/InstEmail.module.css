@@ -1,0 +1,124 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.statusRij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.statusLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.pill {
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.pillOk {
+  color: #15803d;
+  background: #f0fdf4;
+}
+.pillErr {
+  color: #b42318;
+  background: #fef3f2;
+}
+.pillNeutraal {
+  color: var(--muted, #6b7280);
+  background: var(--field-2, #f1f4f9);
+}
+
+.gekoppeldAls {
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--ink, #1a2030);
+}
+
+.intro {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted, #6b7280);
+}
+
+.velden {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.tweeKolom {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 10px;
+}
+
+.veld {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.veldLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink, #1a2030);
+}
+.veldHint {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted, #8a93a6);
+}
+
+.input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--line, #e2e6ee);
+  border-radius: 11px;
+  padding: 11px 12px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--ink, #1a2030);
+  background: #fff;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent, #1a56ff);
+}
+
+.caveat {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.bannerOk {
+  color: #15803d;
+  background: #f0fdf4;
+}
+.bannerErr {
+  color: #b42318;
+  background: #fef3f2;
+}

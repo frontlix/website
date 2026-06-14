@@ -1,0 +1,62 @@
+.page {
+  display: grid;
+  grid-template-columns: 330px 1fr 330px;
+  gap: 18px;
+  /* Vul exact het scrollbare content-vlak van het app-frame; de drie
+     kolommen scrollen elk intern (zie hun min-height:0). */
+  height: 100%;
+  min-height: 540px;
+}
+
+/* Onzichtbare houder voor de realtime-subscription-componenten. display:none
+   houdt ze gemount (useEffect blijft draaien) maar buiten de grid-layout. */
+.realtime {
+  display: none;
+}
+
+/* Lege-staat-kaarten voor de midden- en rechterkolom wanneer er nog geen
+   gesprek gekozen is. Zelfde kaart-look als de v2-componenten. */
+.empty {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 32px 28px;
+  min-height: 0;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rb-ink, #212a45);
+}
+
+.emptySub {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rb-muted);
+  max-width: 240px;
+}
+
+/* Foutmelding bij versturen (bv. WhatsApp 24u-venster gesloten). */
+.sendError {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: 420px;
+  padding: 10px 16px;
+  border-radius: var(--rb-r-field);
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-dropdown);
+  border: 1px solid var(--rb-line);
+  font-size: 13px;
+  color: var(--rb-ink, #212a45);
+}

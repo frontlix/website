@@ -18,6 +18,9 @@ import {
   Mail,
   Smartphone,
   Search,
+  Clock,
+  Lock,
+  Shield,
   type LucideIcon,
 } from 'lucide-react'
 import type { InstSection } from './instellingen-mock'
@@ -34,6 +37,10 @@ export const INST_LUCIDE: Record<InstSection['icon'], LucideIcon> = {
   spark: Sparkles,
   users: Users,
   calendar: Calendar,
+  mail: Mail,
+  clock: Clock,
+  lock: Lock,
+  shield: Shield,
 }
 
 // Re-exported for consumers that need the full icon set

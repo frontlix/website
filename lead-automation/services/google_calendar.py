@@ -9,7 +9,7 @@ and used when creating the actual event.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from google.oauth2.credentials import Credentials
@@ -21,16 +21,56 @@ TIMEZONE = "Europe/Amsterdam"
 SLOT_DURATION_MIN = 30
 TZ = ZoneInfo(TIMEZONE)
 
-# day-of-week (0=mon ... 6=sun) → start/end hour in local time
-AVAILABILITY: dict[int, tuple[int, int] | None] = {
-    0: (7, 18),  # mon
-    1: (7, 18),  # tue
-    2: (7, 18),  # wed
-    3: (7, 18),  # thu
-    4: (7, 18),  # fri
-    5: (7, 18),  # sat
-    6: (7, 18),  # sun
-}
+# Standaard-werkrooster (fallback): 7 dagen/week, 07:00-18:00 lokaal. Wordt
+# overschreven door tenant_settings.beschikbaarheid als die is ingesteld.
+_DEFAULT_WINDOW: tuple[time, time] = (time(7, 0), time(18, 0))
+DEFAULT_AVAILABILITY: dict[int, tuple[time, time] | None] = {d: _DEFAULT_WINDOW for d in range(7)}
+
+
+def _parse_hhmm(value: str) -> time | None:
+    try:
+        hh, mm = value.split(":")
+        return time(int(hh), int(mm))
+    except Exception:
+        return None
+
+
+def _load_availability() -> dict[int, tuple[time, time] | None]:
+    """Lees de ingestelde beschikbaarheid uit tenant_settings.beschikbaarheid.
+
+    Vorm: array van 7 (Ma..Zo, index 0=ma ... 6=zo): [{aan, van: "HH:MM",
+    tot: "HH:MM"}]. Een dag met aan=False is dicht (None). Valt bij
+    afwezigheid/ongeldige data terug op DEFAULT_AVAILABILITY (het oude gedrag),
+    zodat de bot blijft werken als de kolom (nog) leeg is.
+    """
+    try:
+        from services.supabase import get_supabase
+
+        res = (
+            get_supabase()
+            .table("tenant_settings")
+            .select("beschikbaarheid")
+            .limit(1)
+            .single()
+            .execute()
+        )
+        dagen = (res.data or {}).get("beschikbaarheid")
+        if not isinstance(dagen, list) or len(dagen) != 7:
+            return DEFAULT_AVAILABILITY
+
+        out: dict[int, tuple[time, time] | None] = {}
+        for i in range(7):
+            d = dagen[i] if isinstance(dagen[i], dict) else {}
+            if not d.get("aan"):
+                out[i] = None
+                continue
+            van = _parse_hhmm(str(d.get("van", "")))
+            tot = _parse_hhmm(str(d.get("tot", "")))
+            out[i] = (van, tot) if van and tot and tot > van else _DEFAULT_WINDOW
+        return out
+    except Exception as e:  # nooit de scheduling laten crashen op een DB-hiccup
+        print(f"[calendar] kon beschikbaarheid niet laden, val terug op default: {e}")
+        return DEFAULT_AVAILABILITY
 
 
 def _get_calendar_service():
@@ -82,19 +122,26 @@ async def get_free_slots(
     now = datetime.now(timezone.utc)
     earliest = now + timedelta(hours=1)  # nothing in the next hour
 
+    # Werkdagen/-tijden uit de instellingen (tenant_settings.beschikbaarheid),
+    # of het standaard 7-dagen-07:00-18:00-rooster als die leeg is.
+    availability = _load_availability()
+
     # Iterate day by day in NL timezone
     cursor_local = range_start.astimezone(TZ).replace(hour=0, minute=0, second=0, microsecond=0)
     end_local = range_end.astimezone(TZ).replace(hour=0, minute=0, second=0, microsecond=0)
 
     while cursor_local <= end_local and len(slots) < max_slots:
         dow = cursor_local.weekday()  # 0=mon
-        window = AVAILABILITY.get(dow)
+        window = availability.get(dow)
 
         if window:
-            start_hour, end_hour = window
-            for hour in range(start_hour, end_hour):
+            van_t, tot_t = window
+            for hour in range(van_t.hour, tot_t.hour + 1):
                 for minute in range(0, 60, SLOT_DURATION_MIN):
                     local_dt = cursor_local.replace(hour=hour, minute=minute)
+                    # Respecteer de exacte begin-/eindtijd van de dag.
+                    if local_dt.time() < van_t or local_dt.time() >= tot_t:
+                        continue
                     start_utc = local_dt.astimezone(timezone.utc)
                     end_utc = start_utc + timedelta(minutes=SLOT_DURATION_MIN)
 

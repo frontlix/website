@@ -31,12 +31,15 @@ import {
   FileText,
   MessageCircle,
   Clock,
+  Download,
 } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
 import { formatEuro } from '@/lib/dashboard/format'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
+import { OffertePdfDocument } from '@/components/dashboard/offerte/OffertePdf'
+import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
 import { OStepper, ONumField, OSwitch, OClientNote, OAddrInput } from './OfferteEditAtoms'
 import { OffertePdfPreview, type OffertePdfData } from './OffertePdfPreview'
 import { OfferteHistorie } from './OfferteHistorie'
@@ -274,6 +277,7 @@ export function MobileOfferteEditor({
   // ─── Overlays ───
   const [pdfOpen, setPdfOpen] = useState(false)
   const [histOpen, setHistOpen] = useState(false)
+  const [pdfBusy, setPdfBusy] = useState(false)
 
   const flushPending = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -351,6 +355,40 @@ export function MobileOfferteEditor({
     btwBedrag: totals.btw,
     totaalIncl: totals.total + totals.btw,
     toelichting: voegzandNote || undefined,
+  }
+
+  // Download de offerte als echte PDF: zelfde @react-pdf-document als de
+  // desktop-wizard (OffertePdfDocument), client-side gegenereerd. Aflevering via
+  // deliverPdfBlob, op de telefoon het deel-/bewaar-vel (iOS negeert
+  // <a download> voor blob-URLs), op desktop een gewone download.
+  const handleDownloadPdf = async () => {
+    if (pdfBusy) return
+    setPdfBusy(true)
+    try {
+      flushPending()
+      const { pdf } = await import('@react-pdf/renderer')
+      const blob = await pdf(
+        <OffertePdfDocument
+          data={data}
+          rules={rules}
+          totals={totals}
+          offerteNummer={pdfData.nr}
+          geldigheidDagen={geldigheidDagen}
+          origin={typeof window !== 'undefined' ? window.location.origin : undefined}
+        />,
+      ).toBlob()
+      const slug = (data.naam || 'klant')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+      await deliverPdfBlob(blob, `offerte-${slug || 'schoon-straatje'}.pdf`)
+    } catch (e) {
+      console.error('[MobileOfferteEditor] PDF download failed:', e)
+      // eslint-disable-next-line no-alert
+      alert('PDF maken mislukt, probeer het opnieuw.')
+    } finally {
+      setPdfBusy(false)
+    }
   }
 
   // ─── Versies voor de historie-overlay (afgeleid van offertes) ───
@@ -913,8 +951,18 @@ export function MobileOfferteEditor({
               setPdfOpen(true)
             }}
           >
-            <FileText size={16} aria-hidden="true" /> PDF
+            <FileText size={16} aria-hidden="true" /> Bekijk PDF
           </button>
+          <button
+            type="button"
+            className={styles.btnSecondary}
+            onClick={handleDownloadPdf}
+            disabled={pdfBusy}
+          >
+            <Download size={16} aria-hidden="true" /> {pdfBusy ? 'Bezig…' : 'Download PDF'}
+          </button>
+        </div>
+        <div className={styles.actions}>
           <button type="button" className={styles.btnPrimary} onClick={handleSendClick}>
             <MessageCircle size={16} aria-hidden="true" /> Direct versturen naar klant
           </button>

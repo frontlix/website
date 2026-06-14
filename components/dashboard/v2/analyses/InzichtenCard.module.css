@@ -1,0 +1,82 @@
+.card {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--rb-r-pill);
+  padding: 4px 12px;
+}
+
+.badgePlus {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.badgeKans {
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.badgeLetOp {
+  color: var(--rb-warn-ink);
+  background: var(--rb-warn-soft);
+}
+
+.titel {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-top: 12px;
+}
+
+.tekst {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--rb-muted);
+  margin: 8px 0 0;
+  flex: 1;
+}
+
+.acties {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.actieSoft,
+.actiePrim {
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.12s ease, background 0.12s ease;
+}
+
+.actieSoft {
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.actieSoft:hover {
+  background: rgba(26, 86, 255, 0.16);
+}
+
+.actiePrim {
+  color: #fff;
+  background: var(--rb-blue);
+  box-shadow: var(--rb-shadow-btn);
+}
+
+.actiePrim:hover {
+  filter: brightness(1.05);
+}

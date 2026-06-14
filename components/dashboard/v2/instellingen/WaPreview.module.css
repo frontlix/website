@@ -1,0 +1,35 @@
+.canvas {
+  background-color: var(--rb-wa-bg);
+  background-image: linear-gradient(var(--rb-wa-veil), var(--rb-wa-veil)), var(--rb-wa-bg-image);
+  background-blend-mode: normal, multiply;
+  background-size: auto, 360px auto;
+  background-repeat: repeat;
+  border-radius: 14px;
+  padding: 14px 12px;
+  min-height: 120px;
+}
+
+.bubble {
+  background: var(--rb-wa-in);
+  border-radius: 10px 10px 10px 2px;
+  padding: 9px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  box-shadow: 0 1px 1px rgba(33, 42, 69, 0.1);
+  max-width: 94%;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  font-size: 9px;
+  color: rgba(33, 42, 69, 0.4);
+  margin-top: 4px;
+}
+
+.read {
+  color: var(--rb-cyan);
+}

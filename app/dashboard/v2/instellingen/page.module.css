@@ -1,0 +1,100 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  /* Vast frame: het scherm vult de shell-content-hoogte, zodat de titel en
+     beide kaarten stil blijven staan en alleen het paneel intern scrollt. */
+  height: 100%;
+  min-height: 0;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 2px 0 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  margin-top: 18px;
+  /* Vult de resterende hoogte onder de titel; stretch geeft het paneel de
+     volle rij-hoogte zodat het intern kan scrollen (nav blijft compact via
+     align-self:start in SettingsNav.module.css). */
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Rechterkaart ── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+  /* min-height:0 zodat de panelBody-flexchild mag krimpen en zelf scrollt. */
+  min-height: 0;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.panelTitle {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.panelSub {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 3px;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  /* Enige scroll-zone van het scherm: de kop (titel + Opslaan) blijft vast,
+     alleen de paneel-inhoud scrollt, binnen de panel-padding zodat de ronde
+     hoeken van de kaart altijd zichtbaar blijven. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Opslaan-knop (wordt groen na klik) ── */
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 11px 20px;
+  border-radius: var(--rb-r-pill);
+  box-shadow: var(--rb-shadow-btn-strong);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    filter 0.15s ease;
+}
+
+.saveBtn:hover {
+  filter: brightness(1.05);
+}
+
+.saved,
+.saved:hover {
+  background: var(--rb-success);
+  box-shadow: none;
+  filter: none;
+}

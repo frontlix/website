@@ -23,7 +23,9 @@ const SEARCH_COLUMNS =
 /**
  * Live-search voor de "zoek bestaande klant"-flow in de manual-offerte-
  * wizard. Matcht op naam / telefoon / postcode / straat / plaats; geeft
- * max 8 hits terug (genoeg voor een dropdown, scheelt query-werk).
+ * max 25 hits terug. De dropdown toont er 5 tegelijk en laat door de rest
+ * scrollen, dus een ruimere limit maakt het scrollen pas zinvol zonder de
+ * payload te laten ontsporen.
  *
  * Zoekt over niet-gearchiveerde leads, gearchiveerde klanten kun je
  * via de gewone leads-tabel terughalen, dat is geen wizard-context.
@@ -36,7 +38,10 @@ export async function searchExistingClients(
   q: string,
 ): Promise<ExistingClientMatch[]> {
   const safe = q.replace(/[,.]/g, ' ').trim()
-  if (safe.length < 2) return []
+  // Vanaf 1 teken zoeken: de owner verwacht al een match op de eerste letter.
+  // De .or()-match is een "contains" en de resultaten zijn op 8 gecapt, dus
+  // ook een enkele letter blijft een korte, bruikbare lijst.
+  if (safe.length < 1) return []
 
   const supabase = await getDashboardSupabase()
   const qTel = normalizePhone(safe)
@@ -59,7 +64,7 @@ export async function searchExistingClients(
       ].join(','),
     )
     .order('aangemaakt', { ascending: false })
-    .limit(8)
+    .limit(25)
 
   if (error) {
     console.error('[searchExistingClients] query failed:', error)

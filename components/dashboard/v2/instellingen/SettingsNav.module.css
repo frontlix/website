@@ -1,0 +1,81 @@
+.nav {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* De instellingen-pagina is een vast frame (zie page.module.css): er is geen
+     pagina-scroll meer, alleen het rechterpaneel scrollt intern. align-self:
+     start houdt de nav compact bovenaan; max-height + overflow laten 'm op zeer
+     korte schermen zelf scrollen i.p.v. af te kappen. */
+  align-self: start;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  font-family: var(--rb-font);
+  padding: 10px 16px;
+  border-radius: var(--rb-r-chip);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+/* Icoon krijgt de sectie-tint (--rb-accent), zodat de nav per gebied een eigen
+   kleur draagt. De wrap heeft een vaste maat zodat actief/inactief de layout
+   niet verschuift. */
+.iconWrap {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rb-accent, var(--rb-blue));
+  border-radius: var(--rb-r-chip-sm);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item:hover {
+  background: rgba(33, 42, 69, 0.04);
+  color: var(--rb-ink);
+}
+
+.item:hover .iconWrap {
+  background: color-mix(in srgb, var(--rb-accent, var(--rb-blue)) 12%, transparent);
+}
+
+/* Actieve sectie: rij in de sectie-tint, met een gevuld gekleurd icoon-vierkant
+   en een accent-balk links zodat de selectie duidelijk uitspringt. */
+.active,
+.active:hover {
+  background: color-mix(in srgb, var(--rb-accent, var(--rb-blue)) 12%, transparent);
+  color: color-mix(in srgb, var(--rb-accent, var(--rb-blue)) 78%, var(--rb-ink));
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--rb-accent, var(--rb-blue));
+}
+
+.active .iconWrap,
+.active:hover .iconWrap {
+  background: var(--rb-accent, var(--rb-blue));
+  color: #fff;
+}

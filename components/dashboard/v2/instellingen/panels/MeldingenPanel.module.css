@@ -1,0 +1,206 @@
+/* Meldingen (volledige grid): event-types x kanalen, per-cel toggle +
+   daily-digest-tijd. v2-look met var(--rb-*)-tokens, in lijn met de overige
+   instellingen-panelen. */
+
+.wrap {
+  margin-top: 14px;
+}
+
+/* ── Grid: 1 brede event-kolom + 4 smalle kanaal-kolommen ── */
+.table {
+  width: 100%;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, 84px);
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.headEvent {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+.headCol {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  text-align: center;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, 84px);
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowMain {
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.rowSub {
+  font-size: 12px;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Per-cel toggle (compacter dan de standaard v2-Toggle, past in de grid) ── */
+.toggle {
+  width: 40px;
+  height: 23px;
+  border-radius: var(--rb-r-pill);
+  background: rgba(33, 42, 69, 0.15);
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+
+.toggle:disabled {
+  cursor: default;
+}
+
+.toggleOn {
+  background: var(--rb-blue);
+  box-shadow: 0 3px 10px rgba(26, 86, 255, 0.3);
+}
+
+.toggleSaving {
+  opacity: 0.6;
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--rb-shadow-knob);
+  transition: left 0.15s ease;
+}
+
+.toggleOn .knob {
+  left: 20px;
+}
+
+/* ── "Binnenkort"-label voor kanalen die voor dit event nog niet live zijn ── */
+.binnenkort {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: var(--rb-r-pill);
+  background: var(--rb-field);
+  color: var(--rb-muted);
+}
+
+/* ── Daily-digest tijd-setter (onder de grid) ── */
+.digestRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+}
+
+.digestIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  flex-shrink: 0;
+}
+
+.digestMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.digestLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.digestSub {
+  font-size: 12px;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+.digestInput {
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+  padding: 8px 12px;
+  width: 120px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.digestInput:focus {
+  border-color: var(--rb-blue);
+}
+
+.digestStatus {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  min-width: 72px;
+  text-align: right;
+}
+
+.digestStatusOk {
+  color: var(--rb-mint-ink);
+}
+
+.digestStatusErr {
+  color: var(--rb-danger);
+}

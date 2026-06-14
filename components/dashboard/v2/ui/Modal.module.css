@@ -1,0 +1,54 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 21, 38, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: rbFade 0.18s ease-out;
+}
+
+.modal {
+  max-width: 100%;
+  max-height: 92vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: var(--rb-r-card);
+  box-shadow: var(--rb-shadow-modal);
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f4f6fb;
+  color: var(--rb-muted);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: background 0.12s ease;
+}
+
+.close:hover {
+  background: #e9edf6;
+}
+
+@keyframes rbFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

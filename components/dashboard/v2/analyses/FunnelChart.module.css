@@ -1,0 +1,70 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.stap {
+  font-weight: 700;
+}
+
+.n {
+  font-weight: 800;
+}
+
+.pct {
+  color: var(--rb-muted);
+  font-weight: 600;
+}
+
+.track {
+  height: 10px;
+  background: rgba(33, 42, 69, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 5px;
+}
+
+/* Data-viz-kleuren per trechter-stap (kleur = stap-betekenis). */
+.barData1 {
+  background: var(--rb-data-1);
+}
+
+.barData2 {
+  background: var(--rb-data-5);
+}
+
+.barData3 {
+  background: var(--rb-data-7);
+}
+
+.barData4 {
+  background: var(--rb-data-2);
+}
+
+.barData5 {
+  background: var(--rb-data-4);
+}
+
+.barData6 {
+  background: var(--rb-data-6);
+}
+
+.barData7 {
+  background: var(--rb-data-3);
+}
+
+.barData8 {
+  background: var(--rb-data-8);
+}

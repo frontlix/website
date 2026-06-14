@@ -1,0 +1,169 @@
+/* Alle accentkleuren komen nu uit de gedeelde rebrand-tokens; geen losse
+   hex meer. De gradient-header gaat van blauw naar cyaan (brand-look), de
+   verdelingsbalken krijgen per sterklasse hun eigen --rb-rating-kleur. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+
+/* ── Gemiddelde-score-header (brand-gradient blauw → cyaan) ── */
+.scoreHeader {
+  border-radius: var(--rb-r-card);
+  padding: 26px 28px;
+  background: linear-gradient(150deg, var(--rb-blue), var(--rb-cyan));
+  color: #fff;
+  box-shadow: 0 16px 36px rgba(26, 86, 255, 0.3);
+}
+
+.headerLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.78;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.scoreValue {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.scoreMeta {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+/* ── Verdeling + per-kanaal kaarten ── */
+.block {
+  padding: 20px 26px;
+}
+
+.kanaalBlock {
+  flex: 1;
+  min-height: 0;
+}
+
+.blockTitle {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Verdeling-balken */
+.bars {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barStar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--rb-muted);
+  width: 26px;
+}
+
+.barStarIcon {
+  fill: var(--rb-star);
+}
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: rgba(33, 42, 69, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Per sterklasse een eigen kleur (groen → rood), via de rating-tokens. */
+.barFill5 {
+  background: var(--rb-rating-5);
+}
+
+.barFill4 {
+  background: var(--rb-rating-4);
+}
+
+.barFill3 {
+  background: var(--rb-rating-3);
+}
+
+.barFill2 {
+  background: var(--rb-rating-2);
+}
+
+.barFill1 {
+  background: var(--rb-rating-1);
+}
+
+.barCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  width: 20px;
+  text-align: right;
+}
+
+/* Per kanaal */
+.kanaalList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.kanaalRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+/* Kleur-stip per kanaal (accent, valt binnen de bestaande regelhoogte). */
+.kanaalDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.kanaalNaam {
+  font-weight: 700;
+  flex: 1;
+}
+
+.kanaalScore {
+  font-weight: 800;
+}
+
+.kanaalAantal {
+  color: var(--rb-muted);
+  font-size: 12px;
+}

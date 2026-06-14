@@ -30,6 +30,7 @@ import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
 import { OffertePdfDocument } from './OffertePdf'
+import { deliverPdfBlob } from './pdf-download'
 import styles from './ManualOfferteModal.module.css'
 
 const STEPS = [
@@ -538,14 +539,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         .replace(/^-+|-+$/g, '')
       const fileName = `offerte-${naamSlug}-${stamp}.pdf`
 
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      // Aflevering via de gedeelde helper: op de telefoon het deel-/bewaar-vel
+      // (iOS negeert <a download> voor blob-URLs), op desktop een klassieke
+      // download.
+      await deliverPdfBlob(blob, fileName)
     } catch (e) {
       console.error('[ManualOfferteModal] PDF generation failed:', e)
       setError('PDF genereren mislukt, check console voor details.')

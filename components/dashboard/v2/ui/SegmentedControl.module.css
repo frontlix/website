@@ -1,0 +1,35 @@
+.group {
+  display: inline-flex;
+  gap: 0;
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-pill);
+  padding: 3px;
+}
+
+.seg {
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--rb-r-pill);
+  padding: 7px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.active {
+  background: #fff;
+  color: var(--rb-ink);
+  box-shadow: 0 1px 4px rgba(33, 42, 69, 0.12);
+}
+
+.activeInk {
+  background: var(--rb-ink);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(33, 42, 69, 0.18);
+}

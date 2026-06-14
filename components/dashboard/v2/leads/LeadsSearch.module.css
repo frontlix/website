@@ -1,0 +1,46 @@
+/* Glas-zoekbalk in de kop (PLeadsInbox.jsx, regel 58-61). */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 300px;
+  padding: 9px 16px;
+  background: var(--rb-card);
+  border-radius: var(--rb-r-pill);
+  box-shadow: var(--rb-shadow-card);
+  font-size: 13px;
+  color: var(--rb-muted);
+}
+
+.icon {
+  color: var(--rb-muted);
+  flex-shrink: 0;
+}
+
+.placeholder {
+  flex: 1;
+}
+
+/* Echt input-veld, zelfde typografie als .placeholder maar transparant en
+   zonder border zodat de glas-pill-look identiek blijft. */
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--rb-ink, inherit);
+  padding: 0;
+}
+
+.input::placeholder {
+  color: var(--rb-muted);
+}
+
+/* Verberg de native clear-knop van type="search" zodat de pill schoon blijft. */
+.input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}

@@ -1,0 +1,160 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Vaste hoogte = het content-vlak van het app-frame. Zo krijgt de split-view
+     een vaste hoogte en scrollen de kolommen INTERN: de tab-kaart links (bv. de
+     lange offerte-editor) en het WhatsApp-gesprek rechts blijven vast staan,
+     i.p.v. dat de hele pagina scrollt en de chat meeschuift. */
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Kop ── */
+.kop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.back:hover {
+  color: var(--rb-ink);
+}
+
+.kopMain {
+  min-width: 0;
+}
+
+.kopTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.naam {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.archivedPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-pill);
+  padding: 3px 10px;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--rb-muted);
+  margin-top: 2px;
+}
+
+.acties {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.actieBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 10px 16px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.actieBtn:hover {
+  background: #fff;
+  color: var(--rb-ink);
+}
+
+.primaryBtn {
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-blue);
+  padding: 10px 18px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--rb-shadow-btn);
+  transition: filter 0.15s ease;
+}
+
+.primaryBtn:hover {
+  filter: brightness(1.05);
+}
+
+/* ── Split view ── */
+.split {
+  display: grid;
+  /* Linkerkaart (Info/tabs) breder, WhatsApp-gesprek smaller. */
+  grid-template-columns: 1.7fr 1fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+  transition: opacity 0.18s ease;
+}
+
+.dimmed {
+  opacity: 0.65;
+}
+
+/* ── Linkerkaart: tabs ── */
+.tabCard {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  padding: 16px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tabBar {
+  align-self: flex-start;
+}
+
+.tabBody {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin-top: 14px;
+}

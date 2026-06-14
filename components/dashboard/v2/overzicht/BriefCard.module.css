@@ -1,0 +1,105 @@
+.card {
+  position: relative;
+  overflow: hidden;
+  padding: 26px 30px;
+}
+
+/* Zachte blauwe glow rechtsboven (prototype: radial-gradient blur 12px). */
+.glow {
+  position: absolute;
+  width: 420px;
+  height: 220px;
+  right: -120px;
+  top: -100px;
+  background: var(--rb-aurora-1);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+.body {
+  position: relative;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rb-success);
+  flex-shrink: 0;
+}
+
+.greeting {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 10px 0 0;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--rb-muted);
+  margin: 10px 0 0;
+  max-width: 560px;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  padding: 11px 20px;
+  border: none;
+  border-radius: var(--rb-r-pill);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.cta:hover {
+  filter: brightness(0.98);
+}
+
+/* Secundaire actie: "Bekijk dagrapport" (opent de drawer via ?dagrapport=1). */
+.dagBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: transparent;
+  padding: 11px 18px;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dagBtn:hover {
+  border-color: var(--rb-blue);
+  color: var(--rb-blue);
+}

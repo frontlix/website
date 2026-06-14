@@ -1,0 +1,173 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Frontlix Dashboard — REBRAND v2 design tokens ("Concept 5 + aurora").
+   Bron: design-handoff `CShell.jsx` (object CC) + README design-tokens.
+
+   Alle tokens zijn gescoped onder `.rbRoot` zodat ze NIET lekken naar de
+   marketingsite of het bestaande dashboard. De v2-shell zet `.rbRoot` op
+   z'n root-element; elke v2-module gebruikt uitsluitend `var(--rb-*)`.
+   ───────────────────────────────────────────────────────────────────── */
+
+.rbRoot {
+  /* ── Kleuren ── */
+  --rb-bg: #eef3fc; /* paginakleur (aurora eroverheen) */
+  --rb-card: #ffffff; /* kaarten */
+  --rb-ink: #212a45; /* primaire tekst */
+  --rb-muted: #7a83a6; /* secundaire tekst */
+  --rb-blue: #1a56ff; /* primair accent / CTA */
+  --rb-blue-soft: #e4ebff; /* accent-achtergrond (pills, actief) */
+  --rb-blue-ink: #1a56ff; /* tekst op blue-soft */
+  --rb-cyan: #00b8e6; /* logo/Surface */
+  --rb-cyan-bright: #00cfff; /* gradient-eind */
+  --rb-mint: #dff5ea; /* succes-pill achtergrond */
+  --rb-mint-ink: #1e8a5e; /* succes-pill tekst */
+  --rb-success: #2bc48a; /* checkmarks, "verstuurd" */
+  --rb-note: #fff8e6; /* notitie-kaartjes (geel) */
+  --rb-warn-ink: #b07408; /* amber "let op"-tekst (waarschuwingen, validatie) */
+  --rb-warn-soft: rgba(245, 166, 35, 0.14); /* amber waarschuwings-achtergrond */
+  --rb-line: rgba(33, 42, 69, 0.07); /* hairline borders/dividers */
+  --rb-field: #f8f9fd; /* veld-/tegel-achtergrond (bijzonderheden, info) */
+  --rb-field-2: #f1f3f9; /* segmented-container achtergrond */
+
+  /* WhatsApp-gesprek */
+  --rb-wa-bg: #ece6dd; /* chat-achtergrond (basiskleur onder het patroon) */
+  --rb-wa-bg-image: url("/whatsapp-achtergrond.jpg"); /* officieel doodle-patroon */
+  /* Lichte sluier over het doodle-patroon, maakt het subtieler/matter. Hoger
+     alfa = lichter patroon. */
+  --rb-wa-veil: rgba(236, 230, 221, 0.72);
+  --rb-wa-in: #ffffff; /* inkomende bubbel (klant) */
+  --rb-wa-out: #d9f4c7; /* uitgaande bubbel (Surface/jij) */
+
+  /* ── Status-pills (rijker, betekenisvol; "vol en levendig") ── */
+  --rb-status-hot-bg: #ffe1e4; /* wacht op jou / urgent, koraal */
+  --rb-status-hot-ink: #d6306a;
+  --rb-status-new-bg: #d6f3e3; /* nieuw, groen */
+  --rb-status-new-ink: #0f8a4f;
+  --rb-status-plan-bg: #d2f0f9; /* gepland / bezoek, cyaan-teal */
+  --rb-status-plan-ink: #0e7490;
+  --rb-status-sent-bg: #e7e9f2; /* verstuurd / neutraal, grijs-blauw */
+  --rb-status-sent-ink: #6b7493;
+  --rb-status-talking-bg: #e0e9ff; /* in gesprek, blauw */
+  --rb-status-talking-ink: #1a56ff;
+  --rb-status-review-bg: #fdeccb; /* in review / onderhandelen, amber */
+  --rb-status-review-ink: #a85b00;
+  --rb-status-won-bg: #c9eed8; /* goedgekeurd / afgerond, vol groen */
+  --rb-status-won-ink: #0c6b3f;
+  --rb-status-lost-bg: #fdd9d9; /* afgewezen, rood-zacht */
+  --rb-status-lost-ink: #b91c1c;
+
+  /* ── Avatar-tinten (gekozen op naam-hash; persoon-identiteit) ── */
+  --rb-avatar-1-bg: #e0e9ff; /* blauw */
+  --rb-avatar-1-ink: #1a56ff;
+  --rb-avatar-2-bg: #e8e7fc; /* indigo */
+  --rb-avatar-2-ink: #5145e0;
+  --rb-avatar-3-bg: #d2f1ec; /* teal */
+  --rb-avatar-3-ink: #0f766e;
+  --rb-avatar-4-bg: #d6f3e3; /* mint-groen */
+  --rb-avatar-4-ink: #0f8a4f;
+  --rb-avatar-5-bg: #fcefcf; /* amber */
+  --rb-avatar-5-ink: #b45309;
+  --rb-avatar-6-bg: #ffe1e6; /* koraal */
+  --rb-avatar-6-ink: #db2777;
+  --rb-avatar-7-bg: #efe6fc; /* paars */
+  --rb-avatar-7-ink: #7c3aed;
+  --rb-avatar-8-bg: #d4eefb; /* cyaan */
+  --rb-avatar-8-ink: #0e7490;
+
+  /* ── KPI-/metriek-kleuren (kleur per type, gekleurde sparklines/ringen) ── */
+  --rb-metric-leads: #00b8e6; /* cyaan */
+  --rb-metric-omzet: #10b981; /* groen */
+  --rb-metric-conversie: #7c3aed; /* paars */
+  --rb-metric-reactie: #f59e0b; /* amber */
+  --rb-metric-offertes: #1a56ff; /* blauw */
+
+  /* ── Type-kleuren agenda (klus/bezoek/deadline) ── */
+  --rb-agenda-klus-bg: #d6f3e3;
+  --rb-agenda-klus-ink: #0f8a4f;
+  --rb-agenda-bezoek-bg: #d4eefb;
+  --rb-agenda-bezoek-ink: #0e7490;
+  --rb-agenda-deadline-bg: #fdeccb;
+  --rb-agenda-deadline-ink: #a85b00;
+
+  /* ── Data-viz palet (grafiek-series, kanalen, diensten) ── */
+  --rb-data-1: #1a56ff; /* blauw */
+  --rb-data-2: #10b981; /* groen */
+  --rb-data-3: #f59e0b; /* amber */
+  --rb-data-4: #7c3aed; /* paars */
+  --rb-data-5: #00b8e6; /* cyaan */
+  --rb-data-6: #fb7185; /* koraal */
+  --rb-data-7: #14b8a6; /* teal */
+  --rb-data-8: #6366f1; /* indigo */
+
+  /* ── Sterren (reviews) ── */
+  --rb-star: #f5b400; /* goud */
+
+  /* ── Ster-verdeling (5 -> 1, groen via amber naar rood) ── */
+  --rb-rating-5: #10b981;
+  --rb-rating-4: #6cc24a;
+  --rb-rating-3: #f5b400;
+  --rb-rating-2: #f97316;
+  --rb-rating-1: #ef4444;
+
+  /* ── Typografie ── */
+  --rb-font: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+
+  /* ── Radii ── */
+  --rb-r-card: 24px;
+  --rb-r-card-sm: 16px;
+  --rb-r-field: 10px;
+  --rb-r-chip: 12px;
+  --rb-r-chip-sm: 8px;
+  --rb-r-pill: 9999px;
+
+  /* ── Schaduwen ── */
+  --rb-shadow-card: 0 2px 16px rgba(33, 42, 69, 0.06);
+  --rb-shadow-btn: 0 5px 14px rgba(26, 86, 255, 0.3);
+  --rb-shadow-btn-strong: 0 6px 18px rgba(26, 86, 255, 0.3);
+  --rb-shadow-modal: 0 40px 100px rgba(14, 21, 38, 0.4);
+  --rb-shadow-dropdown: 0 10px 28px rgba(33, 42, 69, 0.1);
+  --rb-shadow-nav: 0 2px 12px rgba(33, 42, 69, 0.07);
+  --rb-shadow-knob: 0 1px 4px rgba(33, 42, 69, 0.25);
+
+  /* Aurora-wash (radiale gradients, zie Shell.module.css .aurora*) */
+  --rb-aurora-1: radial-gradient(closest-side, rgba(26, 86, 255, 0.2), transparent);
+  --rb-aurora-2: radial-gradient(closest-side, rgba(0, 207, 255, 0.18), transparent);
+  --rb-aurora-3: radial-gradient(closest-side, rgba(26, 86, 255, 0.1), transparent);
+}
+
+/* Basis-reset binnen de v2-tree (raakt niets erbuiten). */
+.rbRoot,
+.rbRoot * {
+  box-sizing: border-box;
+}
+
+.rbRoot {
+  background: var(--rb-bg);
+  color: var(--rb-ink);
+  font-family: var(--rb-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Gedeelde tekst-helpers (mogen overal in v2 gebruikt worden). */
+.rbRoot .rb-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+/* Verberg de browser-scrollbars in de hele v2-tree; scrollen blijft werken.
+   Geldt voor de hoofd-content-kolom en alle interne scrollers (Instellingen,
+   inbox-kolommen, pipeline, enz.). */
+.rbRoot::-webkit-scrollbar,
+.rbRoot *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.rbRoot,
+.rbRoot * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* oude Edge/IE */
+}

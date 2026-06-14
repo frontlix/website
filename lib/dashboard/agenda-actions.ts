@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
 import { toAmsterdamDayKey } from './calendar'
 import { callBotLeadApi, botApiError } from './bot-api-client'
+import { requireApprovedUser } from './require-approved-user'
 
 export type AgendaActionResult = { ok: true } | { ok: false; error: string }
 
@@ -22,11 +23,11 @@ function revalidateAgenda(leadId: string) {
 export async function completeAppointment(leadId: string): Promise<AgendaActionResult> {
   if (!leadId.trim()) return { ok: false, error: 'Lead-id ontbreekt.' }
 
+  // Approved-gate: alleen goedgekeurde tenant-users mogen agenda-acties doen.
+  // Deze acties triggeren bot-calls, Google-events en klant-bevestigingen, dus
+  // een ingelogde-maar-niet-approved user mag ze niet kunnen aanroepen.
+  await requireApprovedUser()
   const supabase = await getDashboardSupabase()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
 
   const { error } = await supabase
     .from('leads')
@@ -57,11 +58,10 @@ export async function rescheduleAppointment(
   const ms = new Date(newIso).getTime()
   if (!Number.isFinite(ms)) return { ok: false, error: 'Ongeldige datum/tijd.' }
 
-  const supabase = await getDashboardSupabase()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  // Approved-gate: alleen goedgekeurde tenant-users mogen agenda-acties doen.
+  // Deze acties triggeren bot-calls, Google-events en klant-bevestigingen, dus
+  // een ingelogde-maar-niet-approved user mag ze niet kunnen aanroepen.
+  await requireApprovedUser()
 
   const datum = toAmsterdamDayKey(new Date(ms).toISOString()) // YYYY-MM-DD
   const starttijd = new Intl.DateTimeFormat('nl-NL', {
@@ -74,6 +74,50 @@ export async function rescheduleAppointment(
   const result = await callBotLeadApi(leadId, 'reschedule', { datum, starttijd })
   if (!result.ok) {
     return { ok: false, error: botApiError(result, 'Verzetten mislukt.') }
+  }
+
+  revalidateAgenda(leadId)
+  return { ok: true }
+}
+
+/**
+ * Plant een NIEUWE afspraak in voor een bestaande lead. Loopt via dezelfde
+ * bot-route als de boekingen vanuit WhatsApp/web (book-appointment), zodat
+ * alles aan elkaar gelinkt blijft:
+ *  - er wordt een Google-Calendar-event aangemaakt, waardoor de bot-planning
+ *    die dag als BEZET ziet (1-klus-per-dag) en hem niet meer aanbiedt,
+ *  - afspraak_datum + afspraak_starttijd worden in Supabase bijgewerkt,
+ *  - de klant krijgt een bevestiging (WhatsApp/email, best-effort).
+ */
+export async function bookAppointment(
+  leadId: string,
+  datum: string,
+  tijd: string,
+  opts: { notifyWhatsapp?: boolean; notifyEmail?: boolean } = {},
+): Promise<AgendaActionResult> {
+  if (!leadId.trim()) return { ok: false, error: 'Lead-id ontbreekt.' }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(datum)) {
+    return { ok: false, error: 'Ongeldige datum.' }
+  }
+  if (!/^\d{2}:\d{2}$/.test(tijd)) {
+    return { ok: false, error: 'Ongeldige tijd.' }
+  }
+
+  // Approved-gate: alleen goedgekeurde tenant-users mogen agenda-acties doen.
+  // Deze acties triggeren bot-calls, Google-events en klant-bevestigingen, dus
+  // een ingelogde-maar-niet-approved user mag ze niet kunnen aanroepen.
+  await requireApprovedUser()
+
+  // De bot stuurt standaard beide bevestigingen; deze vlaggen kunnen ze los
+  // uitzetten (dashboard-keuze per afspraak).
+  const result = await callBotLeadApi(leadId, 'book-appointment', {
+    datum,
+    starttijd: tijd,
+    notifyWhatsapp: opts.notifyWhatsapp ?? true,
+    notifyEmail: opts.notifyEmail ?? true,
+  })
+  if (!result.ok) {
+    return { ok: false, error: botApiError(result, 'Inplannen mislukt.') }
   }
 
   revalidateAgenda(leadId)

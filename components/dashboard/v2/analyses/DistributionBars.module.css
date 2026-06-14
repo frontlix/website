@@ -1,0 +1,131 @@
+/* Verdeling-balken (rebrand v2). Look afgestemd op TopDiensten.module.css
+   zodat status- en categorie-verdeling naast de funnel/diensten passen. */
+
+.card {
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+.rowLabel {
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Kleur-stip per rij (zelfde kleur als de balk = categorie/status-identiteit). */
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotData1 {
+  background: var(--rb-data-1);
+}
+.dotData2 {
+  background: var(--rb-data-2);
+}
+.dotData3 {
+  background: var(--rb-data-3);
+}
+.dotData4 {
+  background: var(--rb-data-4);
+}
+.dotData5 {
+  background: var(--rb-data-5);
+}
+.dotData6 {
+  background: var(--rb-data-6);
+}
+.dotData7 {
+  background: var(--rb-data-7);
+}
+.dotData8 {
+  background: var(--rb-data-8);
+}
+
+.rowMeta {
+  font-weight: 800;
+}
+
+.pct {
+  color: var(--rb-muted);
+  font-weight: 600;
+}
+
+.track {
+  height: 9px;
+  background: rgba(33, 42, 69, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--rb-data-1);
+  transition: width 0.2s ease;
+}
+
+/* Kleur per rij (kleur = categorie/status-identiteit, matcht de stip). */
+.barData1 {
+  background: var(--rb-data-1);
+}
+.barData2 {
+  background: var(--rb-data-2);
+}
+.barData3 {
+  background: var(--rb-data-3);
+}
+.barData4 {
+  background: var(--rb-data-4);
+}
+.barData5 {
+  background: var(--rb-data-5);
+}
+.barData6 {
+  background: var(--rb-data-6);
+}
+.barData7 {
+  background: var(--rb-data-7);
+}
+.barData8 {
+  background: var(--rb-data-8);
+}
+
+.empty {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--rb-muted);
+  font-weight: 600;
+}

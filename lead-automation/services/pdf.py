@@ -36,15 +36,50 @@ def _logo_data_uri() -> str:
         return ""
 
 
-def _offerte_meta() -> dict[str, str]:
+def _offerte_instellingen() -> tuple[float, int, int]:
+    """BTW-percentage, betaaltermijn (dagen) en geldigheid (dagen) uit
+    tenant_settings. Valt bij afwezigheid/fout terug op de standaardwaarden,
+    zodat de bot blijft werken (dezelfde kolommen die het dashboard schrijft)."""
+    try:
+        res = (
+            get_supabase()
+            .table("tenant_settings")
+            .select("offerte_btw_tarief, offerte_betaaltermijn_dagen, offerte_geldigheid_dagen")
+            .limit(1)
+            .single()
+            .execute()
+        )
+        d = res.data or {}
+        btw = float(d.get("offerte_btw_tarief") or 21)
+        betaal = int(d.get("offerte_betaaltermijn_dagen") or 14)
+        geldig = int(d.get("offerte_geldigheid_dagen") or 30)
+        return btw, betaal, geldig
+    except Exception as e:
+        print(f"[pdf] offerte-instellingen laden mislukt (defaults): {e}")
+        return 21.0, 14, 30
+
+
+def _next_offerte_nummer() -> str | None:
+    """Doorlopend offertenummer via de tenant-teller (PREFIX-JAAR-volgnummer,
+    bv. SS-2026-001). None bij fout, dan valt de caller terug op OFF-timestamp."""
+    try:
+        res = get_supabase().rpc("next_offerte_nummer").execute()
+        val = res.data
+        return val if isinstance(val, str) and val.strip() else None
+    except Exception as e:
+        print(f"[pdf] offertenummer ophalen mislukt: {e}")
+        return None
+
+
+def _offerte_meta(geldigheid_dagen: int = 30, ref: str | None = None) -> dict[str, str]:
     """Reference number + human-readable date for the offerte header."""
     now = datetime.now(ZoneInfo("Europe/Amsterdam"))
-    ref = f"OFF-{now.strftime('%Y%m%d-%H%M%S')}"
+    if not ref:
+        ref = f"OFF-{now.strftime('%Y%m%d-%H%M%S')}"
     NL_MONTHS = ["", "januari", "februari", "maart", "april", "mei", "juni",
                  "juli", "augustus", "september", "oktober", "november", "december"]
     geldig_tot = now.replace(hour=23, minute=59, second=59).timestamp()
-    # Add ~30 days
-    geldig_dt = datetime.fromtimestamp(geldig_tot + 30 * 86400, tz=ZoneInfo("Europe/Amsterdam"))
+    geldig_dt = datetime.fromtimestamp(geldig_tot + geldigheid_dagen * 86400, tz=ZoneInfo("Europe/Amsterdam"))
     return {
         "ref": ref,
         "datum_str": f"{now.day} {NL_MONTHS[now.month]} {now.year}",
@@ -85,6 +120,9 @@ async def generate_quote_pdf(
     string_data = {k: str(v) for k, v in collected_data.items() if v is not None and not isinstance(v, (dict, list))}
     pricing = get_pricing(branche_id, string_data)
 
+    # Offerte-instellingen uit tenant_settings (btw, betaaltermijn, geldigheid).
+    btw_pct, betaaltermijn_dagen, geldigheid_dagen = _offerte_instellingen()
+
     # Korting toepassen als die is ingesteld
     from branches.base import round2, with_btw
     from models.branches import PricingLine
@@ -99,13 +137,16 @@ async def generate_quote_pdf(
                     label=f"Korting ({pct:.0f}%)",
                     quantity=1, unit="", unit_price=-korting_bedrag, total=-korting_bedrag,
                 ))
-                new_sub = pricing.subtotaal_excl_btw - korting_bedrag
-                btw_info = with_btw(new_sub)
-                pricing.subtotaal_excl_btw = btw_info["subtotaal_excl_btw"]
-                pricing.btw_bedrag = btw_info["btw_bedrag"]
-                pricing.totaal_incl_btw = btw_info["totaal_incl_btw"]
+                pricing.subtotaal_excl_btw = round2(pricing.subtotaal_excl_btw - korting_bedrag)
         except (ValueError, TypeError):
             pass
+
+    # Eindtotalen met het tenant-btw-tarief (overschrijft de 21%-default die
+    # get_pricing intern gebruikt), zodat dashboard en bot gelijk rekenen.
+    _final = with_btw(pricing.subtotaal_excl_btw, btw_pct)
+    pricing.btw_bedrag = _final["btw_bedrag"]
+    pricing.totaal_incl_btw = _final["totaal_incl_btw"]
+    btw_pct_str = f"{btw_pct:g}"
 
     intake_summary = _build_intake_summary(branche_id, collected_data)
 
@@ -140,7 +181,8 @@ async def generate_quote_pdf(
     template_path = TEMPLATE_DIR / "quote.html"
     template = env.from_string(template_path.read_text(encoding="utf-8"))
 
-    meta = _offerte_meta()
+    ref = _next_offerte_nummer()
+    meta = _offerte_meta(geldigheid_dagen=geldigheid_dagen, ref=ref)
     html_content = template.render(
         company=config.company,
         klant_naam=escape(klant_naam),
@@ -158,6 +200,8 @@ async def generate_quote_pdf(
         ref=meta["ref"],
         datum_str=meta["datum_str"],
         geldig_tot_str=meta["geldig_tot_str"],
+        btw_pct_str=btw_pct_str,
+        betaaltermijn_dagen=betaaltermijn_dagen,
         escape=escape,
     )
 

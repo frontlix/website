@@ -55,7 +55,9 @@ export type Totalen = {
 export function berekenTotalen(
   regelTotalen: number[],
   kortingPct: number,
-  nietKortbaarTotaal = 0
+  nietKortbaarTotaal = 0,
+  /** BTW-percentage uit tenant_settings (default 21 = NL-standaardtarief). */
+  btwPercentage = BTW_PERCENTAGE
 ): Totalen {
   // Clamp korting binnen [0, 100] om negatieve totalen of onzin-getallen te voorkomen.
   const pct = Math.max(0, Math.min(100, kortingPct))
@@ -69,7 +71,7 @@ export function berekenTotalen(
   const kortbareGrondslag = Math.max(0, subtotaalExcl - nietKortbaar)
   const kortingBedrag = kortbareGrondslag * (pct / 100)
   const naKortingExcl = subtotaalExcl - kortingBedrag
-  const btw = naKortingExcl * (BTW_PERCENTAGE / 100)
+  const btw = naKortingExcl * (btwPercentage / 100)
   const totaalIncl = naKortingExcl + btw
 
   return {
@@ -78,6 +80,6 @@ export function berekenTotalen(
     naKortingExcl,
     btw,
     totaalIncl,
-    btwPercentage: BTW_PERCENTAGE,
+    btwPercentage,
   }
 }

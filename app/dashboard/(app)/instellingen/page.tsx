@@ -22,6 +22,8 @@ import {
 } from '@/components/dashboard/instellingen/SettingSections'
 import { IntegratiesSection } from '@/components/dashboard/instellingen/IntegratiesSection'
 import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
+import { getEmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
+import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
@@ -44,6 +46,18 @@ const ALLOWED_SECTIONS = [
   'account',
   'avg',
 ] as const satisfies readonly SettingsSection[]
+
+// Standaard-werkweek voor het mobiele Beschikbaarheid-scherm als de tenant nog
+// niets heeft ingesteld (Ma..Vr werkdagen 08:00-17:00, weekend uit).
+const DEFAULT_BESCHIKBAARHEID: DagBeschikbaarheid[] = [
+  { dag: 'Maandag', aan: true, van: '08:00', tot: '17:00' },
+  { dag: 'Dinsdag', aan: true, van: '08:00', tot: '17:00' },
+  { dag: 'Woensdag', aan: true, van: '08:00', tot: '17:00' },
+  { dag: 'Donderdag', aan: true, van: '08:00', tot: '17:00' },
+  { dag: 'Vrijdag', aan: true, van: '08:00', tot: '17:00' },
+  { dag: 'Zaterdag', aan: false, van: '09:00', tot: '13:00' },
+  { dag: 'Zondag', aan: false, van: '09:00', tot: '13:00' },
+]
 
 export default async function InstellingenPage({
   searchParams,
@@ -71,7 +85,7 @@ export default async function InstellingenPage({
     supabase
       .from('tenant_settings')
       .select(
-        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link, base_huisnummer, base_label, base_lat, base_lng, daily_digest_tijd, omzet_doel_maand',
+        'bedrijfsnaam, chatbot_naam, eigenaar_email, eigenaar_whatsapp, eigenaar_spoed_telefoon, plaats, postcode, adres, offerte_geldigheid_dagen, radius_max_km, reminder_dag_1, reminder_dag_2, reminder_dag_3, calendar_link, base_huisnummer, base_label, base_lat, base_lng, daily_digest_tijd, omzet_doel_maand, beschikbaarheid',
       )
       .limit(1)
       .maybeSingle(),
@@ -115,6 +129,18 @@ export default async function InstellingenPage({
   // Agenda-detailscherm (client-side geopend, zonder ?section=) gebruiken deze
   // status, dus altijd ophalen (lichte service-role read, zonder het token).
   const gcalStatus = await getConnectionStatus()
+
+  // E-mailkoppel-status (zonder wachtwoord) voor het mobiele E-mailkoppeling-scherm.
+  const emailStatus = await getEmailConnectionStatus()
+
+  // Beschikbaarheid (werkdagen + tijden) voor het mobiele Beschikbaarheid-scherm.
+  // Uit tenant_settings.beschikbaarheid; valt terug op een standaard-werkweek als
+  // de kolom (nog) leeg is, zodat het scherm altijd 7 dagen toont.
+  const beschRaw = (
+    tenantRaw.data as { beschikbaarheid?: DagBeschikbaarheid[] | null } | null
+  )?.beschikbaarheid
+  const beschikbaarheid: DagBeschikbaarheid[] =
+    Array.isArray(beschRaw) && beschRaw.length === 7 ? beschRaw : DEFAULT_BESCHIKBAARHEID
 
   return (
     <>
@@ -180,6 +206,9 @@ export default async function InstellingenPage({
           notifPrefs={notifPrefs}
           templateAanvragen={templateAanvragen}
           gcalStatus={gcalStatus}
+          beschikbaarheid={beschikbaarheid}
+          emailStatus={emailStatus}
+          userEmail={user?.email ?? ''}
           initialSection={sp.section}
         />
       </div>

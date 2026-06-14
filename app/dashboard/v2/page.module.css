@@ -1,0 +1,42 @@
+/* Overzicht-layout. De shell (.content) levert al de horizontale 40px-marge
+   en de aurora-achtergrond; deze layout stapelt de secties verticaal en
+   houdt de twee-koloms-grids erbinnen.
+
+   - .page  : verticale stack van alle secties (header, banner, grids).
+   - .grid  : bovenste twee-koloms-grid (1.45fr / 1fr), goedgekeurde v2-opzet.
+   - .lower : onderste twee-koloms-grid (2fr / 1fr), trend+funnel | feed+appts. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 6px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.lower {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .grid,
+  .lower {
+    grid-template-columns: 1fr;
+  }
+}

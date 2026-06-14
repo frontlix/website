@@ -1,0 +1,223 @@
+.card {
+  background: var(--rb-card);
+  box-shadow: var(--rb-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--rb-r-card);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+
+/* Kop-avatar (gekleurd per persoon) met een gekleurd kanaal-stipje. Het
+   stipje ligt absoluut over de avatar, dus de kop-layout blijft gelijk. */
+.avatarWrap {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.channelDot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--rb-card);
+}
+
+.channelWhatsApp .channelDot {
+  background: var(--rb-status-new-ink);
+}
+
+.channelTelefoon .channelDot {
+  background: var(--rb-cyan);
+}
+
+.headBody {
+  min-width: 0;
+}
+
+.naam {
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plaats {
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+/* Kanaal-naam in de kanaalkleur (WhatsApp groen, Telefoon cyaan). */
+.kanaal {
+  font-weight: 700;
+}
+
+.kanaalWhatsApp {
+  color: var(--rb-status-new-ink);
+}
+
+.kanaalTelefoon {
+  color: var(--rb-status-plan-ink);
+}
+
+/* ── Scrollbaar midden-blok met de secties ── */
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+/* ── Status-pills ── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fasePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: var(--rb-r-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--rb-status-talking-bg);
+  color: var(--rb-status-talking-ink);
+}
+
+/* ── Werk-rijen (adres, oppervlakte) ── */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-ink);
+}
+
+.rowIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rb-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rowValue {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+/* ── Offerte-blok ── */
+.offerteBox {
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-chip);
+  padding: 12px 14px;
+}
+
+.offerteBedrag {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--rb-blue);
+  letter-spacing: -0.01em;
+}
+
+/* ── Tag-chips ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--rb-r-pill);
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Onderste actie-knoppen ── */
+.actions {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 11px 0;
+  border-radius: var(--rb-r-pill);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.primary {
+  color: #fff;
+  background: var(--rb-blue);
+  box-shadow: var(--rb-shadow-btn);
+}
+
+.primary:hover {
+  filter: brightness(1.05);
+}
+
+.secondary {
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.secondary:hover {
+  filter: brightness(0.98);
+}

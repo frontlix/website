@@ -1,0 +1,21 @@
+/* Sterren-kleuren komen nu uit de gedeelde rebrand-tokens: volle ster in
+   het gouden review-token (--rb-star), lege ster gedimd via een line-token.
+   Zo zit alle kleur in var(--rb-*) en geen losse hex meer in de markup. */
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.full {
+  fill: var(--rb-star);
+}
+
+.empty {
+  fill: var(--rb-line);
+}
+
+.emptyDark {
+  fill: rgba(255, 255, 255, 0.35);
+}

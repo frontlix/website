@@ -161,7 +161,7 @@ export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> 
   const admin = getDashboardAdmin()
   const { data: row, error: selErr } = await admin
     .from('template_aanvragen')
-    .select('status, aanvrager_user_id')
+    .select('status, aanvrager_user_id, template_naam')
     .eq('id', id)
     .maybeSingle()
   if (selErr) {
@@ -183,6 +183,33 @@ export async function cancelTemplateAanvraag(id: string): Promise<ActionResult> 
   if (error) {
     console.error('[cancelTemplateAanvraag] delete failed:', error)
     return { ok: false, error: `Annuleren mislukt: ${error.message}` }
+  }
+
+  // Slack-melding (best-effort), zelfde kanaal als de aanvraag zelf, zodat
+  // Frontlix-support ziet dat de owner een openstaande aanvraag heeft
+  // ingetrokken. Een Slack-outage laat het annuleren niet falen.
+  const webhookUrl = process.env.SLACK_TEMPLATE_REQUEST_WEBHOOK_URL
+  if (webhookUrl) {
+    const templateNaam = row.template_naam ?? 'onbekend'
+    const blocks = [
+      {
+        type: 'section',
+        text: { type: 'mrkdwn', text: `:wastebasket: *Template-aanvraag geannuleerd*, \`${templateNaam}\`` },
+      },
+      { type: 'context', elements: [{ type: 'mrkdwn', text: `*Door:* ${user.email ?? 'onbekend'}` }] },
+    ]
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `Template-aanvraag geannuleerd: ${templateNaam} door ${user.email ?? 'onbekend'}`,
+          blocks,
+        }),
+      })
+    } catch {
+      // Stille fout, niet falen op Slack-problemen.
+    }
   }
 
   revalidatePath('/instellingen')

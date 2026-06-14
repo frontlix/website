@@ -1,0 +1,448 @@
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--rb-r-card-sm);
+  border: 1px solid var(--rb-line);
+  padding: 13px 20px;
+}
+
+.cardSm {
+  background: #fff;
+  border-radius: var(--rb-r-card-sm);
+  border: 1px solid var(--rb-line);
+  padding: 12px 18px;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.handHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+/* ── Regels ── */
+.regels {
+  margin-top: 4px;
+}
+
+.regel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.handle {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.ordBtn {
+  width: 18px;
+  height: 13px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--rb-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ordBtn:hover:not(:disabled) {
+  background: rgba(33, 42, 69, 0.06);
+  color: var(--rb-ink);
+}
+
+.ordBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.regelNaam {
+  font-size: 13px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.qtyBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--rb-field);
+  border-radius: 9px;
+  padding: 3px 7px;
+  font-size: 12px;
+}
+
+.unit {
+  color: var(--rb-muted);
+  font-size: 10.5px;
+}
+
+.regelMeta {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+}
+
+.regelBedrag {
+  font-size: 13px;
+  font-weight: 800;
+  width: 72px;
+  text-align: right;
+}
+
+/* ── Vrije regel ── */
+.vrijRegel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  margin: 8px 0 2px;
+  border-radius: var(--rb-r-chip);
+  border: 1.5px dashed var(--rb-blue);
+  background: rgba(228, 235, 255, 0.45);
+}
+
+.vrijBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: #fff;
+  border-radius: var(--rb-r-pill);
+  padding: 3px 9px;
+  flex-shrink: 0;
+}
+
+.vrijInput {
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  min-width: 0;
+}
+
+.vrijBedragBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border-radius: 9px;
+  padding: 3px 7px;
+  font-size: 12px;
+}
+
+.vrijBedragVal {
+  min-width: 56px;
+  text-align: right;
+}
+
+.vrijEuro {
+  color: var(--rb-muted);
+  font-weight: 700;
+}
+
+.vrijBedragInput {
+  width: 54px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: right;
+}
+
+.wegBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: #fff;
+  color: #c0392b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--rb-line);
+  flex-shrink: 0;
+}
+
+.wegBtn:hover {
+  background: rgba(192, 57, 43, 0.08);
+}
+
+.regelActies {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.actieBlue {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+  border-radius: var(--rb-r-pill);
+  padding: 7px 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.actieBlue:hover {
+  filter: brightness(0.98);
+}
+
+.actieGrijs {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border-radius: var(--rb-r-pill);
+  padding: 7px 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.actieGrijs:hover {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+/* ── BTW · Korting · Geldigheid ── */
+.subGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.btwRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.btwBtn {
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 6px 12px;
+  background: var(--rb-field);
+  color: var(--rb-muted);
+  border: none;
+  cursor: pointer;
+}
+
+.btwBtn:hover {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+.btwActive,
+.btwActive:hover {
+  background: var(--rb-ink);
+  color: #fff;
+}
+
+.btwBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btwBtn:disabled:hover {
+  background: var(--rb-field);
+}
+
+/* Kop met label links + de %/€-schakelaar rechts. */
+.kortingHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kortingToggle {
+  display: inline-flex;
+  gap: 3px;
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-pill);
+  padding: 2px;
+}
+
+.toggleBtn {
+  border: none;
+  background: transparent;
+  border-radius: var(--rb-r-pill);
+  padding: 3px 10px;
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.toggleActive {
+  background: #fff;
+  color: var(--rb-blue);
+  box-shadow: var(--rb-shadow-dropdown);
+}
+
+.kortingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.kortingBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: 9px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.kortingInput {
+  width: 36px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: center;
+}
+
+.kortingPct {
+  color: var(--rb-muted);
+  font-weight: 700;
+}
+
+.redenInput {
+  margin-top: 0;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 9px 13px;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+.redenInput:focus {
+  border-color: var(--rb-blue);
+}
+
+.kortingNote {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+  margin-top: 7px;
+}
+
+.geldigRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.geldigBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: 9px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.geldigInput {
+  width: 34px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: center;
+}
+
+.geldigEenheid {
+  color: var(--rb-muted);
+  font-weight: 700;
+}
+
+.geldigVeld {
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 9px 13px;
+  font-size: 13.5px;
+  font-weight: 600;
+  width: 96px;
+  text-align: center;
+}
+
+.geldigSub {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+}
+
+.geldigSub strong {
+  color: var(--rb-ink);
+}
+
+/* ── Bericht ── */
+.bericht {
+  margin-top: 5px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 9px 13px;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: var(--rb-font);
+  line-height: 1.5;
+  color: var(--rb-ink);
+  width: 100%;
+  resize: none;
+  outline: none;
+  display: block;
+}
+
+.bericht:focus {
+  border-color: var(--rb-blue);
+}

@@ -1,0 +1,43 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  color: var(--rb-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: rgba(33, 42, 69, 0.04);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.value {
+  min-width: 56px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.suffix {
+  color: var(--rb-muted);
+  font-weight: 600;
+  margin-left: 3px;
+}

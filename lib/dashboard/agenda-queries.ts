@@ -20,6 +20,9 @@ export type Appointment = Pick<
   | 'm2'
   | 'afstand_km'
   | 'hoofdcategorie'
+  | 'sub_diensten'
+  | 'groene_aanslag'
+  | 'planten_afschermen'
   | 'lat'
   | 'lng'
 >
@@ -40,6 +43,9 @@ const SELECT_COLUMNS = [
   'm2',
   'afstand_km',
   'hoofdcategorie',
+  'sub_diensten',
+  'groene_aanslag',
+  'planten_afschermen',
   'lat',
   'lng',
 ].join(', ')

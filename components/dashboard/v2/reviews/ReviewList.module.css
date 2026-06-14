@@ -1,0 +1,66 @@
+/* Inactieve filter-pill-achtergrond uit het prototype (#F4F6FB), niet in
+   de gedeelde tokens; lokaal gedefinieerd plus een iets donkerder hover. */
+.card {
+  --rev-pill-bg: #f4f6fb;
+  --rev-pill-bg-hover: #eaeef7;
+  padding: 20px 28px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+}
+
+.pill {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--rb-r-pill);
+  padding: 6px 14px;
+  border: none;
+  cursor: pointer;
+  background: var(--rev-pill-bg);
+  color: var(--rb-muted);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.pill:hover {
+  background: var(--rev-pill-bg-hover);
+}
+
+.pillActive {
+  background: var(--rb-blue);
+  color: #fff;
+}
+
+.pillActive:hover {
+  background: var(--rb-blue);
+  filter: brightness(1.05);
+}
+
+.list {
+  margin-top: 6px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
