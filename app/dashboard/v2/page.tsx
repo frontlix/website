@@ -58,9 +58,32 @@ import {
   mapSparkline,
   mapAgendaRows,
 } from "@/components/dashboard/v2/overzicht/overzicht-mappers";
+import { getDagrapport, type DagrapportData } from "@/lib/dashboard/dagrapport-queries";
+import { DagrapportDrawer } from "@/components/dashboard/v2/overzicht/DagrapportDrawer";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
+
+/** Demo-dagrapport voor de dev-preview (geen sessie); zelfde vorm als getDagrapport. */
+function buildDemoDagrapport(): DagrapportData {
+  return {
+    datum: new Date().toISOString(),
+    vandaag: { leads: 4, offertesVerstuurd: 3, akkoorden: 2, omzet: 1840 },
+    gisteren: { leads: 2, offertesVerstuurd: 1, akkoorden: 1, omzet: 920 },
+    bronnen: [
+      { bron: "WhatsApp", count: 3 },
+      { bron: "Website", count: 1 },
+    ],
+    sparklines: {
+      leads: [1, 0, 3, 2, 1, 2, 4],
+      offertes: [0, 1, 2, 1, 0, 1, 3],
+      akkoorden: [0, 0, 1, 1, 0, 1, 2],
+      omzet: [0, 320, 980, 540, 0, 920, 1840],
+    },
+    uurStrip: [0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 3, 2, 4, 2, 1, 3, 2, 1, 0, 0, 0, 0, 0, 0],
+    surface: { uitgaand: 28, inkomend: 19, reactietijdS: 42 },
+  };
+}
 
 /** Gespreks-fases die we als "actief gesprek" tellen voor de status-regel. */
 const ACTIEVE_FASES = new Set([
@@ -70,23 +93,33 @@ const ACTIEVE_FASES = new Set([
   "datum_kiezen",
 ]);
 
-export default async function OverzichtPage() {
+export default async function OverzichtPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dagrapport?: string }>;
+}) {
+  // `?dagrapport=1` opent de dagrapport-drawer (vanuit de BriefCard-knop én
+  // vanuit de digest-melding in de bel).
+  const dagrapportOpen = (await searchParams).dagrapport === "1";
   const s = await v2Session();
 
   // ── Dev-preview zonder login: componenten vallen terug op hun demo-defaults.
   if (!s) {
     return (
-      <div className={styles.grid}>
-        <div className={styles.col}>
-          <BriefCard />
-          <ActionList />
+      <>
+        <div className={styles.grid}>
+          <div className={styles.col}>
+            <BriefCard />
+            <ActionList />
+          </div>
+          <div className={styles.col}>
+            <OmzetCard />
+            <KpiTiles />
+            <AgendaCard />
+          </div>
         </div>
-        <div className={styles.col}>
-          <OmzetCard />
-          <KpiTiles />
-          <AgendaCard />
-        </div>
-      </div>
+        {dagrapportOpen && <DagrapportDrawer data={buildDemoDagrapport()} />}
+      </>
     );
   }
 
@@ -247,18 +280,25 @@ export default async function OverzichtPage() {
   const spark = mapSparkline(trend.map((d) => d.count));
   const agenda = mapAgendaRows(todaysAppts);
 
-  return (
-    <div className={styles.grid}>
-      <div className={styles.col}>
-        <BriefCard brief={brief} />
-        <ActionList actions={actions} />
-      </div>
+  // Dagrapport-data alleen ophalen als de drawer open is (geen extra queries
+  // op elke pageload). De drawer leeft buiten de grid (fixed overlay).
+  const dagrapportData = dagrapportOpen ? await getDagrapport(now) : null;
 
-      <div className={styles.col}>
-        <OmzetCard omzet={omzet} />
-        <KpiTiles kpis={kpis} spark={spark} />
-        <AgendaCard agenda={agenda} />
+  return (
+    <>
+      <div className={styles.grid}>
+        <div className={styles.col}>
+          <BriefCard brief={brief} />
+          <ActionList actions={actions} />
+        </div>
+
+        <div className={styles.col}>
+          <OmzetCard omzet={omzet} />
+          <KpiTiles kpis={kpis} spark={spark} />
+          <AgendaCard agenda={agenda} />
+        </div>
       </div>
-    </div>
+      {dagrapportData && <DagrapportDrawer data={dagrapportData} />}
+    </>
   );
 }

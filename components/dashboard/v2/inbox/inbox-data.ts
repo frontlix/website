@@ -7,7 +7,15 @@
 // P_CHATS uit de design-handoff (PLeadsInbox.jsx).
 // ─────────────────────────────────────────────────────────────────────
 
-import { CHAT, type ChatMessage } from "../demo-data";
+import { CHAT, type ChatMessage, type StatusKind } from "../demo-data";
+
+/** Eén tag-chip voor het lead-dossier (naam + kleur uit de tags-tabel). */
+export interface LeadContextTag {
+  id: string;
+  naam: string;
+  /** Hex-kleur uit de tags-tabel, of null voor de neutrale stijl. */
+  kleur: string | null;
+}
 
 /** Velden voor het lead-context-paneel rechts (compact lead-dossier). */
 export interface LeadContext {
@@ -15,6 +23,19 @@ export interface LeadContext {
   kanaal: string;
   dienst: string;
   waarde: string;
+  /** Status-label + kleur-kind voor de status-pill. */
+  statusLabel: string;
+  statusKind: StatusKind;
+  /** Fase-label ("Offerte besproken"), of null als er geen fase is. */
+  faseLabel: string | null;
+  /** Samengesteld adres (straat huisnummer, postcode plaats), of null. */
+  adres: string | null;
+  /** Oppervlakte in m², of null als niet ingevuld. */
+  m2: number | null;
+  /** Offertebedrag geformatteerd ("€ 736,00"), of null als <= 0. */
+  bedrag: string | null;
+  /** Lead-tags als chips, leeg als er geen tags zijn. */
+  tags: LeadContextTag[];
 }
 
 /** Volledige inhoud van een gesprek in de Inbox. */
@@ -40,6 +61,16 @@ export const CONVERSATIONS: Record<string, InboxConversation> = {
       kanaal: "WhatsApp",
       dienst: "Gevelreiniging + impregnatie",
       waarde: "€736",
+      statusLabel: "Offerte verstuurd",
+      statusKind: "sent",
+      faseLabel: "Offerte besproken",
+      adres: "Stationsstraat 14, 3811 MK Amersfoort",
+      m2: 62,
+      bedrag: "€ 736,00",
+      tags: [
+        { id: "demo-vip", naam: "VIP", kleur: "#1a56ff" },
+        { id: "demo-herhaal", naam: "Terugkerend", kleur: "#1e8a5e" },
+      ],
     },
   },
   smit: {
@@ -55,6 +86,13 @@ export const CONVERSATIONS: Record<string, InboxConversation> = {
       kanaal: "WhatsApp",
       dienst: "Oprit reinigen",
       waarde: "nieuw",
+      statusLabel: "Nieuw",
+      statusKind: "new",
+      faseLabel: "Info verzamelen",
+      adres: "Dorpsweg 8, 3701 AB Zeist",
+      m2: 40,
+      bedrag: null,
+      tags: [{ id: "demo-spoed", naam: "Spoed", kleur: "#b07408" }],
     },
   },
   vandijk: {
@@ -69,6 +107,13 @@ export const CONVERSATIONS: Record<string, InboxConversation> = {
       kanaal: "Telefoon",
       dienst: "Zonnepanelen reinigen",
       waarde: "€310",
+      statusLabel: "In gesprek",
+      statusKind: "talking",
+      faseLabel: "Info verzamelen",
+      adres: "Maliebaan 22, 3581 CP Utrecht",
+      m2: null,
+      bedrag: "€ 310,00",
+      tags: [],
     },
   },
   wilms: {
@@ -83,6 +128,13 @@ export const CONVERSATIONS: Record<string, InboxConversation> = {
       kanaal: "WhatsApp",
       dienst: "Dakgoot + gevel",
       waarde: "€395",
+      statusLabel: "In review",
+      statusKind: "review",
+      faseLabel: "Onderhandelen",
+      adres: "Biltstraat 101, 3572 AP Utrecht",
+      m2: 28,
+      bedrag: "€ 395,00",
+      tags: [{ id: "demo-korting", naam: "Kortingsverzoek", kleur: "#0b7fa8" }],
     },
   },
   janssen: {
@@ -97,6 +149,13 @@ export const CONVERSATIONS: Record<string, InboxConversation> = {
       kanaal: "WhatsApp",
       dienst: "Terras + schutting",
       waarde: "€580",
+      statusLabel: "Goedgekeurd",
+      statusKind: "plan",
+      faseLabel: "Afspraak bevestigd",
+      adres: "Larenseweg 47, 1221 CL Hilversum",
+      m2: 75,
+      bedrag: "€ 580,00",
+      tags: [{ id: "demo-afspraak", naam: "Afspraak gepland", kleur: "#0b7fa8" }],
     },
   },
 };

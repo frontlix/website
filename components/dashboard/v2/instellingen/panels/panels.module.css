@@ -113,6 +113,21 @@
   margin-top: 5px;
 }
 
+.logoHintErr {
+  color: var(--rb-danger);
+}
+
+/* Geüpload bedrijfslogo: zelfde maat/hoekradius als het initiaal-blok (.logo). */
+.logoImg {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--rb-line);
+  background: var(--rb-field);
+}
+
 /* ── Werkstraal-slider ── */
 .sliderHead {
   display: flex;
@@ -169,6 +184,26 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* ── Account / Privacy: eenvoudige tekst- en wachtwoordvelden ── */
+.authInput {
+  width: 100%;
+  max-width: 360px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  color: var(--rb-ink);
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+  padding: 10px 14px;
+  margin-top: 6px;
+}
+
+.authInput:focus {
+  outline: none;
+  border-color: var(--rb-blue);
+  box-shadow: 0 0 0 3px var(--rb-blue-soft);
 }
 
 .geoBtn {
@@ -291,6 +326,241 @@
 
 .addBtn {
   margin-top: 16px;
+}
+
+/* Kop van het "Dienst aanvragen"-uitklapformulier: titel links, sluitknop rechts. */
+.addHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.addClose {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--rb-r-chip);
+  border: 1px solid var(--rb-line);
+  background: var(--rb-field);
+  color: var(--rb-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.addClose:hover {
+  color: var(--rb-ink);
+  border-color: var(--rb-muted);
+}
+
+/* ── Openingsbericht: indien-status (boven in het paneel) ── */
+.tplStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: var(--rb-r-chip);
+  /* Wat lucht tussen de paneelkop (titel + Opslaan) en de melding. */
+  margin-top: 16px;
+  margin-bottom: 14px;
+}
+
+.tplStatusOk {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.tplStatusErr {
+  color: var(--rb-danger);
+  background: color-mix(in srgb, var(--rb-danger) 10%, transparent);
+}
+
+.tplStatusInfo {
+  color: var(--rb-muted);
+  background: var(--rb-field);
+}
+
+.spin {
+  animation: tplSpin 0.8s linear infinite;
+}
+
+@keyframes tplSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Openingsbericht: aanvragenlijst (status + bewerken/annuleren) ── */
+.aanvraagBox {
+  margin-top: 20px;
+  border-top: 1px solid var(--rb-line);
+  padding-top: 16px;
+}
+
+.aanvraagTitle {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.aanvraagList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.aanvraagRow {
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card);
+  padding: 12px 14px;
+  background: var(--rb-field);
+}
+
+.aanvraagTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.aanvraagBody {
+  min-width: 0;
+}
+
+.aanvraagNaam {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.aanvraagDate {
+  font-size: 12px;
+  color: var(--rb-muted);
+  margin-top: 1px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--rb-r-pill);
+  white-space: nowrap;
+}
+
+.status_amber {
+  color: var(--rb-warn-ink);
+  background: color-mix(in srgb, var(--rb-warn) 16%, transparent);
+}
+
+.status_blue {
+  color: var(--rb-blue);
+  background: color-mix(in srgb, var(--rb-blue) 12%, transparent);
+}
+
+.status_green {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.status_red {
+  color: var(--rb-danger);
+  background: color-mix(in srgb, var(--rb-danger) 10%, transparent);
+}
+
+.aanvraagTekst {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  margin-top: 8px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  /* Lange teksten netjes inkorten tot een paar regels. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.aanvraagNotitie {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: var(--rb-r-chip);
+  background: var(--rb-field-2);
+  font-size: 12px;
+  color: var(--rb-ink);
+}
+
+.aanvraagNotitieIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--rb-muted);
+}
+
+.aanvraagNotitieLabel {
+  display: block;
+  font-weight: 700;
+  color: var(--rb-muted);
+  margin-bottom: 1px;
+}
+
+.aanvraagActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.aanvraagBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: var(--rb-card, #fff);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.aanvraagBtn:hover:not(:disabled) {
+  border-color: var(--rb-muted);
+}
+
+.aanvraagBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.aanvraagBtnDanger {
+  color: var(--rb-danger);
+}
+
+.aanvraagBtnDanger:hover:not(:disabled) {
+  border-color: var(--rb-danger);
+}
+
+.aanvraagError {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-danger);
 }
 
 /* ── Beschikbaarheid ── */
@@ -428,6 +698,13 @@
 
 .dotWarn {
   background: var(--rb-warn-ink);
+}
+
+/* Gekleurde kanaal-stip (kleur = kanaal-identiteit), met zachte gloed-ring
+   zodat de status levendig oogt. Maat blijft 10px (geen layout-shift). */
+.dotChannel {
+  background: var(--rb-channel, var(--rb-blue));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rb-channel, var(--rb-blue)) 18%, transparent);
 }
 
 /* Grijs bolletje in demo-modus (geen echte gekoppeld-status). */
@@ -571,6 +848,10 @@
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-card-sm);
   overflow: hidden;
+  /* Niet meekrimpen in de flex-kolom van het paneel: anders worden de kaarten
+     platgedrukt en knipt overflow:hidden de tekst af. Volle hoogte, de
+     panelBody scrollt. */
+  flex-shrink: 0;
 }
 
 .reminderHead {
@@ -643,6 +924,27 @@
   border-color: var(--rb-blue);
 }
 
+/* "Opgeslagen"-flash + foutmelding naast het dagen-veld (direct opslaan). */
+.dayFlash {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-mint-ink);
+  white-space: nowrap;
+}
+
+.dayErr {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-danger);
+  white-space: nowrap;
+}
+
 .reminderBody {
   display: grid;
   grid-template-columns: 1fr 250px;
@@ -661,7 +963,11 @@
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-chip);
   padding: 10px 13px;
-  resize: vertical;
+  /* Hoogte volgt de inhoud (auto-grow in RemindersPanel), dus geen interne
+     scrollbalk en de hele tekst is zichtbaar. */
+  resize: none;
+  overflow-y: hidden;
+  min-height: 96px;
   outline: none;
 }
 
@@ -710,6 +1016,14 @@
   padding: 0 16px;
   min-width: 92px;
   text-align: center;
+}
+
+/* Korte uitleg onder een veld (bv. het offertenummer-voorvoegsel). */
+.veldUitleg {
+  font-size: 12px;
+  color: var(--rb-muted);
+  line-height: 1.5;
+  margin-top: 8px;
 }
 
 .toggleRow {
@@ -926,4 +1240,15 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--rb-muted);
+}
+
+/* Lege-staat (bv. geen teamleden). */
+.empty {
+  margin-top: 16px;
+  padding: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border-radius: var(--rb-r-card-sm);
 }

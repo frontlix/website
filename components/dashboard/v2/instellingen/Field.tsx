@@ -14,6 +14,14 @@ interface FieldProps {
   prefix?: ReactNode;
   /** Suffix achter de waarde, bv. "%" of "per maand". */
   suffix?: ReactNode;
+  /** Hint-tekst in een leeg veld. */
+  placeholder?: string;
+  /** Meerregelig invoerveld (textarea i.p.v. input). */
+  multiline?: boolean;
+  /** Invoertype van het tekstveld. Default "text". */
+  type?: "text" | "password";
+  /** Keuzelijst: rendert een native <select> met deze opties. */
+  options?: { value: string; label: string }[];
   /**
    * Toont de waarde als niet-bewerkbaar (spiegelt v1 ReadOnlyField): geen
    * input meer maar een vaste waarde met een Read-only-pill. Lege waarde
@@ -30,7 +38,11 @@ export function Field({
   breed = false,
   prefix,
   suffix,
+  placeholder,
+  multiline = false,
+  options,
   readOnly = false,
+  type = "text",
 }: FieldProps) {
   if (readOnly) {
     return (
@@ -54,13 +66,36 @@ export function Field({
   return (
     <div className={breed ? styles.wide : undefined}>
       <div className={styles.label}>{label}</div>
-      <div className={styles.box}>
+      <div className={`${styles.box} ${multiline ? styles.boxMultiline : ""}`}>
         {prefix ? <span className={styles.prefix}>{prefix}</span> : null}
-        <input
-          className={styles.input}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-        />
+        {options ? (
+          <select
+            className={styles.select}
+            value={value}
+            onChange={(e) => onChange?.(e.target.value)}
+          >
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        ) : multiline ? (
+          <textarea
+            className={styles.textarea}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => onChange?.(e.target.value)}
+          />
+        ) : (
+          <input
+            className={styles.input}
+            type={type}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => onChange?.(e.target.value)}
+          />
+        )}
         {suffix ? <span className={styles.suffix}>{suffix}</span> : null}
       </div>
     </div>

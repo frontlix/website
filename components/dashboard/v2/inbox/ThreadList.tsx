@@ -1,6 +1,7 @@
 "use client";
 
 import type { Thread } from "../demo-data";
+import { Avatar } from "../ui/Avatar";
 import styles from "./ThreadList.module.css";
 
 interface ThreadListProps {
@@ -50,12 +51,15 @@ export function ThreadList({
                 key={t.id}
                 type="button"
                 onClick={() => onSelect(t.id)}
-                className={`${styles.row} ${isActief ? styles.rowActive : ""}`}
+                className={`${styles.row} ${isActief ? styles.rowActive : ""} ${
+                  t.kanaal === "Telefoon"
+                    ? styles.channelTelefoon
+                    : styles.channelWhatsApp
+                }`}
               >
-                <span
-                  className={`${styles.avatar} ${isActief ? styles.avatarActive : ""}`}
-                >
-                  {t.initials}
+                <span className={styles.avatarWrap}>
+                  <Avatar name={t.naam} initials={t.initials} size={40} radius={14} />
+                  <span className={styles.channelDot} aria-hidden="true" />
                 </span>
                 <span className={styles.main}>
                   <span className={styles.topLine}>

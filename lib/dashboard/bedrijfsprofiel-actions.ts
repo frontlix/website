@@ -6,15 +6,21 @@ import { requireApprovedUser } from './require-approved-user'
 
 /**
  * Server action voor het opslaan van de bewerkbare bedrijfsprofiel-velden op
- * `tenant_settings`: bedrijfsnaam, adres, postcode, plaats, eigenaar_email en
- * telefoon. De v2 Instellingen-pagina (Bedrijfsprofiel-sectie) gebruikt dit
- * via de globale "Opslaan"-knop.
+ * `tenant_settings`: bedrijfsnaam, bot-naam (chatbot_naam), adres, postcode,
+ * plaats, eigenaar_email, eigenaar_whatsapp, spoed-telefoon
+ * (eigenaar_spoed_telefoon) en de werkstraal (radius_max_km). De v2
+ * Instellingen-pagina (Bedrijfsprofiel-sectie) gebruikt
+ * dit via de globale "Opslaan"-knop, zodat klant-wijzigingen in de DB landen
+ * en de bot/workflow ze kan lezen.
  *
- * Telefoon-keuze: het invoerveld "Telefoon" schrijft naar
- * `tenant_settings.eigenaar_whatsapp`. Dat is consistent met hoe de pagina de
- * waarde teruglezt (toCompanyProfile mapt `tel` = eigenaar_whatsapp, met
- * eigenaar_spoed_telefoon alleen als fallback). KvK is bewust NIET opgenomen,
- * die kolom bestaat niet op tenant_settings.
+ * Telefoon-velden: "Eigenaar WhatsApp" schrijft naar `eigenaar_whatsapp`,
+ * "Spoed-telefoon" naar `eigenaar_spoed_telefoon` (twee aparte kolommen, zoals
+ * het v1-dashboard ze toont). KvK is bewust NIET opgenomen, die kolom bestaat
+ * niet op tenant_settings.
+ *
+ * Werkstraal: `radius_max_km` wordt alleen weggeschreven als de meegestuurde
+ * waarde een plausibel getal is (1–1000 km); een lege/ongeldige invoer laat de
+ * bestaande waarde ongemoeid.
  *
  * Auth + write-patroon: identiek aan saveOmzetDoelMaand / saveTenantBase.
  * requireApprovedUser() blokkeert niet-approved users (redirect). Het
@@ -28,11 +34,18 @@ export type SaveBedrijfsprofielResult =
 
 export interface BedrijfsprofielInput {
   bedrijfsnaam: string
+  /** Bot-naam → tenant_settings.chatbot_naam. */
+  bot_naam: string
   adres: string
   postcode: string
   plaats: string
   eigenaar_email: string
+  /** Eigenaar-WhatsApp → tenant_settings.eigenaar_whatsapp. */
   telefoon: string
+  /** Spoed-telefoon → tenant_settings.eigenaar_spoed_telefoon. */
+  spoed_telefoon: string
+  /** Werkstraal in km → tenant_settings.radius_max_km. */
+  radius_max_km: number
 }
 
 export async function updateBedrijfsprofiel(
@@ -64,17 +77,29 @@ export async function updateBedrijfsprofiel(
     }
   }
 
+  // Werkstraal alleen wegschrijven bij een plausibel getal (1–1000 km); een
+  // lege/0/ongeldige invoer laat de bestaande radius_max_km ongemoeid.
+  const radius =
+    Number.isFinite(input.radius_max_km) && input.radius_max_km > 0
+      ? Math.min(Math.round(input.radius_max_km), 1000)
+      : null
+
+  const updatePayload = {
+    bedrijfsnaam: input.bedrijfsnaam.trim() || null,
+    chatbot_naam: input.bot_naam.trim() || null,
+    adres: input.adres.trim() || null,
+    postcode: input.postcode.trim() || null,
+    plaats: input.plaats.trim() || null,
+    eigenaar_email: email || null,
+    eigenaar_whatsapp: input.telefoon.trim() || null,
+    eigenaar_spoed_telefoon: input.spoed_telefoon.trim() || null,
+    bijgewerkt_op: new Date().toISOString(),
+    ...(radius != null ? { radius_max_km: radius } : {}),
+  }
+
   const { error: updErr } = await admin
     .from('tenant_settings')
-    .update({
-      bedrijfsnaam: input.bedrijfsnaam.trim() || null,
-      adres: input.adres.trim() || null,
-      postcode: input.postcode.trim() || null,
-      plaats: input.plaats.trim() || null,
-      eigenaar_email: email || null,
-      eigenaar_whatsapp: input.telefoon.trim() || null,
-      bijgewerkt_op: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq('id', existing.id)
 
   if (updErr) {

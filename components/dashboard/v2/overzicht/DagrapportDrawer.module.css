@@ -1,0 +1,290 @@
+/* ── Overlay + slide-in paneel ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 26, 48, 0.42);
+  backdrop-filter: blur(2px);
+  z-index: 80;
+  animation: dagOverlayIn 0.18s ease;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 460px;
+  max-width: calc(100vw - 24px);
+  background: var(--rb-bg, #f4f7fe);
+  border-left: 1px solid var(--rb-line);
+  box-shadow: -16px 0 48px rgba(18, 26, 48, 0.18);
+  z-index: 81;
+  display: flex;
+  flex-direction: column;
+  animation: dagPanelIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dagOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dagPanelIn {
+  from { transform: translateX(24px); opacity: 0.4; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.headerTitle {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--rb-ink);
+}
+
+.headerSub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--rb-line);
+  background: #fff;
+  color: var(--rb-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.closeBtn:hover {
+  color: var(--rb-ink);
+  border-color: var(--rb-muted);
+}
+
+/* ── Body ── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.section {
+}
+
+.sectionTitle {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  margin-bottom: 10px;
+}
+
+/* ── Surface vandaag ── */
+.surfaceCard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rb-line);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card);
+  overflow: hidden;
+}
+
+.surfaceStat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 12px;
+  background: #fff;
+}
+
+.surfaceLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  display: inline-flex;
+  align-items: center;
+}
+
+.surfaceIcon {
+  margin-right: 4px;
+}
+
+.surfaceValue {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--rb-ink);
+}
+
+.surfaceHint {
+  font-size: 10.5px;
+  color: var(--rb-muted);
+}
+
+/* ── KPI-grid ── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.kpiCard {
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card);
+  padding: 14px 16px;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.kpiValue {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--rb-ink);
+  margin-top: 2px;
+}
+
+.kpiDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--rb-r-pill);
+  margin-top: 6px;
+}
+
+.deltaUp {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+.deltaDown {
+  color: var(--rb-status-lost-ink);
+  background: var(--rb-status-lost-bg);
+}
+.deltaFlat {
+  color: var(--rb-muted);
+  background: var(--rb-field);
+}
+
+/* ── Sparkline ── */
+.sparkWrap {
+  display: block;
+  width: 100%;
+  height: 22px;
+  margin-top: 10px;
+}
+.sparkPath {
+  fill: none;
+  stroke: var(--rb-blue);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.sparkFill {
+  fill: color-mix(in srgb, var(--rb-blue) 10%, transparent);
+  stroke: none;
+}
+.sparkDot {
+  fill: var(--rb-blue);
+}
+
+/* ── Uur-strip ── */
+.uurStrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 52px;
+  padding: 6px 0;
+}
+
+.uurBar {
+  flex: 1;
+  height: max(2px, calc(var(--uur-h) * 100%));
+  background: var(--rb-field-2);
+  border-radius: 2px;
+}
+
+.uurBarPast {
+  background: color-mix(in srgb, var(--rb-blue) 45%, transparent);
+}
+
+.uurBarNow {
+  background: var(--rb-blue);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rb-blue) 25%, transparent);
+}
+
+.uurAxis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  margin-top: 4px;
+}
+
+/* ── Bronnen ── */
+.bronnenList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bronRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+}
+
+.bronNaam {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  text-transform: capitalize;
+}
+
+.bronCount {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rb-blue);
+}
+
+.empty {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  padding: 14px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-chip);
+}

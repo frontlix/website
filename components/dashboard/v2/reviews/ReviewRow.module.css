@@ -8,20 +8,6 @@
   border-bottom: 1px solid var(--rb-line);
 }
 
-.chip {
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: var(--rb-blue-soft);
-  color: var(--rb-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
 .body {
   flex: 1;
   min-width: 0;

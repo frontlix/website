@@ -44,14 +44,3 @@
   -webkit-appearance: none;
   appearance: none;
 }
-
-.kbd {
-  font-family: var(--rb-font);
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--rb-muted);
-  border: 1px solid var(--rb-line);
-  border-radius: 6px;
-  padding: 1px 6px;
-  line-height: 1.4;
-}

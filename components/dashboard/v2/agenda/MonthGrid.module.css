@@ -1,0 +1,181 @@
+.month {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Weekdag-koppen ── */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.weekday {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  padding: 0 4px 8px;
+}
+
+/* ── Cellen-rooster ── */
+.cells {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 2px;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+}
+
+/* Voor-/naloop van aangrenzende maanden: gedimd. */
+.cellOut {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Dagen die al geweest zijn: lichter, zodat vandaag + de toekomst opvallen. */
+.cellPast {
+  background: rgba(255, 255, 255, 0.22);
+  opacity: 0.6;
+}
+
+.cellToday {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(26, 86, 255, 0.35);
+  opacity: 1;
+}
+
+/* ── Cel-kop (dag-getal + Vrij) ── */
+.cellHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+
+.dayNum {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rb-ink);
+}
+
+.cellOut .dayNum {
+  color: var(--rb-muted);
+  opacity: 0.6;
+}
+
+.dayNumToday {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--rb-blue);
+  color: #fff;
+}
+
+.vrij {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+/* ── Lege in-maand-cel: "+"-knop ── */
+.add {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--rb-muted);
+  opacity: 0.45;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.add:hover {
+  background: rgba(33, 42, 69, 0.04);
+  opacity: 1;
+}
+
+/* ── Afspraakblokken ── */
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.block {
+  --cell-accent: var(--rb-muted);
+  --cell-bg: #fff;
+  display: block;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 40px;
+  text-align: left;
+  border: none;
+  border-left: 3px solid var(--cell-accent);
+  border-radius: 8px;
+  padding: 6px 9px;
+  background: var(--cell-bg);
+  cursor: pointer;
+  overflow: hidden;
+  font-family: var(--rb-font);
+  transition: filter 0.12s ease;
+}
+
+.block:hover {
+  filter: brightness(0.97);
+}
+
+.blockDone {
+  opacity: 0.55;
+}
+
+.blockTime {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--cell-accent);
+}
+
+.blockTitle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.blockCheck {
+  color: var(--rb-success);
+  flex-shrink: 0;
+}

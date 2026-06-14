@@ -16,6 +16,24 @@ export async function getPricingForOffertePreview(): Promise<ManualOffertePricin
   return getManualOffertePricing()
 }
 
+/** Meta voor de offerte-wizard-preview: standaard-geldigheid (dagen) +
+ *  bedrijfsnaam, zodat de verstuur-preview de echte afzender en geldigheid
+ *  toont (i.p.v. hardcoded waarden). Valt terug op 21 dagen / "Schoon Straatje". */
+export type OffertePreviewMeta = { geldigheidDagen: number; bedrijfsnaam: string }
+
+export async function getOffertePreviewMeta(): Promise<OffertePreviewMeta> {
+  const supabase = await getDashboardSupabase()
+  const { data } = await supabase
+    .from('tenant_settings')
+    .select('offerte_geldigheid_dagen, bedrijfsnaam')
+    .limit(1)
+    .maybeSingle()
+  return {
+    geldigheidDagen: Number(data?.offerte_geldigheid_dagen) || 21,
+    bedrijfsnaam: (data?.bedrijfsnaam as string | null)?.trim() || 'Schoon Straatje',
+  }
+}
+
 /**
  * Werkt één prijsregel bij in `pricing_rules`. Gebruikt door de
  * PricingRuleEditor (settings → Prijzen).

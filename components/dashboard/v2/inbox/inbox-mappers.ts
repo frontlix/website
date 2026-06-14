@@ -12,10 +12,16 @@ import type {
   ConversationPreview,
   InboxLeadContext,
 } from "@/lib/dashboard/inbox-queries";
-import type { Bericht } from "@/lib/dashboard/database.types";
+import type {
+  Bericht,
+  DashboardStatus,
+  GesprekFase,
+  Tag,
+} from "@/lib/dashboard/database.types";
 import { botStatusForFase } from "@/lib/dashboard/fase-labels";
-import type { Thread, ChatMessage } from "../demo-data";
-import type { InboxConversation } from "./inbox-data";
+import { formatEuro, gesprekFaseLabel } from "@/lib/dashboard/format";
+import type { Thread, ChatMessage, StatusKind } from "../demo-data";
+import type { InboxConversation, LeadContextTag } from "./inbox-data";
 
 /** Initialen uit een naam ("Familie Bakker" → "FB", "Anna" → "AN"). */
 export function initialsFromNaam(naam: string | null | undefined): string {
@@ -149,10 +155,72 @@ function dienstLabel(ctx: InboxLeadContext): string {
 }
 
 /**
- * InboxLeadContext → de v2 LeadContext-prop "context" + de ChatPane-sub.
- * Houdt exact dezelfde velden aan die de v2-componenten al verwachten.
+ * Status-label voor het lead-dossier. Zelfde afleiding als de (app)-inbox:
+ * een eindstatus uit dashboard_status, of een menselijker label op basis van
+ * de fase wanneer het gesprek nog "open" is.
  */
-export function toLeadContextProps(ctx: InboxLeadContext): {
+function statusLabelVoor(
+  status: DashboardStatus | null,
+  fase: GesprekFase | null,
+): string {
+  if (status === "afgehandeld") return "Afgerond";
+  if (status === "geen_interesse") return "Afgewezen";
+  if (status === "no_show") return "No-show";
+  if (status === "archief") return "Gearchiveerd";
+  if (status === "opgevolgd") return "Opgevolgd";
+  if (fase === "afspraak_bevestigd") return "Goedgekeurd";
+  if (fase === "onderhandelen") return "In review";
+  if (fase === "offerte_besproken") return "Offerte verstuurd";
+  return "In gesprek";
+}
+
+/**
+ * Kleur-kind voor de status-pill (mapt op de rijke v2 StatusKind-tinten,
+ * gelijk aan de status-labels uit statusLabelVoor):
+ *   afgerond → won, afgewezen → lost, no-show → lost, archief → sent,
+ *   opgevolgd → talking, bezoek bevestigd → plan, onderhandelen → review,
+ *   offerte verstuurd → sent, anders (in gesprek) → talking.
+ */
+function statusKindVoor(
+  status: DashboardStatus | null,
+  fase: GesprekFase | null,
+): StatusKind {
+  if (status === "afgehandeld") return "won";
+  if (status === "geen_interesse") return "lost";
+  if (status === "no_show") return "lost";
+  if (status === "archief") return "sent";
+  if (status === "opgevolgd") return "talking";
+  if (fase === "afspraak_bevestigd") return "plan";
+  if (fase === "onderhandelen") return "review";
+  if (fase === "offerte_besproken") return "sent";
+  return "talking";
+}
+
+/** Samengesteld adres uit straat/huisnummer/postcode/plaats, of null. */
+function adresVoor(ctx: InboxLeadContext): string | null {
+  const straatRegel = ctx.straat
+    ? `${ctx.straat} ${ctx.huisnummer ?? ""}`.trim()
+    : null;
+  const plaatsRegel = `${ctx.postcode ?? ""} ${ctx.plaats ?? ""}`.trim();
+  const samengesteld = [straatRegel, plaatsRegel || null]
+    .filter(Boolean)
+    .join(", ");
+  return samengesteld || null;
+}
+
+/** Tag-rijen (uit getTagsForLead) → tag-chips voor het lead-dossier. */
+export function tagsToContextTags(tags: Tag[]): LeadContextTag[] {
+  return tags.map((t) => ({ id: t.id, naam: t.naam, kleur: t.kleur }));
+}
+
+/**
+ * InboxLeadContext → de v2 LeadContext-prop "context" + de ChatPane-sub.
+ * Tags worden apart aangeleverd (zie page, getTagsForLead).
+ */
+export function toLeadContextProps(
+  ctx: InboxLeadContext,
+  tags: LeadContextTag[] = [],
+): {
   initials: string;
   sub: string;
   context: InboxConversation["context"];
@@ -160,6 +228,10 @@ export function toLeadContextProps(ctx: InboxLeadContext): {
   const dienst = dienstLabel(ctx);
   const waarde = waardeLabel(ctx.totaal_prijs);
   const plaats = ctx.plaats ?? "Onbekend";
+  const bedrag =
+    ctx.totaal_prijs != null && ctx.totaal_prijs > 0
+      ? formatEuro(ctx.totaal_prijs)
+      : null;
   return {
     initials: initialsFromNaam(ctx.naam),
     sub: `WhatsApp · ${dienst} · ${waarde}`,
@@ -168,6 +240,13 @@ export function toLeadContextProps(ctx: InboxLeadContext): {
       kanaal: "WhatsApp",
       dienst,
       waarde,
+      statusLabel: statusLabelVoor(ctx.dashboard_status, ctx.gesprek_fase),
+      statusKind: statusKindVoor(ctx.dashboard_status, ctx.gesprek_fase),
+      faseLabel: ctx.gesprek_fase ? gesprekFaseLabel(ctx.gesprek_fase) : null,
+      adres: adresVoor(ctx),
+      m2: ctx.m2 ?? null,
+      bedrag,
+      tags,
     },
   };
 }

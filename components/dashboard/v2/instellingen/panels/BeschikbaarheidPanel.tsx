@@ -13,12 +13,11 @@ interface BeschikbaarheidPanelProps {
 
 /**
  * Beschikbaarheid: per dag aan/uit met bewerkbare werktijden (begin + eind).
- * Zaterdag staat erbij als beschikbare dag.
  *
- * TODO(hoofd-agent): koppelen aan tenant_settings.beschikbaarheid +
- * saveBeschikbaarheid-action. Die DB-kolom bestaat nog niet, dus dit paneel
- * werkt nu volledig op lokale state (geen server-action die naar een
- * niet-bestaande kolom schrijft).
+ * Gekoppeld aan tenant_settings.beschikbaarheid: de globale "Opslaan"-knop
+ * schrijft de 7 dagen (Ma..Zo) weg via saveBeschikbaarheid. De Surface-bot leest
+ * dezelfde kolom (lead-automation/services/google_calendar.py, _load_availability)
+ * en slaat dagen met aan=false over bij het voorstellen van afspraak-slots.
  */
 export function BeschikbaarheidPanel({
   dagen,

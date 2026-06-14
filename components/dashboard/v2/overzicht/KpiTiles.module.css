@@ -5,11 +5,17 @@
 }
 
 .tile {
+  position: relative;
   padding: 18px 22px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Zelfde methode als de leads-kolommen: een ECHTE gekleurde bovenrand
+     (border-top) + een lichte tint-rand eromheen. Een border volgt de
+     kaart-afronding perfect, dus geen wit lijntje en geen uitstekende streep. */
+  border: 1px solid color-mix(in srgb, var(--rb-tile-accent, var(--rb-blue)) 18%, transparent);
+  border-top: 3px solid var(--rb-tile-accent, var(--rb-blue));
   transition: filter 0.15s ease;
 }
 

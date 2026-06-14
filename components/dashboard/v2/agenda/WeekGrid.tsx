@@ -1,10 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Check } from "lucide-react";
 import type { AgendaDag, AgendaItem } from "./agenda-data";
-import { EMPTY_DUUR } from "./agenda-data";
-import { itemKey } from "./agenda-derive";
-import { typeColorVar } from "./agenda-visuals";
+import { itemKey, eindTijd } from "./agenda-derive";
+import { typeColorVar, typeBgVar } from "./agenda-visuals";
 import styles from "./WeekGrid.module.css";
 
 interface WeekGridProps {
@@ -40,25 +40,37 @@ export function WeekGrid({ week, onSelect, onPlan, className }: WeekGridProps) {
                 + Plan iets in
               </button>
             ) : (
-              d.items.map((it, i) => (
-                <button
-                  type="button"
-                  key={itemKey(it, d.dag, i)}
-                  className={`${styles.item} ${it.klaar ? styles.itemDone : ""}`}
-                  onClick={() => onSelect(d, it)}
-                >
-                  <span className={styles.accent} style={{ background: typeColorVar(it.type) }} />
-                  <span className={styles.itemTime}>
-                    {it.tijd}
-                    {it.duur !== EMPTY_DUUR ? ` · ${it.duur}` : ""}
-                  </span>
-                  <span className={styles.itemTitle}>
-                    {it.klaar ? <Check size={12} strokeWidth={3} className={styles.doneCheck} /> : null}
-                    {it.titel}
-                  </span>
-                  <span className={styles.itemSub}>{it.sub}</span>
-                </button>
-              ))
+              d.items.map((it, i) => {
+                // Toon de tijdspanne "08:00 tot 17:00" (start tot afgeleide
+                // eindtijd) i.p.v. start + duur, zodat het niet als "8 tot 9"
+                // leest. Zonder afleidbare eindtijd (deadline) alleen de start.
+                const eind = eindTijd(it);
+                return (
+                  <button
+                    type="button"
+                    key={itemKey(it, d.dag, i)}
+                    className={`${styles.item} ${it.klaar ? styles.itemDone : ""}`}
+                    style={
+                      {
+                        "--item-accent": typeColorVar(it.type),
+                        "--item-bg": typeBgVar(it.type),
+                      } as CSSProperties
+                    }
+                    onClick={() => onSelect(d, it)}
+                  >
+                    <span className={styles.accent} />
+                    <span className={styles.itemTime}>
+                      {it.tijd}
+                      {eind ? ` tot ${eind}` : ""}
+                    </span>
+                    <span className={styles.itemTitle}>
+                      {it.klaar ? <Check size={12} strokeWidth={3} className={styles.doneCheck} /> : null}
+                      {it.titel}
+                    </span>
+                    <span className={styles.itemSub}>{it.sub}</span>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>

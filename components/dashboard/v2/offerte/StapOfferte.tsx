@@ -2,9 +2,8 @@
 
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { MiniStep } from "./MiniStep";
-import { GELDIG_TM } from "./offerte-data";
 import { fmtEuro, naarKomma, parsePrijs } from "./offerte-utils";
-import type { BtwKeuze, GeordendItem, VrijeRegel } from "./types";
+import type { BtwKeuze, GeordendItem, KortingType, VrijeRegel } from "./types";
 import styles from "./StapOfferte.module.css";
 
 interface StapOfferteProps {
@@ -13,14 +12,27 @@ interface StapOfferteProps {
   herorden: (van: number, naar: number) => void;
   vrij: VrijeRegel[];
   setVrij: (v: VrijeRegel[]) => void;
+  kortingType: KortingType;
+  setKortingType: (t: KortingType) => void;
   kortingPct: string;
   setKortingPct: (v: string) => void;
+  kortingEuro: string;
+  setKortingEuro: (v: string) => void;
   kortingReden: string;
   setKortingReden: (v: string) => void;
+  geldigDagen: number;
+  setGeldigDagen: (n: number) => void;
   btw: BtwKeuze;
   setBtw: (b: BtwKeuze) => void;
   bericht: string;
   setBericht: (v: string) => void;
+}
+
+/** "geldig t/m"-datum: vandaag + n dagen, NL-genotuleerd. */
+function geldigTotDatum(dagen: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + Math.max(0, dagen));
+  return d.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const BTW_OPTIES: BtwKeuze[] = ["21%", "9%", "0%", "Verlegd"];
@@ -32,19 +44,30 @@ export function StapOfferte({
   herorden,
   vrij,
   setVrij,
+  kortingType,
+  setKortingType,
   kortingPct,
   setKortingPct,
+  kortingEuro,
+  setKortingEuro,
   kortingReden,
   setKortingReden,
+  geldigDagen,
+  setGeldigDagen,
   btw,
   setBtw,
   bericht,
   setBericht,
 }: StapOfferteProps) {
-  const voegVrijToe = () => setVrij([...vrij, { id: Date.now(), naam: "", bedrag: 50 }]);
+  const voegVrijToe = () => setVrij([...vrij, { id: Date.now(), naam: "", bedrag: "50" }]);
   const zetVrij = (id: number, patch: Partial<VrijeRegel>) =>
     setVrij(vrij.map((v) => (v.id === id ? { ...v, ...patch } : v)));
   const wegVrij = (id: number) => setVrij(vrij.filter((v) => v.id !== id));
+  /** Stap het euro-bedrag van een vrije regel met ±5 (en houd het als string). */
+  const stapVrijBedrag = (id: number, huidig: string, richting: 1 | -1) => {
+    const nieuw = Math.max(0, parsePrijs(huidig) + richting * 5);
+    zetVrij(id, { bedrag: naarKomma(nieuw) });
+  };
 
   const omhoog = (i: number) => herorden(i, i - 1);
   const omlaag = (i: number) => herorden(i, i + 1);
@@ -54,6 +77,15 @@ export function StapOfferte({
     const nieuw =
       richting === 1 ? Math.min(100, huidig + 5) : Math.max(0, huidig - 5);
     setKortingPct(naarKomma(nieuw));
+  };
+
+  const stapKortingEuro = (richting: 1 | -1) => {
+    const nieuw = Math.max(0, parsePrijs(kortingEuro) + richting * 10);
+    setKortingEuro(naarKomma(nieuw));
+  };
+
+  const stapGeldig = (richting: 1 | -1) => {
+    setGeldigDagen(Math.max(1, geldigDagen + richting));
   };
 
   return (
@@ -131,12 +163,20 @@ export function StapOfferte({
                 <span className={styles.vrijBedragBox}>
                   <MiniStep
                     dir="min"
-                    onClick={() => zetVrij(item.vrij!.id, { bedrag: Math.max(0, item.vrij!.bedrag - 5) })}
+                    onClick={() => stapVrijBedrag(item.vrij!.id, item.vrij!.bedrag, -1)}
                   />
-                  <strong className={styles.vrijBedragVal}>{fmtEuro(item.vrij!.bedrag)}</strong>
+                  <span className={styles.vrijEuro}>€</span>
+                  <input
+                    className={styles.vrijBedragInput}
+                    value={item.vrij!.bedrag}
+                    inputMode="decimal"
+                    placeholder="0"
+                    onChange={(e) => zetVrij(item.vrij!.id, { bedrag: e.target.value })}
+                    aria-label="Bedrag meerwerk"
+                  />
                   <MiniStep
                     dir="plus"
-                    onClick={() => zetVrij(item.vrij!.id, { bedrag: item.vrij!.bedrag + 5 })}
+                    onClick={() => stapVrijBedrag(item.vrij!.id, item.vrij!.bedrag, 1)}
                   />
                 </span>
                 <button
@@ -194,20 +234,55 @@ export function StapOfferte({
         </div>
 
         <div className={styles.cardSm}>
-          <div className="rb-section-label">Korting, typ zelf of stap per 5</div>
+          <div className={styles.kortingHead}>
+            <span className="rb-section-label">Korting</span>
+            <div className={styles.kortingToggle}>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${kortingType === "procent" ? styles.toggleActive : ""}`}
+                onClick={() => setKortingType("procent")}
+              >
+                Percentage
+              </button>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${kortingType === "euro" ? styles.toggleActive : ""}`}
+                onClick={() => setKortingType("euro")}
+              >
+                Vast bedrag
+              </button>
+            </div>
+          </div>
           <div className={styles.kortingRow}>
-            <span className={styles.kortingBox}>
-              <MiniStep dir="min" onClick={() => stapKorting(-1)} />
-              <input
-                className={styles.kortingInput}
-                value={kortingPct}
-                placeholder="0"
-                onChange={(e) => setKortingPct(e.target.value)}
-                aria-label="Kortingspercentage"
-              />
-              <span className={styles.kortingPct}>%</span>
-              <MiniStep dir="plus" onClick={() => stapKorting(1)} />
-            </span>
+            {kortingType === "procent" ? (
+              <span className={styles.kortingBox}>
+                <MiniStep dir="min" onClick={() => stapKorting(-1)} />
+                <input
+                  className={styles.kortingInput}
+                  value={kortingPct}
+                  placeholder="0"
+                  inputMode="decimal"
+                  onChange={(e) => setKortingPct(e.target.value)}
+                  aria-label="Kortingspercentage"
+                />
+                <span className={styles.kortingPct}>%</span>
+                <MiniStep dir="plus" onClick={() => stapKorting(1)} />
+              </span>
+            ) : (
+              <span className={styles.kortingBox}>
+                <MiniStep dir="min" onClick={() => stapKortingEuro(-1)} />
+                <span className={styles.kortingPct}>€</span>
+                <input
+                  className={styles.kortingInput}
+                  value={kortingEuro}
+                  placeholder="0"
+                  inputMode="decimal"
+                  onChange={(e) => setKortingEuro(e.target.value)}
+                  aria-label="Kortingsbedrag in euro"
+                />
+                <MiniStep dir="plus" onClick={() => stapKortingEuro(1)} />
+              </span>
+            )}
             <input
               className={styles.redenInput}
               value={kortingReden}
@@ -217,16 +292,31 @@ export function StapOfferte({
             />
           </div>
           <div className={styles.kortingNote}>
-            Typ een eigen percentage (komma mag, bijv. 7,5) of klik −/+ voor stappen van 5
+            {kortingType === "procent"
+              ? "Typ een eigen percentage (komma mag, bijv. 7,5) of klik −/+ voor stappen van 5"
+              : "Typ een vast bedrag in euro (bijv. 100) of klik −/+ voor stappen van 10"}
           </div>
         </div>
 
         <div className={styles.cardSm}>
-          <div className="rb-section-label">Geldigheid</div>
+          <div className="rb-section-label">Geldigheid, pas zelf aan</div>
           <div className={styles.geldigRow}>
-            <span className={styles.geldigVeld}>14 dagen</span>
+            <span className={styles.geldigBox}>
+              <MiniStep dir="min" onClick={() => stapGeldig(-1)} />
+              <input
+                className={styles.geldigInput}
+                value={geldigDagen}
+                inputMode="numeric"
+                onChange={(e) =>
+                  setGeldigDagen(parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)
+                }
+                aria-label="Geldigheid in dagen"
+              />
+              <span className={styles.geldigEenheid}>dagen</span>
+              <MiniStep dir="plus" onClick={() => stapGeldig(1)} />
+            </span>
             <span className={styles.geldigSub}>
-              geldig t/m <strong>{GELDIG_TM}</strong>
+              geldig t/m <strong>{geldigTotDatum(geldigDagen)}</strong>
             </span>
           </div>
         </div>

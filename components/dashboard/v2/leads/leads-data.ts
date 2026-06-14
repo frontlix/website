@@ -58,11 +58,11 @@ function columnForLead(lead: Lead): PipelineColumn {
 
 /** De status-dot-kleur per kolom (vaste fase-kleur, los van losse leads). */
 const COLUMN_DOT: Record<PipelineColumn, StatusKind> = {
-  Nieuw: "new",
-  "Bezoek gepland": "plan",
-  "Offerte uit": "sent",
-  Ingepland: "plan",
-  Afgerond: "new",
+  Nieuw: "new", // groen
+  "Bezoek gepland": "review", // amber
+  "Offerte uit": "sent", // grijs-blauw
+  Ingepland: "plan", // cyaan-teal
+  Afgerond: "won", // vol groen
 };
 
 /** Parse een NL-euro-string ("€2.549" / "€736") naar een getal in euro. */

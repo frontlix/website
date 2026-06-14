@@ -68,8 +68,17 @@
   filter: brightness(0.985);
 }
 
+/* Zachte type-tint per rij-achtergrond (kleur = soort afspraak). */
+.rowBezoek {
+  background: var(--rb-agenda-bezoek-bg);
+}
+
+.rowKlus {
+  background: var(--rb-agenda-klus-bg);
+}
+
 .rowDeadline {
-  background: var(--rb-blue-soft);
+  background: var(--rb-agenda-deadline-bg);
 }
 
 .tijd {
@@ -80,8 +89,16 @@
   flex-shrink: 0;
 }
 
+.tijdBezoek {
+  color: var(--rb-agenda-bezoek-ink);
+}
+
+.tijdKlus {
+  color: var(--rb-agenda-klus-ink);
+}
+
 .tijdDeadline {
-  color: var(--rb-blue);
+  color: var(--rb-agenda-deadline-ink);
 }
 
 .bar {
@@ -92,15 +109,15 @@
 }
 
 .barDeadline {
-  background: var(--rb-blue);
+  background: var(--rb-agenda-deadline-ink);
 }
 
 .barBezoek {
-  background: var(--rb-cyan);
+  background: var(--rb-agenda-bezoek-ink);
 }
 
 .barKlus {
-  background: var(--rb-success);
+  background: var(--rb-agenda-klus-ink);
 }
 
 .main {

@@ -22,9 +22,13 @@ export function TopTagsList({ rows }: TopTagsListProps) {
         <p className={styles.empty}>Nog geen tags toegekend.</p>
       ) : (
         <ul className={styles.list}>
-          {rows.map((row) => (
+          {rows.map((row, i) => (
             <li key={row.naam} className={styles.row}>
-              <span className={styles.naam}>{row.naam}</span>
+              <span
+                className={`${styles.chip} ${styles[`chipData${(i % 8) + 1}`] ?? ""}`}
+              >
+                {row.naam}
+              </span>
               <span className={styles.count}>{row.count}</span>
             </li>
           ))}

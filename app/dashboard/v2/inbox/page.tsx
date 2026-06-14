@@ -16,6 +16,7 @@ import {
   getMessagesForLead,
   getInboxLeadContext,
 } from "@/lib/dashboard/inbox-queries";
+import { getTagsForLead } from "@/lib/dashboard/tag-queries";
 import { InboxClient } from "@/components/dashboard/v2/inbox/InboxClient";
 import { InboxDemo } from "@/components/dashboard/v2/inbox/InboxDemo";
 import {
@@ -23,6 +24,7 @@ import {
   toUnreadById,
   toChatMessages,
   toLeadContextProps,
+  tagsToContextTags,
   suggestieVoorContext,
 } from "@/components/dashboard/v2/inbox/inbox-mappers";
 
@@ -53,18 +55,22 @@ export default async function InboxPage({
   // zodat de inbox niet leeg start.
   const selectedLeadId = sp.lead ?? conversations[0]?.leadId ?? null;
 
-  const [messages, leadCtx] = await Promise.all([
+  const [messages, leadCtx, leadTags] = await Promise.all([
     selectedLeadId ? getMessagesForLead(selectedLeadId) : Promise.resolve([]),
     selectedLeadId
       ? getInboxLeadContext(selectedLeadId)
       : Promise.resolve(null),
+    selectedLeadId ? getTagsForLead(selectedLeadId) : Promise.resolve([]),
   ]);
 
   // Actieve gesprek-data, alleen als de lead bestaat (anders lege staat).
   const active =
     selectedLeadId && leadCtx
       ? (() => {
-          const ctxProps = toLeadContextProps(leadCtx);
+          const ctxProps = toLeadContextProps(
+            leadCtx,
+            tagsToContextTags(leadTags),
+          );
           return {
             leadId: leadCtx.lead_id,
             naam: leadCtx.naam,

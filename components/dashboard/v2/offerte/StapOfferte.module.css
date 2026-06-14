@@ -158,6 +158,23 @@
   text-align: right;
 }
 
+.vrijEuro {
+  color: var(--rb-muted);
+  font-weight: 700;
+}
+
+.vrijBedragInput {
+  width: 54px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: right;
+}
+
 .wegBtn {
   width: 22px;
   height: 22px;
@@ -258,6 +275,41 @@
   background: var(--rb-field);
 }
 
+/* Kop met label links + de %/€-schakelaar rechts. */
+.kortingHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kortingToggle {
+  display: inline-flex;
+  gap: 3px;
+  background: var(--rb-field-2);
+  border-radius: var(--rb-r-pill);
+  padding: 2px;
+}
+
+.toggleBtn {
+  border: none;
+  background: transparent;
+  border-radius: var(--rb-r-pill);
+  padding: 3px 10px;
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.toggleActive {
+  background: #fff;
+  color: var(--rb-blue);
+  box-shadow: var(--rb-shadow-dropdown);
+}
+
 .kortingRow {
   display: flex;
   align-items: center;
@@ -323,6 +375,34 @@
   align-items: center;
   gap: 8px;
   margin-top: 8px;
+}
+
+.geldigBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: 9px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.geldigInput {
+  width: 34px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: center;
+}
+
+.geldigEenheid {
+  color: var(--rb-muted);
+  font-weight: 700;
 }
 
 .geldigVeld {

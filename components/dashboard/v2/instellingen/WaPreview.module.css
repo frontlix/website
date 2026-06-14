@@ -1,5 +1,9 @@
 .canvas {
-  background: var(--rb-wa-bg);
+  background-color: var(--rb-wa-bg);
+  background-image: linear-gradient(var(--rb-wa-veil), var(--rb-wa-veil)), var(--rb-wa-bg-image);
+  background-blend-mode: normal, multiply;
+  background-size: auto, 360px auto;
+  background-repeat: repeat;
   border-radius: 14px;
   padding: 14px 12px;
   min-height: 120px;

@@ -4,7 +4,11 @@
   background: var(--rb-card);
   border-radius: var(--rb-r-card-sm);
   padding: 12px 14px;
-  box-shadow: var(--rb-shadow-card);
+  /* Gekleurde linker-rail (inset-shadow) per status, plus de basis-kaartschaduw.
+     Inset i.p.v. border zodat de padding/geometrie ongewijzigd blijft. */
+  box-shadow:
+    inset 3px 0 0 var(--card-ink, transparent),
+    var(--rb-shadow-card);
   cursor: pointer;
   text-decoration: none;
   color: inherit;
@@ -14,7 +18,9 @@
 }
 
 .card:hover {
-  box-shadow: var(--rb-shadow-dropdown);
+  box-shadow:
+    inset 3px 0 0 var(--card-ink, transparent),
+    var(--rb-shadow-dropdown);
 }
 
 .card:active {

@@ -68,22 +68,32 @@
   background: var(--rb-blue-soft);
 }
 
-.avatar {
+/* Avatar-houder met een gekleurd kanaal-stipje (WhatsApp groen, Telefoon
+   cyaan). Het stipje ligt absoluut over de avatar, dus de layout schuift niet. */
+.avatarWrap {
+  position: relative;
   width: 40px;
   height: 40px;
-  border-radius: 14px;
-  background: var(--rb-blue-soft);
-  color: var(--rb-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
   flex-shrink: 0;
+  font-size: 13px;
 }
 
-.avatarActive {
-  background: #fff;
+.channelDot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--rb-card);
+}
+
+.channelWhatsApp .channelDot {
+  background: var(--rb-status-new-ink);
+}
+
+.channelTelefoon .channelDot {
+  background: var(--rb-cyan);
 }
 
 .main {
@@ -150,6 +160,15 @@
   border-radius: var(--rb-r-pill);
   padding: 1px 7px;
   flex-shrink: 0;
+}
+
+/* Ongelezen-teller in de kanaalkleur: WhatsApp groen, Telefoon cyaan. */
+.channelWhatsApp .unread {
+  background: var(--rb-status-new-ink);
+}
+
+.channelTelefoon .unread {
+  background: var(--rb-cyan);
 }
 
 /* ── Lege staat ── */

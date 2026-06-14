@@ -48,6 +48,76 @@
   line-height: 1.55;
 }
 
+/* Plak-textarea van de AI-plak (echte invoer, vervangt het oude voorbeeld). */
+.aiTextarea {
+  width: 100%;
+  margin-top: 9px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 11px 14px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  resize: vertical;
+  outline: none;
+}
+
+.aiTextarea:focus {
+  border-color: var(--rb-blue);
+}
+
+.aiHint {
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+/* Ingeklapte AI-plak: compacte klikbare balk (één regel) die de textarea pas
+   uitklapt bij klik, zodat de zoeker + gegevens direct in beeld staan. */
+.aiCardClosed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border-radius: var(--rb-r-card-sm);
+  border: 1.5px solid var(--rb-blue);
+  box-shadow: 0 4px 18px rgba(26, 86, 255, 0.1);
+  padding: 13px 20px;
+  cursor: pointer;
+  font-family: var(--rb-font);
+  transition: background 0.12s ease;
+}
+
+.aiCardClosed:hover {
+  background: rgba(26, 86, 255, 0.03);
+}
+
+.aiClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--rb-line);
+  background: var(--rb-field);
+  color: var(--rb-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.aiClose:hover {
+  color: var(--rb-ink);
+  border-color: var(--rb-muted);
+}
+
 .aiChips {
   display: flex;
   align-items: center;
@@ -145,6 +215,14 @@
   border-radius: var(--rb-r-chip);
   overflow: hidden;
   box-shadow: var(--rb-shadow-dropdown);
+}
+
+/* Klantresultaten: toon er hooguit 5 (≈57px per rij = 285px), de rest is
+   scrollbaar. Zo klapt de lijst nooit volledig uit; de "Nieuwe klant"-knop
+   blijft eronder altijd zichtbaar omdat die buiten deze scroll-container valt. */
+.resultatenScroll {
+  max-height: 285px;
+  overflow-y: auto;
 }
 
 .dropRow {
@@ -279,16 +357,18 @@
   margin-top: 4px;
 }
 
-.pcGrid {
-  display: grid;
-  grid-template-columns: 1fr 72px;
-  gap: 10px;
+/* E-mail vult de hele breedte op een eigen rij (adressen volgen eronder). */
+.emailFull {
+  grid-column: 1 / -1;
 }
 
-.straatGrid {
+/* Adresvelden op een eigen volle-breedte rij: postcode + nr compact, straat en
+   plaats ruim zodat lange namen niet meer worden afgekapt. */
+.adresGrid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 110px 72px 1.7fr 1.3fr;
   gap: 10px;
+  margin-top: 12px;
 }
 
 .veldLabel {
@@ -327,6 +407,14 @@
 
 .veld:focus {
   border-color: var(--rb-blue);
+}
+
+/* Soft validatie-waarschuwing onder telefoon/e-mail (zelfde check als v1). */
+.warning {
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rb-danger, #dc2626);
 }
 
 /* ── Factuuradres ── */

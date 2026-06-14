@@ -37,8 +37,32 @@
   gap: 16px;
 }
 
+/* Gekleurde top-accent per metriek (leads=cyaan, conversie=paars,
+   offertewaarde=groen, reactietijd=amber). Zelfde methode als de overzicht-
+   KPI's en de leads-kolommen: een ECHTE gekleurde bovenrand + lichte tint-rand
+   eromheen, zodat het accent de afronding netjes volgt (geen wit lijntje, geen
+   uitstekende streep). */
 .kpiCard {
   padding: 16px 20px;
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--rb-kpi-accent, var(--rb-blue)) 18%, transparent);
+  border-top: 3px solid var(--rb-kpi-accent, var(--rb-blue));
+}
+
+.kpiAccent0 {
+  --rb-kpi-accent: var(--rb-metric-leads);
+}
+
+.kpiAccent1 {
+  --rb-kpi-accent: var(--rb-metric-conversie);
+}
+
+.kpiAccent2 {
+  --rb-kpi-accent: var(--rb-metric-omzet);
+}
+
+.kpiAccent3 {
+  --rb-kpi-accent: var(--rb-metric-reactie);
 }
 
 .kpiLabel {

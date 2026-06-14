@@ -1,26 +1,50 @@
-/* Reviews-pagina (rebrand v2). Twee kolommen naast elkaar: links de
-   score-kolom (340px, gemiddelde + verdeling + per-kanaal), rechts de
-   "Alle reviews"-lijst. Het vlak vult exact de hoogte van het app-frame
-   (geen pagina-scroll); de lijst scrollt intern via zijn eigen min-height:0,
-   net als de andere v2-pagina's. */
-.page {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px;
-  align-items: stretch;
+/* Reviews-pagina (rebrand v2): nette "binnenkort"-placeholder, gecentreerd in
+   het app-frame. De reviews-backend bestaat nog niet; zodra die er is komt de
+   echte twee-koloms-weergave (score-kolom + lijst) terug. */
+.soon {
   height: 100%;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 24px;
 }
 
-.page > * {
-  min-height: 0;
+.soonIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
 }
 
-/* Onder 1100px: stapel de score-kolom boven de lijst; geen vaste hoogte
-   meer, zodat de pagina mee mag groeien op smalle schermen. */
-@media (max-width: 1100px) {
-  .page {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
+.soonBadge {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  padding: 3px 12px;
+}
+
+.soonTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--rb-ink);
+}
+
+.soonText {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--rb-muted);
+  max-width: 46ch;
 }

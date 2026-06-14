@@ -184,7 +184,7 @@ export function DossierView({
           <ChevronLeft size={16} strokeWidth={2.4} />
           Leads
         </Link>
-        <Avatar initials={lead.initials} size={44} variant="soft" />
+        <Avatar initials={lead.initials} name={lead.naam} size={44} />
         <div className={styles.kopMain}>
           <div className={styles.kopTitleRow}>
             <h1 className={styles.naam}>{lead.naam}</h1>
@@ -223,8 +223,18 @@ export function DossierView({
               </>
             )}
           </button>
-          <button type="button" className={styles.primaryBtn} onClick={openOfferteWizard}>
-            Offerte versturen
+          {/* Offerte versturen vanuit het dossier is nog niet gekoppeld
+              (opende een blanco wizard). Uitgeschakeld met "binnenkort" zodat
+              het duidelijk is dat dit eraan komt. */}
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            onClick={openOfferteWizard}
+            disabled
+            title="Binnenkort beschikbaar"
+            style={{ opacity: 0.5, cursor: "not-allowed" }}
+          >
+            Offerte versturen (binnenkort)
           </button>
         </div>
       </div>
@@ -242,7 +252,7 @@ export function DossierView({
           </div>
           <div className={styles.tabBody}>
             {tab === "Info" ? <InfoTab dienst={lead.dienst} data={data} /> : null}
-            {tab === "Offertes" ? <OffertesTab data={data} /> : null}
+            {tab === "Offertes" ? <OffertesTab data={data} leadId={leadId} /> : null}
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
             {tab === "Notities" ? (
               <NotitiesTab notities={notities} onAdd={voegNotitieToe} autoFocus={notesFocus} />
@@ -253,6 +263,7 @@ export function DossierView({
         {/* Rechts: WhatsApp-gesprek */}
         <ChatPanel
           initials={lead.initials}
+          naam={lead.naam}
           messages={chat}
           botAan={botAan}
           onToggleBot={zetBot}

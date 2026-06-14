@@ -1,21 +1,18 @@
-/* Lokale review-accentkleuren die niet in de gedeelde rebrand-tokens
-   staan (gradient-eind van de score-header + verdelingsbalken), uit het
-   prototype. Hier eenmalig gedefinieerd i.p.v. verspreid als losse hex. */
+/* Alle accentkleuren komen nu uit de gedeelde rebrand-tokens; geen losse
+   hex meer. De gradient-header gaat van blauw naar cyaan (brand-look), de
+   verdelingsbalken krijgen per sterklasse hun eigen --rb-rating-kleur. */
 .column {
-  --rev-grad-end: #3d74ff;
-  --rev-bar-high: #f5a623;
-  --rev-bar-low: #a6adc7;
   display: flex;
   flex-direction: column;
   gap: 20px;
   min-height: 0;
 }
 
-/* ── Gemiddelde-score-header (blauwe gradient) ── */
+/* ── Gemiddelde-score-header (brand-gradient blauw → cyaan) ── */
 .scoreHeader {
   border-radius: var(--rb-r-card);
   padding: 26px 28px;
-  background: linear-gradient(150deg, var(--rb-blue), var(--rev-grad-end));
+  background: linear-gradient(150deg, var(--rb-blue), var(--rb-cyan));
   color: #fff;
   box-shadow: 0 16px 36px rgba(26, 86, 255, 0.3);
 }
@@ -89,7 +86,7 @@
 }
 
 .barStarIcon {
-  fill: var(--rb-muted);
+  fill: var(--rb-star);
 }
 
 .barTrack {
@@ -105,12 +102,25 @@
   border-radius: 4px;
 }
 
-.barFillHigh {
-  background: var(--rev-bar-high);
+/* Per sterklasse een eigen kleur (groen → rood), via de rating-tokens. */
+.barFill5 {
+  background: var(--rb-rating-5);
 }
 
-.barFillLow {
-  background: var(--rev-bar-low);
+.barFill4 {
+  background: var(--rb-rating-4);
+}
+
+.barFill3 {
+  background: var(--rb-rating-3);
+}
+
+.barFill2 {
+  background: var(--rb-rating-2);
+}
+
+.barFill1 {
+  background: var(--rb-rating-1);
 }
 
 .barCount {
@@ -134,6 +144,14 @@
   align-items: center;
   gap: 10px;
   font-size: 13px;
+}
+
+/* Kleur-stip per kanaal (accent, valt binnen de bestaande regelhoogte). */
+.kanaalDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .kanaalNaam {

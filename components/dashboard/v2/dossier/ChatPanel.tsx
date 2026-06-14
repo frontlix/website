@@ -6,11 +6,13 @@ import { Avatar } from "@/components/dashboard/v2/ui";
 import type { DossierBericht, DossierData } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
 import { PhotoPlaceholder } from "./PhotoPlaceholder";
-import { SurfaceStrip } from "./SurfaceStrip";
 import styles from "./ChatPanel.module.css";
 
 interface ChatPanelProps {
   initials: string;
+  /** Naam van de lead, als seed voor de gekleurde avatar-tint (zelfde kleur
+   *  als in de kop). Zonder = terugval op de initialen. */
+  naam?: string;
   messages: DossierBericht[];
   /** Surface beantwoordt automatisch (aan) of jij antwoordt zelf (uit). */
   botAan: boolean;
@@ -26,6 +28,7 @@ interface ChatPanelProps {
  *  aanzetten"-toggle en onderaan de Surface-strip of een gepauzeerd-strip. */
 export function ChatPanel({
   initials,
+  naam,
   messages,
   botAan,
   onToggleBot,
@@ -50,7 +53,7 @@ export function ChatPanel({
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <Avatar initials={initials} size={32} variant="soft" />
+        <Avatar initials={initials} name={naam} size={32} />
         <div className={styles.headerMain}>
           <div className={styles.headerTitle}>WhatsApp-gesprek</div>
           <div className={styles.headerSub}>
@@ -94,8 +97,8 @@ export function ChatPanel({
               <div className={styles.bubbleText}>{m.tekst}</div>
               {m.fotos ? (
                 <div className={styles.bubbleFotos}>
-                  {data.fotos.map((f) => (
-                    <PhotoPlaceholder key={f} tag={f} height={54} />
+                  {data.fotos.map((f, i) => (
+                    <PhotoPlaceholder key={i} tag={f.tag} url={f.url} height={54} />
                   ))}
                 </div>
               ) : null}
@@ -106,30 +109,30 @@ export function ChatPanel({
       </div>
 
       <div className={styles.footer}>
-        {botAan ? (
-          <SurfaceStrip
-            fase={data.surface.fase}
-            actie={data.surface.actie}
-            onPause={() => onToggleBot(false)}
-          />
-        ) : (
-          <div className={styles.paused}>
-            <Pause size={14} strokeWidth={2.2} />
-            Surface is gepauzeerd voor dit gesprek, nieuwe berichten worden niet automatisch
-            beantwoord.
-          </div>
-        )}
         <div className={styles.inputRow}>
+          {/* Reageren vanuit het dossier is nog niet betrouwbaar gekoppeld
+              (kon stil mislukken). Uitgeschakeld met "binnenkort"; reageren
+              kan nu wel via de Inbox. */}
           <input
             value={tekst}
             onChange={(e) => setTekst(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") stuur();
             }}
-            placeholder="Typ een bericht, Surface pauzeert dan automatisch…"
+            disabled
+            placeholder="Reageren kan via de Inbox, hier binnenkort"
             className={styles.input}
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
           />
-          <button type="button" className={styles.sendBtn} onClick={stuur} aria-label="Versturen">
+          <button
+            type="button"
+            className={styles.sendBtn}
+            onClick={stuur}
+            disabled
+            title="Binnenkort, reageer via de Inbox"
+            style={{ opacity: 0.5, cursor: "not-allowed" }}
+            aria-label="Versturen"
+          >
             <Send size={15} strokeWidth={2.2} />
           </button>
         </div>

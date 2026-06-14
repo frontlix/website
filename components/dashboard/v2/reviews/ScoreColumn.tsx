@@ -11,6 +11,16 @@ interface ScoreColumnProps {
   wachtend: number;
 }
 
+/** Stabiele kleur per kanaal uit het data-viz-palet (zelfde kanaal = zelfde
+ *  kleur), zodat elk kanaal z'n eigen accent krijgt. */
+function kanaalKleur(bron: string): string {
+  let h = 0;
+  for (let i = 0; i < bron.length; i++) {
+    h = (h * 31 + bron.charCodeAt(i)) | 0;
+  }
+  return `var(--rb-data-${(Math.abs(h) % 8) + 1})`;
+}
+
 /** Linkerkolom (340px): gemiddelde-score-header in blauwe gradient,
  *  verdeling per sterklasse en gemiddelde per kanaal. */
 export function ScoreColumn({ stats, bronScores, wachtend }: ScoreColumnProps) {
@@ -38,7 +48,7 @@ export function ScoreColumn({ stats, bronScores, wachtend }: ScoreColumnProps) {
               </span>
               <div className={styles.barTrack}>
                 <div
-                  className={`${styles.barFill} ${ster >= 4 ? styles.barFillHigh : styles.barFillLow}`}
+                  className={`${styles.barFill} ${styles[`barFill${ster}`]}`}
                   style={{ width: `${(n / stats.verdelingMax) * 100}%` }}
                 />
               </div>
@@ -53,8 +63,15 @@ export function ScoreColumn({ stats, bronScores, wachtend }: ScoreColumnProps) {
         <div className={styles.kanaalList}>
           {bronScores.map((b) => (
             <div key={b.bron} className={styles.kanaalRow}>
+              <span
+                className={styles.kanaalDot}
+                style={{ background: kanaalKleur(b.bron) }}
+                aria-hidden
+              />
               <span className={styles.kanaalNaam}>{b.bron}</span>
-              <span className={styles.kanaalScore}>{b.score}</span>
+              <span className={styles.kanaalScore} style={{ color: kanaalKleur(b.bron) }}>
+                {b.score}
+              </span>
               <span className={styles.kanaalAantal}>({b.aantal})</span>
             </div>
           ))}

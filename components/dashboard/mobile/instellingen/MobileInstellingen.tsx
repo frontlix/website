@@ -11,8 +11,14 @@ import { InstOpening } from './InstOpening'
 import { InstReminders } from './InstReminders'
 import { InstNotif } from './InstNotif'
 import { InstTags } from './InstTags'
+import { InstBeschikbaarheid } from './InstBeschikbaarheid'
+import { InstEmail } from './InstEmail'
 import { IntegratiesSection } from '@/components/dashboard/instellingen/IntegratiesSection'
+import { AccountSection } from '@/components/dashboard/instellingen/AccountSection'
+import { AvgSection } from '@/components/dashboard/instellingen/AvgSection'
 import { buildInstGroups } from './instellingen-mock'
+import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
+import type { EmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
 import type {
   TenantSettings,
   PricingRule,
@@ -40,6 +46,10 @@ const DETAIL_KEYS = new Set([
   'notif',
   'tags',
   'integraties',
+  'beschikbaarheid',
+  'email',
+  'account',
+  'avg',
 ])
 
 type Props = {
@@ -61,6 +71,12 @@ type Props = {
   templateAanvragen: TemplateAanvraag[]
   /** Google-Agenda-koppelstatus voor het Agenda-detailscherm (null = nog niet opgehaald). */
   gcalStatus?: { connected: boolean; googleEmail: string | null; calendarId: string | null } | null
+  /** Werkdagen + tijden (7 dagen Ma..Zo) voor het Beschikbaarheid-scherm. */
+  beschikbaarheid: DagBeschikbaarheid[]
+  /** E-mailkoppel-status (zonder wachtwoord) voor het E-mailkoppeling-scherm. */
+  emailStatus: EmailConnectionStatus
+  /** Ingelogde gebruiker-e-mail voor het Account-scherm. */
+  userEmail: string
   /**
    * Rauwe `?section=`-param (server-side doorgegeven). Alleen als die expliciet
    * aanwezig is openen we het detail direct, anders zou elk bezoek op 'bedrijf'
@@ -79,6 +95,9 @@ export function MobileInstellingen({
   notifPrefs,
   templateAanvragen,
   gcalStatus,
+  beschikbaarheid,
+  emailStatus,
+  userEmail,
   initialSection,
 }: Props) {
   // Deeplink: ?section= opent direct het bijbehorende detail (bv. de
@@ -146,6 +165,10 @@ export function MobileInstellingen({
             calendarId={gcalStatus?.calendarId ?? null}
           />
         )}
+        {view === 'beschikbaarheid' && <InstBeschikbaarheid dagen={beschikbaarheid} />}
+        {view === 'email' && <InstEmail status={emailStatus} />}
+        {view === 'account' && <AccountSection email={userEmail} />}
+        {view === 'avg' && <AvgSection />}
       </MobileDrilldownLayer>
     </div>
   )

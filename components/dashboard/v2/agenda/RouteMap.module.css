@@ -12,6 +12,12 @@
   display: block;
 }
 
+/* Live Google Maps-kaart: vult de hele routekaart-bak. */
+.live {
+  width: 100%;
+  height: 100%;
+}
+
 .tagStart {
   position: absolute;
   top: 10px;

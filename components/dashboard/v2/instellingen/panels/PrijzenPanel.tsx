@@ -61,13 +61,15 @@ type CategoryKey = (typeof CATEGORIES)[number]["key"];
 function categorize(ruleKey: string): CategoryKey {
   const k = ruleKey.toLowerCase();
   if (k.startsWith("reinigen") || k.startsWith("reiniging")) return "reiniging";
+  // Invegen/voegzand vóór onkruid: de "onkruidwerend"-varianten van invegen en
+  // voegzand horen bij invegen, niet bij onkruidbeheersing.
   if (k.includes("voegzand") || k.includes("invegen")) return "invegen";
   if (
-    k.startsWith("onkruidbeheersing") ||
+    k.startsWith("onkruid") || // onkruid_per_m2_4/8/12_weken + _langer
     k.includes("preventief_onkruid") ||
     k.includes("preventieve_onkruid") ||
-    k.startsWith("beschermlaag") ||
-    k.startsWith("plan_")
+    k.startsWith("beschermlaag") || // beschermlaag_per_m2
+    k.startsWith("plant") // planten_afschermen_folie_per_rol
   )
     return "onkruid";
   if (k.startsWith("reiskosten")) return "reiskosten";

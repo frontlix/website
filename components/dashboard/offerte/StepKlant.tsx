@@ -31,7 +31,7 @@ function toNLNationalMobile(raw: string): string | null {
 //     (vangt 0611111111, 0622222222 etc.).
 // De eigenaar kan een afwijkend nummer (vaste lijn, buitenland) gewoon
 // doorgebruiken, dit is enkel een soft warning.
-function isValidNLMobile(raw: string): boolean {
+export function isValidNLMobile(raw: string): boolean {
   const national = toNLNationalMobile(raw)
   if (!national) return false
   if (!/^06[1-58]\d{7}$/.test(national)) return false
@@ -43,7 +43,7 @@ function isValidNLMobile(raw: string): boolean {
 // Op blur normaliseren we naar internationaal formaat: 06xxxxxxxx ->
 // +316xxxxxxxx. Niet-NL-mobielen (vaste lijn, buitenland) laten we
 // staan zoals de user ze typte.
-function normalizeToInternational(raw: string): string {
+export function normalizeToInternational(raw: string): string {
   const national = toNLNationalMobile(raw)
   return national ? '+316' + national.slice(2) : raw
 }
@@ -143,7 +143,7 @@ function suggestEmailFix(raw: string): string | null {
 // Normaliseert e-mail naar lower-case + zonder spaties. Doe je op blur
 // zodat de user nog tijdens het typen casing/spaties kan zien, pas
 // als ze het veld verlaten "snap" je 'm.
-function normalizeEmail(raw: string): string {
+export function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase()
 }
 

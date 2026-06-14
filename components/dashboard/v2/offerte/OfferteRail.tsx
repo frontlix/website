@@ -2,8 +2,8 @@
 
 import { Check, ChevronLeft, FileDown, Send, TriangleAlert } from "lucide-react";
 import { offerteAdres } from "./offerte-data";
-import { fmtEuro } from "./offerte-utils";
-import type { BtwKeuze, GeordendItem, Kanaal, OfferteKlant } from "./types";
+import { fmtEuro, parsePrijs } from "./offerte-utils";
+import type { BtwKeuze, GeordendItem, Kanaal, KortingType, OfferteKlant } from "./types";
 import styles from "./OfferteRail.module.css";
 
 interface OfferteRailProps {
@@ -13,6 +13,7 @@ interface OfferteRailProps {
   geordend: GeordendItem[];
   korstmosToeslag: boolean;
   toeslag: number;
+  kortingType: KortingType;
   kortingPct: string;
   kortingReden: string;
   korting: number;
@@ -33,6 +34,7 @@ export function OfferteRail({
   geordend,
   korstmosToeslag,
   toeslag,
+  kortingType,
   kortingPct,
   kortingReden,
   korting,
@@ -62,7 +64,6 @@ export function OfferteRail({
     <div className={styles.rail}>
       <div className={styles.topRow}>
         <span className={styles.title}>Live totaal</span>
-        <span className={styles.marge}>Marge: 34%</span>
       </div>
 
       <div className={styles.scroll}>
@@ -97,7 +98,7 @@ export function OfferteRail({
                 <div className={styles.regelNaam}>{item.vrij!.naam || "Vrije regel"}</div>
                 <div className={styles.regelMeta}>vrije regel · eigen prijs</div>
               </div>
-              <span className={styles.regelBedrag}>{fmtEuro(item.vrij!.bedrag)}</span>
+              <span className={styles.regelBedrag}>{fmtEuro(parsePrijs(item.vrij!.bedrag))}</span>
             </div>
           ),
         )}
@@ -114,7 +115,7 @@ export function OfferteRail({
         {korting > 0 ? (
           <div className={styles.korting}>
             <span className={styles.regelNaam}>
-              Korting {kortingPct}%
+              Korting{kortingType === "procent" ? ` ${kortingPct}%` : ""}
               {kortingReden ? `, ${kortingReden.split(",")[0]}` : ""}
             </span>
             <span className={styles.regelBedrag}>−{fmtEuro(korting)}</span>

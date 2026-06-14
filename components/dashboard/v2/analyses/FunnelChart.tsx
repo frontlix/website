@@ -8,11 +8,10 @@ interface FunnelChartProps {
   data: FunnelStap[];
 }
 
-/** Kleurklasse per stap: eerste twee mint, dan cyaan, dan blauw. */
+/** Kleurklasse per trechter-stap: elke stap z'n eigen data-viz-kleur, zodat
+ *  de trechter levendig is in plaats van één tint blauw. Cyclt door 1..8. */
 function toneClass(i: number): string {
-  if (i < 2) return styles.barSuccess;
-  if (i < 4) return styles.barCyan;
-  return styles.barBlue;
+  return styles[`barData${(i % 8) + 1}`] ?? styles.barData1;
 }
 
 export function FunnelChart({ data }: FunnelChartProps) {

@@ -11,7 +11,7 @@
   height: 220px;
   right: -120px;
   top: -100px;
-  background: radial-gradient(closest-side, rgba(26, 86, 255, 0.1), transparent);
+  background: var(--rb-aurora-1);
   filter: blur(12px);
   pointer-events: none;
 }
@@ -52,11 +52,18 @@
   max-width: 560px;
 }
 
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
 .cta {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 16px;
   font-family: var(--rb-font);
   font-size: 14px;
   font-weight: 700;
@@ -71,4 +78,28 @@
 
 .cta:hover {
   filter: brightness(0.98);
+}
+
+/* Secundaire actie: "Bekijk dagrapport" (opent de drawer via ?dagrapport=1). */
+.dagBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: transparent;
+  padding: 11px 18px;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dagBtn:hover {
+  border-color: var(--rb-blue);
+  color: var(--rb-blue);
 }

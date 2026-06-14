@@ -1,9 +1,7 @@
-/* Lokale review-accentkleuren: niet in de gedeelde rebrand-tokens, dus
-   hier gescoped gedefinieerd (amber ster + gedimde lege ster uit het
-   prototype). Geen hardcoded hex verspreid door de markup. */
+/* Sterren-kleuren komen nu uit de gedeelde rebrand-tokens: volle ster in
+   het gouden review-token (--rb-star), lege ster gedimd via een line-token.
+   Zo zit alle kleur in var(--rb-*) en geen losse hex meer in de markup. */
 .row {
-  --rev-star: #f5a623;
-  --rev-star-empty: rgba(33, 42, 69, 0.15);
   display: inline-flex;
   align-items: center;
   gap: 1px;
@@ -11,11 +9,11 @@
 }
 
 .full {
-  fill: var(--rev-star);
+  fill: var(--rb-star);
 }
 
 .empty {
-  fill: var(--rev-star-empty);
+  fill: var(--rb-line);
 }
 
 .emptyDark {

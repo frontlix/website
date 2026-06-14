@@ -14,7 +14,11 @@ import type {
   Reminder,
   NotificationSetting,
   TeamMember,
+  OffertesInstellingen,
+  EmailConnectionState,
 } from "./instellingen-data";
+import { EMAIL_CONNECTION_DEFAULT } from "./instellingen-data";
+import type { EmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
 import {
   REMINDERS_DEFAULT,
   WORK_RADIUS_DEFAULT,
@@ -37,6 +41,9 @@ export type TenantSettingsRow = {
   postcode: string | null;
   adres: string | null;
   offerte_geldigheid_dagen: number | null;
+  offerte_btw_tarief: number | null;
+  offerte_betaaltermijn_dagen: number | null;
+  offerte_nummer_prefix: string | null;
   radius_max_km: number | null;
   reminder_dag_1: number | null;
   reminder_dag_2: number | null;
@@ -84,10 +91,12 @@ export type TeamMemberRow = {
 export function toCompanyProfile(t: TenantSettingsRow | null): CompanyProfile {
   return {
     naam: t?.bedrijfsnaam ?? "",
+    botNaam: t?.chatbot_naam ?? "",
     adres: (t?.adres ?? "").trim(),
     postcode: (t?.postcode ?? "").trim(),
     plaats: (t?.plaats ?? "").trim(),
-    tel: t?.eigenaar_whatsapp ?? t?.eigenaar_spoed_telefoon ?? "",
+    tel: t?.eigenaar_whatsapp ?? "",
+    spoedTel: t?.eigenaar_spoed_telefoon ?? "",
     mail: t?.eigenaar_email ?? "",
     doel:
       t?.omzet_doel_maand != null
@@ -162,6 +171,18 @@ export function toGeldigheid(t: TenantSettingsRow | null): number {
     : 14;
 }
 
+/** tenant_settings → bewerkbare offerte-instellingen (geldigheid, btw,
+ *  betaaltermijn, offertenummer-voorvoegsel). */
+export function toOffertesInstellingen(t: TenantSettingsRow | null): OffertesInstellingen {
+  return {
+    geldigheid: toGeldigheid(t),
+    btw: t?.offerte_btw_tarief != null ? String(t.offerte_btw_tarief) : "21",
+    betaaltermijn:
+      t?.offerte_betaaltermijn_dagen != null ? String(t.offerte_betaaltermijn_dagen) : "14",
+    prefix: (t?.offerte_nummer_prefix ?? "SS").trim() || "SS",
+  };
+}
+
 // ── Reminders ───────────────────────────────────────────────────────────
 
 /**
@@ -234,6 +255,29 @@ export function toTeam(rows: TeamMemberRow[]): TeamMember[] {
         owner: r.is_owner,
       };
     });
+}
+
+// ── E-mailkoppeling ───────────────────────────────────────────────────────
+
+/**
+ * getEmailConnectionStatus()-resultaat → de EmailConnectionState-prop die het
+ * EmailPanel verwacht. De vormen lopen vrijwel 1-op-1; deze mapper houdt de
+ * grens expliciet en geeft nooit een wachtwoord door (de query-helper levert
+ * dat ook niet). Bij geen koppeling: { connected: false }.
+ */
+export function toEmailConnectionState(
+  status: EmailConnectionStatus,
+): EmailConnectionState {
+  if (!status.connected) return EMAIL_CONNECTION_DEFAULT;
+  return {
+    connected: true,
+    email: status.email,
+    senderName: status.senderName,
+    replyTo: status.replyTo ?? null,
+    provider: status.provider ?? null,
+    testPassedAt: status.testPassedAt ?? null,
+    needsReconnect: Boolean(status.needsReconnect),
+  };
 }
 
 /** Initialen uit een naam ("Anna Smit" → "AS"), max 2 letters. */

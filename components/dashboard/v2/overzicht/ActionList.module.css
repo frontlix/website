@@ -39,8 +39,8 @@
 }
 
 .countHot {
-  background: var(--rb-status-plan-bg);
-  color: var(--rb-cyan);
+  background: var(--rb-status-hot-bg);
+  color: var(--rb-status-hot-ink);
 }
 
 .countWarm {
@@ -76,8 +76,8 @@
 }
 
 .rowHot {
-  background: var(--rb-blue-soft);
-  border-color: rgba(26, 86, 255, 0.2);
+  background: var(--rb-status-hot-bg);
+  border-color: color-mix(in srgb, var(--rb-status-hot-ink) 30%, transparent);
 }
 
 .badge {
@@ -95,7 +95,7 @@
 }
 
 .badgeHot {
-  background: var(--rb-blue);
+  background: var(--rb-status-hot-ink);
   color: #fff;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .metaHot {
-  color: var(--rb-blue);
+  color: var(--rb-status-hot-ink);
 }
 
 .chev {

@@ -29,19 +29,84 @@
   --rb-field-2: #f1f3f9; /* segmented-container achtergrond */
 
   /* WhatsApp-gesprek */
-  --rb-wa-bg: #ede7de; /* chat-achtergrond */
+  --rb-wa-bg: #ece6dd; /* chat-achtergrond (basiskleur onder het patroon) */
+  --rb-wa-bg-image: url("/whatsapp-achtergrond.jpg"); /* officieel doodle-patroon */
+  /* Lichte sluier over het doodle-patroon, maakt het subtieler/matter. Hoger
+     alfa = lichter patroon. */
+  --rb-wa-veil: rgba(236, 230, 221, 0.72);
   --rb-wa-in: #ffffff; /* inkomende bubbel (klant) */
   --rb-wa-out: #d9f4c7; /* uitgaande bubbel (Surface/jij) */
 
-  /* Status-pills (zie ccStatusPill) */
-  --rb-status-hot-bg: #e4ebff;
-  --rb-status-hot-ink: #1a56ff;
-  --rb-status-new-bg: #dff5ea;
-  --rb-status-new-ink: #1e8a5e;
-  --rb-status-plan-bg: rgba(0, 184, 230, 0.12);
-  --rb-status-plan-ink: #0b7fa8;
-  --rb-status-sent-bg: rgba(33, 42, 69, 0.06);
-  --rb-status-sent-ink: #7a83a6;
+  /* ── Status-pills (rijker, betekenisvol; "vol en levendig") ── */
+  --rb-status-hot-bg: #ffe1e4; /* wacht op jou / urgent, koraal */
+  --rb-status-hot-ink: #d6306a;
+  --rb-status-new-bg: #d6f3e3; /* nieuw, groen */
+  --rb-status-new-ink: #0f8a4f;
+  --rb-status-plan-bg: #d2f0f9; /* gepland / bezoek, cyaan-teal */
+  --rb-status-plan-ink: #0e7490;
+  --rb-status-sent-bg: #e7e9f2; /* verstuurd / neutraal, grijs-blauw */
+  --rb-status-sent-ink: #6b7493;
+  --rb-status-talking-bg: #e0e9ff; /* in gesprek, blauw */
+  --rb-status-talking-ink: #1a56ff;
+  --rb-status-review-bg: #fdeccb; /* in review / onderhandelen, amber */
+  --rb-status-review-ink: #a85b00;
+  --rb-status-won-bg: #c9eed8; /* goedgekeurd / afgerond, vol groen */
+  --rb-status-won-ink: #0c6b3f;
+  --rb-status-lost-bg: #fdd9d9; /* afgewezen, rood-zacht */
+  --rb-status-lost-ink: #b91c1c;
+
+  /* ── Avatar-tinten (gekozen op naam-hash; persoon-identiteit) ── */
+  --rb-avatar-1-bg: #e0e9ff; /* blauw */
+  --rb-avatar-1-ink: #1a56ff;
+  --rb-avatar-2-bg: #e8e7fc; /* indigo */
+  --rb-avatar-2-ink: #5145e0;
+  --rb-avatar-3-bg: #d2f1ec; /* teal */
+  --rb-avatar-3-ink: #0f766e;
+  --rb-avatar-4-bg: #d6f3e3; /* mint-groen */
+  --rb-avatar-4-ink: #0f8a4f;
+  --rb-avatar-5-bg: #fcefcf; /* amber */
+  --rb-avatar-5-ink: #b45309;
+  --rb-avatar-6-bg: #ffe1e6; /* koraal */
+  --rb-avatar-6-ink: #db2777;
+  --rb-avatar-7-bg: #efe6fc; /* paars */
+  --rb-avatar-7-ink: #7c3aed;
+  --rb-avatar-8-bg: #d4eefb; /* cyaan */
+  --rb-avatar-8-ink: #0e7490;
+
+  /* ── KPI-/metriek-kleuren (kleur per type, gekleurde sparklines/ringen) ── */
+  --rb-metric-leads: #00b8e6; /* cyaan */
+  --rb-metric-omzet: #10b981; /* groen */
+  --rb-metric-conversie: #7c3aed; /* paars */
+  --rb-metric-reactie: #f59e0b; /* amber */
+  --rb-metric-offertes: #1a56ff; /* blauw */
+
+  /* ── Type-kleuren agenda (klus/bezoek/deadline) ── */
+  --rb-agenda-klus-bg: #d6f3e3;
+  --rb-agenda-klus-ink: #0f8a4f;
+  --rb-agenda-bezoek-bg: #d4eefb;
+  --rb-agenda-bezoek-ink: #0e7490;
+  --rb-agenda-deadline-bg: #fdeccb;
+  --rb-agenda-deadline-ink: #a85b00;
+
+  /* ── Data-viz palet (grafiek-series, kanalen, diensten) ── */
+  --rb-data-1: #1a56ff; /* blauw */
+  --rb-data-2: #10b981; /* groen */
+  --rb-data-3: #f59e0b; /* amber */
+  --rb-data-4: #7c3aed; /* paars */
+  --rb-data-5: #00b8e6; /* cyaan */
+  --rb-data-6: #fb7185; /* koraal */
+  --rb-data-7: #14b8a6; /* teal */
+  --rb-data-8: #6366f1; /* indigo */
+
+  /* ── Sterren (reviews) ── */
+  --rb-star: #f5b400; /* goud */
+
+  /* ── Ster-verdeling (5 -> 1, groen via amber naar rood) ── */
+  --rb-rating-5: #10b981;
+  --rb-rating-4: #6cc24a;
+  --rb-rating-3: #f5b400;
+  --rb-rating-2: #f97316;
+  --rb-rating-1: #ef4444;
 
   /* ── Typografie ── */
   --rb-font: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;

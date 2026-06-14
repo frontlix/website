@@ -6,6 +6,8 @@
 
 export type ManualOffertePricing = {
   reiniging_per_m2: number
+  /** Vaste dagprijs reiniging voor oppervlakken < 100 m² (Schoon Straatje). */
+  reinigen_dagprijs_onder_100m2: number
   arbeid_invegen_normaal_per_m2: number
   arbeid_invegen_onkruidwerend_per_m2: number
   voegzand_normaal_per_zak: number
@@ -27,12 +29,16 @@ export type ManualOffertePricing = {
 
 export const FALLBACK_PRICING: ManualOffertePricing = {
   reiniging_per_m2: 3.95,
+  reinigen_dagprijs_onder_100m2: 395,
   arbeid_invegen_normaal_per_m2: 0.9,
   arbeid_invegen_onkruidwerend_per_m2: 1.6,
   voegzand_normaal_per_zak: 2.9,
   voegzand_onkruidwerend_per_zak: 20.9,
   voegzand_m2_per_zak: 5,
-  preventieve_onkruid_per_m2: 1.1,
+  // Preventieve onkruid deelt de ">12 weken / langer"-staffel (onkruid_per_m2_langer),
+  // net als plan_16w. Bot-prijslijst = 4,50/m². (Was 1,10: dat tarief bestaat
+  // niet in de Schoon Straatje-bot-config.)
+  preventieve_onkruid_per_m2: 4.5,
   beschermlaag_per_m2: 1.6,
   plan_4w_per_m2: 1.25,
   plan_8w_per_m2: 1.75,

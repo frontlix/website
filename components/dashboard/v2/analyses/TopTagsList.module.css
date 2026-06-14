@@ -27,8 +27,47 @@
   font-size: 13.5px;
 }
 
-.naam {
+/* Tag-chip in eigen tag-kleur (zachte tint-achtergrond + bijpassende ink).
+   Hergebruikt de avatar-tint-paren zodat bg/ink altijd leesbaar matchen. */
+.chip {
   font-weight: 700;
+  font-size: 12.5px;
+  padding: 3px 11px;
+  border-radius: var(--rb-r-pill);
+  line-height: 1.3;
+}
+
+.chipData1 {
+  background: var(--rb-avatar-1-bg);
+  color: var(--rb-avatar-1-ink);
+}
+.chipData2 {
+  background: var(--rb-avatar-4-bg);
+  color: var(--rb-avatar-4-ink);
+}
+.chipData3 {
+  background: var(--rb-avatar-5-bg);
+  color: var(--rb-avatar-5-ink);
+}
+.chipData4 {
+  background: var(--rb-avatar-7-bg);
+  color: var(--rb-avatar-7-ink);
+}
+.chipData5 {
+  background: var(--rb-avatar-8-bg);
+  color: var(--rb-avatar-8-ink);
+}
+.chipData6 {
+  background: var(--rb-avatar-6-bg);
+  color: var(--rb-avatar-6-ink);
+}
+.chipData7 {
+  background: var(--rb-avatar-3-bg);
+  color: var(--rb-avatar-3-ink);
+}
+.chipData8 {
+  background: var(--rb-avatar-2-bg);
+  color: var(--rb-avatar-2-ink);
 }
 
 .count {

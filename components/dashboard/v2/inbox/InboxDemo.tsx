@@ -89,12 +89,10 @@ export function InboxDemo() {
         initials={activeThread.initials}
         sub={conversation.sub}
         messages={messages}
-        suggestie={conversation.suggestie}
         surfaceAan={surfaceAan}
         draft={draft}
         onSurfaceChange={setSurface}
         onDraftChange={setDraft}
-        onUseSuggestion={setDraft}
         onSend={send}
       />
 

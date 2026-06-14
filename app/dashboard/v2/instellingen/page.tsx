@@ -2,7 +2,11 @@ import { v2Session } from "@/lib/dashboard/v2/session";
 import { getPricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries";
 import { getTagsWithCounts, type TagWithCount } from "@/lib/dashboard/tags-queries";
 import { getConnectionStatus } from "@/lib/dashboard/calendar-connection-queries";
+import { getEmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
+import { getRecentTemplateAanvragen } from "@/lib/dashboard/template-queries";
 import { getAllPrefs } from "@/lib/dashboard/notifications/queries";
+import { countConverted, avgOfferteWaarde } from "@/lib/dashboard/stats-queries";
+import { periodToRange } from "@/lib/dashboard/period";
 import type { NotificationPreferenceRow } from "@/lib/dashboard/notifications/types";
 import { InstellingenClient } from "@/components/dashboard/v2/instellingen/InstellingenClient";
 import {
@@ -14,16 +18,17 @@ import {
   REMINDERS_DEFAULT,
   NOTIFICATIONS_DEFAULT,
   TEAM,
-  QUOTE_DEFAULTS,
+  OFFERTES_DEFAULT,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import {
   toCompanyProfile,
   toWorkRadius,
   toDiensten,
-  toGeldigheid,
+  toOffertesInstellingen,
   toReminders,
   toMeldingen,
   toTeam,
+  toEmailConnectionState,
   buildDienstKeyLookup,
   buildMeldingEventLookup,
   type TenantSettingsRow,
@@ -53,7 +58,7 @@ export default async function InstellingenPage() {
         diensten={SERVICES_DEFAULT}
         dagen={DAYS_DEFAULT}
         dienstKeyByNaam={{}}
-        geldigheid={QUOTE_DEFAULTS.geldigheid}
+        offertes={OFFERTES_DEFAULT}
         reminders={REMINDERS_DEFAULT}
         meldingen={NOTIFICATIONS_DEFAULT}
         meldingEventByTitel={{}}
@@ -62,12 +67,19 @@ export default async function InstellingenPage() {
         pricingBaseline={null}
         tags={[]}
         gcal={{ connected: false, googleEmail: null, calendarId: null }}
+        email={{ connected: false }}
         basePostcode=""
         baseHuisnummer=""
         baseLabel="BASIS"
         baseHasCoords={false}
         baseLat={null}
         baseLng={null}
+        logoUrl={null}
+        templateAanvragen={[]}
+        userEmail=""
+        notifPrefs={[]}
+        digestTijd="08:00"
+        huidigeStand=""
         live={false}
       />
     );
@@ -87,6 +99,8 @@ export default async function InstellingenPage() {
     tagsRaw,
     notifPrefs,
     gcalStatus,
+    emailStatus,
+    aanvragenRaw,
   ] = await Promise.all([
     supabase
       .from("tenant_settings")
@@ -114,6 +128,12 @@ export default async function InstellingenPage() {
     getTagsWithCounts(),
     getAllPrefs(),
     getConnectionStatus(),
+    // E-mailkoppel-status (email_connections, service-role). Niet-geheim; bevat
+    // nooit het wachtwoord. Het EmailPanel toont hiermee de juiste status.
+    getEmailConnectionStatus(),
+    // Template-aanvragen (openingsbericht + reminders); de panels filteren zelf
+    // op de voor hen relevante templates.
+    getRecentTemplateAanvragen(),
   ]);
 
   // Casten zoals de bestaande code (Supabase geeft zonder gegen. types `never`).
@@ -123,6 +143,22 @@ export default async function InstellingenPage() {
   const team = (teamRaw.data as TeamMemberRow[] | null) ?? [];
   const tags = tagsRaw as TagWithCount[];
   const prefs = (notifPrefs as NotificationPreferenceRow[] | null) ?? [];
+
+  // Huidige omzet-stand deze maand voor het maanddoel-blok: exact dezelfde
+  // berekening als de Overzicht-ring (aantal gewonnen leads x gemiddelde
+  // offertewaarde), zodat de twee cijfers overeenkomen.
+  const maand = periodToRange("deze-maand", new Date());
+  const [convertedMaand, avgWaarde] = await Promise.all([
+    countConverted(maand),
+    avgOfferteWaarde(maand),
+  ]);
+  const omzetMaand = Math.round((convertedMaand ?? 0) * (avgWaarde ?? 0));
+  const omzetDoel =
+    Number((tenant as { omzet_doel_maand?: number | null } | null)?.omzet_doel_maand) || 0;
+  const omzetPct = omzetDoel > 0 ? Math.round((omzetMaand / omzetDoel) * 100) : null;
+  const huidigeStand =
+    `€${omzetMaand.toLocaleString("nl-NL")}` +
+    (omzetPct != null ? ` (${omzetPct}%)` : "");
 
   // ── Mappers: DB-rij → bestaande v2-component-props ─────────────────────
   const dienstKeyByNaam = Object.fromEntries(buildDienstKeyLookup(services));
@@ -141,6 +177,30 @@ export default async function InstellingenPage() {
   const dagen: DaySlot[] =
     Array.isArray(beschVal) && beschVal.length === 7 ? beschVal : DAYS_DEFAULT;
 
+  // Logo-URL (kolom 050). Apart + defensief geladen, net als beschikbaarheid:
+  // zolang de migratie niet is toegepast bestaat de kolom niet, dan faalt deze
+  // query stil (data = null) en valt logoUrl terug op null.
+  const { data: logoRow } = await supabase
+    .from("tenant_settings")
+    .select("logo_url")
+    .limit(1)
+    .maybeSingle();
+  const logoUrl = (logoRow as { logo_url?: string | null } | null)?.logo_url ?? null;
+
+  // Offerte-instellingen (kolommen uit migratie 051: btw, betaaltermijn,
+  // nummer-voorvoegsel). Apart + defensief geladen, net als beschikbaarheid/logo:
+  // zolang de migratie niet is toegepast bestaan de kolommen niet, dan faalt deze
+  // query stil (data = null) en valt alles terug op de defaults (21/14/SS).
+  const { data: offRow } = await supabase
+    .from("tenant_settings")
+    .select("offerte_btw_tarief, offerte_betaaltermijn_dagen, offerte_nummer_prefix")
+    .limit(1)
+    .maybeSingle();
+  const offRowObj = (offRow as Partial<TenantSettingsRow> | null) ?? {};
+  const offertes = toOffertesInstellingen(
+    tenant ? ({ ...tenant, ...offRowObj } as TenantSettingsRow) : null,
+  );
+
   return (
     <InstellingenClient
       profiel={toCompanyProfile(tenant)}
@@ -148,7 +208,7 @@ export default async function InstellingenPage() {
       diensten={toDiensten(services)}
       dagen={dagen}
       dienstKeyByNaam={dienstKeyByNaam}
-      geldigheid={toGeldigheid(tenant)}
+      offertes={offertes}
       reminders={toReminders(tenant)}
       meldingen={toMeldingen(prefs)}
       meldingEventByTitel={meldingEventByTitel}
@@ -161,6 +221,7 @@ export default async function InstellingenPage() {
         googleEmail: gcalStatus.googleEmail,
         calendarId: gcalStatus.calendarId,
       }}
+      email={toEmailConnectionState(emailStatus)}
       basePostcode={tenant?.postcode ?? ""}
       baseHuisnummer={tenant?.base_huisnummer ?? ""}
       baseLabel={tenant?.base_label ?? "BASIS"}
@@ -169,6 +230,12 @@ export default async function InstellingenPage() {
       }
       baseLat={tenant?.base_lat ?? null}
       baseLng={tenant?.base_lng ?? null}
+      logoUrl={logoUrl}
+      templateAanvragen={aanvragenRaw}
+      userEmail={s.user.email ?? ""}
+      notifPrefs={prefs}
+      digestTijd={tenant?.daily_digest_tijd ?? "08:00"}
+      huidigeStand={huidigeStand}
       live
     />
   );

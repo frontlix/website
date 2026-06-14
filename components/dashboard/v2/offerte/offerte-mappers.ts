@@ -15,7 +15,7 @@ import type { ExistingClientMatch } from "@/lib/dashboard/manual-offerte-search"
 import { DEFAULTS, type ManualOfferteData } from "@/lib/dashboard/manual-offerte-types";
 import { parsePrijs } from "./offerte-utils";
 import type { OfferteKlant } from "./offerte-data";
-import type { Kanaal, Kleur } from "./types";
+import type { Kanaal, Kleur, KortingType } from "./types";
 
 /** Initialen uit een naam ("Familie Bakker" → "FB", "Jan" → "JA"). */
 function initialsFromNaam(naam: string): string {
@@ -84,16 +84,31 @@ export interface WizardSubmitState {
   factuurZelfde: boolean;
   factuur: { straat: string; nr: string; postcode: string; plaats: string };
   m2: number;
+  /** Eigen m² voor beschermlaag en preventieve onkruid (StapWerk-steppers),
+   *  los van de hoofdoppervlakte. Afwezig => mapper rekent ze als 0. */
+  bm2?: number;
+  om2?: number;
   qty: { invegen: number; rollen: number };
   rolPrijs: string;
-  zakken: { normaal: number; onkruidwerend: number };
+  /** Voegzand-m² per type (de in te vegen oppervlakte met dat type). */
+  voegzandM2: { normaal: number; onkruidwerend: number };
+  /** Aantal zakken per type (afgeleid uit m², maar handmatig overschrijfbaar). */
+  voegzandZakken: { normaal: number; onkruidwerend: number };
+  /** Dekkingsfactor (m² per zak), als vangnet als de zakken nog 0 zijn. */
+  voegzandDekking: number;
   zandPrijzen: { normaal: string; onkruidwerend: string };
   diensten: Record<string, boolean>;
   groeneAanslag: boolean;
   kleur: Kleur;
   korstmosConditie: boolean;
+  /** Kortingsvorm: percentage of vast euro-bedrag. */
+  kortingType: KortingType;
   kortingPct: string;
+  /** Vast euro-kortingsbedrag (rauwe invoerstring) wanneer kortingType="euro". */
+  kortingEuro: string;
   kortingReden: string;
+  /** Geldigheid van de offerte in dagen (override op de tenant-standaard). */
+  geldigheidDagen: number;
   bericht: string;
   kanaal: Kanaal;
   /** Echte enkele-reis-afstand uit de geocode (km). `null` ⇒ onbekend; dan
@@ -136,7 +151,12 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
   const m2 = Math.max(0, Number(s.m2) || 0);
   const { naturel, antraciet } = kleurToBooleans(s.kleur);
 
-  // Diensten-chips → sub-diensten. "Reinigen + invegen" staat altijd aan.
+  // Reinigen en invegen zijn losse keuzes. We houden 'invegen' altijd in `sub`
+  // (de regels-engine groepeert het reinig/invegen-blok eronder, en de bot-
+  // persistentie + validatie verwachten een niet-lege sub); WELK werk meetelt
+  // bepalen we via reinigen_actief (reiniging) en de voegzand-vlaggen (invegen).
+  const reinigenActief = !!s.diensten["Reinigen"];
+  const invegenActief = !!s.diensten["Invegen"];
   const sub: ManualOfferteData["sub"] = ["invegen"];
   if (s.diensten["Beschermlaag"]) sub.push("beschermlaag");
   if (s.diensten["Preventieve onkruid"]) sub.push("preventieve_onkruid");
@@ -153,8 +173,13 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     hoofd.push("onkruidbeheersing");
   }
 
-  const voegzandNormaalActief = Number(s.zakken.normaal) > 0;
-  const voegzandOnkruidwerendActief = Number(s.zakken.onkruidwerend) > 0;
+  // Voegzand telt alleen mee als de owner Invegen ook echt aanklikte. Zonder
+  // deze gate zou een "alleen reinigen"-offerte tóch invegen-arbeid + voegzand
+  // krijgen (de wizard's oppervlakte-invoer vult voegzandM2 altijd), waardoor
+  // de gedownloade offerte hoger uitviel dan de getoonde prijs.
+  const dekking = s.voegzandDekking > 0 ? s.voegzandDekking : 5;
+  const voegzandNormaalActief = invegenActief && Number(s.voegzandM2.normaal) > 0;
+  const voegzandOnkruidwerendActief = invegenActief && Number(s.voegzandM2.onkruidwerend) > 0;
   const plantenActief = Number(s.qty.rollen) > 0;
 
   return {
@@ -178,16 +203,26 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     // werk
     hoofdcategorie: hoofd,
     sub,
+    reinigen_actief: reinigenActief,
     m2,
-    // voegzand — m² per type = totale m² (de rules-engine gebruikt dit voor
-    // de invegen-arbeidsregel; de v2-UI splitst m² niet per voegzandtype).
+    // Eigen m² per dienst (de owner kan beschermlaag/onkruid op een andere
+    // oppervlakte zetten dan de reiniging); de rules-engine rekent daarmee.
+    beschermlaag_m2: Number(s.bm2) || 0,
+    preventieve_onkruid_m2: Number(s.om2) || 0,
+    // voegzand — m² per type (de in te vegen oppervlakte met dat type); de
+    // rules-engine rekent daarmee de invegen-arbeid, en de zakken (product)
+    // leiden we af via de dekkingsfactor, naar boven afgerond.
     voegzand_normaal_actief: voegzandNormaalActief,
-    voegzand_normaal_m2: voegzandNormaalActief ? m2 : 0,
-    voegzand_normaal_zakken: Number(s.zakken.normaal) || 0,
+    voegzand_normaal_m2: Number(s.voegzandM2.normaal) || 0,
+    voegzand_normaal_zakken: voegzandNormaalActief
+      ? Number(s.voegzandZakken.normaal) || Math.ceil(Number(s.voegzandM2.normaal) / dekking)
+      : 0,
     voegzand_normaal_prijs: parsePrijs(s.zandPrijzen.normaal),
     voegzand_onkruidwerend_actief: voegzandOnkruidwerendActief,
-    voegzand_onkruidwerend_m2: voegzandOnkruidwerendActief ? m2 : 0,
-    voegzand_onkruidwerend_zakken: Number(s.zakken.onkruidwerend) || 0,
+    voegzand_onkruidwerend_m2: Number(s.voegzandM2.onkruidwerend) || 0,
+    voegzand_onkruidwerend_zakken: voegzandOnkruidwerendActief
+      ? Number(s.voegzandZakken.onkruidwerend) || Math.ceil(Number(s.voegzandM2.onkruidwerend) / dekking)
+      : 0,
     voegzand_onkruidwerend_prijs: parsePrijs(s.zandPrijzen.onkruidwerend),
     // kleur
     kleur_naturel: naturel,
@@ -202,9 +237,16 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     planten_afschermen_actief: plantenActief,
     planten_afschermen_rollen: Number(s.qty.rollen) || 0,
     planten_afschermen_prijs: parsePrijs(s.rolPrijs),
-    // offerte
-    korting_percentage: Math.min(100, Math.max(0, parsePrijs(s.kortingPct))),
+    // offerte — korting: percentage óf vast euro-bedrag. Bij euro-modus geven we
+    // korting_bedrag mee (computeTotals capt het op de grondslag) en zetten we
+    // het percentage op 0; bij percentage-modus andersom. Zo is opgeslagen ==
+    // getoond, en blijft maar één van de twee actief.
+    korting_percentage:
+      s.kortingType === "euro" ? 0 : Math.min(100, Math.max(0, parsePrijs(s.kortingPct))),
+    korting_bedrag: s.kortingType === "euro" ? Math.max(0, parsePrijs(s.kortingEuro)) : 0,
     korting_omschrijving: s.kortingReden.trim(),
+    // Geldigheid (dagen) als per-offerte override; 0 ⇒ tenant-standaard.
+    geldigheid_dagen: Math.max(0, Math.round(Number(s.geldigheidDagen) || 0)),
     // Vrije meerwerk-regels → extra_arbeid. computeRules voegt deze regel
     // alleen toe als minuten > 0 én personen > 0.
     extra_arbeid_minuten: Math.max(0, Math.round(s.extraArbeid.minuten)),
@@ -213,5 +255,7 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     // verzending
     notitie: s.bericht.trim(),
     kanaal: kanaalToSend(s.kanaal),
+    // "Download PDF": de server rendert + retourneert de PDF voor de browser.
+    lever_pdf_download: s.kanaal === "pdf",
   };
 }

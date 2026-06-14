@@ -4,17 +4,33 @@
 import { Hammer, MapPin, Clock3, Phone, type LucideIcon } from "lucide-react";
 import type { AgendaType } from "./agenda-data";
 
-/** CSS-token voor de accentkleur per type (links streepje + legenda-stip). */
+/** CSS-token voor de accentkleur (ink) per type (links streepje, legenda-stip,
+ *  tekst-/tijd-kleur op de gekleurde kaartjes). */
 export function typeColorVar(type: AgendaType): string {
   switch (type) {
     case "klus":
-      return "var(--rb-success)";
+      return "var(--rb-agenda-klus-ink)";
     case "bezoek":
-      return "var(--rb-cyan)";
+      return "var(--rb-agenda-bezoek-ink)";
     case "deadline":
-      return "var(--rb-blue)";
+      return "var(--rb-agenda-deadline-ink)";
     default:
-      return "var(--rb-muted)";
+      // intern/belafspraak: neutraal grijs-blauw (status-sent).
+      return "var(--rb-status-sent-ink)";
+  }
+}
+
+/** CSS-token voor de zachte achtergrond per type (gevulde afspraak-kaartjes). */
+export function typeBgVar(type: AgendaType): string {
+  switch (type) {
+    case "klus":
+      return "var(--rb-agenda-klus-bg)";
+    case "bezoek":
+      return "var(--rb-agenda-bezoek-bg)";
+    case "deadline":
+      return "var(--rb-agenda-deadline-bg)";
+    default:
+      return "var(--rb-status-sent-bg)";
   }
 }
 

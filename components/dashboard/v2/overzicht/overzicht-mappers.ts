@@ -124,7 +124,12 @@ export function mapOmzetData(input: {
       : 0;
   return {
     value: Math.round(input.omzetMaand).toLocaleString("nl-NL"),
-    delta: diff === 0 ? "—" : `${sign}${formatEuroShort(Math.abs(diff))}`,
+    // Geen delta bij ontbrekende vorige-periode-basis (prev=0): anders lijkt de
+    // hele omzet "groei" t.o.v. niets (gelijk aan de (app)-guard en kpiDelta).
+    delta:
+      input.omzetMaandPrev > 0 && diff !== 0
+        ? `${sign}${formatEuroShort(Math.abs(diff))}`
+        : "—",
     deltaSub: "vs vorige week",
     doel: `€${Math.round(input.omzetDoelMaand).toLocaleString("nl-NL")}`,
     pct,

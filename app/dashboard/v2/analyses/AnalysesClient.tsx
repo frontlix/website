@@ -131,8 +131,12 @@ export function AnalysesClient({
 
       {/* KPI-tegels */}
       <div className={styles.kpis}>
-        {kpis.map((k) => (
-          <Card key={k.label} pad="none" className={styles.kpiCard}>
+        {kpis.map((k, i) => (
+          <Card
+            key={k.label}
+            pad="none"
+            className={`${styles.kpiCard} ${styles[`kpiAccent${i}`] ?? ""}`}
+          >
             <div className={styles.kpiLabel}>{k.label}</div>
             <div className={styles.kpiValueRow}>
               <span className={styles.kpiValue}>

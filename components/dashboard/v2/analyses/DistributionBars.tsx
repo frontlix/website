@@ -27,19 +27,26 @@ export function DistributionBars({ title, rows }: DistributionBarsProps) {
         <p className={styles.empty}>Geen data in deze periode.</p>
       ) : (
         <ul className={styles.list}>
-          {rows.map((row) => {
+          {rows.map((row, i) => {
             const pct = total > 0 ? Math.round((row.count / total) * 100) : 0;
+            const tone = (i % 8) + 1;
             return (
               <li key={row.label} className={styles.row}>
                 <div className={styles.rowHeader}>
-                  <span className={styles.rowLabel}>{row.label}</span>
+                  <span className={styles.rowLabel}>
+                    <span
+                      className={`${styles.dot} ${styles[`dotData${tone}`] ?? ""}`}
+                      aria-hidden="true"
+                    />
+                    {row.label}
+                  </span>
                   <span className={styles.rowMeta}>
                     {row.count} <span className={styles.pct}>· {pct}%</span>
                   </span>
                 </div>
                 <div className={styles.track}>
                   <div
-                    className={styles.bar}
+                    className={`${styles.bar} ${styles[`barData${tone}`] ?? ""}`}
                     style={{ width: `${pct}%` }}
                     aria-hidden="true"
                   />

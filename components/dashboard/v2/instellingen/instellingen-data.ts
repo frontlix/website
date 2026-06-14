@@ -21,7 +21,9 @@ export type SettingsSection =
   | "Offertes"
   | "Team"
   | "Meldingen"
-  | "Abonnement";
+  | "Abonnement"
+  | "Account"
+  | "Privacy";
 
 export const SETTINGS_MENU: SettingsSection[] = [
   "Bedrijfsprofiel",
@@ -37,6 +39,8 @@ export const SETTINGS_MENU: SettingsSection[] = [
   "Team",
   "Meldingen",
   "Abonnement",
+  "Account",
+  "Privacy",
 ];
 
 /** Subkop onder de paneeltitel, per sectie. */
@@ -58,27 +62,36 @@ export const SETTINGS_SUBHEAD: Record<SettingsSection, string> = {
   "Team": "Wie er in Frontlix werken en wat ze mogen",
   "Meldingen": "Wanneer Frontlix je een melding stuurt",
   "Abonnement": "Je pakket en facturen",
+  "Account": "Je inloggegevens, wachtwoord en e-mailadres",
+  "Privacy": "Je rechten onder de AVG, exporteer of verwijder je gegevens",
 };
 
 // ── Bedrijfsprofiel ──────────────────────────────────────────────────────
 
 export interface CompanyProfile {
   naam: string;
+  /** Bot-naam (tenant_settings.chatbot_naam). */
+  botNaam: string;
   /** Straat + huisnummer (zonder postcode/plaats, die staan apart). */
   adres: string;
   postcode: string;
   plaats: string;
+  /** Eigenaar-WhatsApp (tenant_settings.eigenaar_whatsapp). */
   tel: string;
+  /** Spoed-telefoon (tenant_settings.eigenaar_spoed_telefoon). */
+  spoedTel: string;
   mail: string;
   doel: string;
 }
 
 export const PROFILE_DEFAULT: CompanyProfile = {
   naam: "Schoon Straatje",
+  botNaam: "Surface",
   adres: "Werkplaatsweg 12",
   postcode: "3812 AB",
   plaats: "Amersfoort",
   tel: "06 12 34 56 78",
+  spoedTel: "06 87 65 43 21",
   mail: "info@schoonstraatje.nl",
   doel: "25.000",
 };
@@ -190,12 +203,36 @@ export const REMINDER_VARS: TemplateVariable[] = [
   { v: "{bedrijf}", d: "Jouw bedrijfsnaam" },
 ];
 
-export const OPENING_DEFAULTS: Record<string, string> = {
-  Gevel:
-    "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, jullie online assistent. Ik help je in een paar berichten aan een offerte op maat voor je {hoofddienst}.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
-  "Oprit & terras":
-    "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor het reinigen van je {hoofddienst}.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
-};
+/**
+ * Openingsbericht-templates: elke tab koppelt aan de echte Meta-template-key
+ * (lead_intake_*), zodat een wijziging via requestTemplateChange kan worden
+ * INGEDIEND (Slack-melding + Meta-goedkeuring). De keys + defaults spiegelen de
+ * v1 OpeningTemplateEditor; `requestTemplateChange` accepteert alleen deze keys.
+ */
+export interface OpeningTemplate {
+  key: string;
+  label: string;
+  default: string;
+}
+
+export const OPENING_TEMPLATES: OpeningTemplate[] = [
+  {
+    key: "lead_intake_oprit",
+    label: "Oprit / Terras",
+    default:
+      "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, jullie online assistent. Ik help je in een paar berichten aan een offerte op maat voor het reinigen en opnieuw invegen van je {hoofddienst}.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
+  },
+  {
+    key: "lead_intake_onkruid",
+    label: "Onkruidbeheersing",
+    default:
+      "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
+  },
+];
+
+export const OPENING_DEFAULTS: Record<string, string> = Object.fromEntries(
+  OPENING_TEMPLATES.map((t) => [t.key, t.default]),
+);
 
 // ── Reminders ────────────────────────────────────────────────────────────
 
@@ -292,6 +329,133 @@ export const QUOTE_DEFAULTS = {
   nummerFormaat: "SS-2026-###",
   aanbetaling: false,
 } as const;
+
+/** Bewerkbare offerte-instellingen (echt opgeslagen op tenant_settings). */
+export interface OffertesInstellingen {
+  /** Geldigheid in dagen. */
+  geldigheid: number;
+  /** BTW-tarief als percentage-string, bv "21". */
+  btw: string;
+  /** Betaaltermijn in dagen als string, bv "14". */
+  betaaltermijn: string;
+  /** Voorvoegsel voor het doorlopende offertenummer, bv "SS" → SS-2026-001. */
+  prefix: string;
+}
+
+export const OFFERTES_DEFAULT: OffertesInstellingen = {
+  geldigheid: 14,
+  btw: "21",
+  betaaltermijn: "14",
+  prefix: "SS",
+};
+
+// ── E-mailkoppeling (Integraties) ────────────────────────────────────────
+
+/**
+ * Niet-geheime e-mailkoppel-status zoals het EmailPanel hem als prop krijgt.
+ * Gevuld server-side uit email_connections (getEmailConnectionStatus); bevat
+ * NOOIT het wachtwoord. In de demo-fallback simpelweg { connected: false }.
+ */
+export interface EmailConnectionState {
+  connected: boolean;
+  /** Gekoppeld afzender- en login-adres. */
+  email?: string;
+  /** Weergavenaam in de From. */
+  senderName?: string;
+  /** Optioneel afwijkend reply-to. */
+  replyTo?: string | null;
+  /** Gekozen provider-preset (informatief). */
+  provider?: string | null;
+  /** ISO-tijd van de laatste geslaagde test. */
+  testPassedAt?: string | null;
+  /** true zodra een echte verzending op EAUTH/verbindingsfout faalde. */
+  needsReconnect?: boolean;
+}
+
+export const EMAIL_CONNECTION_DEFAULT: EmailConnectionState = { connected: false };
+
+export type EmailProviderKey =
+  | "hostinger"
+  | "transip"
+  | "vimexx"
+  | "one"
+  | "google"
+  | "microsoft"
+  | "custom";
+
+/** Eén provider-preset voor de UI: voorvulling van host/poort/beveiliging plus
+ *  een eventuele caveat-tekst (Gmail-app-wachtwoord, domeinafhankelijke host). */
+export interface EmailProviderPreset {
+  label: string;
+  /** null = geen vaste host (de eigenaar vult zelf in). */
+  smtpHost: string | null;
+  smtpPort: number;
+  security: "ssl" | "starttls";
+  /** Placeholder/hint voor het host-veld als de host domeinafhankelijk is. */
+  hostHint?: string;
+  /** Zichtbare kanttekening onder de velden, indien van toepassing. */
+  caveat?: string;
+}
+
+/**
+ * Provider-presets (sectie 7 van de e-mailkoppel-spec). De connect-route
+ * verifieert host/poort/beveiliging nogmaals server-side; dit is alleen
+ * UI-voorvulling. "Anders (handmatig)" is het vangnet voor afwijkende hosters.
+ */
+export const EMAIL_PROVIDERS: Record<EmailProviderKey, EmailProviderPreset> = {
+  hostinger: {
+    label: "Hostinger",
+    smtpHost: "smtp.hostinger.com",
+    smtpPort: 465,
+    security: "ssl",
+  },
+  transip: {
+    label: "TransIP",
+    smtpHost: "smtp.transip.email",
+    smtpPort: 465,
+    security: "ssl",
+  },
+  vimexx: {
+    label: "Vimexx",
+    smtpHost: null,
+    smtpPort: 465,
+    security: "ssl",
+    hostHint: "mail.jouwdomein.nl",
+    caveat:
+      "De SMTP-server is bij Vimexx domeinafhankelijk. Vul de host in die je hoster opgeeft, vaak mail.jouwdomein.nl.",
+  },
+  one: {
+    label: "one.com",
+    smtpHost: "send.one.com",
+    smtpPort: 465,
+    security: "ssl",
+  },
+  google: {
+    label: "Google (Gmail / Workspace)",
+    smtpHost: "smtp.gmail.com",
+    smtpPort: 465,
+    security: "ssl",
+    caveat:
+      "Zet 2FA aan en maak een app-wachtwoord aan, een gewoon wachtwoord werkt niet. Let op: een Gmail-adres tekent met gmail.com, dus de afzender-belofte geldt schoon alleen als het afzenderadres zelf het Gmail- of Workspace-adres is.",
+  },
+  microsoft: {
+    label: "Microsoft 365 / Outlook",
+    smtpHost: "smtp.office365.com",
+    smtpPort: 587,
+    security: "starttls",
+    caveat:
+      "Microsoft 365 ondersteunt geen wachtwoord-SMTP meer (sinds april 2026). Koppelen is hier niet mogelijk.",
+  },
+  custom: {
+    label: "Anders (handmatig)",
+    smtpHost: null,
+    smtpPort: 465,
+    security: "ssl",
+    hostHint: "smtp.jouwhoster.nl",
+    caveat:
+      "Vul de SMTP-server, poort en beveiliging in zoals je hoster die opgeeft.",
+  },
+};
 
 // ── Team ─────────────────────────────────────────────────────────────────
 

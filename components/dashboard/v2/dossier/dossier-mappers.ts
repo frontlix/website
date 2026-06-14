@@ -15,14 +15,17 @@ import { aggregateActivityTimeline } from "@/lib/dashboard/lead-queries";
 import { shortTimeAgo } from "@/lib/dashboard/relative-time";
 import { leadStage } from "@/components/dashboard/mobile/leads/lead-mappers";
 import { formatEuro } from "@/lib/dashboard/format";
+import { DIENST_LABELS, type SubDienst } from "@/lib/dashboard/manual-offerte-types";
+import { mapLeadToFormData } from "@/lib/dashboard/offerte-form-mapping";
+import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type {
   DossierData,
-  ContactRow,
-  ChecklistItem,
-  BijzonderTegel,
+  InfoRow,
+  DossierFoto,
   DossierOfferte,
   OfferteRegel,
+  OfferteFormData,
   DossierNotitie,
   DossierBericht,
 } from "./dossier-data";
@@ -47,13 +50,16 @@ function buildAdres(l: DetailLead): string {
   return [line1, line2].filter(Boolean).join(", ") || "Geen adres bekend";
 }
 
-/** Stage -> StatusKind voor de kop-pill (zelfde fase-logica als de mobile/leads-mapper). */
+/** Stage -> StatusKind voor de kop-pill. Gebruikt de rijke, betekenisvolle
+ *  kinds: in gesprek = blauw (talking), wacht op jou = koraal (hot), offerte
+ *  uit = grijs (sent), bezoek gepland = cyaan-teal (plan), afgerond = vol
+ *  groen (won). Spiegelt de fase-logica van de mobile/leads-mapper. */
 const STAGE_KIND: Record<ReturnType<typeof leadStage>, StatusKind> = {
-  gesprek: "new",
+  gesprek: "talking",
   review: "hot",
   uit: "sent",
   gepland: "plan",
-  klaar: "new",
+  klaar: "won",
 };
 
 const STAGE_LABEL: Record<ReturnType<typeof leadStage>, string> = {
@@ -83,68 +89,107 @@ export function mapLeadDetailToV2Lead(detail: LeadDetail): V2Lead {
   };
 }
 
-/** Contact-rijen (telefoon / e-mail / adres) uit de losse lead-velden. */
-function buildContact(l: DetailLead): ContactRow[] {
-  const rows: ContactRow[] = [];
+/** "voegzand_type" -> "Voegzand Type", lege/null -> "". Mirror van de oude
+ *  dashboard-humanize (underscores weg, elk woord een hoofdletter). */
+function humanize(key: string | null | undefined): string {
+  if (!key) return "";
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Hoofdcategorie -> leesbaar label (humanized; geen liggende streepjes). */
+function humanizeHoofd(key: string | null | undefined): string {
+  if (!key) return "";
+  return humanize(key).replace(/\//g, " / ");
+}
+
+/** Bron -> nette nl-NL-tekst (mirror van de oude LeadInfoTab.humanizeBron). */
+function humanizeBron(bron: string | null | undefined): string {
+  if (!bron) return "Onbekend";
+  const map: Record<string, string> = {
+    website: "Website-formulier",
+    whatsapp: "WhatsApp",
+    handmatig: "Handmatig",
+    dashboard_handmatig: "Handmatig",
+  };
+  return map[bron] ?? humanize(bron);
+}
+
+/** Sub-dienst-key -> leesbaar label (hergebruik DIENST_LABELS, fallback humanize). */
+function dienstLabel(key: string): string {
+  return DIENST_LABELS[key as SubDienst] ?? humanize(key);
+}
+
+/** Linker Info-kolom "Klant": naam, bedrijf, telefoon, e-mail, adres, bron.
+ *  Alleen ingevulde velden, in de stijl van het oude dashboard. */
+function buildKlant(l: DetailLead): InfoRow[] {
+  const rows: InfoRow[] = [];
+  rows.push({ label: "Naam", waarde: l.naam || "Onbekend" });
+  if (l.bedrijfsnaam) {
+    rows.push({ label: "Bedrijf", waarde: l.bedrijfsnaam });
+  }
   if (l.telefoon) {
     rows.push({
-      kind: "telefoon",
       label: "Telefoon",
       waarde: l.telefoon,
       chip: l.kanaal === "web" ? null : "WhatsApp",
     });
   }
   if (l.email) {
-    rows.push({ kind: "email", label: "E-mail", waarde: l.email, chip: null });
+    rows.push({ label: "E-mail", waarde: l.email });
   }
-  const afstand =
-    l.afstand_km != null ? `Adres · ${l.afstand_km} km` : "Adres";
-  rows.push({ kind: "adres", label: afstand, waarde: buildAdres(l), chip: null });
+  const adres = buildAdres(l);
+  const adresWaarde =
+    l.afstand_km != null ? `${adres} · ${l.afstand_km} km` : adres;
+  rows.push({
+    label: "Adres",
+    waarde: adresWaarde,
+    sub: l.afstand_km != null && l.afstand_km <= 25 ? "Binnen gratis radius" : null,
+  });
+  rows.push({ label: "Bron", waarde: humanizeBron(l.bron) });
   return rows;
 }
 
-/** Surface-uitvraag, done-status afgeleid uit lead-velden (mirror mobile). */
-function buildChecklist(l: DetailLead, fotoCount: number): ChecklistItem[] {
-  return [
-    { vraag: "Foto's ontvangen", done: fotoCount > 0 },
-    { vraag: "Voegkleur gekozen", done: Boolean(l.zand_kleur || l.voegzand_type) },
-    { vraag: "Planten afgestemd", done: !l.planten || Boolean(l.planten_afschermen) },
-    { vraag: "Oppervlakte bevestigd", done: l.m2_bevestigd === true },
-  ];
-}
-
-/** Bijzonderheden uit losse lead-velden (alleen ingevulde tonen). */
-function buildBijzonder(l: DetailLead): BijzonderTegel[] {
-  const rows: BijzonderTegel[] = [];
-  if (l.planten) {
+/** Rechter Info-kolom "Werk": hoofddienst, diensten, oppervlakte, voegzand,
+ *  groene aanslag, korstmos, planten. Alleen ingevulde velden (geen lege rijen). */
+function buildWerk(l: DetailLead): InfoRow[] {
+  const rows: InfoRow[] = [];
+  if (l.hoofdcategorie) {
+    rows.push({ label: "Hoofddienst", waarde: humanizeHoofd(l.hoofdcategorie) });
+  }
+  const sub = (l.sub_diensten ?? []).filter(Boolean);
+  if (sub.length > 0) {
+    rows.push({ label: "Diensten", waarde: sub.map(dienstLabel).join(" + ") });
+  }
+  if (l.m2 != null) {
+    rows.push({ label: "Oppervlakte", waarde: `${l.m2} m²` });
+  }
+  if (l.voegzand_type || l.zand_kleur) {
     rows.push({
-      label: "Planten langs de rand",
-      waarde: l.planten_afschermen ? `${l.planten}, afschermen` : l.planten,
+      label: "Voegzand",
+      waarde: [humanize(l.voegzand_type), humanize(l.zand_kleur)]
+        .filter(Boolean)
+        .join(" · "),
     });
   }
   if (l.groene_aanslag) {
-    rows.push({ label: "Groene aanslag", waarde: l.groene_aanslag });
+    rows.push({ label: "Groene aanslag", waarde: humanize(l.groene_aanslag) });
   }
   if (l.korstmos) {
-    rows.push({ label: "Korstmos", waarde: l.korstmos });
+    rows.push({ label: "Korstmos", waarde: humanize(l.korstmos) });
   }
-  if (l.voegzand_type) {
+  if (l.planten) {
     rows.push({
-      label: "Voegzand",
-      waarde: [l.voegzand_type, l.zand_kleur].filter(Boolean).join(" · "),
+      label: "Planten",
+      waarde: l.planten_afschermen ? `${humanize(l.planten)}, afschermen` : humanize(l.planten),
     });
   }
   return rows;
 }
 
-/** Werk-chips naast de dienst (sub_diensten). */
-function buildSub(l: DetailLead): string[] {
-  return (l.sub_diensten ?? []).filter(Boolean);
-}
-
-/** Foto-labels voor de placeholder-strip ("Foto N"). */
-function buildFotos(detail: LeadDetail): string[] {
-  return detail.fotos.map((_, i) => `Foto ${i + 1}`);
+/** Foto's voor de dossier-strip: echte Supabase public_url + mono-tag.
+ *  Ontbreekt een URL, dan rendert de strip de gestreepte placeholder. */
+function buildFotos(detail: LeadDetail): DossierFoto[] {
+  return detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` }));
 }
 
 /** Korte surface-statusregel + fase op basis van de lead-stand. */
@@ -187,12 +232,20 @@ function buildOffertes(detail: LeadDetail): DossierOfferte[] {
       label = "Afgerond";
     }
     const datum = shortDate(o.aangemaakt_op);
+    // Tag-kleur: concept = blauw, een afgesloten/oude offerte = grijs (archief),
+    // een lopende verstuurde offerte = groen.
+    const tone: "concept" | "verstuurd" | "archief" = concept
+      ? "concept"
+      : o.status === "geweigerd" || o.status === "verlopen"
+        ? "archief"
+        : "verstuurd";
     return {
       nr: `Offerte v${o.versie}`,
       label,
       totaal: formatEuro(o.totaal_incl),
       sub: datum ? `Versie ${o.versie} · ${datum}` : `Versie ${o.versie}`,
       concept,
+      tone,
     };
   });
 }
@@ -220,6 +273,20 @@ function buildOfferteTotaal(detail: LeadDetail): string {
   }
   const subtotaal = detail.prijsregels.reduce((s, r) => s + (r.totaal ?? 0), 0);
   return formatEuro(subtotaal * 1.21);
+}
+
+/** Bewerkbaar concept voor de inline OfferteEditor: het echte form-model uit
+ *  de lead (zelfde mapLeadToFormData als het oude dashboard) + de prijslijst,
+ *  zodat de editor exact via saveOfferteForm opslaat. */
+function buildOfferteForm(
+  detail: LeadDetail,
+  pricing: ManualOffertePricing,
+): OfferteFormData {
+  return {
+    data: mapLeadToFormData(detail.lead),
+    pricing,
+    geldigheidDagen: detail.lead.offerte_geldigheid_dagen ?? 14,
+  };
 }
 
 /** Notities (nieuwste eerst, zoals getLeadDetail ze al sorteert). */
@@ -277,10 +344,10 @@ function buildBinnen(detail: LeadDetail): string {
  */
 export function mapLeadDetailToDossierData(
   detail: LeadDetail,
+  pricing: ManualOffertePricing = FALLBACK_PRICING,
   now: number = Date.now(),
 ): DossierData {
   const l = detail.lead;
-  const fotoCount = detail.fotos.length;
   // aggregateActivityTimeline aanroepen houdt de read-pad consistent met de
   // (app)-pagina (en valideert de detail-vorm); de v2-UI toont (nog) geen
   // aparte activity-timeline, dus we gebruiken alleen het transcript hierboven.
@@ -290,16 +357,14 @@ export function mapLeadDetailToDossierData(
     tel: l.telefoon ?? "Geen nummer",
     afstand: l.afstand_km != null ? `${l.afstand_km} km` : "onbekend",
     binnen: buildBinnen(detail),
-    m2: l.m2 ?? 0,
-    sub: buildSub(l),
-    contact: buildContact(l),
-    checklist: buildChecklist(l, fotoCount),
-    bijzonder: buildBijzonder(l),
+    klant: buildKlant(l),
+    werk: buildWerk(l),
     fotos: buildFotos(detail),
     surface: buildSurface(l),
     offertes: buildOffertes(detail),
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
+    offerteForm: buildOfferteForm(detail, pricing),
     notities: buildNotities(detail),
     chat: buildChat(detail, now),
   };

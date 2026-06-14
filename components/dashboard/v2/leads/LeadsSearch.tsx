@@ -43,7 +43,6 @@ export function LeadsSearch() {
         aria-label="Zoek een lead"
         disabled={pending}
       />
-      <kbd className={styles.kbd}>⌘K</kbd>
     </form>
   );
 }

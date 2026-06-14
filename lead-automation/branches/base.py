@@ -8,10 +8,10 @@ from typing import Callable
 from models.branches import BrancheConfig, BrancheField, PricingLine, PricingResult, CompanyInfo
 
 
-def with_btw(subtotaal: float) -> dict:
-    """Calculate 21% VAT on a subtotal."""
+def with_btw(subtotaal: float, btw_pct: float = 21.0) -> dict:
+    """Calculate VAT on a subtotal. btw_pct uit tenant_settings (default 21%)."""
     s = round2(subtotaal)
-    btw = round2(subtotaal * 0.21)
+    btw = round2(subtotaal * (btw_pct / 100))
     return {"subtotaal_excl_btw": s, "btw_bedrag": btw, "totaal_incl_btw": round2(s + btw)}
 
 

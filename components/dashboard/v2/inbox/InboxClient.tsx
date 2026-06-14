@@ -154,12 +154,10 @@ export function InboxClient({
             initials={active.initials}
             sub={active.sub}
             messages={active.messages}
-            suggestie={active.suggestie}
             surfaceAan={surfaceAan}
             draft={draft}
             onSurfaceChange={onSurfaceChange}
             onDraftChange={setDraft}
-            onUseSuggestion={setDraft}
             onSend={onSend}
           />
         ) : (

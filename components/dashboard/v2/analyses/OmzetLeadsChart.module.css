@@ -4,6 +4,7 @@
 
 .svg {
   display: block;
+  cursor: crosshair;
 }
 
 .axisText {

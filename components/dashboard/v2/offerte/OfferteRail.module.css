@@ -1,7 +1,7 @@
 .rail {
   border-left: 1px solid var(--rb-line);
   background: #fff;
-  padding: 18px 22px;
+  padding: 18px 18px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -1,0 +1,43 @@
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border-radius: var(--rb-r-pill);
+  padding: 6px 12px;
+}
+
+.chip svg {
+  color: var(--rb-muted);
+  flex-shrink: 0;
+}
+
+/* Soort werk: blauw accent. */
+.chipBlue {
+  color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.chipBlue svg {
+  color: var(--rb-blue);
+}
+
+/* Conditie (groene aanslag, planten): groen accent. */
+.chipGreen {
+  color: var(--rb-mint-ink);
+  background: var(--rb-mint);
+}
+
+.chipGreen svg {
+  color: var(--rb-mint-ink);
+}

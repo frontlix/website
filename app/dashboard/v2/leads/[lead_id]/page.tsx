@@ -9,6 +9,7 @@
 import { notFound } from "next/navigation";
 import { v2Session } from "@/lib/dashboard/v2/session";
 import { getLeadDetail } from "@/lib/dashboard/lead-queries";
+import { getManualOffertePricing } from "@/lib/dashboard/pricing-queries";
 import { LEADS, findLead } from "@/components/dashboard/v2/demo-data";
 import { DossierView } from "@/components/dashboard/v2/dossier/DossierView";
 import {
@@ -33,14 +34,19 @@ export default async function LeadDossierPage({ params }: PageProps) {
   }
 
   // Echte, tenant-gescopete data (RLS actief via de sessie-client). getLeadDetail
-  // gebruikt dezelfde gescopete client + condities als de (app)-pagina.
-  const detail = await getLeadDetail(lead_id);
+  // gebruikt dezelfde gescopete client + condities als de (app)-pagina. De
+  // prijslijst komt uit dezelfde helper als de (app)-pagina, zodat de inline
+  // offerte-editor exact dezelfde regels/totalen berekent.
+  const [detail, pricing] = await Promise.all([
+    getLeadDetail(lead_id),
+    getManualOffertePricing(),
+  ]);
   if (!detail) {
     notFound();
   }
 
   const lead = mapLeadDetailToV2Lead(detail);
-  const dossier = mapLeadDetailToDossierData(detail);
+  const dossier = mapLeadDetailToDossierData(detail, pricing);
 
   return (
     <DossierView

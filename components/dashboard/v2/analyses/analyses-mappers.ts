@@ -245,17 +245,22 @@ export interface KanaalLeadRow {
   akkoord_op: string | null;
   afspraak_geboekt_op: string | null;
   totaal_prijs: number | null;
+  /** Reisafstand (km) vanaf de werkplaats; voor het "buiten radius"-inzicht. */
+  afstand_km?: number | null;
 }
 
 /** Leesbaar kanaal-label uit de rauwe kanaal/bron-velden. */
 function kanaalLabel(row: KanaalLeadRow): string {
   const raw = (row.bron || row.kanaal || "Onbekend").toLowerCase();
   if (raw.includes("whatsapp") || raw === "wa") return "WhatsApp";
+  if (raw.includes("formulier")) return "Website-formulier";
   if (raw.includes("web")) return "Website";
   if (raw.includes("tel") || raw.includes("phone") || raw.includes("bel"))
     return "Telefoon";
-  // Val terug op de rauwe waarde met hoofdletter.
-  const v = row.bron || row.kanaal || "Onbekend";
+  if (raw.includes("handmatig") || raw.includes("dashboard")) return "Handmatig";
+  if (raw.includes("test")) return "Test";
+  // Val terug op de rauwe waarde met hoofdletter, underscores naar spaties.
+  const v = (row.bron || row.kanaal || "Onbekend").replace(/_/g, " ");
   return v.charAt(0).toUpperCase() + v.slice(1);
 }
 

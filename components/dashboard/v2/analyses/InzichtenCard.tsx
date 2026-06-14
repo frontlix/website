@@ -29,16 +29,6 @@ export function InzichtenCard({ inzicht }: InzichtenCardProps) {
       </span>
       <div className={styles.titel}>{inzicht.titel}</div>
       <p className={styles.tekst}>{inzicht.tekst}</p>
-      <div className={styles.acties}>
-        <button type="button" className={styles.actieSoft}>
-          Laat zien
-        </button>
-        {inzicht.kind === "kans" ? (
-          <button type="button" className={styles.actiePrim}>
-            Pas radius aan
-          </button>
-        ) : null}
-      </div>
     </Card>
   );
 }

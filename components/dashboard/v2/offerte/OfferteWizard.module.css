@@ -5,12 +5,18 @@
 .shell {
   width: 1150px;
   max-width: 100%;
-  height: 790px;
+  /* Hoogte ademt mee met de inhoud (stap Werk is korter dan Klant/Offerte),
+     zodat de rail en de content geen grote lege ruimte tonen. Op langere
+     stappen stopt de groei bij max-height en scrollt de content. */
+  height: auto;
+  min-height: 560px;
   max-height: 92vh;
   background: #fbfcfe;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Anker voor de absoluut-gepositioneerde Concepten-knop + paneel rechtsboven. */
+  position: relative;
   border-radius: var(--rb-r-card);
   font-family: var(--rb-font);
   color: var(--rb-ink);
@@ -90,15 +96,193 @@
   margin-top: 1px;
 }
 
+/* ── Concepten-knop + paneel ──
+   Absoluut gepositioneerd rechtsboven, links van de sluit-X van de Modal
+   (die zit op top:16 right:18, 32px breed). */
+.conceptenWrap {
+  position: absolute;
+  top: 14px;
+  right: 58px;
+  z-index: 5;
+}
+
+.conceptenBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--rb-r-pill);
+  border: 1px solid var(--rb-line);
+  background: #fff;
+  color: var(--rb-ink);
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.conceptenBtn:hover {
+  background: #f4f6fb;
+  border-color: var(--rb-blue);
+}
+
+.conceptenCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--rb-blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Onzichtbaar klik-vlak om het paneel te sluiten bij klik ernaast. */
+.conceptenScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+}
+
+.conceptenPaneel {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  z-index: 6;
+  width: 320px;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card);
+  box-shadow: var(--rb-shadow-modal);
+  overflow: hidden;
+}
+
+.conceptenKop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rb-line);
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+}
+
+.conceptenNieuw {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--rb-r-pill);
+  border: 1px solid var(--rb-line);
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  font-family: var(--rb-font);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.conceptenNieuw:hover {
+  background: #e4ecff;
+}
+
+.conceptenLeeg {
+  padding: 18px 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--rb-muted);
+}
+
+.conceptenLijst {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow: auto;
+}
+
+.conceptItem {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  border-radius: 10px;
+}
+
+.conceptItem:hover {
+  background: #f4f6fb;
+}
+
+.conceptActief {
+  background: var(--rb-blue-soft);
+}
+
+.conceptOpen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--rb-font);
+}
+
+.conceptNaam {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conceptMeta {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+}
+
+.conceptVerwijder {
+  flex-shrink: 0;
+  width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--rb-muted);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.conceptVerwijder:hover {
+  background: var(--rb-danger-soft, #fef3f2);
+  color: var(--rb-danger, #b42318);
+}
+
 /* ── Body ── */
 .body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 320px;
+  /* Smallere rail + minder padding (zie .content / .rail) zodat de
+     content-kaarten breder zijn en dichter bij de Live totaal-rail komen. */
+  grid-template-columns: 1fr 280px;
 }
 
 .content {
-  padding: 18px 26px;
+  padding: 18px 20px;
   overflow: auto;
 }

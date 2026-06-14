@@ -1,16 +1,25 @@
 "use client";
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { Check, Plus, Search, Sparkles } from "lucide-react";
+import { useEffect, useState, useTransition, type Dispatch, type SetStateAction } from "react";
+import { Check, Plus, Search, Sparkles, X } from "lucide-react";
 import { searchExistingClients } from "@/lib/dashboard/manual-offerte-search";
 import { getAutoAfstandKm } from "@/lib/dashboard/afstand-actions";
 import {
-  AI_PLAK,
   LEGE_KLANT,
   offerteAdres,
   type OfferteKlant,
 } from "./offerte-data";
 import { mapMatchToKlant } from "./offerte-mappers";
+import {
+  isValidEmail,
+  isValidNLMobile,
+  normalizeToInternational,
+  normalizeEmail,
+} from "@/components/dashboard/offerte/StepKlant";
+import {
+  extractFieldsFromMessage,
+  type ExtractedFields,
+} from "@/lib/dashboard/manual-offerte-ai";
 import type { KlantType } from "./types";
 import styles from "./StapKlant.module.css";
 
@@ -33,6 +42,9 @@ interface StapKlantProps {
    *  wizard zodat de submit afstand_km met de werkelijke waarde meegeeft i.p.v.
    *  de DEFAULTS-25. `null` betekent: nog niet/niet geocodeerbaar. */
   setAfstandKm: (km: number | null) => void;
+  /** AI-plak: callback met de door de OpenAI-extractie herkende velden; de
+   *  wizard vult er zijn state mee. */
+  onAiExtracted: (fields: ExtractedFields) => void;
 }
 
 /** Stap 1 · Klant: AI-plak, live filterende zoeker, altijd typbaar gegevens-
@@ -52,6 +64,7 @@ export function StapKlant({
   factuur,
   setFactuur,
   setAfstandKm,
+  onAiExtracted,
 }: StapKlantProps) {
   // ── Echte klantzoeker: debounced server-action searchExistingClients,
   // mapt de hits naar OfferteKlant. ≥ 2 tekens + 250ms debounce, zelfde
@@ -59,9 +72,34 @@ export function StapKlant({
   const [resultaten, setResultaten] = useState<OfferteKlant[]>([]);
   const [zoekt, setZoekt] = useState(false);
 
+  // AI-plak: plak een klantbericht en laat de OpenAI-extractie
+  // (extractFieldsFromMessage) de velden invullen. Het resultaat gaat via
+  // onAiExtracted naar de wizard-state; bij een fout tonen we 'm inline.
+  const [aiText, setAiText] = useState("");
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiPending, startAi] = useTransition();
+  // Standaard ingeklapt (compacte balk) zodat de zoeker + gegevens zonder
+  // scrollen zichtbaar zijn; klikken klapt de plak-textarea uit.
+  const [aiOpen, setAiOpen] = useState(false);
+
+  function handleAiPlak() {
+    setAiError(null);
+    startAi(async () => {
+      const res = await extractFieldsFromMessage(aiText);
+      if (!res.ok) {
+        setAiError(res.error);
+        return;
+      }
+      onAiExtracted(res.fields);
+      setAiText("");
+      setAiOpen(false);
+    });
+  }
+
   useEffect(() => {
     const safe = zoek.trim();
-    if (safe.length < 2) {
+    // Zoek al vanaf de eerste letter (consistent met searchExistingClients).
+    if (safe.length < 1) {
       setResultaten([]);
       setZoekt(false);
       return;
@@ -135,44 +173,70 @@ export function StapKlant({
 
   const autoStraat = !!(k.straat && (k.bestaand || k.autoAdres));
 
+  // Telefoon- en e-mailvalidatie (zelfde checks als v1 StepKlant). De
+  // waarschuwing verschijnt pas nadat het veld is verlaten (touched), zodat
+  // 'geen geldig nummer' niet al bij de eerste toets flikkert. Op blur
+  // normaliseren we telefoon naar +316... en e-mail naar trim + lowercase.
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const phoneFilled = k.tel.trim().length > 0;
+  const emailFilled = k.email.trim().length > 0;
+  const phoneWarning = phoneTouched && phoneFilled && !isValidNLMobile(k.tel);
+  const emailWarning = emailTouched && emailFilled && !isValidEmail(k.email);
+
   return (
     <div className={styles.col}>
-      {/* AI-plak */}
-      <div className={styles.aiCard}>
-        <div className={styles.cardHead}>
+      {/* AI-plak: ingeklapt een compacte balk, klik klapt de textarea uit. */}
+      {aiOpen ? (
+        <div className={styles.aiCard}>
+          <div className={styles.cardHead}>
+            <span className="rb-section-label">Plak een bericht of e-mail van de klant</span>
+            <button
+              type="button"
+              className={styles.aiClose}
+              onClick={() => setAiOpen(false)}
+              aria-label="AI-plak sluiten"
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <textarea
+            className={styles.aiTextarea}
+            value={aiText}
+            onChange={(e) => setAiText(e.target.value)}
+            placeholder="Plak hier het WhatsApp- of mailbericht van de klant. Surface haalt er automatisch de naam, het adres, telefoon, m² en wensen uit."
+            rows={2}
+            autoFocus
+          />
+          {aiError ? <div className={styles.warning}>{aiError}</div> : null}
+          <div className={styles.aiChips}>
+            <span className={styles.aiHint}>{aiText.trim().length}/4000 tekens</span>
+            <button
+              type="button"
+              className={styles.aiBtn}
+              disabled={aiPending || aiText.trim().length < 10}
+              onClick={handleAiPlak}
+            >
+              {aiPending ? "Bezig…" : "Vul automatisch in →"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={styles.aiCardClosed}
+          onClick={() => setAiOpen(true)}
+        >
           <span className="rb-section-label">Plak een bericht of e-mail van de klant</span>
           <span className={styles.aiPill}>
             <Sparkles size={12} strokeWidth={2.5} /> AI-plak
           </span>
-        </div>
-        <div className={styles.aiText}>{AI_PLAK.bericht}</div>
-        <div className={styles.aiChips}>
-          {AI_PLAK.chips.map((c) => (
-            <span key={c} className={styles.aiChip}>
-              <Check size={11} strokeWidth={3} /> {c}
-            </span>
-          ))}
-          {/* Echte AI-extractie bestaat nog niet in de gekoppelde wizard.
-              De knop schrijft daarom GEEN hardcoded persoonsgegevens meer in
-              de submit-state (dat creeerde anders een fictieve "Familie
-              Bakker"-lead in productie). Hij is uitgeschakeld tot de echte
-              extractie er is; de voorbeeld-kaart blijft staan als uitleg van
-              wat AI-plak straks doet. */}
-          <button
-            type="button"
-            className={styles.aiBtn}
-            disabled
-            aria-disabled="true"
-            title="AI-extractie volgt binnenkort, vul de klant zolang handmatig in of zoek 'm op"
-          >
-            Vul automatisch in →
-          </button>
-        </div>
-      </div>
+        </button>
+      )}
 
       {/* Klantzoeker */}
       <div className={styles.card}>
-        <div className="rb-section-label">Of zoek een klant</div>
+        <div className="rb-section-label">Zoek een klant</div>
         <div className={styles.search}>
           <Search size={15} strokeWidth={2.5} className={styles.searchIcon} />
           <input
@@ -187,12 +251,14 @@ export function StapKlant({
             {zoekt && resultaten.length === 0 ? (
               <div className={styles.searchHint}>Zoeken…</div>
             ) : null}
-            {!zoekt && resultaten.length === 0 && zoek.trim().length >= 2 ? (
+            {!zoekt && resultaten.length === 0 && zoek.trim().length >= 1 ? (
               <div className={styles.searchHint}>
                 Geen klant gevonden, maak hieronder een nieuwe aan
               </div>
             ) : null}
-            {resultaten.map((r) => {
+            {resultaten.length > 0 ? (
+              <div className={styles.resultatenScroll}>
+                {resultaten.map((r) => {
               const gekozen = klant && (r.lead_id ? klant.lead_id === r.lead_id : klant.naam === r.naam);
               return (
                 <button
@@ -213,7 +279,9 @@ export function StapKlant({
                   <span className={styles.dropKies}>{gekozen ? "✓ gekozen" : "kies"}</span>
                 </button>
               );
-            })}
+                })}
+              </div>
+            ) : null}
             <button
               type="button"
               className={styles.dropNew}
@@ -231,11 +299,7 @@ export function StapKlant({
               Nieuwe klant &quot;{zoek.trim()}&quot; aanmaken
             </button>
           </div>
-        ) : (
-          <div className={styles.searchHint}>
-            Typ om te zoeken in je klanten, of gebruik AI-plak hierboven
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* Gegevens */}
@@ -279,58 +343,75 @@ export function StapKlant({
               value={k.tel}
               placeholder="06 …"
               onChange={(e) => zet("tel")(e.target.value)}
+              onBlur={() => {
+                setPhoneTouched(true);
+                const genormaliseerd = normalizeToInternational(k.tel);
+                if (genormaliseerd !== k.tel) zet("tel")(genormaliseerd);
+              }}
             />
+            {phoneWarning ? (
+              <div className={styles.warning}>Let op, geen geldig nummer</div>
+            ) : null}
           </Veld>
-          <Veld label="E-mail">
+          <div className={styles.emailFull}>
+            <Veld label="E-mail">
+              <input
+                className={styles.veld}
+                value={k.email}
+                placeholder="optioneel"
+                onChange={(e) => zet("email")(e.target.value)}
+                onBlur={() => {
+                  setEmailTouched(true);
+                  const genormaliseerd = normalizeEmail(k.email);
+                  if (genormaliseerd !== k.email) zet("email")(genormaliseerd);
+                }}
+              />
+              {emailWarning ? (
+                <div className={styles.warning}>Let op, geen geldig e-mailadres</div>
+              ) : null}
+            </Veld>
+          </div>
+        </div>
+
+        {/* Adres op een eigen rij met ruime straat/plaats-velden, anders worden
+            lange straat- of plaatsnamen afgekapt. */}
+        <div className={styles.adresGrid}>
+          <Veld label="Postcode">
             <input
               className={styles.veld}
-              value={k.email}
-              placeholder="optioneel"
-              onChange={(e) => zet("email")(e.target.value)}
+              value={k.postcode}
+              placeholder="1234 AB"
+              onChange={(e) => zet("postcode")(e.target.value)}
             />
           </Veld>
-
-          <div className={styles.pcGrid}>
-            <Veld label="Postcode">
-              <input
-                className={styles.veld}
-                value={k.postcode}
-                placeholder="1234 AB"
-                onChange={(e) => zet("postcode")(e.target.value)}
-              />
-            </Veld>
-            <Veld label="Nr.">
-              <input
-                className={styles.veld}
-                value={k.nr}
-                placeholder="—"
-                onChange={(e) => zet("nr")(e.target.value)}
-              />
-            </Veld>
-          </div>
-
-          <div className={styles.straatGrid}>
-            <div>
-              <div className={styles.straatLabelRow}>
-                <span className={styles.veldLabel}>Straat</span>
-                {autoStraat ? <span className={styles.autoLabel}>✓ automatisch</span> : null}
-              </div>
-              <input
-                className={styles.veld}
-                value={k.straat || ""}
-                placeholder="vul postcode + nr in"
-                onChange={(e) => zet("straat")(e.target.value)}
-              />
+          <Veld label="Nr.">
+            <input
+              className={styles.veld}
+              value={k.nr}
+              placeholder="—"
+              onChange={(e) => zet("nr")(e.target.value)}
+            />
+          </Veld>
+          <div>
+            <div className={styles.straatLabelRow}>
+              <span className={styles.veldLabel}>Straat</span>
+              {autoStraat ? <span className={styles.autoLabel}>✓ automatisch</span> : null}
             </div>
-            <Veld label="Plaats">
-              <input
-                className={styles.veld}
-                value={k.plaats || ""}
-                placeholder="—"
-                onChange={(e) => zet("plaats")(e.target.value)}
-              />
-            </Veld>
+            <input
+              className={styles.veld}
+              value={k.straat || ""}
+              placeholder="vul postcode + nr in"
+              onChange={(e) => zet("straat")(e.target.value)}
+            />
           </div>
+          <Veld label="Plaats">
+            <input
+              className={styles.veld}
+              value={k.plaats || ""}
+              placeholder="—"
+              onChange={(e) => zet("plaats")(e.target.value)}
+            />
+          </Veld>
         </div>
 
         {/* Factuuradres gelijk */}

@@ -47,6 +47,11 @@ export type ManualOfferteData = {
   // Volgende dan).
   hoofdcategorie: Hoofdcategorie[]
   sub: SubDienst[]
+  // Reiniging los van invegen: de v2-wizard maakt "Reinigen" en "Invegen"
+  // aparte keuzes. Deze vlag bepaalt of de reiniging-regel meetelt, los van
+  // het voegzand/invegen-werk. Optioneel + default true (zie DEFAULTS) zodat
+  // bestaande flows (bot, offerte-formulier) hun gedrag behouden.
+  reinigen_actief?: boolean
   onderhoud_weken: 4 | 8 | 12 | 16
   m2: number
   // voegzand
@@ -58,6 +63,10 @@ export type ManualOfferteData = {
   voegzand_onkruidwerend_m2: number
   voegzand_onkruidwerend_zakken: number
   voegzand_onkruidwerend_prijs: number
+  /** Optioneel: eigen m² voor beschermlaag / preventieve onkruid (v2-wizard).
+   *  Afwezig (oud dashboard) => rules-engine valt terug op de hoofd-m2. */
+  beschermlaag_m2?: number
+  preventieve_onkruid_m2?: number
   // kleur
   kleur_naturel: boolean
   kleur_antraciet: boolean
@@ -78,9 +87,16 @@ export type ManualOfferteData = {
   // percentage), 0 ⇒ percentage-modus. Gecapt op de kortbare grondslag.
   korting_bedrag: number
   korting_omschrijving: string
+  // Geldigheid van deze offerte in dagen. 0 ⇒ val terug op de tenant-instelling
+  // (offerte_geldigheid_dagen). > 0 ⇒ override per offerte (gebruikt in de PDF).
+  geldigheid_dagen: number
   // verzending
   notitie: string
   kanaal: SendKanaal
+  // true ⇒ de owner koos "Download PDF": de server rendert de PDF en geeft 'm
+  // (base64) terug zodat de browser 'm downloadt. Er gaat geen mail/WhatsApp uit
+  // (kanaal blijft 'manual', offerte_verstuurd=false).
+  lever_pdf_download: boolean
 }
 
 export type RegelComputed = {
@@ -121,6 +137,7 @@ export const DEFAULTS: ManualOfferteData = {
   // anders Volgende, dat is de bewuste guardrail.
   hoofdcategorie: [],
   sub: [],
+  reinigen_actief: true,
   onderhoud_weken: 8,
   m2: 100,
   voegzand_normaal_actief: false,
@@ -145,8 +162,10 @@ export const DEFAULTS: ManualOfferteData = {
   korting_percentage: 0,
   korting_bedrag: 0,
   korting_omschrijving: '',
+  geldigheid_dagen: 0,
   notitie: '',
   kanaal: 'mail',
+  lever_pdf_download: false,
 }
 
 export const DIENST_LABELS: Record<SubDienst, string> = {

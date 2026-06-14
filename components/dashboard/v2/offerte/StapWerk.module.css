@@ -122,6 +122,42 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Typbaar oppervlakte-veld (zelfde look als .oppVeld, maar een echte input). */
+.oppInput {
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  padding: 9px 13px;
+  width: 84px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  outline: none;
+}
+
+.oppInput:focus {
+  border-color: var(--rb-blue);
+}
+
+/* Typbaar getal binnen een stepper-box (.m2Box / .zakBox), vervangt de
+   vaste <strong>-waarde zodat alles ook handmatig invulbaar is. */
+.stepInput {
+  width: 40px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+}
+
 .oppUnit {
   font-size: 14px;
   font-weight: 700;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LeadsSearch } from "./LeadsSearch";
+import { LeadsFilter } from "./LeadsFilter";
 import { ViewSwitcher, type LeadsView as LeadsViewMode } from "./ViewSwitcher";
 import { LeadsPipeline } from "./LeadsPipeline";
 import { LeadsList } from "./LeadsList";
@@ -28,6 +29,7 @@ export function LeadsView({
         <h1 className={styles.title}>Leads</h1>
         <div className={styles.controls}>
           <LeadsSearch />
+          <LeadsFilter />
           <ViewSwitcher value={view} onChange={setView} />
         </div>
       </div>

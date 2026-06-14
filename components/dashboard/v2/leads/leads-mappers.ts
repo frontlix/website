@@ -57,15 +57,15 @@ function initialsFromNaam(naam: string | null): string {
  * (wacht op owner-review / klus geblokkeerd) worden "hot".
  */
 const STAGE_TO_KIND: Record<MobileLeadStage, StatusKind> = {
-  gesprek: "new",
-  review: "hot",
-  uit: "sent",
-  gepland: "plan",
-  klaar: "new",
+  gesprek: "talking", // in gesprek -> blauw
+  review: "review", // offerte review / onderhandelen -> amber
+  uit: "sent", // offerte verstuurd -> grijs-blauw
+  gepland: "plan", // bezoek/afspraak gepland -> cyaan-teal
+  klaar: "won", // afgerond / akkoord -> vol groen
 };
 
 function statusKindForLead(lead: LeadListItem): StatusKind {
-  if (isLeadUrgent(lead)) return "hot";
+  if (isLeadUrgent(lead)) return "hot"; // wacht op jou / urgent -> koraal
   return STAGE_TO_KIND[leadStage(lead)];
 }
 
@@ -131,11 +131,11 @@ const PIPELINE_STAGES: ReadonlyArray<{
   dotKind: StatusKind;
   done: boolean;
 }> = [
-  { stage: "gesprek", titel: "Nieuw", dotKind: "new", done: false },
-  { stage: "review", titel: "Bezoek gepland", dotKind: "plan", done: false },
+  { stage: "gesprek", titel: "In gesprek", dotKind: "new", done: false },
+  { stage: "review", titel: "Offerte review", dotKind: "review", done: false },
   { stage: "uit", titel: "Offerte uit", dotKind: "sent", done: false },
   { stage: "gepland", titel: "Ingepland", dotKind: "plan", done: false },
-  { stage: "klaar", titel: "Afgerond", dotKind: "new", done: true },
+  { stage: "klaar", titel: "Afgerond", dotKind: "won", done: true },
 ];
 
 export function buildPipelineFromLeads(leads: LeadListItem[]): PipelineCol[] {

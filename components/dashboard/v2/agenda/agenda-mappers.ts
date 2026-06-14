@@ -13,13 +13,15 @@
 
 import type { Appointment } from "@/lib/dashboard/agenda-queries";
 import { buildWeekDays, toAmsterdamDayKey } from "@/lib/dashboard/agenda-week";
+import type { GridCell } from "@/lib/dashboard/calendar";
 import {
   estimateDurationMinutes,
   formatHHmm,
   formatM2,
 } from "@/lib/dashboard/agenda-event";
-import type { AgendaDag, AgendaItem, AgendaType } from "./agenda-data";
-import { EMPTY_DUUR } from "./agenda-data";
+import type { AgendaDag, AgendaItem, AgendaType, AgendaMaandCel, KlusInfo } from "./agenda-data";
+import { EMPTY_DUUR, AGENDA_MONTH, AGENDA_WEEK } from "./agenda-data";
+import { isJaWaarde } from "./agenda-derive";
 
 /** Korte NL-weekdag (zelfde stijl als de demo: Ma/Di/Wo …). */
 const WEEKDAY_SHORT = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
@@ -64,6 +66,24 @@ function subLabel(a: Appointment): string {
   return bits.join(" · ");
 }
 
+/** Klus-details (m², soort, conditie) uit de lead. Undefined als er niets is. */
+function buildKlusInfo(a: Appointment): KlusInfo | undefined {
+  const m2 =
+    a.m2 != null && Number.isFinite(Number(a.m2)) ? Number(a.m2) : undefined;
+  const subDiensten =
+    Array.isArray(a.sub_diensten) && a.sub_diensten.length
+      ? a.sub_diensten
+      : undefined;
+  const categorie = a.hoofdcategorie || undefined;
+  const groeneAanslag = isJaWaarde(a.groene_aanslag) || undefined;
+  const plantenAfschermen = isJaWaarde(a.planten_afschermen) || undefined;
+
+  if (!categorie && !m2 && !subDiensten && !groeneAanslag && !plantenAfschermen) {
+    return undefined;
+  }
+  return { categorie, m2, subDiensten, groeneAanslag, plantenAfschermen };
+}
+
 /** Eén echte afspraak → AgendaItem (met optionele lead-context). */
 export function mapAppointmentToItem(a: Appointment): AgendaItem {
   const iso = a.afspraak_geboekt_op as string; // gegarandeerd door caller-filter
@@ -84,6 +104,14 @@ export function mapAppointmentToItem(a: Appointment): AgendaItem {
     leadId: a.lead_id,
     telefoon: a.telefoon ?? "",
     adres: appointmentAdres(a),
+    afstandKm:
+      a.afstand_km != null && Number.isFinite(Number(a.afstand_km))
+        ? Number(a.afstand_km)
+        : undefined,
+    // Klant-coördinaten voor de live routekaart (de query levert lat/lng al).
+    lat: a.lat ?? null,
+    lng: a.lng ?? null,
+    klusInfo: buildKlusInfo(a),
   };
 }
 
@@ -119,4 +147,77 @@ export function mapWeekToAgendaDays(
       items,
     };
   });
+}
+
+/**
+ * Demo-week voor de dev-preview (geen sessie): bouwt de 7 dagen uit het
+ * navigeerbare week-param (echte datums + vandaag-markering) en legt de
+ * demo-afspraken alleen op de week die vandaag bevat. Zo werkt de week-
+ * navigatie ook zonder sessie zichtbaar (andere weken zijn leeg, met de juiste
+ * datums + label). AGENDA_WEEK is Ma..Za (index 0..5); zondag blijft leeg.
+ */
+export function buildDemoWeek(mondayKey: string): AgendaDag[] {
+  const days = buildWeekDays(mondayKey);
+  const bevatVandaag = days.some((d) => d.isToday);
+  return days.map((d, i) => ({
+    dag: WEEKDAY_SHORT[d.date.getDay()],
+    datum: String(d.date.getDate()),
+    vandaag: d.isToday,
+    items: bevatVandaag ? AGENDA_WEEK[i]?.items ?? [] : [],
+  }));
+}
+
+/** Zondag = vrije dag (toont het "Vrij"-label in het maandrooster). De dateKey
+ *  is een UTC-dag (uit getMonthGrid), dus getUTCDay() geeft de juiste weekdag. */
+function isVrijeDag(dateKey: string): boolean {
+  return new Date(`${dateKey}T00:00:00Z`).getUTCDay() === 0;
+}
+
+/**
+ * Map de maand-grid-cellen (getMonthGrid) + de maand-afspraken naar
+ * AgendaMaandCel[]. Afspraken komen op hun Amsterdam-dagkey in de juiste cel
+ * en worden op tijd gesorteerd. Cellen buiten de getoonde maand blijven leeg
+ * (gedimd voor-/naloop), net als in het ontwerp.
+ */
+export function mapMonthToCells(
+  cells: GridCell[],
+  appointments: Appointment[],
+): AgendaMaandCel[] {
+  const byKey = new Map<string, AgendaItem[]>();
+  for (const a of appointments) {
+    if (!a.afspraak_geboekt_op) continue;
+    const key = toAmsterdamDayKey(a.afspraak_geboekt_op);
+    const list = byKey.get(key) ?? [];
+    list.push(mapAppointmentToItem(a));
+    byKey.set(key, list);
+  }
+  for (const list of byKey.values()) {
+    list.sort((x, y) => x.tijd.localeCompare(y.tijd));
+  }
+
+  return cells.map((c) => ({
+    dateKey: c.dateKey,
+    dag: c.dayOfMonth,
+    inMaand: c.isCurrentMonth,
+    vandaag: c.isToday,
+    verleden: c.isPast,
+    vrij: isVrijeDag(c.dateKey),
+    items: c.isCurrentMonth ? byKey.get(c.dateKey) ?? [] : [],
+  }));
+}
+
+/**
+ * Demo-variant van mapMonthToCells: legt de AGENDA_MONTH-demo (op dag-van-de-
+ * maand) over de in-maand-cellen. Gebruikt in de dev-preview zonder sessie.
+ */
+export function buildDemoMonthCells(cells: GridCell[]): AgendaMaandCel[] {
+  return cells.map((c) => ({
+    dateKey: c.dateKey,
+    dag: c.dayOfMonth,
+    inMaand: c.isCurrentMonth,
+    vandaag: c.isToday,
+    verleden: c.isPast,
+    vrij: isVrijeDag(c.dateKey),
+    items: c.isCurrentMonth ? AGENDA_MONTH[c.dayOfMonth] ?? [] : [],
+  }));
 }

@@ -44,11 +44,20 @@ import styles from "./MeldingenPanel.module.css";
 const LIVE_FASE = 3; // toggles voor kanalen met fase > LIVE_FASE disabled (fase 4 = whatsapp)
 
 /**
+ * Events die (nog) door geen enkel systeem worden aangemaakt en dus geen
+ * melding opleveren, ongeacht het kanaal. Nu: 'nieuwe_review' (er is nog geen
+ * reviews-systeem dat 'm aanmaakt). Alle kanalen tonen dan "Binnenkort".
+ */
+const EVENT_NIET_LIVE: Set<NotificationEventType> = new Set(["nieuwe_review"]);
+
+/**
  * Bepaalt per (event, kanaal) of de toggle live/interactief is.
+ * - Events in EVENT_NIET_LIVE: nooit (er gaat nog geen melding af).
  * - WhatsApp: alleen live voor events in WHATSAPP_LIVE_EVENTS (rest "Binnenkort").
  * - Overige kanalen: live zodra hun fase <= LIVE_FASE.
  */
 function isCellLive(evt: NotificationEventType, kn: NotificationKanaal): boolean {
+  if (EVENT_NIET_LIVE.has(evt)) return false;
   if (kn === "whatsapp") return WHATSAPP_LIVE_EVENTS.has(evt);
   return KANAAL_FASE[kn] <= LIVE_FASE;
 }

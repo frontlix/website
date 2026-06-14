@@ -1,28 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────
 // Reviews-pagina (rebrand v2) — server-component.
 //
-// Koppelt de pagina aan de echte, tenant-gescopete Supabase-sessie via
-// v2Session(). Net als de bestaande (app)-pagina is de ENIGE echte query
-// hier `tenant_settings.bedrijfsnaam` (RLS-scoped); er bestaat nog geen
-// reviews-tabel, dus de stats/verdeling/kanaalscores en de wachtende +
-// beantwoorde reviews komen nog uit demo-data (zie data-contract
-// "Valkuilen": GEEN REVIEWS-TABEL). De demo-bron wordt door de mappers
-// naar de bestaande v2-component-props gevormd, zodat de overstap naar
-// echte rijen straks alleen de query toevoegt.
+// Er bestaat nog GEEN reviews-tabel/backend (de bot stuurt review-vragen,
+// maar er komt nog niets terug het dashboard in). Daarom tonen we hier geen
+// (nep) reviews meer, maar een nette "binnenkort"-placeholder. De nav-link
+// houdt een tekst-badge "binnenkort" (zie shell-data.ts), zonder nep-teller.
 //
-// Bij geen sessie (dev-preview zonder login) valt de pagina terug op
-// dezelfde demo-data, conform het master-data-contract.
+// We raken nog wel de tenant-scope aan via v2Session() (RLS), net als de
+// andere v2-pagina's, zodat de overstap naar echte rijen straks alleen de
+// query + UI toevoegt. De demo-componenten (ReviewsClient e.d.) blijven als
+// skelet bestaan voor wanneer de reviews-backend er is.
 // ─────────────────────────────────────────────────────────────────────
 
 import { v2Session } from "@/lib/dashboard/v2/session";
-import { ReviewsClient } from "@/components/dashboard/v2/reviews/ReviewsClient";
-import {
-  REVIEW_STATS,
-  REVIEWS_WACHTEND,
-  REVIEWS_RECENT,
-  BRON_SCORES,
-} from "@/components/dashboard/v2/reviews/reviews-data";
-import { toReviewRows } from "@/components/dashboard/v2/reviews/reviews-mappers";
+import { Star } from "lucide-react";
+import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -30,29 +22,29 @@ export default async function ReviewsPage() {
   const s = await v2Session();
 
   if (s) {
-    // Echte, tenant-gescopete query (RLS via de sessie-client), exact zoals
-    // de bestaande (app)-pagina: bedrijfsnaam voor context. We halen 'm op
-    // zodat de tenant-scope echt wordt geraakt; de reviews zelf bestaan nog
-    // niet als tabel (demo-data tot de bot review-vragen verstuurt).
+    // Raakt de tenant-scope (RLS via de sessie-client), zoals de andere
+    // v2-pagina's. Er is nog geen reviews-tabel, dus we tonen geen data.
     const settingsRes = await s.supabase
       .from("tenant_settings")
       .select("bedrijfsnaam")
       .limit(1)
       .maybeSingle();
-    // Cast: zonder generated DB types geeft de inference hier `never`.
     void (settingsRes.data as { bedrijfsnaam: string | null } | null);
   }
 
-  // Demo-bron → bestaande v2-component-props via de mappers. Lege bronnen
-  // worden netjes opgevangen (geen crash bij 0 rijen).
-  const rows = toReviewRows(REVIEWS_WACHTEND, REVIEWS_RECENT);
-
   return (
-    <ReviewsClient
-      stats={REVIEW_STATS}
-      bronScores={BRON_SCORES}
-      wachtend={REVIEWS_WACHTEND}
-      rows={rows}
-    />
+    <div className={styles.soon}>
+      <div className={styles.soonIcon}>
+        <Star size={26} strokeWidth={2} />
+      </div>
+      <span className={styles.soonBadge}>Binnenkort</span>
+      <h1 className={styles.soonTitle}>Reviews komen eraan</h1>
+      <p className={styles.soonText}>
+        Straks verzamelt Surface automatisch reviews van je klanten via WhatsApp
+        en zet er een conceptantwoord bij klaar. Zodra dit live staat verschijnen
+        je echte beoordelingen hier, met je gemiddelde score en de reacties per
+        kanaal.
+      </p>
+    </div>
   );
 }

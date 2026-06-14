@@ -2,10 +2,12 @@
 // Offerte-wizard — pagina-eigen demo-data.
 //
 // Prijzen, diensten en bestaande klanten voor de handmatige offerte-wizard.
-// Bron: POfferte.jsx + POfferteStappen.jsx uit de design-handoff. Prijzen
-// zijn incl. BTW (particulier). Klantzoeker gebruikt LEADS uit de gedeelde
-// demo-data als "bestaande klanten", aangevuld met een paar offerte-klanten
-// uit het prototype.
+// Bron: POfferte.jsx + POfferteStappen.jsx uit de design-handoff. De prijzen
+// hieronder zijn excl. BTW en gelijk aan de echte Schoon Straatje-prijslijst
+// (bot-config). De wizard rekent in werkelijkheid met de live pricing-snapshot;
+// deze constanten zijn alleen demo/preview-startwaarden. Klantzoeker gebruikt
+// LEADS uit de gedeelde demo-data als "bestaande klanten", aangevuld met een
+// paar offerte-klanten uit het prototype.
 // ─────────────────────────────────────────────────────────────────────
 
 import { LEADS } from "../demo-data";
@@ -130,25 +132,31 @@ export function offerteAdres(k: OfferteKlant | null): string {
   return k && k.straat ? `${k.straat} ${k.nr}, ${k.plaats}` : "";
 }
 
-// ── Vaste prijzen (incl. BTW, particulier) ───────────────────────────────
+// ── Demo-prijzen (excl. BTW), gelijk aan de Schoon Straatje-bot-prijslijst ──
+// De echte wizard rekent met de live `pricing`-snapshot; dit zijn alleen
+// preview/start-waarden, zodat ze niet afwijken van wat de klant betaalt.
 
 export const PRIJZEN = {
-  oprit: 4.75,
-  invegen: 2.9,
-  beschermlaag: 3.1,
-  onkruid: 1.5,
+  oprit: 3.95,
+  invegen: 0.9,
+  beschermlaag: 1.6,
+  onkruid: 4.5,
   zandNormaal: "2,90",
-  zandOnkruidwerend: "4,50",
+  zandOnkruidwerend: "20,90",
   rol: "8,50",
 } as const;
 
-/** Diensten-chips. "Reinigen + invegen" staat vast aan. */
+/** Diensten-chips, allemaal los aan/uit te klikken (geen vaste dienst meer). */
 export const DIENSTEN_INIT: Record<string, boolean> = {
-  "Reinigen + invegen": true,
+  Reinigen: false,
+  Invegen: false,
   Beschermlaag: false,
   "Preventieve onkruid": false,
   Onderhoudsabonnement: false,
 };
+
+/** Keuzes voor het onderhoudsabonnement-interval (weken). */
+export const ONDERHOUD_WEKEN: number[] = [4, 8, 12, 16];
 
 /** Diensten die een eigen offerteregel met m²-stepper togglen. */
 export const DIENST_REGELS: {

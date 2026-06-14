@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BarChart3 } from "lucide-react";
 import { Card } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { BRIEF, STATUS_LINE, TENANT } from "@/components/dashboard/v2/demo-data";
@@ -34,14 +34,24 @@ export function BriefCard({ brief = DEMO_BRIEF }: { brief?: BriefData }) {
           {brief.greeting}, {brief.voornaam}
         </h1>
         <p className={styles.text}>{brief.body}</p>
-        <button
-          type="button"
-          className={styles.cta}
-          onClick={() => router.push(`${V2_BASE}/leads`)}
-        >
-          {brief.cta}
-          <ArrowRight size={16} strokeWidth={2.5} />
-        </button>
+        <div className={styles.ctaRow}>
+          <button
+            type="button"
+            className={styles.cta}
+            onClick={() => router.push(`${V2_BASE}/leads`)}
+          >
+            {brief.cta}
+            <ArrowRight size={16} strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            className={styles.dagBtn}
+            onClick={() => router.push(`${V2_BASE}?dagrapport=1`, { scroll: false })}
+          >
+            <BarChart3 size={15} strokeWidth={2.25} />
+            Bekijk dagrapport
+          </button>
+        </div>
       </div>
     </Card>
   );

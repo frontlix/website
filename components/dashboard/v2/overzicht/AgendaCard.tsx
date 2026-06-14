@@ -15,6 +15,20 @@ const KIND_BAR: Record<AgendaKind, string> = {
   klus: styles.barKlus,
 };
 
+/** Zachte type-tint op de rij-achtergrond per soort (kleur = soort afspraak). */
+const KIND_ROW: Record<AgendaKind, string> = {
+  deadline: styles.rowDeadline,
+  bezoek: styles.rowBezoek,
+  klus: styles.rowKlus,
+};
+
+/** Tijd-tekst in de type-kleur per soort. */
+const KIND_TIJD: Record<AgendaKind, string> = {
+  deadline: styles.tijdDeadline,
+  bezoek: styles.tijdBezoek,
+  klus: styles.tijdKlus,
+};
+
 /** Demo-fallback (dev-preview zonder login): geen lead-id, dus rijen klikken
  *  naar de agendapagina zoals in het prototype. */
 const DEMO_AGENDA: AgendaRow[] = AGENDA_TODAY.map((item) => ({ ...item, leadId: "" }));
@@ -49,7 +63,7 @@ export function AgendaCard({ agenda = DEMO_AGENDA }: { agenda?: AgendaRow[] }) {
         {agenda.map((item, idx) => (
           <li
             key={item.leadId || `${item.tijd}-${idx}`}
-            className={`${styles.row} ${item.kind === "deadline" ? styles.rowDeadline : ""}`}
+            className={`${styles.row} ${KIND_ROW[item.kind]}`}
             onClick={() => goRow(item)}
             role="button"
             tabIndex={0}
@@ -60,11 +74,7 @@ export function AgendaCard({ agenda = DEMO_AGENDA }: { agenda?: AgendaRow[] }) {
               }
             }}
           >
-            <span
-              className={`${styles.tijd} ${item.kind === "deadline" ? styles.tijdDeadline : ""}`}
-            >
-              {item.tijd}
-            </span>
+            <span className={`${styles.tijd} ${KIND_TIJD[item.kind]}`}>{item.tijd}</span>
             <span className={`${styles.bar} ${KIND_BAR[item.kind]}`} aria-hidden="true" />
             <div className={styles.main}>
               <div className={styles.rowTitle}>{item.titel}</div>

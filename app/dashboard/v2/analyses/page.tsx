@@ -31,7 +31,6 @@ import {
   PERIODES,
   FUNNEL,
   BRONNEN,
-  INZICHTEN,
   TOP_DIENSTEN,
   STATUS_VERDELING,
   CATEGORIE_VERDELING,
@@ -51,6 +50,10 @@ import {
   euroCompact,
   type KanaalLeadRow,
 } from "@/components/dashboard/v2/analyses/analyses-mappers";
+import {
+  buildInzichten,
+  buildDemoInzichten,
+} from "@/components/dashboard/v2/analyses/analyses-insights";
 import { AnalysesClient } from "./AnalysesClient";
 
 // De v2-pagina gebruikt z'n eigen searchparam `?periode=` (PeriodKey) zodat
@@ -86,7 +89,7 @@ export default async function AnalysesPage({
         statusVerdeling={STATUS_VERDELING}
         categorieVerdeling={CATEGORIE_VERDELING}
         topTags={TOP_TAGS}
-        inzichten={INZICHTEN}
+        inzichten={buildDemoInzichten()}
         dienstenTotaal={demo.totaal}
         inzichtenMeta="juni 2026 · 38 leads · €11.9k"
         gemKluswaarde="€386"
@@ -105,7 +108,7 @@ export default async function AnalysesPage({
     let q = s!.supabase
       .from("leads")
       .select(
-        "kanaal, bron, aangemaakt, akkoord_op, afspraak_geboekt_op, totaal_prijs",
+        "kanaal, bron, aangemaakt, akkoord_op, afspraak_geboekt_op, totaal_prijs, afstand_km",
       );
     if (range.from) q = q.gte("aangemaakt", range.from);
     if (range.to) q = q.lt("aangemaakt", range.to);
@@ -149,6 +152,22 @@ export default async function AnalysesPage({
     return unieke.size;
   }
 
+  // Door de eigenaar ingestelde max. radius (tenant_settings.radius_max_km),
+  // voor het "buiten radius"-inzicht. Null als niet ingesteld.
+  async function fetchRadiusKm(): Promise<number | null> {
+    const { data, error } = await s!.supabase
+      .from("tenant_settings")
+      .select("radius_max_km")
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      console.error("[v2/analyses] radius_max_km failed:", error);
+      return null;
+    }
+    const v = (data as { radius_max_km: number | null } | null)?.radius_max_km;
+    return v != null && Number.isFinite(Number(v)) ? Number(v) : null;
+  }
+
   const [
     total,
     converted,
@@ -164,6 +183,7 @@ export default async function AnalysesPage({
     statusRows,
     categorieRows,
     tagRows,
+    radiusKm,
   ] = await Promise.all([
     countLeads(range),
     countConverted(range),
@@ -179,6 +199,7 @@ export default async function AnalysesPage({
     statusVerdeling(range),
     categorieVerdeling(range),
     topTags(range, 10),
+    fetchRadiusKm(),
   ]);
 
   const kpis = mapKpis({ total, converted, avgOfferte, avgReactieMs });
@@ -203,8 +224,15 @@ export default async function AnalysesPage({
   const gemKluswaarde =
     converted > 0 ? euroCompact(omzet / converted) : "—";
 
-  // Inzichten blijven het demo-prototype (Surface-API nog niet beschikbaar);
-  // kop-meta toont wel de echte cijfers van de gekozen periode.
+  // Echte inzichten uit de data van de gekozen periode (reactietijd, leads
+  // buiten radius, conversie, drukste dag). Kop-meta toont de periode-cijfers.
+  const inzichten = buildInzichten({
+    avgReactieMs,
+    total,
+    converted,
+    rows: kanaalRows,
+    radiusKm,
+  });
   const inzichtenMeta = `${periodLabel(periodKey)} · ${total} leads · ${euroCompact(omzet)}`;
 
   return (
@@ -218,7 +246,7 @@ export default async function AnalysesPage({
       statusVerdeling={statusVerdelingRows}
       categorieVerdeling={categorieVerdelingRows}
       topTags={tagRows}
-      inzichten={INZICHTEN}
+      inzichten={inzichten}
       dienstenTotaal={euroCompact(omzet)}
       inzichtenMeta={inzichtenMeta}
       gemKluswaarde={gemKluswaarde}

@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { PRIMARY_NAV, TENANT, type NavItem } from "../demo-data";
+import { NotificationsBell } from "./NotificationsBell";
+import type { NotifItem } from "@/components/dashboard/NotificationPanel";
 import styles from "./Shell.module.css";
 
 /** Basispad van de v2-preview, zoals de browser het op de dashboard-host
@@ -29,6 +31,12 @@ interface ShellProps {
   nav?: NavItem[];
   /** True = geen sessie; toon de "Demo-data"-indicator. */
   isDemo?: boolean;
+  /** Bedrijfslogo-URL voor de avatar rechtsboven; null = initialen-fallback. */
+  logoUrl?: string | null;
+  /** Meldingen-feed voor de bel-dropdown (leeg in demo). */
+  notifications?: NotifItem[];
+  /** Aantal ongelezen meldingen voor de bel-badge. */
+  unreadCount?: number;
 }
 
 /** De rebrand-shell: aurora-achtergrond, header met logo, gecentreerde
@@ -39,6 +47,9 @@ export function Shell({
   userInitials = TENANT.initials,
   nav = PRIMARY_NAV,
   isDemo = false,
+  logoUrl = null,
+  notifications = [],
+  unreadCount = 0,
 }: ShellProps) {
   const pathname = usePathname() ?? V2_BASE;
   const settingsActive = isActive(pathname, "/instellingen");
@@ -89,6 +100,8 @@ export function Shell({
                     <span className={`${styles.navBadge} ${active ? styles.navBadgeActive : ""}`}>
                       {item.badge}
                     </span>
+                  ) : typeof item.badge === "string" ? (
+                    <span className={styles.navBadgeSoon}>{item.badge}</span>
                   ) : null}
                 </Link>
               );
@@ -105,12 +118,18 @@ export function Shell({
               <Plus size={16} strokeWidth={2.5} />
               Nieuwe offerte
             </button>
+            <NotificationsBell items={notifications} unreadCount={unreadCount} />
             <Link
               href={`${V2_BASE}/instellingen`}
               className={`${styles.avatar} ${settingsActive ? styles.avatarActive : ""}`}
               title="Instellingen"
             >
-              {userInitials}
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="Bedrijfslogo" className={styles.avatarImg} />
+              ) : (
+                userInitials
+              )}
             </Link>
           </div>
         </header>

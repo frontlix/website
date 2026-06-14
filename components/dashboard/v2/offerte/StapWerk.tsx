@@ -2,7 +2,7 @@
 
 import { Check } from "lucide-react";
 import { MiniStep } from "./MiniStep";
-import { DIENST_REGELS } from "./offerte-data";
+import { DIENST_REGELS, ONDERHOUD_WEKEN } from "./offerte-data";
 import { fmtEuro, parsePrijs } from "./offerte-utils";
 import type { Kleur } from "./types";
 import styles from "./StapWerk.module.css";
@@ -14,12 +14,20 @@ interface StapWerkProps {
   setQty: (q: { invegen: number; rollen: number }) => void;
   rolPrijs: string;
   setRolPrijs: (v: string) => void;
-  zakken: { normaal: number; onkruidwerend: number };
-  setZakken: (z: { normaal: number; onkruidwerend: number }) => void;
+  /** Voegzand-m² per type (de in te vegen oppervlakte met dat type). */
+  voegzandM2: { normaal: number; onkruidwerend: number };
+  /** Zet de m² van één type én herbereken de zakken (auto-suggest). */
+  zetVoegzandM2: (type: "normaal" | "onkruidwerend", v: number) => void;
+  /** Aantal zakken per type, handmatig overschrijfbaar. */
+  voegzandZakken: { normaal: number; onkruidwerend: number };
+  setVoegzandZakken: (z: { normaal: number; onkruidwerend: number }) => void;
   zandPrijzen: { normaal: string; onkruidwerend: string };
   setZandPrijzen: (z: { normaal: string; onkruidwerend: string }) => void;
   zandPrijsN: number;
   zandPrijsO: number;
+  /** Invegen-arbeidstarief per m² (Schoon Straatje-prijslijst). */
+  arbeidNormaalPerM2: number;
+  arbeidOnkruidwerendPerM2: number;
   diensten: Record<string, boolean>;
   setDiensten: (d: Record<string, boolean>) => void;
   bm2: number;
@@ -32,6 +40,11 @@ interface StapWerkProps {
   setKleur: (k: Kleur) => void;
   korstmosConditie: boolean;
   setKorstmos: (b: boolean) => void;
+  onderhoudWeken: number;
+  setOnderhoudWeken: (w: number) => void;
+  /** Echte enkele-reis-afstand van het werkadres (tenant-basis) naar de klant,
+   *  uit de geocode in StapKlant; null = nog geen/niet geocodeerbaar adres. */
+  afstandKm: number | null;
 }
 
 /** Stap 2 · Werk: diensten-chips, oppervlakte-stepper, voegzand per soort,
@@ -43,12 +56,16 @@ export function StapWerk({
   setQty,
   rolPrijs,
   setRolPrijs,
-  zakken,
-  setZakken,
+  voegzandM2,
+  zetVoegzandM2,
+  voegzandZakken,
+  setVoegzandZakken,
   zandPrijzen,
   setZandPrijzen,
   zandPrijsN,
   zandPrijsO,
+  arbeidNormaalPerM2,
+  arbeidOnkruidwerendPerM2,
   diensten,
   setDiensten,
   bm2,
@@ -61,6 +78,9 @@ export function StapWerk({
   setKleur,
   korstmosConditie,
   setKorstmos,
+  onderhoudWeken,
+  setOnderhoudWeken,
+  afstandKm,
 }: StapWerkProps) {
   const wisselDienst = (d: string) => {
     const aan = !diensten[d];
@@ -74,9 +94,14 @@ export function StapWerk({
     "Preventieve onkruid": { val: om2, zet: setOm2 },
   };
 
-  const zandSoorten: { id: "normaal" | "onkruidwerend"; naam: string; prijs: number }[] = [
-    { id: "normaal", naam: "Normaal", prijs: zandPrijsN },
-    { id: "onkruidwerend", naam: "Onkruidwerend", prijs: zandPrijsO },
+  const zandSoorten: {
+    id: "normaal" | "onkruidwerend";
+    naam: string;
+    zakPrijs: number;
+    arbeidPrijs: number;
+  }[] = [
+    { id: "normaal", naam: "Normaal", zakPrijs: zandPrijsN, arbeidPrijs: arbeidNormaalPerM2 },
+    { id: "onkruidwerend", naam: "Onkruidwerend", zakPrijs: zandPrijsO, arbeidPrijs: arbeidOnkruidwerendPerM2 },
   ];
 
   return (
@@ -87,13 +112,12 @@ export function StapWerk({
         <div className={styles.chips}>
           {Object.keys(diensten).map((d) => {
             const aan = diensten[d];
-            const vast = d === "Reinigen + invegen";
             return (
               <button
                 type="button"
                 key={d}
-                onClick={vast ? undefined : () => wisselDienst(d)}
-                className={`${styles.chip} ${aan ? styles.chipOn : ""} ${vast ? styles.chipVast : ""}`}
+                onClick={() => wisselDienst(d)}
+                className={`${styles.chip} ${aan ? styles.chipOn : ""}`}
               >
                 {aan ? <Check size={13} strokeWidth={3} /> : null}
                 {d}
@@ -107,7 +131,14 @@ export function StapWerk({
               <span className={styles.dienstNaam}>{naam}</span>
               <span className={styles.m2Box}>
                 <MiniStep dir="min" onClick={() => dienstM2[key].zet(Math.max(0, dienstM2[key].val - 5))} />
-                <strong>{dienstM2[key].val}</strong>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.stepInput}
+                  value={dienstM2[key].val}
+                  onChange={(e) => dienstM2[key].zet(parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
+                  aria-label={`${naam}, m²`}
+                />
                 <span className={styles.unit}>m²</span>
                 <MiniStep dir="plus" onClick={() => dienstM2[key].zet(dienstM2[key].val + 5)} />
               </span>
@@ -116,30 +147,58 @@ export function StapWerk({
             </div>
           ) : null,
         )}
+        {diensten["Onderhoudsabonnement"] ? (
+          <div className={styles.dienstRegel}>
+            <span className={styles.dienstNaam}>Onderhoudsinterval</span>
+            <span className={styles.segmented}>
+              {ONDERHOUD_WEKEN.map((w) => (
+                <button
+                  type="button"
+                  key={w}
+                  onClick={() => setOnderhoudWeken(w)}
+                  className={`${styles.seg} ${onderhoudWeken === w ? styles.segActive : ""}`}
+                >
+                  {w} wkn
+                </button>
+              ))}
+            </span>
+          </div>
+        ) : null}
       </div>
 
-      {/* Oppervlakte */}
-      <div className={styles.card}>
+      {/* Oppervlakte (volle breedte als de voegzand-kaart ernaast wegvalt). */}
+      <div className={`${styles.card} ${diensten["Invegen"] ? "" : styles.full}`}>
         <div className="rb-section-label">Oppervlakte</div>
         <div className={styles.opp}>
           <MiniStep dir="min" onClick={() => setM2(m2 - 5)} />
-          <span className={styles.oppVeld}>{m2}</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            className={styles.oppInput}
+            value={m2}
+            onChange={(e) => setM2(parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
+            aria-label="Oppervlakte in m²"
+          />
           <MiniStep dir="plus" onClick={() => setM2(m2 + 5)} />
           <span className={styles.oppUnit}>m²</span>
         </div>
         <div className={styles.note}>Stuurt de regels en het voegzand automatisch aan</div>
       </div>
 
-      {/* Voegzand */}
+      {/* Voegzand hoort bij invegen: alleen tonen als Invegen aan staat. */}
+      {diensten["Invegen"] ? (
       <div className={styles.card}>
         <div className={styles.cardHead}>
-          <span className="rb-section-label">Voegzand, per soort instelbaar</span>
-          <span className={styles.autoNote}>auto-berekend uit m²</span>
+          <span className="rb-section-label">Voegzand, m² per soort</span>
+          <span className={styles.autoNote}>zakken auto uit m²</span>
         </div>
-        {zandSoorten.map(({ id, naam, prijs }) => {
-          const n = zakken[id];
+        {zandSoorten.map(({ id, naam, zakPrijs, arbeidPrijs }) => {
+          const m2v = voegzandM2[id];
+          const zakken = voegzandZakken[id];
+          const actief = m2v > 0 || zakken > 0;
+          const bedrag = m2v * arbeidPrijs + zakken * zakPrijs;
           return (
-            <div key={id} className={`${styles.zandRow} ${n > 0 ? "" : styles.dim}`}>
+            <div key={id} className={`${styles.zandRow} ${actief ? "" : styles.dim}`}>
               <span className={styles.zandNaam}>{naam}</span>
               <span className={styles.prijsBox} title="Prijs per zak, aanpasbaar">
                 <span className={styles.euro}>€</span>
@@ -151,20 +210,40 @@ export function StapWerk({
                 />
                 <span className={styles.perUnit}>/zak</span>
               </span>
-              <span className={styles.zakBox}>
-                <MiniStep dir="min" onClick={() => setZakken({ ...zakken, [id]: Math.max(0, n - 1) })} />
-                <strong className={styles.zakVal}>{n}</strong>
-                <span className={styles.unit}>zak</span>
-                <MiniStep dir="plus" onClick={() => setZakken({ ...zakken, [id]: n + 1 })} />
+              <span className={styles.zakBox} title="Aantal m² dat met dit type wordt ingeveegd">
+                <MiniStep dir="min" onClick={() => zetVoegzandM2(id, Math.max(0, m2v - 5))} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.stepInput}
+                  value={m2v}
+                  onChange={(e) => zetVoegzandM2(id, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
+                  aria-label={`m² ${naam.toLowerCase()} voegzand`}
+                />
+                <span className={styles.unit}>m²</span>
+                <MiniStep dir="plus" onClick={() => zetVoegzandM2(id, m2v + 5)} />
               </span>
-              <span className={styles.zandBedrag}>{n > 0 ? fmtEuro(n * prijs) : "—"}</span>
+              <span className={styles.zakBox} title="Aantal zakken (auto uit m², handmatig aanpasbaar)">
+                <MiniStep dir="min" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: Math.max(0, zakken - 1) })} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className={styles.stepInput}
+                  value={zakken}
+                  onChange={(e) =>
+                    setVoegzandZakken({ ...voegzandZakken, [id]: parseInt(e.target.value.replace(/\D/g, ""), 10) || 0 })
+                  }
+                  aria-label={`Aantal zakken ${naam.toLowerCase()}`}
+                />
+                <span className={styles.unit}>zak</span>
+                <MiniStep dir="plus" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: zakken + 1 })} />
+              </span>
+              <span className={styles.zandBedrag}>{actief ? fmtEuro(bedrag) : "—"}</span>
             </div>
           );
         })}
-        <div className={styles.noteSmall}>
-          Zet een soort op 0 zakken om &apos;m van de offerte te halen, allebei tegelijk kan ook
-        </div>
       </div>
+      ) : null}
 
       {/* Conditie */}
       <div className={`${styles.card} ${styles.full}`}>
@@ -178,25 +257,30 @@ export function StapWerk({
             <div className={styles.condLabel}>Korstmos</div>
             <JaNee waarde={korstmosConditie} zet={setKorstmos} naam="korstmos" />
           </div>
-          <div>
-            <div className={styles.condLabel}>Kleur bestrating</div>
-            <span className={styles.segmented}>
-              {(["Naturel", "Antraciet", "Allebei"] as Kleur[]).map((kl) => (
-                <button
-                  type="button"
-                  key={kl}
-                  onClick={() => setKleur(kl)}
-                  className={`${styles.seg} ${kleur === kl ? styles.segActive : ""}`}
-                >
-                  {kl}
-                </button>
-              ))}
-            </span>
-          </div>
+          {diensten["Invegen"] ? (
+            <div>
+              <div className={styles.condLabel}>Kleur bestrating</div>
+              <span className={styles.segmented}>
+                {(["Naturel", "Antraciet", "Allebei"] as Kleur[]).map((kl) => (
+                  <button
+                    type="button"
+                    key={kl}
+                    onClick={() => setKleur(kl)}
+                    className={`${styles.seg} ${kleur === kl ? styles.segActive : ""}`}
+                  >
+                    {kl}
+                  </button>
+                ))}
+              </span>
+            </div>
+          ) : null}
           <div className={styles.afstand}>
-            <div className={styles.condLabel}>Afstand</div>
+            <div className={styles.condLabel}>Afstand naar klant</div>
             <div className={styles.afstandVal}>
-              25 km <span className={styles.afstandAuto}>auto</span>
+              {afstandKm != null ? `${afstandKm} km` : "—"}{" "}
+              <span className={styles.afstandAuto}>
+                {afstandKm != null ? "auto" : "vul adres in"}
+              </span>
             </div>
           </div>
         </div>
@@ -221,7 +305,16 @@ export function StapWerk({
           </span>
           <span className={styles.zakBox}>
             <MiniStep dir="min" onClick={() => setQty({ ...qty, rollen: Math.max(0, qty.rollen - 1) })} />
-            <strong className={styles.zakVal}>{qty.rollen}</strong>
+            <input
+              type="text"
+              inputMode="numeric"
+              className={styles.stepInput}
+              value={qty.rollen}
+              onChange={(e) =>
+                setQty({ ...qty, rollen: parseInt(e.target.value.replace(/\D/g, ""), 10) || 0 })
+              }
+              aria-label="Aantal rollen"
+            />
             <span className={styles.unit}>{qty.rollen === 1 ? "rol" : "rollen"}</span>
             <MiniStep dir="plus" onClick={() => setQty({ ...qty, rollen: qty.rollen + 1 })} />
           </span>

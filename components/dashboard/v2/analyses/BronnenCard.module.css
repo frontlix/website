@@ -16,6 +16,17 @@
 .naam {
   font-size: 15px;
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Kanaal-kleur-stip (kleur = kanaal-identiteit, matcht de sparkline). */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .badge {

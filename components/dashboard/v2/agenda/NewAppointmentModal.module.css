@@ -28,12 +28,112 @@
   color: var(--rb-muted);
 }
 
-.field {
+/* Bewerkbare velden (input/select) in dezelfde stijl als de veld-tegels. */
+.input {
+  width: 100%;
   margin-top: 5px;
   background: var(--rb-field);
+  border: 1px solid transparent;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.input::placeholder {
+  color: var(--rb-muted);
+  font-weight: 500;
+}
+
+.input:focus {
+  border-color: var(--rb-blue);
+  background: #fff;
+}
+
+select.input {
+  cursor: pointer;
+}
+
+/* Uren-invoer met "uur"-suffix (handmatige duur). */
+.suffixField {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  background: var(--rb-field);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0 14px;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.suffixField:focus-within {
+  border-color: var(--rb-blue);
+  background: #fff;
+}
+
+.suffixInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 10px 0;
+  font-family: var(--rb-font);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--rb-ink);
+}
+
+.suffix {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  margin-left: 6px;
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--rb-muted);
+}
+
+/* Meldingen-toggles (alleen live). */
+.notifies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.notifyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--rb-field);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.notifyLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-ink);
+}
+
+.error {
+  margin-top: 16px;
+  background: var(--rb-warn-soft);
+  color: var(--rb-warn-ink);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12.5px;
   font-weight: 600;
 }
 

@@ -65,6 +65,17 @@
   color: var(--rb-blue);
 }
 
+/* Verstuurd/afgerond = groen (won), archief = neutraal grijs. */
+.docIconDone {
+  background: var(--rb-status-won-bg);
+  color: var(--rb-status-won-ink);
+}
+
+.docIconArchief {
+  background: var(--rb-status-sent-bg);
+  color: var(--rb-status-sent-ink);
+}
+
 .rowMain {
   flex: 1;
   min-width: 0;
@@ -93,9 +104,15 @@
   background: #fff;
 }
 
+/* Verstuurd/afgerond = vol groen, archief = neutraal grijs-blauw. */
 .tagDone {
-  color: var(--rb-mint-ink);
-  background: var(--rb-mint);
+  color: var(--rb-status-won-ink);
+  background: var(--rb-status-won-bg);
+}
+
+.tagArchief {
+  color: var(--rb-status-sent-ink);
+  background: var(--rb-status-sent-bg);
 }
 
 .rowSub {

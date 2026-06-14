@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Check, ArrowRight } from "lucide-react";
 import { Avatar, StatusPill } from "@/components/dashboard/v2/ui";
@@ -18,10 +19,17 @@ export function LeadCard({ lead, done = false }: LeadCardProps) {
   const href = `${V2_BASE}/leads/${lead.id}`;
   const isHot = lead.statusKind === "hot";
 
+  // Gekleurde rand-rail per status-soort (data-afhankelijk var-token); via een
+  // inset-shadow zodat de geometrie/padding van de kaart ongewijzigd blijft.
+  const accent = {
+    "--card-ink": `var(--rb-status-${lead.statusKind}-ink)`,
+  } as CSSProperties;
+
   return (
     <Link
       href={href}
       className={`${styles.card} ${done ? styles.done : ""}`}
+      style={accent}
     >
       <div className={styles.head}>
         {done ? (
@@ -29,7 +37,12 @@ export function LeadCard({ lead, done = false }: LeadCardProps) {
             <Check size={15} strokeWidth={3} />
           </span>
         ) : (
-          <Avatar initials={lead.initials} size={30} radius={11} />
+          <Avatar
+            initials={lead.initials}
+            name={lead.naam}
+            size={30}
+            radius={11}
+          />
         )}
         <div className={styles.id}>
           <div className={styles.naam}>{lead.naam}</div>

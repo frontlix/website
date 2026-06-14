@@ -1,9 +1,11 @@
 "use client";
 
-// Interactieve omzet + leads-lijngrafiek (port van PLineChart). Punten op de
-// omzetlijn zijn klikbaar en lichten de gekozen periode uit met een tooltip.
-// Inline geometrie (assen, paden, posities) is toegestaan voor charts.
+// Interactieve omzet + leads-lijngrafiek (port van PLineChart). De periode
+// onder de muis wordt uitgelicht met een tooltip (hover scrubt langs de
+// punten); klikken werkt ook nog. Inline geometrie (assen, paden, posities)
+// is toegestaan voor charts.
 
+import type { MouseEvent } from "react";
 import type { PeriodeReeks } from "./analyses-data";
 import styles from "./OmzetLeadsChart.module.css";
 
@@ -31,9 +33,26 @@ export function OmzetLeadsChart({ p, hi, onPick }: OmzetLeadsChartProps) {
   const areaO = `${PAD_L},${H - PAD_B} ${ptsO} ${W - PAD_R},${H - PAD_B}`;
   const stappen = Array.from({ length: p.max + 1 }, (_, i) => i);
 
+  // Hover: licht het punt uit dat het dichtst bij de muis-x ligt (de SVG
+  // schaalt via viewBox, dus reken de muispositie terug naar het puntindex).
+  function handleMove(e: MouseEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width === 0 || n < 2) return;
+    const svgX = ((e.clientX - rect.left) / rect.width) * W;
+    const span = W - PAD_L - PAD_R;
+    const frac = (svgX - PAD_L) / span;
+    const i = Math.max(0, Math.min(n - 1, Math.round(frac * (n - 1))));
+    if (i !== hi) onPick(i);
+  }
+
   return (
     <div className={styles.wrap}>
-      <svg width="100%" viewBox={`0 0 ${W} ${H}`} className={styles.svg}>
+      <svg
+        width="100%"
+        viewBox={`0 0 ${W} ${H}`}
+        className={styles.svg}
+        onMouseMove={handleMove}
+      >
         <defs>
           <linearGradient id="rbOmzetVlak" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(26,86,255,0.22)" />

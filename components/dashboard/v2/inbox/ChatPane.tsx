@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Sparkles, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { Toggle } from "../ui";
+import { Avatar } from "../ui/Avatar";
 import type { ChatMessage } from "../demo-data";
 import styles from "./ChatPane.module.css";
 
@@ -11,32 +12,29 @@ interface ChatPaneProps {
   initials: string;
   sub: string;
   messages: ChatMessage[];
-  suggestie: string | null;
   surfaceAan: boolean;
   draft: string;
   onSurfaceChange: (next: boolean) => void;
   onDraftChange: (next: string) => void;
-  /** Zet de suggestietekst in het invoerveld. */
-  onUseSuggestion: (text: string) => void;
   onSend: () => void;
 }
 
 /** Middenkolom: het WhatsApp-gesprek, styling identiek aan het dossier
- *  (var(--rb-wa-*)). Header met Surface-toggle, suggestie-strip en invoer. */
+ *  (var(--rb-wa-*)). Header met Surface-toggle en invoer. */
 export function ChatPane({
   naam,
   initials,
   sub,
   messages,
-  suggestie,
   surfaceAan,
   draft,
   onSurfaceChange,
   onDraftChange,
-  onUseSuggestion,
   onSend,
 }: ChatPaneProps) {
   const streamRef = useRef<HTMLDivElement>(null);
+  // Kanaal-accent uit de sub-tekst ("Telefoon · ..." → cyaan, anders WhatsApp-groen).
+  const isTelefoon = sub.startsWith("Telefoon");
 
   // Scroll mee naar het laatste bericht bij nieuwe berichten of wissel.
   useEffect(() => {
@@ -47,7 +45,14 @@ export function ChatPane({
   return (
     <div className={styles.card}>
       <div className={styles.head}>
-        <span className={styles.avatar}>{initials}</span>
+        <span
+          className={`${styles.avatarWrap} ${
+            isTelefoon ? styles.channelTelefoon : styles.channelWhatsApp
+          }`}
+        >
+          <Avatar name={naam} initials={initials} size={40} radius={14} />
+          <span className={styles.channelDot} aria-hidden="true" />
+        </span>
         <div className={styles.headMain}>
           <div className={styles.naam}>{naam}</div>
           <div className={styles.sub}>{sub}</div>
@@ -79,22 +84,7 @@ export function ChatPane({
           })}
         </div>
 
-        {suggestie && surfaceAan ? (
-          <div className={styles.suggestie}>
-            <span className={styles.suggestieLabel}>
-              <Sparkles size={13} strokeWidth={2.5} />
-              Surface
-            </span>
-            <span className={styles.suggestieText}>{suggestie}</span>
-            <button
-              type="button"
-              className={styles.useBtn}
-              onClick={() => onUseSuggestion(suggestie)}
-            >
-              Gebruik
-            </button>
-          </div>
-        ) : !surfaceAan ? (
+        {!surfaceAan ? (
           <div className={styles.paused}>
             <span className={styles.pausedText}>
               Surface staat uit voor dit gesprek, jij antwoordt zelf. Nieuwe berichten worden niet

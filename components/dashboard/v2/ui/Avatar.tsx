@@ -8,8 +8,9 @@ interface AvatarProps {
   size?: number;
   /** Hoek-radius; default rond. Gebruik bv. 11 voor de leadkaart-chip. */
   radius?: number | "round";
-  /** Visuele variant. */
-  variant?: "soft" | "gradient";
+  /** Visuele variant. `tint` (default) = gekleurd per persoon; `gradient` =
+   *  brand-look; `soft` = vaste blauw-zachte chip. */
+  variant?: "tint" | "soft" | "gradient";
 }
 
 function initialsFromName(name: string): string {
@@ -21,19 +22,35 @@ function initialsFromName(name: string): string {
     .join("");
 }
 
-/** Avatar met initialen. Default zachte blauwe chip; `gradient` voor de
- *  brand-look. Geometrie (size/radius) is dynamisch → inline style. */
+/** Stabiele hash → tint-index 1..8 (zelfde persoon = altijd dezelfde kleur). */
+function tintFor(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 31 + seed.charCodeAt(i)) | 0;
+  }
+  return (Math.abs(h) % 8) + 1;
+}
+
+/** Avatar met initialen. Default een per-persoon gekleurde tint (op naam-hash),
+ *  zodat elke lead/klant z'n eigen kleur heeft. `gradient` voor de brand-look. */
 export function Avatar({
   initials,
   name = "",
   size = 40,
   radius = "round",
-  variant = "soft",
+  variant = "tint",
 }: AvatarProps) {
   const text = initials ?? initialsFromName(name);
+  const variantClass =
+    variant === "gradient"
+      ? styles.gradient
+      : variant === "soft"
+        ? styles.soft
+        : styles[`tint${tintFor((name || text || "?").toLowerCase())}`];
+
   return (
     <div
-      className={`${styles.avatar} ${variant === "gradient" ? styles.gradient : styles.soft}`}
+      className={`${styles.avatar} ${variantClass}`}
       style={{
         width: size,
         height: size,

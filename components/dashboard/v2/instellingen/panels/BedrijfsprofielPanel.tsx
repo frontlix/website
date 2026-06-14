@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import type { ChangeEvent } from "react";
 import { Check, AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/components/dashboard/v2/ui";
 import { saveTenantBase } from "@/lib/dashboard/tenant-base-actions";
+import { uploadTenantLogo } from "@/lib/dashboard/logo-actions";
 import { Field } from "../Field";
 import type { CompanyProfile } from "../instellingen-data";
 import styles from "./panels.module.css";
@@ -13,6 +15,10 @@ interface BedrijfsprofielPanelProps {
   onProfiel: (patch: Partial<CompanyProfile>) => void;
   radius: number;
   onRadius: (next: number) => void;
+  /** Huidige logo-URL (tenant_settings.logo_url); null = nog geen logo. */
+  logoUrl: string | null;
+  /** Echte omzet-stand deze maand ("€X (Y%)"); leeg = toon verwijzing naar Overzicht. */
+  huidigeStand?: string;
   /** Bewerkbare thuisbasis-velden (saveTenantBase: postcode + huisnummer + label). */
   basePostcode: string;
   baseHuisnummer: string;
@@ -35,12 +41,14 @@ export function BedrijfsprofielPanel({
   onProfiel,
   radius,
   onRadius,
+  logoUrl: propLogoUrl,
   basePostcode,
   baseHuisnummer,
   baseLabel,
   hasCoords,
   currentLat,
   currentLng,
+  huidigeStand,
   live,
 }: BedrijfsprofielPanelProps) {
   // Thuisbasis-velden, bewerkbaar (gemirrord van v1 TenantBaseForm).
@@ -49,6 +57,39 @@ export function BedrijfsprofielPanel({
   const [label, setLabel] = useState(baseLabel || "BASIS");
   const [status, setStatus] = useState<BaseStatus>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
+  // Werkstraal als invulveld: lokale string-buffer zodat vrij typen (en even
+  // leegmaken) soepel gaat; de geparste km-waarde gaat via onRadius naar de
+  // parent, die hem met de globale "Opslaan"-knop wegschrijft naar
+  // tenant_settings.radius_max_km (saveBedrijfsprofiel).
+  const [straalInput, setStraalInput] = useState(String(radius));
+
+  // Logo-upload: lokale state zodat een nieuw logo direct zichtbaar is, los van
+  // de server-revalidatie. uploadTenantLogo doet de upload naar de storage-
+  // bucket + opslag van de URL op tenant_settings.logo_url.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(propLogoUrl);
+  const [logoPending, startLogoTransition] = useTransition();
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const initiaal = (profiel.naam.trim().charAt(0) || "?").toUpperCase();
+
+  function pickLogo() {
+    if (!live) return;
+    fileInputRef.current?.click();
+  }
+
+  function onLogoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // reset, zodat hetzelfde bestand opnieuw kan triggeren
+    if (!file || !live) return;
+    setLogoError(null);
+    const fd = new FormData();
+    fd.append("logo", file);
+    startLogoTransition(async () => {
+      const res = await uploadTenantLogo(fd);
+      if (res.ok) setLogoUrl(res.url);
+      else setLogoError(res.error);
+    });
+  }
 
   function bewaarBasis() {
     setStatus({ kind: "idle" });
@@ -66,12 +107,31 @@ export function BedrijfsprofielPanel({
   return (
     <>
       <div className={styles.logoRow}>
-        <div className={styles.logo}>S</div>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt="Bedrijfslogo" className={styles.logoImg} />
+        ) : (
+          <div className={styles.logo}>{initiaal}</div>
+        )}
         <div>
-          <Button variant="secondary" size="sm">
-            Logo wijzigen
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={onLogoChange}
+            hidden
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={pickLogo}
+            disabled={!live || logoPending}
+          >
+            {logoPending ? "Uploaden…" : "Logo wijzigen"}
           </Button>
-          <div className={styles.logoHint}>PNG of JPG · min. 400×400</div>
+          <div className={`${styles.logoHint} ${logoError ? styles.logoHintErr : ""}`}>
+            {logoError ?? "PNG, JPG of WebP · min. 400×400 · max 2 MB"}
+          </div>
         </div>
       </div>
 
@@ -89,9 +149,9 @@ export function BedrijfsprofielPanel({
           readOnly={!live}
         />
         <Field
-          label="Telefoon"
-          value={profiel.tel}
-          onChange={(v) => onProfiel({ tel: v })}
+          label="Bot-naam"
+          value={profiel.botNaam}
+          onChange={(v) => onProfiel({ botNaam: v })}
           readOnly={!live}
         />
         <Field
@@ -111,6 +171,18 @@ export function BedrijfsprofielPanel({
           label="Plaats"
           value={profiel.plaats}
           onChange={(v) => onProfiel({ plaats: v })}
+          readOnly={!live}
+        />
+        <Field
+          label="Eigenaar WhatsApp"
+          value={profiel.tel}
+          onChange={(v) => onProfiel({ tel: v })}
+          readOnly={!live}
+        />
+        <Field
+          label="Spoed-telefoon"
+          value={profiel.spoedTel}
+          onChange={(v) => onProfiel({ spoedTel: v })}
           readOnly={!live}
         />
         <Field
@@ -173,23 +245,21 @@ export function BedrijfsprofielPanel({
           </div>
         </div>
 
-        <div className={styles.sliderBlock}>
-          <div className={styles.sliderHead}>
-            <span className={styles.sliderLabel}>Werkstraal</span>
-            <span className={styles.sliderValue}>{radius} km</span>
-          </div>
-          <input
-            type="range"
-            min={10}
-            max={100}
-            step={5}
-            value={radius}
-            onChange={(e) => onRadius(Number(e.target.value))}
-            className={styles.slider}
+        <div className={styles.goalGrid}>
+          <Field
+            label="Werkstraal"
+            value={straalInput}
+            onChange={(v) => {
+              const cleaned = v.replace(/[^0-9]/g, "");
+              setStraalInput(cleaned);
+              const n = parseInt(cleaned, 10);
+              if (Number.isFinite(n)) onRadius(n);
+            }}
+            suffix="km"
+            readOnly={!live}
           />
-          <div className={styles.sliderScale}>
-            <span>10 km</span>
-            <span>100 km</span>
+          <div className={styles.goalHint}>
+            Surface accepteert klussen automatisch binnen deze straal vanaf je thuisbasis
           </div>
         </div>
       </div>
@@ -206,7 +276,13 @@ export function BedrijfsprofielPanel({
             suffix="per maand"
           />
           <div className={styles.goalHint}>
-            Huidige stand: <strong className={styles.strong}>€11.903 (51%)</strong> · vorige maand gehaald
+            {huidigeStand ? (
+              <>
+                Huidige stand: <strong className={styles.strong}>{huidigeStand}</strong> deze maand
+              </>
+            ) : (
+              <>Je actuele stand zie je op het Overzicht</>
+            )}
           </div>
         </div>
       </div>

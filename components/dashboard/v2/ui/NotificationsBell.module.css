@@ -1,0 +1,205 @@
+.wrap {
+  position: relative;
+  display: flex;
+}
+
+/* ── Bel-knop in de topbar ── */
+.bellBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rb-line);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--rb-ink);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.bellBtn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--rb-blue);
+}
+
+.bellBtnActive {
+  background: #fff;
+  border-color: var(--rb-blue);
+  color: var(--rb-blue);
+}
+
+.badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: var(--rb-blue);
+  border: 2px solid var(--rb-bg, #eef2fb);
+  border-radius: var(--rb-r-pill);
+}
+
+/* ── Dropdown-paneel ── */
+.panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background: #fff;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card);
+  box-shadow:
+    0 12px 32px rgba(26, 40, 80, 0.16),
+    0 2px 8px rgba(26, 40, 80, 0.08);
+  overflow: hidden;
+  z-index: 60;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rb-line);
+}
+
+.headTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rb-ink);
+}
+
+.markAll {
+  font-family: var(--rb-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.markAll:hover {
+  text-decoration: underline;
+}
+
+.list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.empty {
+  padding: 28px 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--rb-muted);
+}
+
+/* ── Lijst-item ── */
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rb-line);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: background 0.12s ease;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background: var(--rb-field);
+}
+
+.itemUnread {
+  background: color-mix(in srgb, var(--rb-blue) 5%, transparent);
+}
+
+.itemUnread:hover {
+  background: color-mix(in srgb, var(--rb-blue) 9%, transparent);
+}
+
+.itemIcon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--rb-field-2);
+  color: var(--rb-muted);
+}
+
+/* Kleur-accent per soort melding. */
+.kind_lead {
+  background: color-mix(in srgb, var(--rb-blue) 12%, transparent);
+  color: var(--rb-blue);
+}
+.kind_wa {
+  background: var(--rb-status-won-bg);
+  color: var(--rb-status-won-ink);
+}
+.kind_review {
+  background: color-mix(in srgb, var(--rb-star) 18%, transparent);
+  color: #9a7400;
+}
+.kind_agenda {
+  background: var(--rb-status-plan-bg);
+  color: var(--rb-status-plan-ink);
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  line-height: 1.35;
+}
+
+.itemSub {
+  font-size: 12px;
+  color: var(--rb-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.itemTime {
+  font-size: 11px;
+  color: var(--rb-muted);
+  margin-top: 4px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--rb-blue);
+}

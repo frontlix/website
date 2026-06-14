@@ -8,6 +8,7 @@ import {
   SETTINGS_SUBHEAD,
   DAYS_DEFAULT,
   OPENING_DEFAULTS,
+  OPENING_TEMPLATES,
   type SettingsSection,
   type CompanyProfile,
   type Service,
@@ -15,10 +16,13 @@ import {
   type Reminder,
   type NotificationSetting,
   type TeamMember,
+  type OffertesInstellingen,
+  type EmailConnectionState,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import type { PricingRuleRow } from "@/components/dashboard/v2/instellingen/instellingen-mappers";
 import type { PricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries";
 import type { TagWithCount } from "@/lib/dashboard/tags-queries";
+import type { TemplateAanvraag } from "@/lib/dashboard/template-queries";
 import { BedrijfsprofielPanel } from "@/components/dashboard/v2/instellingen/panels/BedrijfsprofielPanel";
 import { DienstenPanel } from "@/components/dashboard/v2/instellingen/panels/DienstenPanel";
 import {
@@ -29,22 +33,27 @@ import { TagsPanel } from "@/components/dashboard/v2/instellingen/panels/TagsPan
 import { BeschikbaarheidPanel } from "@/components/dashboard/v2/instellingen/panels/BeschikbaarheidPanel";
 import { KanalenPanel } from "@/components/dashboard/v2/instellingen/panels/KanalenPanel";
 import { IntegratiesPanel } from "@/components/dashboard/v2/instellingen/panels/IntegratiesPanel";
+import { EmailPanel } from "@/components/dashboard/v2/instellingen/panels/EmailPanel";
 import { OpeningsberichtPanel } from "@/components/dashboard/v2/instellingen/panels/OpeningsberichtPanel";
 import { RemindersPanel } from "@/components/dashboard/v2/instellingen/panels/RemindersPanel";
 import { OffertesPanel } from "@/components/dashboard/v2/instellingen/panels/OffertesPanel";
 import { TeamPanel } from "@/components/dashboard/v2/instellingen/panels/TeamPanel";
 import { MeldingenPanel } from "@/components/dashboard/v2/instellingen/panels/MeldingenPanel";
 import { AbonnementPanel } from "@/components/dashboard/v2/instellingen/panels/AbonnementPanel";
+import { AccountPanel } from "@/components/dashboard/v2/instellingen/panels/AccountPanel";
+import { AvgPanel } from "@/components/dashboard/v2/instellingen/panels/AvgPanel";
 import panelStyles from "@/components/dashboard/v2/instellingen/panels/panels.module.css";
 import styles from "@/app/dashboard/v2/instellingen/page.module.css";
 
 import { saveOmzetDoelMaand } from "@/lib/dashboard/omzet-doel-actions";
 import { updateBedrijfsprofiel } from "@/lib/dashboard/bedrijfsprofiel-actions";
+import { saveOffertesInstellingen } from "@/lib/dashboard/offertes-instellingen-actions";
 import { saveBeschikbaarheid } from "@/lib/dashboard/beschikbaarheid-actions";
 import { toggleServiceOffering } from "@/lib/dashboard/service-offerings-actions";
-import { updateReminderDays } from "@/lib/dashboard/reminder-actions";
-import { togglePrefAction } from "@/lib/dashboard/notifications/prefs-actions";
-import type { NotificationEventType, NotificationKanaal } from "@/lib/dashboard/notifications/types";
+import type {
+  NotificationEventType,
+  NotificationPreferenceRow,
+} from "@/lib/dashboard/notifications/types";
 
 export interface InstellingenClientProps {
   profiel: CompanyProfile;
@@ -54,7 +63,8 @@ export interface InstellingenClientProps {
   dagen: DaySlot[];
   /** dienst-naam (label) → dienst_key voor de toggle-actie. */
   dienstKeyByNaam: Record<string, string>;
-  geldigheid: number;
+  /** Bewerkbare offerte-instellingen (geldigheid, btw, betaaltermijn, prefix). */
+  offertes: OffertesInstellingen;
   reminders: Reminder[];
   meldingen: NotificationSetting[];
   /** melding-titel → event_type voor de toggle-actie. */
@@ -68,6 +78,8 @@ export interface InstellingenClientProps {
   tags: TagWithCount[];
   /** Google Agenda-koppelstatus (calendar_connections), voor het IntegratiesPanel. */
   gcal: { connected: boolean; googleEmail: string | null; calendarId: string | null };
+  /** E-mailkoppel-status (email_connections), voor het EmailPanel. */
+  email: EmailConnectionState;
   /** Bewerkbare thuisbasis-velden (saveTenantBase: postcode + huisnummer + label). */
   basePostcode: string;
   baseHuisnummer: string;
@@ -75,6 +87,18 @@ export interface InstellingenClientProps {
   baseHasCoords: boolean;
   baseLat: number | null;
   baseLng: number | null;
+  /** Huidige logo-URL (tenant_settings.logo_url); null = nog geen logo. */
+  logoUrl: string | null;
+  /** Template-aanvragen (openingsbericht + reminders), nieuwste eerst. */
+  templateAanvragen: TemplateAanvraag[];
+  /** Huidig e-mailadres (s.user.email) voor het Account-paneel; "" in demo. */
+  userEmail: string;
+  /** Ruwe notification_preferences-rijen voor de volledige meldingen-grid. */
+  notifPrefs: NotificationPreferenceRow[];
+  /** Daily-digest-tijd (HH:MM) uit tenant_settings.daily_digest_tijd. */
+  digestTijd: string;
+  /** Echte omzet-stand deze maand ("€X (Y%)") voor het maanddoel-blok; "" in demo. */
+  huidigeStand: string;
   /** false in de demo-fallback (geen sessie): acties zijn dan no-op. */
   live: boolean;
 }
@@ -100,15 +124,29 @@ export function InstellingenClient(props: InstellingenClientProps) {
   const [diensten, setDiensten] = useState<Service[]>(props.diensten);
   // Beschikbaarheid (init uit echte data; opslaan via saveBeschikbaarheid).
   const [dagen, setDagen] = useState<DaySlot[]>(props.dagen);
-  // Openingsbericht (tekst loopt via Meta-approval, blijft client-state)
-  const [openTab, setOpenTab] = useState("Gevel");
+  // Openingsbericht: tekst is bewerkbaar en wordt bij Opslaan INGEDIEND via
+  // requestTemplateChange (Slack + Meta-approval). OpeningsberichtPanel
+  // registreert hieronder zijn indien-functie; de globale Opslaan-knop roept
+  // die aan. activeTab = template-key (lead_intake_*).
+  const [openTab, setOpenTab] = useState(OPENING_TEMPLATES[0].key);
   const [openTpl, setOpenTpl] = useState<Record<string, string>>(OPENING_DEFAULTS);
+  const openingSubmitRef = useRef<(() => Promise<void>) | null>(null);
+  // Reminders: het paneel slaat de dagen direct op (op blur) en registreert
+  // hier z'n indien-functie voor de tekst-templates (zelfde flow als opening).
+  const remindersSubmitRef = useRef<(() => Promise<void>) | null>(null);
   // Reminders (dagen uit echte data, tekst placeholder)
   const [reminders, setReminders] = useState<Reminder[]>(props.reminders);
   // Meldingen (toggles uit echte data)
-  const [meldingen, setMeldingen] = useState<NotificationSetting[]>(props.meldingen);
-  // Offertes (aanbetaling staat op statische demo, niet aan opslag gekoppeld)
-  const [geldigheid, setGeldigheid] = useState<number>(props.geldigheid);
+  const [meldingen] = useState<NotificationSetting[]>(props.meldingen);
+  // Offertes: geldigheid, BTW, betaaltermijn en offertenummer-voorvoegsel,
+  // echt opgeslagen op tenant_settings via de globale Opslaan-knop.
+  const [offertes, setOffertes] = useState<OffertesInstellingen>(props.offertes);
+
+  // E-mailkoppeling: status uit email_connections. Het EmailPanel koppelt en
+  // ontkoppelt via z'n eigen "Testen en koppelen"/"Ontkoppelen"-knoppen (eigen
+  // API-routes + router.refresh), net als het IntegratiesPanel. Niet gekoppeld
+  // aan de globale Opslaan-knop.
+  const [email] = useState<EmailConnectionState>(props.email);
 
   // Prijzen: PrijzenPanel registreert hier zijn batch-save-handle, zodat de
   // globale Opslaan-knop de pending prijswijzigingen wegschrijft (geen eigen
@@ -122,8 +160,9 @@ export function InstellingenClient(props: InstellingenClientProps) {
 
   // ── Mutatie-handlers (hergebruiken bestaande server-actions) ────────────
 
-  // Werkstraal: er bestaat (nog) geen server-action voor radius_max_km, dus
-  // dit blijft client-state (zoals de demo). Zie follow-ups.
+  // Werkstraal: client-state die met de globale Opslaan-knop
+  // (updateBedrijfsprofiel) naar tenant_settings.radius_max_km wordt
+  // weggeschreven, zodat de bot/workflow de straal kan lezen.
   function handleRadius(next: number) {
     setRadius(next);
   }
@@ -146,22 +185,32 @@ export function InstellingenClient(props: InstellingenClientProps) {
     setReminders((rs) => rs.map((x, i) => (i === index ? { ...x, dag } : x)));
   }
 
-  function handleMeldingToggle(titel: string, aan: boolean) {
-    setMeldingen((ms) => ms.map((x) => (x.titel === titel ? { ...x, aan } : x)));
-    if (!props.live) return;
-    const event = props.meldingEventByTitel[titel];
-    if (!event) return;
-    const kanaal: NotificationKanaal = "in_app";
-    startTransition(async () => {
-      const res = await togglePrefAction(event, kanaal, aan);
-      if (!res.ok) {
-        setMeldingen((ms) => ms.map((x) => (x.titel === titel ? { ...x, aan: !aan } : x)));
-      }
-    });
-  }
-
   /** Globale Opslaan-knop: schrijft de batch-bare velden van het actieve paneel. */
   function bewaar() {
+    // Openingsbericht is geen "opslaan" maar een AANVRAAG (Meta-goedkeuring): het
+    // OpeningsberichtPanel dient zelf in via requestTemplateChange en toont zijn
+    // eigen statusmelding ("ingediend"). Geen generieke "Opgeslagen"-flash hier.
+    if (menu === "Openingsbericht") {
+      startTransition(async () => {
+        await openingSubmitRef.current?.();
+      });
+      return;
+    }
+
+    // Reminders: net als het openingsbericht een AANVRAAG (Meta-goedkeuring) voor
+    // de tekst. De dagen zijn al direct opgeslagen (op blur in het paneel). Het
+    // RemindersPanel toont z'n eigen indien-status, dus geen generieke flash.
+    if (menu === "Reminders") {
+      startTransition(async () => {
+        await remindersSubmitRef.current?.();
+      });
+      return;
+    }
+
+    // Account en Privacy hebben hun eigen knoppen (wachtwoord/e-mail/export/
+    // verwijderen); de globale Opslaan-knop doet hier bewust niets, geen flash.
+    if (menu === "Account" || menu === "Privacy") return;
+
     flashOpgeslagen();
     if (!props.live) return;
 
@@ -173,11 +222,14 @@ export function InstellingenClient(props: InstellingenClientProps) {
         // BedrijfsprofielPanel (saveTenantBase, met geocoding).
         await updateBedrijfsprofiel({
           bedrijfsnaam: profiel.naam,
+          bot_naam: profiel.botNaam,
           adres: profiel.adres,
           postcode: profiel.postcode,
           plaats: profiel.plaats,
           eigenaar_email: profiel.mail,
           telefoon: profiel.tel,
+          spoed_telefoon: profiel.spoedTel,
+          radius_max_km: radius,
         });
         const doelNum = parseDoel(profiel.doel);
         await saveOmzetDoelMaand(doelNum);
@@ -185,15 +237,9 @@ export function InstellingenClient(props: InstellingenClientProps) {
         // Pending prijswijzigingen wegschrijven via de in PrijzenPanel
         // geregistreerde batch-save-handle (updatePricingRulesBatch).
         await prijzenSaveRef.current?.();
-      } else if (menu === "Reminders") {
-        // reminder_dag_1/2/3 opslaan.
-        for (let i = 0; i < reminders.length && i < 3; i++) {
-          const num = (i + 1) as 1 | 2 | 3;
-          const days = parseInt(reminders[i].dag, 10);
-          if (Number.isInteger(days) && days >= 1 && days <= 90) {
-            await updateReminderDays(num, days);
-          }
-        }
+      } else if (menu === "Offertes") {
+        // Offerte-instellingen opslaan (geldigheid, btw, betaaltermijn, prefix).
+        await saveOffertesInstellingen(offertes);
       } else if (menu === "Beschikbaarheid") {
         // Werkdagen + tijden opslaan in tenant_settings.beschikbaarheid; de
         // Surface-bot leest deze kolom om alleen binnen deze dagen/tijden
@@ -219,6 +265,8 @@ export function InstellingenClient(props: InstellingenClientProps) {
             hasCoords={props.baseHasCoords}
             currentLat={props.baseLat}
             currentLng={props.baseLng}
+            logoUrl={props.logoUrl}
+            huidigeStand={props.huidigeStand}
             live={props.live}
           />
         );
@@ -227,6 +275,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
           <DienstenPanel
             diensten={diensten}
             onToggle={handleDienstToggle}
+            live={props.live}
           />
         );
       case "Prijzen":
@@ -242,9 +291,10 @@ export function InstellingenClient(props: InstellingenClientProps) {
       case "Tags":
         return <TagsPanel tags={props.tags} />;
       case "Beschikbaarheid":
-        // TODO(hoofd-agent): koppelen aan tenant_settings.beschikbaarheid +
-        // saveBeschikbaarheid-action. Tot die DB-kolom bestaat blijft dit
-        // lokale state (geen server-action naar een niet-bestaande kolom).
+        // Gekoppeld: de globale Opslaan-knop schrijft deze 7 dagen via
+        // saveBeschikbaarheid naar tenant_settings.beschikbaarheid; de Surface-bot
+        // leest die kolom bij het voorstellen van afspraak-slots (dag uit = geen
+        // slots die dag).
         return (
           <BeschikbaarheidPanel
             dagen={dagen}
@@ -262,11 +312,14 @@ export function InstellingenClient(props: InstellingenClientProps) {
         return <KanalenPanel />;
       case "Integraties":
         return (
-          <IntegratiesPanel
-            connected={props.gcal.connected}
-            googleEmail={props.gcal.googleEmail}
-            calendarId={props.gcal.calendarId}
-          />
+          <>
+            <IntegratiesPanel
+              connected={props.gcal.connected}
+              googleEmail={props.gcal.googleEmail}
+              calendarId={props.gcal.calendarId}
+            />
+            <EmailPanel email={email} live={props.live} />
+          </>
         );
       case "Openingsbericht":
         return (
@@ -275,6 +328,11 @@ export function InstellingenClient(props: InstellingenClientProps) {
             activeTab={openTab}
             onTab={setOpenTab}
             onChange={(tab, tekst) => setOpenTpl((t) => ({ ...t, [tab]: tekst }))}
+            aanvragen={props.templateAanvragen}
+            live={props.live}
+            onRegisterSubmit={(handle) => {
+              openingSubmitRef.current = handle;
+            }}
           />
         );
       case "Reminders":
@@ -285,16 +343,40 @@ export function InstellingenClient(props: InstellingenClientProps) {
             onTekst={(index, tekst) =>
               setReminders((rs) => rs.map((x, i) => (i === index ? { ...x, tekst } : x)))
             }
+            aanvragen={props.templateAanvragen}
+            live={props.live}
+            onRegisterSubmit={(handle) => {
+              remindersSubmitRef.current = handle;
+            }}
           />
         );
       case "Offertes":
-        return <OffertesPanel geldigheid={geldigheid} onGeldigheid={setGeldigheid} />;
+        return (
+          <OffertesPanel
+            offertes={offertes}
+            onChange={(patch) => setOffertes((o) => ({ ...o, ...patch }))}
+          />
+        );
       case "Team":
         return <TeamPanel leden={props.team} />;
       case "Meldingen":
-        return <MeldingenPanel meldingen={meldingen} onToggle={handleMeldingToggle} />;
+        // Grid is zelfvoorzienend: schrijft per (event,kanaal) direct via
+        // togglePrefAction. GEEN onToggle meer, anders schreef een
+        // email/push/whatsapp-toggle stiekem ook de in_app-cel weg.
+        return (
+          <MeldingenPanel
+            initialPrefs={props.notifPrefs}
+            initialDigestTijd={props.digestTijd}
+            live={props.live}
+            meldingen={meldingen}
+          />
+        );
       case "Abonnement":
         return <AbonnementPanel />;
+      case "Account":
+        return <AccountPanel email={props.userEmail} live={props.live} />;
+      case "Privacy":
+        return <AvgPanel live={props.live} />;
       default:
         return null;
     }

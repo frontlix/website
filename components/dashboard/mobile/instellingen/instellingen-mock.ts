@@ -9,7 +9,20 @@
 
 export type InstSection = {
   k: string
-  icon: 'building' | 'users' | 'euro' | 'list' | 'wa' | 'bell' | 'spark' | 'tag' | 'calendar'
+  icon:
+    | 'building'
+    | 'users'
+    | 'euro'
+    | 'list'
+    | 'wa'
+    | 'bell'
+    | 'spark'
+    | 'tag'
+    | 'calendar'
+    | 'mail'
+    | 'clock'
+    | 'lock'
+    | 'shield'
   l: string
   s: string
   tint: string
@@ -47,6 +60,7 @@ export function buildInstGroups(counts: InstCounts = {}): InstGroup[] {
   return [
     { group: 'Bedrijf', items: [
       { k: 'bedrijf', icon: 'building', l: 'Bedrijfsgegevens', s: 'Naam, adres, contact', tint: IC.blue },
+      { k: 'beschikbaarheid', icon: 'clock', l: 'Beschikbaarheid', s: 'Werkdagen en tijden', tint: IC.green },
       { k: 'team', icon: 'users', l: 'Team', s: team, tint: IC.violet },
     ] },
     { group: 'Surface · de bot', items: [
@@ -55,10 +69,15 @@ export function buildInstGroups(counts: InstCounts = {}): InstGroup[] {
       { k: 'opening', icon: 'wa', l: 'Openingsbericht', s: 'WhatsApp-template', tint: IC.wa },
       { k: 'reminders', icon: 'bell', l: 'Reminders', s: 'Automatische opvolging', tint: IC.amber },
       { k: 'integraties', icon: 'calendar', l: 'Agenda', s: 'Google Agenda koppelen', tint: IC.blue },
+      { k: 'email', icon: 'mail', l: 'E-mailkoppeling', s: 'Eigen verzendadres', tint: IC.blue },
     ] },
     { group: 'Voorkeuren', items: [
       { k: 'notif', icon: 'spark', l: 'Notificaties', s: 'Per kanaal instellen', tint: IC.violet },
       { k: 'tags', icon: 'tag', l: 'Tags', s: tags, tint: IC.amber },
+    ] },
+    { group: 'Account & privacy', items: [
+      { k: 'account', icon: 'lock', l: 'Account', s: 'Wachtwoord en e-mail', tint: IC.violet },
+      { k: 'avg', icon: 'shield', l: 'Privacy & AVG', s: 'Data-export en verwijderen', tint: IC.blue },
     ] },
   ]
 }

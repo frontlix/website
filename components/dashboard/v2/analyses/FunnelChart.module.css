@@ -36,14 +36,35 @@
   border-radius: 5px;
 }
 
-.barSuccess {
-  background: var(--rb-success);
+/* Data-viz-kleuren per trechter-stap (kleur = stap-betekenis). */
+.barData1 {
+  background: var(--rb-data-1);
 }
 
-.barCyan {
-  background: var(--rb-cyan);
+.barData2 {
+  background: var(--rb-data-5);
 }
 
-.barBlue {
-  background: var(--rb-blue);
+.barData3 {
+  background: var(--rb-data-7);
+}
+
+.barData4 {
+  background: var(--rb-data-2);
+}
+
+.barData5 {
+  background: var(--rb-data-4);
+}
+
+.barData6 {
+  background: var(--rb-data-6);
+}
+
+.barData7 {
+  background: var(--rb-data-3);
+}
+
+.barData8 {
+  background: var(--rb-data-8);
 }

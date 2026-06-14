@@ -19,18 +19,32 @@
   flex-shrink: 0;
 }
 
-.avatar {
+/* Header-avatar (gekleurd per persoon) met een gekleurd kanaal-stipje. Het
+   stipje ligt absoluut over de avatar, dus de header-layout blijft gelijk. */
+.avatarWrap {
+  position: relative;
   width: 40px;
   height: 40px;
-  border-radius: 14px;
-  background: var(--rb-blue-soft);
-  color: var(--rb-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
   flex-shrink: 0;
+  font-size: 13px;
+}
+
+.channelDot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--rb-card);
+}
+
+.channelWhatsApp .channelDot {
+  background: var(--rb-status-new-ink);
+}
+
+.channelTelefoon .channelDot {
+  background: var(--rb-cyan);
 }
 
 .headMain {
@@ -85,7 +99,12 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  background: var(--rb-wa-bg);
+  /* Officiele WhatsApp doodle-achtergrond, verzacht met een lichte sluier. */
+  background-color: var(--rb-wa-bg);
+  background-image: linear-gradient(var(--rb-wa-veil), var(--rb-wa-veil)), var(--rb-wa-bg-image);
+  background-blend-mode: normal, multiply;
+  background-size: auto, 360px auto;
+  background-repeat: repeat;
 }
 
 .bubbles {

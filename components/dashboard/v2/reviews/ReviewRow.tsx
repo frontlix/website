@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { Avatar } from "@/components/dashboard/v2/ui";
 import { Stars } from "./Stars";
 import styles from "./ReviewRow.module.css";
 
@@ -25,7 +26,7 @@ interface ReviewRowProps {
 export function ReviewRow({ review, border, onAnswer }: ReviewRowProps) {
   return (
     <div className={`${styles.row} ${border ? styles.bordered : ""}`}>
-      <span className={styles.chip}>{review.initials}</span>
+      <Avatar name={review.naam} initials={review.initials} size={38} radius={14} />
       <div className={styles.body}>
         <div className={styles.head}>
           <span className={styles.naam}>{review.naam}</span>

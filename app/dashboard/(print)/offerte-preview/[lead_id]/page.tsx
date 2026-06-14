@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { getLeadDetail } from '@/lib/dashboard/lead-queries'
+import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { berekenTotalen, isReiskostenRegel } from '@/lib/dashboard/btw-calc'
 import { formatEuro } from '@/lib/dashboard/format'
@@ -77,6 +78,17 @@ export default async function OffertePreviewPage({
 
   const { lead, prijsregels, offertes } = detail
 
+  // Offerte-instellingen (btw + betaaltermijn) uit tenant_settings, zodat de
+  // preview exact gelijk is aan de gemailde PDF.
+  const admin = getDashboardAdmin()
+  const { data: ts } = await admin
+    .from('tenant_settings')
+    .select('offerte_btw_tarief, offerte_betaaltermijn_dagen')
+    .limit(1)
+    .maybeSingle()
+  const btwTarief = Number(ts?.offerte_btw_tarief) || 21
+  const betaaltermijnDagen = Number(ts?.offerte_betaaltermijn_dagen) || 14
+
   // Concept-aware: pak concept als die bestaat, anders laatst verzonden.
   const concept = offertes.find((o) => o.is_concept)
   const laatsteVerzonden = offertes.find((o) => !o.is_concept)
@@ -89,7 +101,10 @@ export default async function OffertePreviewPage({
   const geldigTot = new Date(today)
   geldigTot.setDate(geldigTot.getDate() + geldigheidDagen)
 
-  const offertenummer = lead_id
+  // Toegekend doorlopend nummer (SS-2026-001); val terug op lead_id voor oude
+  // offertes die nog geen opgeslagen nummer hebben.
+  const opgeslagenNummer = (huidige as { offertenummer?: string | null } | undefined)?.offertenummer
+  const offertenummer = opgeslagenNummer?.trim() || lead_id
 
   // Klant-data
   const klantNaam = lead.bedrijfsnaam || lead.naam || 'Klant'
@@ -112,7 +127,7 @@ export default async function OffertePreviewPage({
   const reiskostenTotaal = prijsregels
     .filter((r) => isReiskostenRegel({ omschrijving: r.omschrijving, eenheid: r.eenheid }))
     .reduce((s, r) => s + Number(r.totaal ?? 0), 0)
-  const totalen = berekenTotalen(regelTotalen, kortingPct, reiskostenTotaal)
+  const totalen = berekenTotalen(regelTotalen, kortingPct, reiskostenTotaal, btwTarief)
 
   return (
     <main className={styles.page}>
@@ -285,8 +300,9 @@ export default async function OffertePreviewPage({
       {/* ─── VOORWAARDEN ─────────────────────────────────────────── */}
       <div className={styles.voorwaarden}>
         <div className={styles.voorwaardenLabel}>Voorwaarden</div>
-        Deze offerte is geldig tot {formatDateNL(geldigTot)}. Alle bedragen zijn
-        in euro&apos;s. BTW-tarief 21% is van toepassing op alle posten.
+        Deze offerte is geldig tot {formatDateNL(geldigTot)}. Betaling binnen{' '}
+        {betaaltermijnDagen} dagen na afronding van de werkzaamheden. Alle bedragen zijn
+        in euro&apos;s. BTW-tarief {totalen.btwPercentage}% is van toepassing op alle posten.
       </div>
 
       {/* ─── FOOTER ──────────────────────────────────────────────── */}

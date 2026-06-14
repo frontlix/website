@@ -5,34 +5,34 @@
 // notitie-state uit PDossier.jsx. De gedeelde lead-velden (naam, plaats,
 // dienst, bron, tijd, initialen) komen uit demo-data.ts via findLead();
 // hier staan alleen de dossier-details die het prototype extra toont
-// (contactrijen, Surface-checklist, bijzonderheden, foto-placeholders,
-// offertes-preview, beginchat en beginnotities).
+// (klant- en werk-rijen, foto-placeholders, offertes-preview, beginchat
+// en beginnotities).
 //
 // Streep-vrij gehouden conform de Frontlix-huisstijl (komma i.p.v. liggend
 // streepje; geen klemtoonaccenten in zichtbare tekst).
 // ─────────────────────────────────────────────────────────────────────
 
-/** Een contactrij in de Info-tab (telefoon / e-mail / adres). */
-export interface ContactRow {
-  /** Welk Lucide-icoon, gekozen door de component. */
-  kind: "telefoon" | "email" | "adres";
+/** Een gegevensrij in de Info-tab (label boven, waarde eronder). Optioneel
+ *  een chip rechts (bv. groene "WhatsApp"-chip) of een sub-regel onder de
+ *  waarde (bv. "Binnen gratis radius"). */
+export interface InfoRow {
   label: string;
   waarde: string;
-  /** Optionele groene mint-chip rechts (bv. "WhatsApp"). */
-  chip: string | null;
+  /** Optionele chip rechts (bv. "WhatsApp"); mint-stijl. */
+  chip?: string | null;
+  /** Optionele sub-regel onder de waarde (bv. "Binnen gratis radius"). */
+  sub?: string | null;
 }
 
-/** Een checklist-regel van Surface (vraag + of die afgerond is). */
-export interface ChecklistItem {
-  vraag: string;
-  done: boolean;
+/** Een foto in het dossier: echte Supabase public_url (of null, dan toont de
+ *  strip de gestreepte placeholder) plus een mono-tag-label. */
+export interface DossierFoto {
+  url: string | null;
+  tag: string;
 }
 
-/** Een bijzonderheden-tegel (label boven, waarde eronder). */
-export interface BijzonderTegel {
-  label: string;
-  waarde: string;
-}
+/** Kleur-toon van een offerte-tag (concept=blauw, verstuurd=groen, archief=grijs). */
+export type OfferteTone = "concept" | "verstuurd" | "archief";
 
 /** Een offerte in de Offertes-tab. */
 export interface DossierOfferte {
@@ -42,6 +42,8 @@ export interface DossierOfferte {
   sub: string;
   /** Concept = blauwe rand + "Open"-knop, opent de offerte-wizard. */
   concept: boolean;
+  /** Tag-kleur. Zonder = afgeleid uit `concept` (concept=blauw, anders groen). */
+  tone?: OfferteTone;
 }
 
 /** Een regel in de concept-offerte-preview. */
@@ -50,6 +52,16 @@ export interface OfferteRegel {
   calc: string;
   bedrag: string;
 }
+
+// Het bewerkbare concept (inline OfferteEditor) gebruikt het echte
+// offerte-datamodel + de prijslijst, zodat het exact via de bestaande
+// server-action (saveOfferteForm) opslaat. In demo-modus is dit louter
+// inert voorbeeld-input.
+import { DEFAULTS } from "@/lib/dashboard/manual-offerte-types";
+import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
+import type { OfferteFormData } from "./OfferteEditor";
+
+export type { OfferteFormData };
 
 /** Een notitie (team-zichtbaar geel kaartje). */
 export interface DossierNotitie {
@@ -76,19 +88,18 @@ export interface DossierData {
   afstand: string;
   /** "laatste bericht <binnen>" in de metaregel. */
   binnen: string;
-  /** Oppervlakte-chip in de Dienst & werk-kolom. */
-  m2: number;
-  /** Werk-chips naast de dienst (groene vinkjes). */
-  sub: string[];
-  contact: ContactRow[];
-  checklist: ChecklistItem[];
-  bijzonder: BijzonderTegel[];
+  /** Linker Info-kolom: klantgegevens (naam, bedrijf, telefoon, e-mail, adres, bron). */
+  klant: InfoRow[];
+  /** Rechter Info-kolom: werk (hoofddienst, diensten, oppervlakte, voegzand, ...). */
+  werk: InfoRow[];
   /** Foto-placeholder-labels (mono-tag). */
-  fotos: string[];
+  fotos: DossierFoto[];
   surface: { fase: string; actie: string };
   offertes: DossierOfferte[];
   offerteRegels: OfferteRegel[];
   offerteTotaal: string;
+  /** Bewerkbaar concept voor de inline OfferteEditor (echt model + pricing). */
+  offerteForm: OfferteFormData;
   notities: DossierNotitie[];
   chat: DossierBericht[];
 }
@@ -99,26 +110,28 @@ export const DOSSIER: DossierData = {
   tel: "06 24 96 52 70",
   afstand: "18 km",
   binnen: "8 min geleden",
-  m2: 145,
-  sub: ["Voegen invegen", "Beschermlaag aanbrengen"],
-  contact: [
-    { kind: "telefoon", label: "Telefoon", waarde: "06 24 96 52 70", chip: "WhatsApp" },
-    { kind: "email", label: "E-mail", waarde: "jeroen.devries@gmail.com", chip: null },
-    { kind: "adres", label: "Adres · 18 km", waarde: "Lindenlaan 14, Delft", chip: null },
+  klant: [
+    { label: "Naam", waarde: "Jeroen de Vries" },
+    { label: "Bedrijf", waarde: "De Vries Tuinen" },
+    { label: "Telefoon", waarde: "06 24 96 52 70", chip: "WhatsApp" },
+    { label: "E-mail", waarde: "jeroen.devries@gmail.com" },
+    { label: "Adres", waarde: "Lindenlaan 14, Delft · 18 km", sub: "Binnen gratis radius" },
+    { label: "Bron", waarde: "WhatsApp" },
   ],
-  checklist: [
-    { vraag: "Foto's ontvangen", done: true },
-    { vraag: "Voegkleur gekozen", done: true },
-    { vraag: "Planten afgestemd", done: true },
-    { vraag: "Oppervlakte bevestigd", done: false },
-  ],
-  bijzonder: [
-    { label: "Planten langs de rand", waarde: "Ja, afschermen met folie" },
-    { label: "Groene aanslag", waarde: "Ja, aanwezig" },
-    { label: "Korstmos", waarde: "Nee" },
+  werk: [
+    { label: "Hoofddienst", waarde: "Oprit / terras / terrein" },
+    { label: "Diensten", waarde: "Voegen invegen + Nieuwe beschermlaag" },
+    { label: "Oppervlakte", waarde: "145 m²" },
     { label: "Voegzand", waarde: "Onkruidwerend · antraciet" },
+    { label: "Groene aanslag", waarde: "Ja, aanwezig" },
+    { label: "Planten", waarde: "Ja, afschermen" },
   ],
-  fotos: ["Oprit · overzicht", "Probleemgebied", "Voegen close-up", "Plantenrand"],
+  fotos: [
+    { url: null, tag: "Oprit · overzicht" },
+    { url: null, tag: "Probleemgebied" },
+    { url: null, tag: "Voegen close-up" },
+    { url: null, tag: "Plantenrand" },
+  ],
   surface: {
     fase: "Info verzamelen",
     actie: "Vraagt om bevestiging van de m², offerte staat daarna klaar",
@@ -146,6 +159,28 @@ export const DOSSIER: DossierData = {
     { naam: "Planten afschermen", calc: "2 rollen × €8,50", bedrag: "€17,00" },
   ],
   offerteTotaal: "€1.871,57",
+  // Demo-concept voor de inline editor: realistische invoer, maar inert
+  // (zonder leadId slaat de editor niets op). Gebruikt het echte model.
+  offerteForm: {
+    data: {
+      ...DEFAULTS,
+      naam: "Jeroen de Vries",
+      bedrijf: "De Vries Tuinen",
+      email: "jeroen.devries@gmail.com",
+      telefoon: "06 24 96 52 70",
+      sub: ["invegen", "beschermlaag"],
+      m2: 145,
+      groene_aanslag: "ja",
+      voegzand_onkruidwerend_actief: true,
+      voegzand_onkruidwerend_zakken: 29,
+      voegzand_onkruidwerend_m2: 145,
+      kleur_antraciet: true,
+      planten_afschermen_actief: true,
+      afstand_km: 18,
+    },
+    pricing: FALLBACK_PRICING,
+    geldigheidDagen: 14,
+  },
   notities: [
     {
       wie: "Christiaan",

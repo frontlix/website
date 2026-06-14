@@ -18,6 +18,10 @@ export type TenantBedrijf = {
   postcode: string | null
   plaats: string | null
   offerte_geldigheid_dagen: number
+  /** BTW-percentage uit tenant_settings (default 21). */
+  offerte_btw_tarief: number
+  /** Betaaltermijn in dagen uit tenant_settings (default 14). */
+  offerte_betaaltermijn_dagen: number
 }
 
 export type OffertePDFData = {
@@ -39,6 +43,8 @@ export type OffertePDFData = {
   offertenummer: string
   vandaag: Date
   geldigheidDagen: number
+  /** Betaaltermijn in dagen (uit tenant_settings); getoond bij de voorwaarden. */
+  betaaltermijnDagen: number
   // Diensten + regels
   hoofdcategorieLabels: string[]
   subDienstenLabels: string[]
@@ -64,6 +70,10 @@ export type OffertePDFData = {
   // Branding
   logoBase64: string | null
   badgeBase64: string | null
+  /** Keurmerk Kwaliteitsvakman, rechts naast de top-30-badge in de header. */
+  keurmerkBase64: string | null
+  /** "Geverifieerd door BesteVakmanInDeBuurt.nl"-badge, rechtsonder in de footer. */
+  besteVakmanBase64: string | null
   bedrijf: TenantBedrijf
   // Compact-mode (door renderer geëscaleerd bij overflow)
   compactLevel?: 0 | 1 | 2
@@ -101,6 +111,16 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
     ? `<img class="header-badge" src="${d.badgeBase64}" alt="Top 30 vakbedrijven" style="display:block;height:${badgeHeight}px;width:auto;" />`
     : ''
 
+  // Keurmerk Kwaliteitsvakman: zelfde hoogte als de top-30-badge, ernaast.
+  const keurmerkBlock = d.keurmerkBase64
+    ? `<img class="header-keurmerk" src="${d.keurmerkBase64}" alt="Keurmerk Kwaliteitsvakman" style="display:block;height:${badgeHeight}px;width:auto;" />`
+    : ''
+
+  // BesteVakmanInDeBuurt.nl: rechtsonder in de footer, verticaal gecentreerd.
+  const footerBadgeBlock = d.besteVakmanBase64
+    ? `<img class="footer-badge" src="${d.besteVakmanBase64}" alt="Geverifieerd door BesteVakmanInDeBuurt.nl" />`
+    : ''
+
   const regelsRows = d.regels
     .map((r) => {
       const aantalText = r.aantal !== null ? `${formatNumber(r.aantal)}${r.eenheid ? ' ' + r.eenheid : ''}` : ''
@@ -131,14 +151,19 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
     print-color-adjust: exact;
     background: #ffffff;
   }
-  .page { width: 210mm; min-height: 297mm; padding: 0; position: relative; display: flex; flex-direction: column; }
+  /* min-height 290mm i.p.v. 297mm: Chrome's print-engine houdt ~6mm onderaan
+     vrij (fantoom-marge die @page margin:0 niet wegneemt), dus een pagina van
+     exact 297mm valt ~0,5px over de printbare hoogte en geeft een lege 2e
+     pagina. 290mm (≈1096px) vult de pagina vrijwel volledig én blijft binnen
+     de printbare hoogte (~1100px), zodat de offerte op één A4 past. */
+  .page { width: 210mm; min-height: 290mm; padding: 0; position: relative; display: flex; flex-direction: column; }
   .page-spacer { flex: 1 1 auto; min-height: 24px; }
   .bottom-block { flex: 0 0 auto; }
 
   .header { background: #FAFAF0; padding: 28px 40px 24px 40px; display: flex; justify-content: space-between; align-items: center; }
   .header-left .title { font-size: 32px; font-weight: 800; color: #002D63; letter-spacing: 1px; margin: 0; line-height: 1; }
   .header-left .subtitle { font-size: 12px; color: #6b6b6b; margin-top: 6px; letter-spacing: 0.5px; }
-  .header-center { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; align-self: flex-start; }
+  .header-center { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 16px; align-self: flex-start; }
   .header-right { text-align: right; }
 
   .accent { height: 4px; background: #F5C518; }
@@ -180,10 +205,15 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
   .voorwaarden { margin-top: 18px; padding: 0 40px; font-size: 10px; color: #6b7280; line-height: 1.7; }
   .voorwaarden .label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #003F8A; margin-bottom: 6px; }
 
-  .footer { margin-top: 24px; padding: 18px 40px; background: #f9fafb; border-top: 3px solid #F5C518; font-size: 9px; color: #6b7280; line-height: 1.7; text-align: center; }
+  /* min-height >= de footer-badge (46px) zodat de absoluut-gepositioneerde
+     badge nooit boven/onder de footer uitsteekt. */
+  .footer { position: relative; min-height: 46px; margin-top: 24px; padding: 18px 40px; background: #f9fafb; border-top: 3px solid #F5C518; font-size: 9px; color: #6b7280; line-height: 1.7; text-align: center; }
   .footer-text { text-align: center; }
   .footer strong { color: #002D63; }
   .footer .sep { color: #d1d5db; margin: 0 6px; }
+  /* BesteVakmanInDeBuurt.nl-badge: rechts in de footer, verticaal gecentreerd,
+     absoluut gepositioneerd zodat de gecentreerde tekst niet verschuift. */
+  .footer-badge { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); height: 46px; width: auto; }
 
   /* Compact-mode: tightere spacing wanneer offerte anders niet op één A4 past. */
   body.compact-2 .header             { padding: 18px 40px 16px 40px; }
@@ -206,7 +236,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
         <p class="title">OFFERTE</p>
         <p class="subtitle">Nr. ${escapeHtml(d.offertenummer)}</p>
       </div>
-      <div class="header-center">${headerBadgeBlock}</div>
+      <div class="header-center">${headerBadgeBlock}${keurmerkBlock}</div>
       <div class="header-right">${logoBlock}</div>
     </div>
 
@@ -282,7 +312,8 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
       <div class="voorwaarden">
         <div class="label">Voorwaarden</div>
         Deze offerte is geldig tot ${formatDate(geldigTot)}.
-        Alle bedragen zijn in euro&apos;s. BTW-tarief ${d.btwPercentage}% is van toepassing op alle posten.
+        Betaling binnen ${d.betaaltermijnDagen} dagen na afronding van de werkzaamheden.
+        Alle bedragen zijn in euro&apos;s. BTW-tarief ${formatPct(d.btwPercentage)}% is van toepassing op alle posten.
       </div>
 
       <div class="footer">
@@ -290,6 +321,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
           <strong>${escapeHtml(d.bedrijf.bedrijfsnaam)}</strong>
           ${d.bedrijf.adres ? `<span class="sep">|</span>${escapeHtml(d.bedrijf.adres)}` : ''}${d.bedrijf.postcode && d.bedrijf.plaats ? `, ${escapeHtml(d.bedrijf.postcode)} ${escapeHtml(d.bedrijf.plaats)}` : ''}
         </div>
+        ${footerBadgeBlock}
       </div>
     </div>
 
@@ -349,16 +381,21 @@ export function buildOffertePDFData(input: {
   bedrijf: TenantBedrijf
   logoBase64: string | null
   badgeBase64: string | null
+  keurmerkBase64?: string | null
+  besteVakmanBase64?: string | null
 }): OffertePDFData {
   const { data, rules, totals, offertenummer, bedrijf, logoBase64, badgeBase64 } = input
 
-  // Korting-bedrag uit totals (= discount, het verschil tussen subtotal
-  // en post-korting). totals.subtotal en totals.korstmosToeslag bestaan
-  // beide; gebruik de discount-veld voor het Actiekorting-regel.
+  // Korting-EUROBEDRAG voor de Actiekorting-regel = totals.kortingBedrag. LET OP:
+  // totals.discount is het PERCENTAGE (niet het bedrag) en hoort alleen op het
+  // "(X%)"-label; dat eerder hier stond gaf een fout/ontbrekend kortingsbedrag
+  // op de klant-PDF.
   const subtotaalExcl = totals.subtotal + totals.korstmosToeslag
-  const kortingBedrag = totals.discount
+  const kortingBedrag = totals.kortingBedrag
   const totaalExcl = totals.total
-  const btwPercentage = 21
+  // BTW-percentage uit de tenant-instelling; btwBedrag is met datzelfde tarief
+  // berekend (computeTotals krijgt het tarief mee), dus label + bedrag kloppen.
+  const btwPercentage = bedrijf.offerte_btw_tarief
   const btwBedrag = totals.btw
   const totaalIncl = Math.round((totaalExcl + btwBedrag) * 100) / 100
 
@@ -378,6 +415,7 @@ export function buildOffertePDFData(input: {
     offertenummer,
     vandaag: new Date(),
     geldigheidDagen: bedrijf.offerte_geldigheid_dagen,
+    betaaltermijnDagen: bedrijf.offerte_betaaltermijn_dagen,
     hoofdcategorieLabels: data.hoofdcategorie.map((c) => HOOFDCAT_LABELS[c] ?? c),
     subDienstenLabels: data.sub.map((s) => SUB_LABELS[s] ?? s),
     m2: Number(data.m2) || 0,
@@ -399,6 +437,8 @@ export function buildOffertePDFData(input: {
     toelichting: data.notitie.trim() || null,
     logoBase64,
     badgeBase64,
+    keurmerkBase64: input.keurmerkBase64 ?? null,
+    besteVakmanBase64: input.besteVakmanBase64 ?? null,
     bedrijf,
   }
 }

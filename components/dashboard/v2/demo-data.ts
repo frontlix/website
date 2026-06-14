@@ -38,7 +38,7 @@ export const NAV: NavItem[] = [
   { label: "Inbox", href: "/inbox", badge: 2 },
   { label: "Leads", href: "/leads", badge: 14 },
   { label: "Agenda", href: "/agenda", badge: 4 },
-  { label: "Reviews", href: "/reviews", badge: 2 },
+  { label: "Reviews", href: "/reviews", badge: null },
   { label: "Analyses", href: "/analyses", badge: null },
   { label: "Veldwerk", href: "/veldwerk", badge: "binnenkort" },
   { label: "Instellingen", href: "/instellingen", badge: null },
@@ -115,8 +115,18 @@ export const SPARK = [4, 6, 5, 8, 7, 10, 9, 12, 11, 14];
 
 // ── Leads ───────────────────────────────────────────────────────────────
 
-/** Status-soorten sturen de StatusPill-kleur (zie ui/StatusPill). */
-export type StatusKind = "hot" | "new" | "plan" | "sent";
+/** Status-soorten sturen de StatusPill-kleur (zie ui/StatusPill). Betekenis:
+ *  hot=wacht op jou/urgent, new=nieuw, talking=in gesprek, review=onderhandelen,
+ *  plan=bezoek gepland, won=goedgekeurd/afgerond, lost=afgewezen, sent=verstuurd. */
+export type StatusKind =
+  | "hot"
+  | "new"
+  | "talking"
+  | "review"
+  | "plan"
+  | "won"
+  | "lost"
+  | "sent";
 
 export interface Lead {
   id: string;

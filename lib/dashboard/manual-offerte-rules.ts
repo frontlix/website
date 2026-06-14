@@ -18,7 +18,7 @@ import {
  *  - Reiniging straatwerk: €3,95/m²
  *  - Arbeid invegen normaal: €0,90/m²
  *  - Arbeid invegen onkruidwerend: €1,60/m²
- *  - Preventieve onkruid: €1,10/m²
+ *  - Preventieve onkruid: €4,50/m² (deelt de ">12 weken"-staffel onkruid_per_m2_langer)
  *  - Beschermlaag: €1,60/m²
  *  - Onderhoudsplan: zie ONDERHOUD_PRIJZEN
  *  - Reiskosten boven 50km: €0,23/km
@@ -42,15 +42,20 @@ export function computeRules(
   const kleurLabel = kleurDelen.join(' + ')
   const kleurSuffix = kleurLabel ? ` ${kleurLabel}` : ''
 
+  // Reiniging en invegen zijn losse keuzes (v2-wizard). De reiniging-regel telt
+  // alleen mee als reinigen_actief (default true voor bestaande flows); het
+  // invegen-werk + voegzand hangt aan de 'invegen'-sub-dienst + voegzand-vlaggen.
+  const reinigenActief = data.reinigen_actief !== false
+
   if (data.sub.includes('invegen')) {
     // Reiniging-regel, matcht Schoon Straatje:
     //  m² < 100 → "Reiniging oppervlak (dagprijs)" met aantal=1 dag
     //  m² ≥ 100 → "Reiniging oppervlak" met aantal=m², eenheid=m²
     const reinPr = pricing.reiniging_per_m2
-    if (m2 < 100 && m2 > 0) {
-      // Dagprijs voor kleine oppervlakken (SS conventie). Onze pricing-
-      // config kent geen aparte dagprijs, dus we doen m² × tarief.
-      const dagprijs = Math.round(m2 * reinPr * 100) / 100
+    if (reinigenActief && m2 < 100 && m2 > 0) {
+      // Vaste dagprijs voor kleine oppervlakken (< 100 m²), Schoon Straatje-
+      // conventie: niet m² × tarief maar één vast bedrag.
+      const dagprijs = pricing.reinigen_dagprijs_onder_100m2
       r.push({
         desc: 'Reiniging oppervlak (dagprijs)',
         aantal: 1,
@@ -58,7 +63,7 @@ export function computeRules(
         prijs: dagprijs,
         totaal: dagprijs,
       })
-    } else if (m2 > 0) {
+    } else if (reinigenActief && m2 > 0) {
       r.push({
         desc: 'Reiniging oppervlak',
         aantal: m2,
@@ -124,22 +129,25 @@ export function computeRules(
 
   if (data.sub.includes('preventieve_onkruid')) {
     const pr = pricing.preventieve_onkruid_per_m2
+    // Eigen oppervlakte indien meegegeven (v2-wizard), anders de hoofd-m2.
+    const qm2 = data.preventieve_onkruid_m2 != null ? Number(data.preventieve_onkruid_m2) : m2
     r.push({
       desc: 'Preventieve onkruidbeheersing',
-      aantal: m2,
+      aantal: qm2,
       eenheid: 'm²',
       prijs: pr,
-      totaal: m2 * pr,
+      totaal: qm2 * pr,
     })
   }
   if (data.sub.includes('beschermlaag')) {
     const pr = pricing.beschermlaag_per_m2
+    const qm2 = data.beschermlaag_m2 != null ? Number(data.beschermlaag_m2) : m2
     r.push({
       desc: 'Nieuwe beschermlaag incl product',
-      aantal: m2,
+      aantal: qm2,
       eenheid: 'm²',
       prijs: pr,
-      totaal: m2 * pr,
+      totaal: qm2 * pr,
     })
   }
   if (data.sub.includes('onderhoud')) {
@@ -213,7 +221,9 @@ export function computeRules(
 
 export function computeTotals(
   rules: RegelComputed[],
-  data: ManualOfferteData
+  data: ManualOfferteData,
+  /** BTW-percentage uit tenant_settings (default 21 = NL-standaardtarief). */
+  btwTarief = 21
 ): TotalsComputed {
   const subtotal = rules.reduce((s, r) => s + r.totaal, 0)
   // Reiskosten (eenheid 'km') tellen niet mee voor korstmos-toeslag noch korting.
@@ -231,6 +241,6 @@ export function computeTotals(
     ? Math.min(Number(data.korting_bedrag), base)
     : base * (discount / 100)
   const total = subtotal + korstmosToeslag - kortingBedrag
-  const btw = total * 0.21
+  const btw = total * (btwTarief / 100)
   return { subtotal, korstmosToeslag, kortingBedrag, discount, total, btw }
 }

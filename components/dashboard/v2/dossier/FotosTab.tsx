@@ -35,16 +35,23 @@ export function FotosTab({ onVraagFotos, data = DOSSIER }: FotosTabProps) {
             Verzoek verstuurd via WhatsApp
           </span>
         ) : (
-          <button type="button" className={styles.vraagBtn} onClick={vraag}>
+          <button
+            type="button"
+            className={styles.vraagBtn}
+            onClick={vraag}
+            disabled
+            title="Binnenkort beschikbaar"
+            style={{ opacity: 0.5, cursor: "not-allowed" }}
+          >
             <Camera size={13} strokeWidth={2.2} />
-            Vraag om meer foto&apos;s
+            Vraag om meer foto&apos;s (binnenkort)
           </button>
         )}
       </div>
 
       <div className={styles.grid}>
-        {data.fotos.map((f) => (
-          <PhotoPlaceholder key={f} tag={f} height={130} />
+        {data.fotos.map((f, i) => (
+          <PhotoPlaceholder key={i} tag={f.tag} url={f.url} height={130} />
         ))}
       </div>
 

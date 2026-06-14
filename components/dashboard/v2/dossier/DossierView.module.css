@@ -2,8 +2,12 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Vaste hoogte = het content-vlak van het app-frame. Zo krijgt de split-view
+     een vaste hoogte en scrollen de kolommen INTERN: de tab-kaart links (bv. de
+     lange offerte-editor) en het WhatsApp-gesprek rechts blijven vast staan,
+     i.p.v. dat de hele pagina scrollt en de chat meeschuift. */
+  height: 100%;
   min-height: 0;
-  flex: 1;
 }
 
 /* ── Kop ── */
@@ -119,7 +123,8 @@
 /* ── Split view ── */
 .split {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  /* Linkerkaart (Info/tabs) breder, WhatsApp-gesprek smaller. */
+  grid-template-columns: 1.7fr 1fr;
   gap: 18px;
   flex: 1;
   min-height: 0;

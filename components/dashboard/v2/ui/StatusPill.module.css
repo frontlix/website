@@ -20,9 +20,29 @@
   color: var(--rb-status-new-ink);
 }
 
+.talking {
+  background: var(--rb-status-talking-bg);
+  color: var(--rb-status-talking-ink);
+}
+
+.review {
+  background: var(--rb-status-review-bg);
+  color: var(--rb-status-review-ink);
+}
+
 .plan {
   background: var(--rb-status-plan-bg);
   color: var(--rb-status-plan-ink);
+}
+
+.won {
+  background: var(--rb-status-won-bg);
+  color: var(--rb-status-won-ink);
+}
+
+.lost {
+  background: var(--rb-status-lost-bg);
+  color: var(--rb-status-lost-ink);
 }
 
 .sent {

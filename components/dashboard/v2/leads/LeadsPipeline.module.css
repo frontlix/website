@@ -28,6 +28,8 @@
   font-size: 12.5px;
   font-weight: 800;
   white-space: nowrap;
+  /* Kolomtitel in de kolom-accentkleur (data-afhankelijk, var-token). */
+  color: var(--col-ink, var(--rb-ink));
 }
 
 .dot {
@@ -37,9 +39,19 @@
   flex-shrink: 0;
 }
 
+/* Count als zacht gekleurde teller-pill in de kolomkleur. */
 .count {
-  color: var(--rb-muted);
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--rb-r-pill);
+  background: var(--col-bg, var(--rb-field-2));
+  color: var(--col-ink, var(--rb-muted));
+  font-weight: 800;
+  font-size: 11px;
 }
 
 .som {
@@ -49,15 +61,25 @@
   white-space: nowrap;
 }
 
-/* Glas-kolombak met leadkaarten. */
+/* Glas-kolombak met leadkaarten. Zachte kolomtint: de status-bg-kleur
+   doorschijnend over het glas + de accentkleur als bovenrand, zodat elke
+   kolom z'n eigen kleur-accent heeft (geometrie blijft gelijk). */
 .cards {
   display: flex;
   flex-direction: column;
   gap: 10px;
   flex: 1;
   min-height: 0;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--col-bg, transparent) 45%, transparent),
+      color-mix(in srgb, var(--col-bg, transparent) 22%, transparent)
+    ),
+    rgba(255, 255, 255, 0.4);
+  /* Rand in een lichte tint van de kolomkleur (geen wit aan de zijkanten),
+     met een vollere gekleurde bovenrand als accent. */
+  border: 1px solid color-mix(in srgb, var(--col-ink, var(--rb-line)) 22%, transparent);
+  border-top: 3px solid var(--col-ink, var(--rb-blue));
   border-radius: var(--rb-r-card);
   padding: 10px;
   overflow: auto;

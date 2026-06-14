@@ -9,8 +9,17 @@ interface OfferteVerzondenProps {
   totaal: number;
   klant: OfferteKlant | null;
   kanaal: Kanaal;
+  /** Geldigheid in dagen, voor de "geldig t/m"-datum. */
+  geldigDagen: number;
   onClose: () => void;
   onNaarLeads?: () => void;
+}
+
+/** "geldig t/m"-datum: vandaag + n dagen, NL-genotuleerd. */
+function geldigTotDatum(dagen: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + Math.max(0, dagen));
+  return d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** Verzonden-staat: groene check, titel per kanaal, samenvatting en knoppen. */
@@ -18,6 +27,7 @@ export function OfferteVerzonden({
   totaal,
   klant,
   kanaal,
+  geldigDagen,
   onClose,
   onNaarLeads,
 }: OfferteVerzondenProps) {
@@ -40,7 +50,7 @@ export function OfferteVerzonden({
       </div>
       <div className={styles.titel}>{titel}</div>
       <div className={styles.sub}>
-        {naam} · <strong>{fmtEuro(totaal)} incl. BTW</strong> · geldig t/m 24 juni.
+        {naam} · <strong>{fmtEuro(totaal)} incl. BTW</strong> · geldig t/m {geldigTotDatum(geldigDagen)}.
         <br />
         {sub}
       </div>

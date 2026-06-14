@@ -397,7 +397,7 @@
       <span class="r">€&nbsp;{{ pricing.subtotaal_excl_btw | nl_currency }}</span>
     </div>
     <div class="row btw">
-      <span class="l">BTW 21%</span>
+      <span class="l">BTW {{ btw_pct_str | default('21') }}%</span>
       <span class="r">€&nbsp;{{ pricing.btw_bedrag | nl_currency }}</span>
     </div>
     <div class="row grand">
@@ -415,7 +415,7 @@
   <!-- ── VOORWAARDEN ────────────────────────────────────────────────── -->
   <div class="conditions">
     <strong>Voorwaarden &amp; geldigheid.</strong>
-    Deze offerte is geldig tot {{ geldig_tot_str }} en betreft een vrijblijvende prijsindicatie op basis van de door u verstrekte informatie. Definitieve afstemming volgt tijdens de afspraak ter plaatse. Genoemde bedragen zijn exclusief eventuele onvoorziene werkzaamheden en gelden onder voorbehoud van toegankelijkheid van het werkadres.
+    Deze offerte is geldig tot {{ geldig_tot_str }} en betreft een vrijblijvende prijsindicatie op basis van de door u verstrekte informatie. Betaling binnen {{ betaaltermijn_dagen | default(14) }} dagen na afronding van de werkzaamheden. Definitieve afstemming volgt tijdens de afspraak ter plaatse. Genoemde bedragen zijn exclusief eventuele onvoorziene werkzaamheden en gelden onder voorbehoud van toegankelijkheid van het werkadres.
   </div>
 
   <!-- ── FOOTER (compact fineprint, single row) ─────────────────────── -->

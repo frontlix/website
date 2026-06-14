@@ -48,6 +48,50 @@
   border-color: var(--rb-blue);
 }
 
+/* Meerregelige variant: niet verticaal centreren maar uitrekken, zodat de
+   tekst bovenaan begint en het veld kan groeien. */
+.boxMultiline {
+  align-items: stretch;
+}
+
+.textarea {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 11px 0;
+  min-height: 76px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+/* Native select binnen de veld-box: zelfde typografie als .input, met ruimte
+   voor de browser-pijl rechts. */
+.select {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--rb-font);
+  color: var(--rb-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 11px 0;
+  cursor: pointer;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--rb-muted);
+  font-weight: 500;
+}
+
 /* Read-only-variant: zelfde afmetingen als het bewerkbare veld zodat de
    hoogte en het scroll-ritme ongewijzigd blijven, maar visueel rustiger. */
 .boxReadOnly {
