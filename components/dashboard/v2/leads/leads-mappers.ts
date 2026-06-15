@@ -104,7 +104,11 @@ export function mapLeadToV2(lead: LeadListItem): Lead {
     bron: bronLabel(lead),
     status: statusLabelForLead(lead),
     statusKind: statusKindForLead(lead),
-    tijd: formatRelative(lead.bijgewerkt),
+    // Binnenkomst-tijd tonen (aangemaakt), NIET `bijgewerkt`: dat is een
+    // generieke updated_at die opspringt bij elke bot-/systeem-/eigenaaractie
+    // (reminder versturen, inbox als gelezen markeren, geocoden), waardoor oude
+    // leads ten onrechte "zojuist"/"2 uur geleden" tonen.
+    tijd: formatRelative(lead.aangemaakt),
     initials: initialsFromNaam(lead.naam),
   };
 }
