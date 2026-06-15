@@ -72,3 +72,27 @@ export async function searchExistingClients(
   }
   return (data as unknown as ExistingClientMatch[] | null) ?? []
 }
+
+/**
+ * Haalt de (recente) klantenlijst in één keer op, zodat de wizard-zoeker
+ * client-side instant kan filteren i.p.v. een server-round-trip per toets.
+ * Gecapt op `limit` recentste niet-gearchiveerde leads; voor tenants boven die
+ * grens valt de zoeker terug op de server-search (searchExistingClients).
+ */
+export async function getRecentClients(
+  limit = 1000,
+): Promise<ExistingClientMatch[]> {
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('leads')
+    .select(SEARCH_COLUMNS)
+    .eq('dashboard_archived', false)
+    .order('aangemaakt', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[getRecentClients] query failed:', error)
+    return []
+  }
+  return (data as unknown as ExistingClientMatch[] | null) ?? []
+}

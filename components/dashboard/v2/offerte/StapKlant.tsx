@@ -2,7 +2,12 @@
 
 import { useEffect, useState, useTransition, type Dispatch, type SetStateAction } from "react";
 import { Check, Plus, Search, Sparkles, X } from "lucide-react";
-import { searchExistingClients } from "@/lib/dashboard/manual-offerte-search";
+import {
+  searchExistingClients,
+  getRecentClients,
+  type ExistingClientMatch,
+} from "@/lib/dashboard/manual-offerte-search";
+import { normalizePhone } from "@/lib/dashboard/lead-filters";
 import { getAutoAfstandKm } from "@/lib/dashboard/afstand-actions";
 import {
   LEGE_KLANT,
@@ -47,6 +52,34 @@ interface StapKlantProps {
   onAiExtracted: (fields: ExtractedFields) => void;
 }
 
+// Aantal recente klanten dat vooraf wordt geladen voor instant client-side
+// filteren. Boven deze grens valt de zoeker terug op de server-search.
+const CLIENT_PRELOAD_CAP = 1000;
+
+/** Filtert de voorgeladen klantenlijst lokaal met dezelfde "contains"-match als
+ *  searchExistingClients (naam/bedrijfsnaam/postcode/straat/plaats + het
+ *  genormaliseerde telefoonnummer), in recency-volgorde, gecapt op 25 hits. */
+function filterClients(
+  clients: ExistingClientMatch[],
+  q: string,
+): ExistingClientMatch[] {
+  const needle = q.toLowerCase();
+  const qTel = normalizePhone(q);
+  const out: ExistingClientMatch[] = [];
+  for (const c of clients) {
+    const tekstHit = [c.naam, c.bedrijfsnaam, c.postcode, c.straat, c.plaats].some(
+      (f) => f != null && f.toLowerCase().includes(needle),
+    );
+    const telHit =
+      qTel.length >= 3 && !!c.telefoon && normalizePhone(c.telefoon).includes(qTel);
+    if (tekstHit || telHit) {
+      out.push(c);
+      if (out.length >= 25) break;
+    }
+  }
+  return out;
+}
+
 /** Stap 1 · Klant: AI-plak, live filterende zoeker, altijd typbaar gegevens-
  *  blok, Particulier/Zakelijk en factuuradres-gelijk-checkbox. */
 export function StapKlant({
@@ -66,11 +99,14 @@ export function StapKlant({
   setAfstandKm,
   onAiExtracted,
 }: StapKlantProps) {
-  // ── Echte klantzoeker: debounced server-action searchExistingClients,
-  // mapt de hits naar OfferteKlant. ≥ 2 tekens + 250ms debounce, zelfde
-  // gedrag als de bestaande ExistingClientSearch in het (app)-dashboard.
+  // ── Echte klantzoeker: voorgeladen klantenlijst (getRecentClients) + instant
+  // client-side filteren, zodat typen geen server-round-trip per toets meer doet
+  // (de oude 250ms-debounce + server-action voelde als ~1s). De server-search
+  // (searchExistingClients) blijft als vangnet boven CLIENT_PRELOAD_CAP.
   const [resultaten, setResultaten] = useState<OfferteKlant[]>([]);
   const [zoekt, setZoekt] = useState(false);
+  // Eenmalige preload bij het openen (Modal mount StapKlant per keer dat-ie opent).
+  const [allClients, setAllClients] = useState<ExistingClientMatch[] | null>(null);
 
   // AI-plak: plak een klantbericht en laat de OpenAI-extractie
   // (extractFieldsFromMessage) de velden invullen. Het resultaat gaat via
@@ -96,6 +132,17 @@ export function StapKlant({
     });
   }
 
+  // Eenmalige preload van de klantenlijst bij mount (= wizard open).
+  useEffect(() => {
+    let cancelled = false;
+    getRecentClients().then((list) => {
+      if (!cancelled) setAllClients(list);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const safe = zoek.trim();
     // Zoek al vanaf de eerste letter (consistent met searchExistingClients).
@@ -104,6 +151,20 @@ export function StapKlant({
       setZoekt(false);
       return;
     }
+
+    // Instant: filter de voorgeladen lijst client-side, geen round-trip per toets.
+    if (allClients) {
+      const local = filterClients(allClients, safe);
+      setResultaten(local.map(mapMatchToKlant));
+      // Klaar, tenzij de lijst gecapt was én lokaal niets matcht: dan kan de
+      // klant buiten de voorgeladen recente set vallen → server-vangnet.
+      if (local.length > 0 || allClients.length < CLIENT_PRELOAD_CAP) {
+        setZoekt(false);
+        return;
+      }
+    }
+
+    // Vangnet: lijst nog niet geladen, of gecapt met 0 lokale hits → server-search.
     setZoekt(true);
     let cancelled = false;
     const t = setTimeout(async () => {
@@ -116,7 +177,7 @@ export function StapKlant({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [zoek]);
+  }, [zoek, allClients]);
 
   // Velden zijn altijd invulbaar; typen maakt vanzelf een nieuwe klant aan.
   const k = klant ?? LEGE_KLANT;
