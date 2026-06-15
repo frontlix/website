@@ -34,11 +34,13 @@ interface TodayPanelProps {
   onAfronden: () => void;
   /** Open "nieuwe afspraak" (lege staat). */
   onPlan: () => void;
+  /** True terwijl het afronden loopt: knop disabled + "Bezig…" als feedback. */
+  bezig?: boolean;
   /** Vertrekadres/werkplaats voor de live routekaart; null = SVG-fallback. */
   base?: RouteBase | null;
 }
 
-export function TodayPanel({ item, onAfronden, onPlan, base }: TodayPanelProps) {
+export function TodayPanel({ item, onAfronden, onPlan, bezig, base }: TodayPanelProps) {
   if (!item) {
     return (
       <Card pad="none" className={styles.empty}>
@@ -97,9 +99,9 @@ export function TodayPanel({ item, onAfronden, onPlan, base }: TodayPanelProps) 
               Afgerond
             </span>
           ) : (
-            <Button variant="primary" onClick={onAfronden}>
+            <Button variant="primary" onClick={onAfronden} disabled={bezig}>
               <Check size={15} strokeWidth={2.6} />
-              Afronden
+              {bezig ? "Bezig…" : "Afronden"}
             </Button>
           )}
           <a

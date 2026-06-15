@@ -4,8 +4,24 @@ import { useState } from "react";
 import { FileText, ChevronRight, ChevronDown } from "lucide-react";
 import type { DossierData } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
-import { OfferteEditor } from "./OfferteEditor";
+import dynamic from "next/dynamic";
 import styles from "./OffertesTab.module.css";
+
+// De OfferteEditor (~1100 regels, client-only) lazy laden, zodat hij niet in de
+// initiële JS-bundle van de (zware) dossier-pagina zit. ssr:false: de editor
+// rendert toch al client-side, zo verschijnt het dossier sneller en laadt de
+// editor in een apart chunk erna.
+const OfferteEditor = dynamic(
+  () => import("./OfferteEditor").then((m) => m.OfferteEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ padding: "16px", opacity: 0.6, fontSize: "13px" }}>
+        Editor laden…
+      </div>
+    ),
+  },
+);
 
 interface OffertesTabProps {
   /** Echte dossier-data; zonder = demo-fallback (DOSSIER). */

@@ -87,6 +87,10 @@ export default async function InstellingenPage() {
 
   const { supabase } = s;
 
+  // Maand-range voor de omzet-stand; vooraf berekend zodat countConverted +
+  // avgOfferteWaarde mee kunnen draaien in de Promise.all hieronder.
+  const maand = periodToRange("deze-maand", new Date());
+
   // ── Echte data ophalen (zelfde queries/condities als de (app)-pagina) ──
   // gcal-status en tags lopen via hun eigen helpers (service-role/RLS, zoals
   // de (app)-pagina), de overige tabellen via de tenant-gescopete client.
@@ -101,6 +105,11 @@ export default async function InstellingenPage() {
     gcalStatus,
     emailStatus,
     aanvragenRaw,
+    convertedMaand,
+    avgWaarde,
+    beschRaw,
+    logoRaw,
+    offRaw,
   ] = await Promise.all([
     supabase
       .from("tenant_settings")
@@ -134,6 +143,20 @@ export default async function InstellingenPage() {
     // Template-aanvragen (openingsbericht + reminders); de panels filteren zelf
     // op de voor hen relevante templates.
     getRecentTemplateAanvragen(),
+    // Maand-omzet + de defensief-geladen migratie-kolommen (beschikbaarheid/
+    // logo/offerte) draaien nu MEE in deze Promise.all i.p.v. sequentieel erna,
+    // dus parallel zonder extra round-trip-lagen. De drie tenant_settings-
+    // queries blijven apart zodat een ontbrekende migratie-kolom alleen die ene
+    // op default zet (niet alle drie).
+    countConverted(maand),
+    avgOfferteWaarde(maand),
+    supabase.from("tenant_settings").select("beschikbaarheid").limit(1).maybeSingle(),
+    supabase.from("tenant_settings").select("logo_url").limit(1).maybeSingle(),
+    supabase
+      .from("tenant_settings")
+      .select("offerte_btw_tarief, offerte_betaaltermijn_dagen, offerte_nummer_prefix")
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   // Casten zoals de bestaande code (Supabase geeft zonder gegen. types `never`).
@@ -144,14 +167,8 @@ export default async function InstellingenPage() {
   const tags = tagsRaw as TagWithCount[];
   const prefs = (notifPrefs as NotificationPreferenceRow[] | null) ?? [];
 
-  // Huidige omzet-stand deze maand voor het maanddoel-blok: exact dezelfde
-  // berekening als de Overzicht-ring (aantal gewonnen leads x gemiddelde
-  // offertewaarde), zodat de twee cijfers overeenkomen.
-  const maand = periodToRange("deze-maand", new Date());
-  const [convertedMaand, avgWaarde] = await Promise.all([
-    countConverted(maand),
-    avgOfferteWaarde(maand),
-  ]);
+  // Huidige omzet-stand deze maand voor het maanddoel-blok (zelfde berekening
+  // als de Overzicht-ring). convertedMaand + avgWaarde komen uit de Promise.all.
   const omzetMaand = Math.round((convertedMaand ?? 0) * (avgWaarde ?? 0));
   const omzetDoel =
     Number((tenant as { omzet_doel_maand?: number | null } | null)?.omzet_doel_maand) || 0;
@@ -164,39 +181,15 @@ export default async function InstellingenPage() {
   const dienstKeyByNaam = Object.fromEntries(buildDienstKeyLookup(services));
   const meldingEventByTitel = Object.fromEntries(buildMeldingEventLookup());
 
-  // Beschikbaarheid (kolom 049). Apart + defensief geladen: zolang de
-  // migratie nog niet is toegepast bestaat de kolom niet, dan faalt deze
-  // query stil (data = null) en vallen we terug op DAYS_DEFAULT, zodat de
-  // rest van de instellingen-pagina niet breekt.
-  const { data: beschRow } = await supabase
-    .from("tenant_settings")
-    .select("beschikbaarheid")
-    .limit(1)
-    .maybeSingle();
-  const beschVal = (beschRow as { beschikbaarheid?: DaySlot[] | null } | null)?.beschikbaarheid;
+  // Beschikbaarheid (049), logo (050) en offerte-instellingen (051): defensief
+  // geladen (ontbrekende migratie-kolom → data null → default), nu via de
+  // Promise.all hierboven i.p.v. drie sequentiële queries.
+  const beschVal = (beschRaw.data as { beschikbaarheid?: DaySlot[] | null } | null)
+    ?.beschikbaarheid;
   const dagen: DaySlot[] =
     Array.isArray(beschVal) && beschVal.length === 7 ? beschVal : DAYS_DEFAULT;
-
-  // Logo-URL (kolom 050). Apart + defensief geladen, net als beschikbaarheid:
-  // zolang de migratie niet is toegepast bestaat de kolom niet, dan faalt deze
-  // query stil (data = null) en valt logoUrl terug op null.
-  const { data: logoRow } = await supabase
-    .from("tenant_settings")
-    .select("logo_url")
-    .limit(1)
-    .maybeSingle();
-  const logoUrl = (logoRow as { logo_url?: string | null } | null)?.logo_url ?? null;
-
-  // Offerte-instellingen (kolommen uit migratie 051: btw, betaaltermijn,
-  // nummer-voorvoegsel). Apart + defensief geladen, net als beschikbaarheid/logo:
-  // zolang de migratie niet is toegepast bestaan de kolommen niet, dan faalt deze
-  // query stil (data = null) en valt alles terug op de defaults (21/14/SS).
-  const { data: offRow } = await supabase
-    .from("tenant_settings")
-    .select("offerte_btw_tarief, offerte_betaaltermijn_dagen, offerte_nummer_prefix")
-    .limit(1)
-    .maybeSingle();
-  const offRowObj = (offRow as Partial<TenantSettingsRow> | null) ?? {};
+  const logoUrl = (logoRaw.data as { logo_url?: string | null } | null)?.logo_url ?? null;
+  const offRowObj = (offRaw.data as Partial<TenantSettingsRow> | null) ?? {};
   const offertes = toOffertesInstellingen(
     tenant ? ({ ...tenant, ...offRowObj } as TenantSettingsRow) : null,
   );
