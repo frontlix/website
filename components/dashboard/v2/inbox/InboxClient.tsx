@@ -15,7 +15,7 @@
 // WhatsAppComposer / InboxBotToggle.
 // ─────────────────────────────────────────────────────────────────────
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ThreadList } from "./ThreadList";
 import { ChatPane } from "./ChatPane";
@@ -57,10 +57,19 @@ export function InboxClient({
   active,
 }: InboxClientProps) {
   const router = useRouter();
-  const [, startNav] = useTransition();
+  const [navPending, startNav] = useTransition();
   const [draft, setDraft] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
   const [sending, startSend] = useTransition();
+
+  // Optimistische selectie: de aangeklikte thread direct highlighten, zonder te
+  // wachten op de server-round-trip. Wordt losgelaten zodra de echte data
+  // binnen is (activeId verspringt naar het nieuwe gesprek).
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  useEffect(() => {
+    setPendingId(null);
+  }, [activeId]);
+  const highlightId = pendingId ?? activeId;
 
   // Surface aan/uit hergebruikt exact de bot-pauzeren proxy-route.
   const { run: runBot, pending: botPending } = useBotAction(
@@ -71,11 +80,19 @@ export function InboxClient({
 
   function selectThread(id: string) {
     if (id === activeId) return;
+    setPendingId(id); // direct visueel reageren, scheelt het "bevroren" gevoel
     setDraft("");
     setSendError(null);
     startNav(() => {
       router.push(`${V2_INBOX_PATH}?lead=${encodeURIComponent(id)}`);
     });
+  }
+
+  // Prefetch de RSC-payload van een gesprek bij hover, zodat de daadwerkelijke
+  // klik bijna direct voelt (de force-dynamic data staat dan al klaar).
+  function prefetchThread(id: string) {
+    if (id === activeId) return;
+    router.prefetch(`${V2_INBOX_PATH}?lead=${encodeURIComponent(id)}`);
   }
 
   function onSurfaceChange(next: boolean) {
@@ -143,9 +160,10 @@ export function InboxClient({
       <div className={styles.page}>
         <ThreadList
           threads={threads}
-          activeId={activeId ?? ""}
+          activeId={highlightId ?? ""}
           unreadById={unreadById}
           onSelect={selectThread}
+          onHover={prefetchThread}
         />
 
         {active ? (
@@ -156,6 +174,7 @@ export function InboxClient({
             messages={active.messages}
             surfaceAan={surfaceAan}
             draft={draft}
+            loading={navPending}
             onSurfaceChange={onSurfaceChange}
             onDraftChange={setDraft}
             onSend={onSend}

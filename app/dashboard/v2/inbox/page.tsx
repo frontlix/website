@@ -45,23 +45,40 @@ export default async function InboxPage({
   const sp = await searchParams;
 
   // Dezelfde queries/condities als de (app)-inbox; s.supabase is al
-  // tenant-gescopet (RLS). Eerst de gesprekken (nieuwste eerst) zodat we
-  // kunnen defaulten naar het eerste gesprek.
-  const conversations = await getActiveConversations(50);
+  // tenant-gescopet (RLS).
+  //
+  // Bij een ?lead= (élke thread-klik) staat de gekozen lead al vast, dus de
+  // gesprekkenlijst en de detail-queries (berichten/context/tags) hoeven niet
+  // op elkaar te wachten. Alles parallel scheelt een volledige DB-round-trip-
+  // laag op de kritieke klik-route (de lijst werd anders eerst ge-await voor de
+  // detail-queries begonnen).
+  const wantedLeadId = sp.lead ?? null;
+  const [conversations, wantedMsgs, wantedCtx, wantedTags] = await Promise.all([
+    getActiveConversations(50),
+    wantedLeadId ? getMessagesForLead(wantedLeadId) : Promise.resolve([]),
+    wantedLeadId ? getInboxLeadContext(wantedLeadId) : Promise.resolve(null),
+    wantedLeadId ? getTagsForLead(wantedLeadId) : Promise.resolve([]),
+  ]);
   const threads = toThreads(conversations);
   const unreadById = toUnreadById(conversations);
 
-  // Geen ?lead= in de URL? Open standaard het eerste (nieuwste) gesprek,
-  // zodat de inbox niet leeg start.
-  const selectedLeadId = sp.lead ?? conversations[0]?.leadId ?? null;
-
-  const [messages, leadCtx, leadTags] = await Promise.all([
-    selectedLeadId ? getMessagesForLead(selectedLeadId) : Promise.resolve([]),
-    selectedLeadId
-      ? getInboxLeadContext(selectedLeadId)
-      : Promise.resolve(null),
-    selectedLeadId ? getTagsForLead(selectedLeadId) : Promise.resolve([]),
-  ]);
+  // Geen ?lead= in de URL? Open standaard het eerste (nieuwste) gesprek; pas
+  // dan kennen we de lead en halen we zijn detail-data op (dat hing af van de
+  // lijst, dus alleen in dit first-load-geval een tweede ronde).
+  let selectedLeadId = wantedLeadId;
+  let messages = wantedMsgs;
+  let leadCtx = wantedCtx;
+  let leadTags = wantedTags;
+  if (!selectedLeadId) {
+    selectedLeadId = conversations[0]?.leadId ?? null;
+    if (selectedLeadId) {
+      [messages, leadCtx, leadTags] = await Promise.all([
+        getMessagesForLead(selectedLeadId),
+        getInboxLeadContext(selectedLeadId),
+        getTagsForLead(selectedLeadId),
+      ]);
+    }
+  }
 
   // Actieve gesprek-data, alleen als de lead bestaat (anders lege staat).
   const active =

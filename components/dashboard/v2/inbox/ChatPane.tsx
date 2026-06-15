@@ -14,6 +14,8 @@ interface ChatPaneProps {
   messages: ChatMessage[];
   surfaceAan: boolean;
   draft: string;
+  /** True terwijl het volgende gesprek laadt (toont een subtiele laad-balk). */
+  loading?: boolean;
   onSurfaceChange: (next: boolean) => void;
   onDraftChange: (next: string) => void;
   onSend: () => void;
@@ -28,6 +30,7 @@ export function ChatPane({
   messages,
   surfaceAan,
   draft,
+  loading = false,
   onSurfaceChange,
   onDraftChange,
   onSend,
@@ -44,6 +47,7 @@ export function ChatPane({
 
   return (
     <div className={styles.card}>
+      {loading ? <div className={styles.loadingBar} aria-hidden="true" /> : null}
       <div className={styles.head}>
         <span
           className={`${styles.avatarWrap} ${
@@ -65,7 +69,10 @@ export function ChatPane({
         </div>
       </div>
 
-      <div className={styles.stream} ref={streamRef}>
+      <div
+        className={`${styles.stream} ${loading ? styles.streamLoading : ""}`}
+        ref={streamRef}
+      >
         <div className={styles.bubbles}>
           {messages.map((m, i) => {
             const mine = m.from === "mij";
