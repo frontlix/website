@@ -1,4 +1,5 @@
 .card {
+  position: relative;
   background: var(--rb-card);
   box-shadow: var(--rb-shadow-card);
   border: 1px solid rgba(255, 255, 255, 0.8);
@@ -7,6 +8,35 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Subtiele laad-balk terwijl het volgende gesprek geladen wordt: glijdt over
+   de bovenrand zonder de layout te verschuiven (overlay binnen overflow:hidden). */
+.loadingBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 40%;
+  background: var(--rb-blue);
+  border-radius: 2px;
+  z-index: 2;
+  animation: chatLoadingSlide 0.9s ease-in-out infinite;
+}
+
+@keyframes chatLoadingSlide {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Lichte dim van de bubbels terwijl het nieuwe gesprek binnenkomt. */
+.streamLoading {
+  opacity: 0.55;
+  transition: opacity 0.12s ease;
 }
 
 /* ── Header ── */

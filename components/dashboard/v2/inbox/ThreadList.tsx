@@ -10,6 +10,8 @@ interface ThreadListProps {
   /** Ongelezen-teller per thread-id (0 = gelezen). */
   unreadById: Record<string, number>;
   onSelect: (id: string) => void;
+  /** Optioneel: prefetch een gesprek bij hover, vóór de klik. */
+  onHover?: (id: string) => void;
 }
 
 /** Linkerkolom (330px): de threadlijst met de "X nieuw"-badge en per rij
@@ -19,6 +21,7 @@ export function ThreadList({
   activeId,
   unreadById,
   onSelect,
+  onHover,
 }: ThreadListProps) {
   const totaalNieuw = threads.reduce(
     (n, t) => n + (unreadById[t.id] ?? t.unread),
@@ -51,6 +54,8 @@ export function ThreadList({
                 key={t.id}
                 type="button"
                 onClick={() => onSelect(t.id)}
+                onMouseEnter={() => onHover?.(t.id)}
+                onFocus={() => onHover?.(t.id)}
                 className={`${styles.row} ${isActief ? styles.rowActive : ""} ${
                   t.kanaal === "Telefoon"
                     ? styles.channelTelefoon
