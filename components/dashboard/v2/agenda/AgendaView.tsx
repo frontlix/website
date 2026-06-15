@@ -227,6 +227,7 @@ export function AgendaView({
             item={vandaag?.item ?? null}
             onAfronden={rondVandaagAf}
             onPlan={openNieuw}
+            bezig={bezig}
             base={base}
           />
         </>

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { getDashboardSupabase } from './supabase-server'
 
@@ -15,12 +16,16 @@ export interface DashboardUserProfile {
  * als "niet ingelogd" behandeld zodat aanroepers altijd kunnen doorgaan
  * met een redirect-naar-login fallback.
  */
-export async function getCurrentUser(): Promise<User | null> {
+// React cache(): dedupliceert binnen één request-render. Layout, shell en
+// pagina roepen dit (via v2Session) allemaal aan, dus zonder cache draait de
+// JWT-validatie ~6x per paginalading. cache() is request-scoped (geen
+// cross-request/-tenant lek), dus precies veilig hiervoor.
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   const supabase = await getDashboardSupabase()
   const { data, error } = await supabase.auth.getUser()
   if (error) return null
   return data.user ?? null
-}
+})
 
 /**
  * Haalt de dashboard_user_profiles-rij voor de huidige user op. Retourneert
@@ -28,16 +33,18 @@ export async function getCurrentUser(): Promise<User | null> {
  * een data-integriteit issue (de Auth Hook trigger zou 'm moeten hebben
  * gemaakt) en wordt als geen-toegang behandeld.
  */
-export async function getCurrentUserProfile(): Promise<DashboardUserProfile | null> {
-  const user = await getCurrentUser()
-  if (!user) return null
+export const getCurrentUserProfile = cache(
+  async (): Promise<DashboardUserProfile | null> => {
+    const user = await getCurrentUser()
+    if (!user) return null
 
-  const supabase = await getDashboardSupabase()
-  const { data } = await supabase
-    .from('dashboard_user_profiles')
-    .select('user_id, tenant_status, bedrijfsnaam, is_owner, onboarding_voltooid_op')
-    .eq('user_id', user.id)
-    .maybeSingle()
+    const supabase = await getDashboardSupabase()
+    const { data } = await supabase
+      .from('dashboard_user_profiles')
+      .select('user_id, tenant_status, bedrijfsnaam, is_owner, onboarding_voltooid_op')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-  return (data as DashboardUserProfile | null) ?? null
-}
+    return (data as DashboardUserProfile | null) ?? null
+  },
+)
