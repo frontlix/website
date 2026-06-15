@@ -25,7 +25,7 @@
   - bron: `lib/dashboard/lead-queries.ts: getLeadsList() gefilterde resultaten, gemapped via conversation-fase + dashboard_status matching in components/dashboard/leads/LeadsPipeline.tsx STAGES array`
   - vorm: 5 vaste pipeline-kolommen (In gesprek, Offerte review, Offerte uit, Ingepland, Afgerond), count per kolom, gegroepeerde leads per kolom. Pipeline-kolom-som = som van totaal_prijs per kolom (EUR-geformatteerd).
 - **Lead-tabel kolommen (Dienst, m2, Status, Gespreksfase, Offerte, Laatste actie)**
-  - bron: `lib/dashboard/lead-queries.ts LeadListItem, met format-helpers: formatEuro (totaal_prijs), formatRelative (bijgewerkt), gesprekFaseLabel (gesprek_fase), leadStatusMeta (status)`
+  - bron: `lib/dashboard/lead-queries.ts LeadListItem, met format-helpers: formatEuro (totaal_prijs), formatRelative (aangemaakt = binnenkomst, NIET bijgewerkt), gesprekFaseLabel (gesprek_fase), leadStatusMeta (status)`
   - vorm: LeadListItem met render-helpers: naam+plaats, sub_diensten array, m2 numeric, status enum (nieuw/in_gesprek/offerte_verstuurd/etc.), gesprek_fase enum (info_verzamelen/onderhandelen/offerte_besproken/datum_kiezen/afspraak_bevestigd), totaal_prijs numeric EUR, bijgewerkt ISO-string
 - **Filter-tabs (All, In gesprek, Review, Offerte uit, Ingepland, Afgerond, Archief)**
   - bron: `app/dashboard/(app)/leads/page.tsx searchParams + matchesFilter() logic: activeFilter key ('all'|'in_gesprek'|'review'|'offerte_uit'|'ingepland'|'afgerond'|'archief'), counts per tab berekend client-side door matchesFilter() over de leads array`
@@ -99,7 +99,7 @@ V2 WIRING STAPPENPLAN voor Leads-pagina:
      * Input: LeadListItem[], gesprek_fase+dashboard_status matching logic zelfde als huidige LeadsPipeline.tsx
      * Output: PipelineCol[] met som, count, leads-verdeling
    - LeadsList (v2): replace LEADS demo met server-fetched LeadListItem[]
-     * Map LeadListItem → display shape (naam, plaats, dienst (sub_diensten), bron (kanaal), waarde (totaal_prijs), status (leadStatusMeta), tijd (formatRelative(bijgewerkt)))
+     * Map LeadListItem → display shape (naam, plaats, dienst (sub_diensten), bron (kanaal), waarde (totaal_prijs), status (leadStatusMeta), tijd (formatRelative(aangemaakt = binnenkomst)))
      * Links naar /v2/leads/[lead_id]
    - LeadsSearch: bind searchParams.q input, update URL via router.push (client-side)
    - ViewSwitcher: persist leads_view cookie (already done in existing app) óf use localStorage in v2
