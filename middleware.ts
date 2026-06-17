@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, userAgent, type NextRequest } from 'next/server'
 
 const DASHBOARD_HOSTS = new Set([
   'app.frontlix.com',
@@ -101,6 +101,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Apparaat: v2 is desktop-only, de telefoon blijft op het oude (responsive)
+  // dashboard. Phone = device.type 'mobile'; desktop én tablet vallen onder
+  // !isPhone (krijgen v2). Zie de apparaat-routing verderop.
+  const isPhone = userAgent(request).device.type === 'mobile'
+
   // Rebrand v2 preview (/v2/*): in dev zonder login bereikbaar zodat de
   // nieuwe look snel te vergelijken is (draait op demo-data, geen PII). In
   // productie blijft 'ie achter auth. Verwijderen zodra v2 het bestaande
@@ -110,10 +115,11 @@ export async function middleware(request: NextRequest) {
     PUBLIC_DASHBOARD_PATHS.has(pathname) ||
     (isV2Preview && process.env.NODE_ENV !== 'production')
 
-  // Reeds ingelogd + op login/signup pagina → redirect naar het Overzicht
+  // Reeds ingelogd + op login/signup pagina → naar het Overzicht. Desktop krijgt
+  // v2, de telefoon het oude (responsive) dashboard.
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = isPhone ? '/' : '/v2'
     return NextResponse.redirect(url)
   }
 
@@ -123,6 +129,33 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/login'
     url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // APPARAAT-ROUTING: desktop/tablet → v2 (de nieuwe look), telefoon → het
+  // oude responsive dashboard. v2 dekt de gedeelde secties; oud-only routes
+  // (/statistieken, /veldwerk) blijven op het oude dashboard. Niets verwijderd,
+  // puur omleiden. Alleen voor ingelogde gebruikers op niet-publieke paden.
+  // ─────────────────────────────────────────────────────────────────────
+  if (user && !isPublic) {
+    // Secties die v2 dekt. De rest (statistieken/veldwerk) blijft op oud.
+    const V2_SECTIONS = ['/leads', '/agenda', '/inbox', '/instellingen', '/reviews', '/analyses']
+    const inV2Section =
+      pathname === '/' ||
+      V2_SECTIONS.some((s) => pathname === s || pathname.startsWith(`${s}/`))
+
+    if (!isPhone && !isV2Preview && inV2Section) {
+      // Desktop/tablet op een gedeelde oude route → de v2-versie.
+      const url = request.nextUrl.clone()
+      url.pathname = `/v2${pathname === '/' ? '' : pathname}`
+      return NextResponse.redirect(url)
+    }
+    if (isPhone && isV2Preview) {
+      // Telefoon op een v2-route (desktop-only) → terug naar het oude dashboard.
+      const url = request.nextUrl.clone()
+      url.pathname = pathname.replace(/^\/v2/, '') || '/'
+      return NextResponse.redirect(url)
+    }
   }
 
   // Rewrite: app.frontlix.com/leads → intern /dashboard/leads
