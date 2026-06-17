@@ -115,11 +115,12 @@ export async function middleware(request: NextRequest) {
     PUBLIC_DASHBOARD_PATHS.has(pathname) ||
     (isV2Preview && process.env.NODE_ENV !== 'production')
 
-  // Reeds ingelogd + op login/signup pagina → naar het Overzicht. Desktop krijgt
-  // v2, de telefoon het oude (responsive) dashboard.
+  // Reeds ingelogd + op login/signup pagina → naar het Overzicht (schone root).
+  // De apparaat-rewrite hieronder serveert daar v2 (desktop) of het oude
+  // responsive dashboard (telefoon).
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
-    url.pathname = isPhone ? '/' : '/v2'
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
@@ -132,35 +133,33 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // APPARAAT-ROUTING: desktop/tablet → v2 (de nieuwe look), telefoon → het
-  // oude responsive dashboard. v2 dekt de gedeelde secties; oud-only routes
-  // (/statistieken, /veldwerk) blijven op het oude dashboard. Niets verwijderd,
-  // puur omleiden. Alleen voor ingelogde gebruikers op niet-publieke paden.
+  // SCHONE URLs: /v2 hoort niet in de adresbalk. In productie sturen we /v2/*
+  // door naar het schone pad; de rewrite hieronder serveert daar v2 voor
+  // desktop. In dev laten we /v2 staan voor de login-loze preview.
   // ─────────────────────────────────────────────────────────────────────
-  if (user && !isPublic) {
-    // Secties die v2 dekt. De rest (statistieken/veldwerk) blijft op oud.
-    const V2_SECTIONS = ['/leads', '/agenda', '/inbox', '/instellingen', '/reviews', '/analyses']
-    const inV2Section =
-      pathname === '/' ||
-      V2_SECTIONS.some((s) => pathname === s || pathname.startsWith(`${s}/`))
-
-    if (!isPhone && !isV2Preview && inV2Section) {
-      // Desktop/tablet op een gedeelde oude route → de v2-versie.
-      const url = request.nextUrl.clone()
-      url.pathname = `/v2${pathname === '/' ? '' : pathname}`
-      return NextResponse.redirect(url)
-    }
-    if (isPhone && isV2Preview) {
-      // Telefoon op een v2-route (desktop-only) → terug naar het oude dashboard.
-      const url = request.nextUrl.clone()
-      url.pathname = pathname.replace(/^\/v2/, '') || '/'
-      return NextResponse.redirect(url)
-    }
+  if (isV2Preview && process.env.NODE_ENV === 'production') {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname.replace(/^\/v2/, '') || '/'
+    return NextResponse.redirect(url)
   }
 
-  // Rewrite: app.frontlix.com/leads → intern /dashboard/leads
+  // ─────────────────────────────────────────────────────────────────────
+  // APPARAAT-ROUTING via REWRITE (de schone URL blijft staan): ingelogde
+  // desktop/tablet op een gedeelde sectie krijgt intern de v2-route; telefoon
+  // en oud-only routes (/statistieken, /veldwerk) blijven op het oude
+  // responsive dashboard. Niets verwijderd, puur intern doorsturen.
+  // ─────────────────────────────────────────────────────────────────────
+  const V2_SECTIONS = ['/leads', '/agenda', '/inbox', '/instellingen', '/reviews', '/analyses']
+  const inV2Section =
+    pathname === '/' ||
+    V2_SECTIONS.some((s) => pathname === s || pathname.startsWith(`${s}/`))
+  const useV2 = !!user && !isPhone && !isPublic && inV2Section
+
+  // Rewrite: app.frontlix.com/leads → intern /dashboard(/v2)/leads
   const rewriteUrl = request.nextUrl.clone()
-  rewriteUrl.pathname = `/dashboard${pathname === '/' ? '' : pathname}`
+  rewriteUrl.pathname = useV2
+    ? `/dashboard/v2${pathname === '/' ? '' : pathname}`
+    : `/dashboard${pathname === '/' ? '' : pathname}`
 
   const rewritten = NextResponse.rewrite(rewriteUrl, { request })
   // Kopieer de Supabase auth-cookies door:

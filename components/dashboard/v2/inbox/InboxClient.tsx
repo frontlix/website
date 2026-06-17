@@ -48,7 +48,8 @@ interface InboxClientProps {
   active: ActiveData | null;
 }
 
-const V2_INBOX_PATH = "/dashboard/v2/inbox";
+// Schoon app-host-pad; de middleware rewrit /inbox intern naar de v2-route.
+const V2_INBOX_PATH = "/inbox";
 
 export function InboxClient({
   threads,

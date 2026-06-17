@@ -10,14 +10,16 @@ import { NotificationsBell } from "./NotificationsBell";
 import type { NotifItem } from "@/components/dashboard/NotificationPanel";
 import styles from "./Shell.module.css";
 
-/** Basispad van de v2-preview, zoals de browser het op de dashboard-host
- *  ziet (de middleware rewrit /v2/* → intern /dashboard/v2/*). */
-export const V2_BASE = "/v2";
+/** Basispad van het v2-dashboard zoals de browser het op de dashboard-host
+ *  ziet. Leeg = schone root-URLs (/, /leads, /inbox, ...); de middleware
+ *  rewrit die intern naar /dashboard/v2/* voor desktop, zodat /v2 niet in de
+ *  adresbalk verschijnt. */
+export const V2_BASE = "";
 
 function isActive(pathname: string, href: string): boolean {
-  const full = href === "" ? V2_BASE : `${V2_BASE}${href}`;
+  const full = href === "" ? "/" : `${V2_BASE}${href}`;
   if (pathname === full) return true;
-  // /v2 (Overzicht) mag niet matchen op /v2/leads; submatch alleen voor non-index.
+  // De index (/) mag niet matchen op /leads; submatch alleen voor non-index.
   return href !== "" && pathname.startsWith(`${full}/`);
 }
 
@@ -51,7 +53,7 @@ export function Shell({
   notifications = [],
   unreadCount = 0,
 }: ShellProps) {
-  const pathname = usePathname() ?? V2_BASE;
+  const pathname = usePathname() ?? "/";
   const settingsActive = isActive(pathname, "/instellingen");
 
   // De "+ Nieuwe offerte"-knop opent de offerte-wizard. De wizard-modal
@@ -71,7 +73,7 @@ export function Shell({
 
       <div className={styles.inner}>
         <header className={styles.header}>
-          <Link href={V2_BASE} className={styles.brand}>
+          <Link href="/" className={styles.brand}>
             <Image
               src="/logo-trans.png"
               alt="Frontlix"
@@ -92,7 +94,7 @@ export function Shell({
               return (
                 <Link
                   key={item.label}
-                  href={item.href === "" ? V2_BASE : `${V2_BASE}${item.href}`}
+                  href={item.href === "" ? "/" : `${V2_BASE}${item.href}`}
                   className={`${styles.navItem} ${active ? styles.navItemActive : ""}`}
                 >
                   {item.label}
