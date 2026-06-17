@@ -20,9 +20,10 @@ const KIND_ICON = {
   agenda: Calendar,
 } as const;
 
-/** v1-paden (/dashboard/...) omzetten naar de v2-route (/v2/...). */
+/** v1-paden (/dashboard/...) omzetten naar het schone app-host-pad (/...); de
+ *  middleware serveert daar v2 voor desktop. */
 function toV2Href(href: string): string {
-  return href.replace(/^\/dashboard/, "/v2");
+  return href.replace(/^\/dashboard/, "") || "/";
 }
 
 /**
