@@ -28,6 +28,45 @@ function trimOrNull(v: string): string | null {
   return t.length > 0 ? t : null
 }
 
+/** Per-offerte eenheidsprijs-override-velden (ManualOfferteData) die als JSON op
+ *  leads.offerte_prijs_overrides bewaard worden. Voegzand/planten-prijzen hebben
+ *  hun eigen kolommen en horen hier dus niet bij. */
+const PRIJS_OVERRIDE_KEYS = [
+  'reinigen_dagprijs_override',
+  'reiniging_per_m2_override',
+  'arbeid_invegen_normaal_override',
+  'arbeid_invegen_onkruidwerend_override',
+  'beschermlaag_override',
+  'preventieve_onkruid_override',
+  'onderhoud_per_m2_override',
+  'reiskosten_per_km_override',
+] as const
+
+/** Form-data → JSON voor leads.offerte_prijs_overrides (alleen gezette, eindige
+ *  waarden; null als er geen enkele override is, zodat de kolom leeg blijft). */
+function writePrijsOverrides(data: ManualOfferteData): Record<string, number> | null {
+  const out: Record<string, number> = {}
+  for (const k of PRIJS_OVERRIDE_KEYS) {
+    const v = data[k]
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v
+  }
+  return Object.keys(out).length > 0 ? out : null
+}
+
+/** leads.offerte_prijs_overrides (JSON) → de *_override-velden voor de form-data
+ *  (alleen bekende keys + eindige getallen), zodat een aangepaste prijs na
+ *  heropenen blijft staan. */
+function readPrijsOverrides(json: unknown): Partial<ManualOfferteData> {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return {}
+  const src = json as Record<string, unknown>
+  const out: Partial<ManualOfferteData> = {}
+  for (const k of PRIJS_OVERRIDE_KEYS) {
+    const v = src[k]
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v
+  }
+  return out
+}
+
 /**
  * Init het formulier vanuit een bestaande Lead. Inverse van de leadFields-
  * mapping: start vanaf DEFAULTS en override met wat de lead aanlevert. Geen
@@ -113,6 +152,8 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     korting_percentage: Number(lead.korting_percentage) || 0,
     korting_bedrag: Number(lead.korting_bedrag) || 0,
     korting_omschrijving: lead.korting_omschrijving ?? '',
+    // Per-offerte prijs-overrides terug op de form-data (blijven staan na heropenen).
+    ...readPrijsOverrides(lead.offerte_prijs_overrides),
     // notitie/kanaal blijven op DEFAULTS (geen lead-kolom).
   }
 }
@@ -223,5 +264,6 @@ export function buildLeadFieldsFromForm(
     korting_percentage: Number(data.korting_percentage) || 0,
     korting_bedrag: Number(data.korting_bedrag) || 0,
     korting_omschrijving: trimOrNull(data.korting_omschrijving),
+    offerte_prijs_overrides: writePrijsOverrides(data),
   }
 }

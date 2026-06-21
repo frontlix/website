@@ -80,3 +80,34 @@ describe('round-trip — een save corrumpeert de onkruid-lead niet', () => {
     expect(payload.hoofdcategorie).toBe('oprit_terras_terrein')
   })
 })
+
+describe('offerte_prijs_overrides — per-offerte prijs blijft bewaard', () => {
+  test('gezette overrides → JSON-kolom en weer terug op de form-data', () => {
+    const base = mapLeadToFormData(
+      makeLead({ hoofdcategorie: 'oprit_terras_terrein', sub_diensten: ['invegen'], m2: 100 }),
+    )
+    const data = { ...base, reiskosten_per_km_override: 0.3, onderhoud_per_m2_override: 1.4 }
+    const payload = buildLeadFieldsFromForm(data, 'test-1', 500)
+    expect(payload.offerte_prijs_overrides).toEqual({
+      reiskosten_per_km_override: 0.3,
+      onderhoud_per_m2_override: 1.4,
+    })
+    // Terug inladen: de overrides staan weer op de form-data (blijven dus staan).
+    const terug = mapLeadToFormData(
+      makeLead({ offerte_prijs_overrides: payload.offerte_prijs_overrides as never }),
+    )
+    expect(terug.reiskosten_per_km_override).toBe(0.3)
+    expect(terug.onderhoud_per_m2_override).toBe(1.4)
+  })
+
+  test('geen overrides → kolom blijft null', () => {
+    const data = mapLeadToFormData(makeLead({ sub_diensten: ['invegen'], m2: 100 }))
+    expect(buildLeadFieldsFromForm(data, 'test-1', 500).offerte_prijs_overrides).toBeNull()
+  })
+
+  test('override van 0 blijft 0 (gratis), niet weggefilterd', () => {
+    const base = mapLeadToFormData(makeLead({ sub_diensten: ['invegen'], m2: 100 }))
+    const payload = buildLeadFieldsFromForm({ ...base, beschermlaag_override: 0 }, 'test-1', 500)
+    expect(payload.offerte_prijs_overrides).toEqual({ beschermlaag_override: 0 })
+  })
+})

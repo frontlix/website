@@ -650,6 +650,26 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Per-regel bewerkbare eenheidsprijs in het Live prijsoverzicht. */
+.linePrijs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-bg);
+  border-radius: 7px;
+  padding: 1px 4px;
+  vertical-align: middle;
+}
+.linePrijsReset {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0 0 0 2px;
+}
+
 .lineTotal {
   font-size: 13px;
   font-weight: 800;

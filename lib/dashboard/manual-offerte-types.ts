@@ -89,6 +89,7 @@ export type ManualOfferteData = {
   arbeid_invegen_onkruidwerend_override?: number
   beschermlaag_override?: number
   preventieve_onkruid_override?: number
+  onderhoud_per_m2_override?: number
   reiskosten_per_km_override?: number
   // offerte
   extra_arbeid_minuten: number
@@ -111,12 +112,32 @@ export type ManualOfferteData = {
   lever_pdf_download: boolean
 }
 
+/** ManualOfferteData-velden die per regel als bewerkbare eenheidsprijs gelden.
+ *  De *_override-velden vallen terug op de prijslijst (undefined = lijstprijs);
+ *  voegzand/planten zijn al echte prijs-velden (altijd gevuld). */
+export type OverrideKey =
+  | 'reinigen_dagprijs_override'
+  | 'reiniging_per_m2_override'
+  | 'arbeid_invegen_normaal_override'
+  | 'arbeid_invegen_onkruidwerend_override'
+  | 'beschermlaag_override'
+  | 'preventieve_onkruid_override'
+  | 'onderhoud_per_m2_override'
+  | 'reiskosten_per_km_override'
+  | 'voegzand_normaal_prijs'
+  | 'voegzand_onkruidwerend_prijs'
+  | 'planten_afschermen_prijs'
+
 export type RegelComputed = {
   desc: string
   aantal: number
   eenheid: string
   prijs: number
   totaal: number
+  /** Welk ManualOfferteData-veld de eenheidsprijs van deze regel bepaalt, zodat
+   *  een editor de prijs per regel bewerkbaar kan maken. Afwezig = niet bewerkbaar
+   *  (bv. afgeleide extra-arbeid-regel). */
+  overrideKey?: OverrideKey
 }
 
 export type TotalsComputed = {
