@@ -156,6 +156,11 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   const [diensten, setDiensten] = useState<Record<string, boolean>>({ ...DIENSTEN_INIT });
   const [bm2, setBm2] = useState(0); // m² beschermlaag
   const [om2, setOm2] = useState(0); // m² preventieve onkruidbehandeling
+  // Per-offerte eenheidsprijs-overrides per regel-id (rauwe invoer; "" =
+  // prijslijst). Keys: reinigen_dagprijs, reiniging_per_m2, invegenN, invegenO,
+  // bescherm, onkruid, reiskosten. Voegzand/rol hebben hun eigen prijs-state
+  // (zandPrijzen/rolPrijs) en zijn in stap 3 via die setters bewerkbaar.
+  const [prijsOverrides, setPrijsOverrides] = useState<Record<string, string>>({});
   const [groeneAanslag, setGroeneAanslag] = useState(false);
   const [kleur, setKleur] = useState<Kleur>("Naturel");
   const [korstmosConditie, setKorstmosConditie] = useState(false);
@@ -229,11 +234,28 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
 
   const regels = useMemo<Regel[]>(() => {
     const out: Regel[] = [];
+    // Bewerkbaar prijs-veld + effectieve eenheidsprijs voor een regel met een
+    // override-key. raw "" = prijslijst (prijsDefault); "0" = gratis. De
+    // effectieve `prijs` voedt het regel-totaal én het live-totaal, zodat de
+    // override identiek doorwerkt als op de server (computeRules: override ??
+    // pricing.*).
+    const prijsVeld = (key: string, prijsDefault: number) => {
+      const raw = prijsOverrides[key] ?? "";
+      const parsed = parsePrijs(raw);
+      const heeftOverride = raw.trim() !== "" && Number.isFinite(parsed);
+      return {
+        prijs: heeftOverride ? parsed : prijsDefault,
+        prijsDefault,
+        prijsInvoer: raw,
+        setPrijsInvoer: (v: string) =>
+          setPrijsOverrides((p) => ({ ...p, [key]: v })),
+      };
+    };
     // Elke regel verschijnt pas als zijn dienst is aangeklikt én er een
     // hoeveelheid is ingevuld (geen lege €0-regels in de rail). Reinigen en
     // invegen staan los van elkaar; voegzand hoort bij invegen.
     // Reiniging (Schoon Straatje): vaste dagprijs onder 100 m², daarboven m² ×
-    // tarief. De prijzen komen uit de echte tenant-prijslijst (pricing).
+    // tarief. De prijs komt uit de prijslijst, tenzij per-offerte overschreven.
     if (diensten["Reinigen"] && m2 > 0) {
       if (m2 < 100) {
         out.push({
@@ -241,8 +263,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           naam: "Reiniging oppervlak (dagprijs)",
           qty: 1,
           unit: "dag",
-          prijs: pricing.reinigen_dagprijs_onder_100m2,
           set: () => {},
+          ...prijsVeld("reinigen_dagprijs", pricing.reinigen_dagprijs_onder_100m2),
         });
       } else {
         out.push({
@@ -250,8 +272,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           naam: "Reiniging oppervlak",
           qty: m2,
           unit: "m²",
-          prijs: pricing.reiniging_per_m2,
           set: (v) => setM2(v),
+          ...prijsVeld("reiniging_per_m2", pricing.reiniging_per_m2),
         });
       }
     }
@@ -264,8 +286,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         naam: "Invegen normaal voegzand",
         qty: voegzandM2.normaal,
         unit: "m²",
-        prijs: pricing.arbeid_invegen_normaal_per_m2,
         set: (v) => zetVoegzandM2Type("normaal", v),
+        ...prijsVeld("invegenN", pricing.arbeid_invegen_normaal_per_m2),
       });
       if (voegzandZakken.normaal > 0)
         out.push({
@@ -275,6 +297,9 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           unit: "zak",
           prijs: zandPrijsN,
           set: (v) => setVoegzandZakken((zk) => ({ ...zk, normaal: Math.max(0, v) })),
+          // Voegzand-prijs (per zak) is al per offerte instelbaar via zandPrijzen.
+          prijsInvoer: zandPrijzen.normaal,
+          setPrijsInvoer: (v) => setZandPrijzen((z) => ({ ...z, normaal: v })),
         });
     }
     if (diensten["Invegen"] && voegzandM2.onkruidwerend > 0) {
@@ -283,8 +308,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         naam: "Invegen onkruidwerend voegzand",
         qty: voegzandM2.onkruidwerend,
         unit: "m²",
-        prijs: pricing.arbeid_invegen_onkruidwerend_per_m2,
         set: (v) => zetVoegzandM2Type("onkruidwerend", v),
+        ...prijsVeld("invegenO", pricing.arbeid_invegen_onkruidwerend_per_m2),
       });
       if (voegzandZakken.onkruidwerend > 0)
         out.push({
@@ -294,6 +319,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           unit: "zak",
           prijs: zandPrijsO,
           set: (v) => setVoegzandZakken((zk) => ({ ...zk, onkruidwerend: Math.max(0, v) })),
+          prijsInvoer: zandPrijzen.onkruidwerend,
+          setPrijsInvoer: (v) => setZandPrijzen((z) => ({ ...z, onkruidwerend: v })),
         });
     }
     if (qty.rollen > 0)
@@ -304,6 +331,9 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         unit: "rol",
         prijs: parsePrijs(rolPrijs),
         set: (v) => setQty((q) => ({ ...q, rollen: Math.max(0, v) })),
+        // Rolprijs is al per offerte instelbaar via rolPrijs.
+        prijsInvoer: rolPrijs,
+        setPrijsInvoer: setRolPrijs,
       });
     if (diensten["Beschermlaag"])
       out.push({
@@ -311,8 +341,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         naam: "Beschermlaag aanbrengen",
         qty: bm2,
         unit: "m²",
-        prijs: pricing.beschermlaag_per_m2,
         set: (v) => setBm2(Math.max(0, v)),
+        ...prijsVeld("bescherm", pricing.beschermlaag_per_m2),
       });
     if (diensten["Preventieve onkruid"])
       out.push({
@@ -320,8 +350,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         naam: "Preventieve onkruidbehandeling",
         qty: om2,
         unit: "m²",
-        prijs: pricing.preventieve_onkruid_per_m2,
         set: (v) => setOm2(Math.max(0, v)),
+        ...prijsVeld("onkruid", pricing.preventieve_onkruid_per_m2),
       });
     if (afstandKm != null && afstandKm > pricing.reiskosten_drempel_km) {
       // Reiskosten boven de gratis drempel, exact zoals de server (computeRules):
@@ -334,13 +364,13 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         naam: `Reiskosten (${Math.round(afstandKm)} km enkele reis, retour)`,
         qty: retourKm,
         unit: "km",
-        prijs: pricing.reiskosten_per_km,
         set: () => {},
+        ...prijsVeld("reiskosten", pricing.reiskosten_per_km),
       });
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [m2, qty.rollen, voegzandM2.normaal, voegzandM2.onkruidwerend, voegzandZakken.normaal, voegzandZakken.onkruidwerend, zandPrijsN, zandPrijsO, rolPrijs, diensten, bm2, om2, pricing, afstandKm]);
+  }, [m2, qty.rollen, voegzandM2.normaal, voegzandM2.onkruidwerend, voegzandZakken.normaal, voegzandZakken.onkruidwerend, zandPrijsN, zandPrijsO, rolPrijs, zandPrijzen, diensten, bm2, om2, pricing, afstandKm, prijsOverrides]);
 
   // Geordende lijst: vaste regels + vrije regels, volgens herorden-volgorde.
   const regelItems = useMemo<GeordendItem[]>(
@@ -446,6 +476,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           voegzandM2,
           voegzandZakken,
           zandPrijzen,
+          prijsOverrides,
           diensten,
           bm2,
           om2,
@@ -472,7 +503,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     stap, zoek, klant, klantType, aiGebruikt, factuurZelfde, factuur, afstandKm,
-    m2, qty, rolPrijs, voegzandM2, voegzandZakken, zandPrijzen, diensten, bm2,
+    m2, qty, rolPrijs, voegzandM2, voegzandZakken, zandPrijzen, prijsOverrides, diensten, bm2,
     om2, groeneAanslag, kleur, korstmosConditie, onderhoudWeken, korstmosToeslag,
     kortingType, kortingPct, kortingEuro, kortingReden, geldigDagen, btw, vrij,
     volgorde, bericht, kanaal, totaal,
@@ -502,6 +533,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     setVoegzandM2(s.voegzandM2);
     setVoegzandZakken(s.voegzandZakken);
     setZandPrijzen(s.zandPrijzen);
+    // Oudere concepten zonder prijs-overrides → lege map (prijslijst).
+    setPrijsOverrides(s.prijsOverrides ?? {});
     setDiensten(s.diensten);
     setBm2(s.bm2);
     setOm2(s.om2);
@@ -549,6 +582,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       normaal: naarKomma(pricing.voegzand_normaal_per_zak),
       onkruidwerend: naarKomma(pricing.voegzand_onkruidwerend_per_zak),
     });
+    setPrijsOverrides({});
     setDiensten({ ...DIENSTEN_INIT });
     setBm2(0);
     setOm2(0);
@@ -715,6 +749,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       voegzandZakken,
       voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
       zandPrijzen,
+      prijsOverrides,
       diensten,
       groeneAanslag,
       kleur,

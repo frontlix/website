@@ -175,6 +175,22 @@
   text-align: right;
 }
 
+/* Subtiele "aangepast"-indicatie op een per-offerte overschreven eenheidsprijs. */
+.prijsAangepast {
+  box-shadow: inset 0 0 0 1.5px var(--rb-blue);
+}
+
+/* Mini-reset terug naar de prijslijst, naast het bewerkbare prijsveld. */
+.prijsReset {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--rb-blue);
+  cursor: pointer;
+  padding: 0 0 0 2px;
+}
+
 .wegBtn {
   width: 22px;
   height: 22px;

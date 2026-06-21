@@ -1,9 +1,20 @@
 "use client";
 
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, RotateCcw, X } from "lucide-react";
 import { MiniStep } from "./MiniStep";
 import { fmtEuro, naarKomma, parsePrijs } from "./offerte-utils";
-import type { BtwKeuze, GeordendItem, KortingType, VrijeRegel } from "./types";
+import type { BtwKeuze, GeordendItem, KortingType, Regel, VrijeRegel } from "./types";
+
+/** Is de eenheidsprijs van deze regel handmatig afgewijkt van de prijslijst?
+ *  (Alleen voor regels met een prijsDefault; voegzand/rol hebben geen lijst-
+ *  default en tonen dus geen "aangepast"-indicatie.) */
+function prijsAangepast(r: Regel): boolean {
+  return (
+    r.prijsDefault != null &&
+    (r.prijsInvoer ?? "").trim() !== "" &&
+    parsePrijs(r.prijsInvoer ?? "") !== r.prijsDefault
+  );
+}
 import styles from "./StapOfferte.module.css";
 
 interface StapOfferteProps {
@@ -144,7 +155,39 @@ export function StapOfferte({
                     }
                   />
                 </span>
-                <span className={styles.regelMeta}>× {fmtEuro(item.regel.prijs)}</span>
+                {item.regel.setPrijsInvoer ? (
+                  <span className={styles.regelMeta}>
+                    ×{" "}
+                    <span
+                      className={`${styles.vrijBedragBox} ${
+                        prijsAangepast(item.regel) ? styles.prijsAangepast : ""
+                      }`}
+                    >
+                      <span className={styles.vrijEuro}>€</span>
+                      <input
+                        className={styles.vrijBedragInput}
+                        value={item.regel.prijsInvoer ?? ""}
+                        inputMode="decimal"
+                        placeholder={naarKomma(item.regel.prijsDefault ?? item.regel.prijs)}
+                        onChange={(e) => item.regel!.setPrijsInvoer!(e.target.value)}
+                        aria-label={`Prijs ${item.regel.naam}`}
+                      />
+                      {prijsAangepast(item.regel) ? (
+                        <button
+                          type="button"
+                          className={styles.prijsReset}
+                          onClick={() => item.regel!.setPrijsInvoer!("")}
+                          title="Terug naar prijslijst"
+                          aria-label="Prijs terug naar de prijslijst"
+                        >
+                          <RotateCcw size={11} strokeWidth={2.5} />
+                        </button>
+                      ) : null}
+                    </span>
+                  </span>
+                ) : (
+                  <span className={styles.regelMeta}>× {fmtEuro(item.regel.prijs)}</span>
+                )}
                 <span className={styles.regelBedrag}>
                   {fmtEuro(item.regel.qty * item.regel.prijs)}
                 </span>
