@@ -188,6 +188,13 @@
     background 0.15s ease;
 }
 
+.btnLink:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  filter: none;
+}
+
 .btnPrimary {
   background: var(--rb-blue);
   color: #fff;

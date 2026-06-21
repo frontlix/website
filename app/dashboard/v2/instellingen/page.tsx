@@ -3,6 +3,7 @@ import { getPricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries
 import { getTagsWithCounts, type TagWithCount } from "@/lib/dashboard/tags-queries";
 import { getConnectionStatus } from "@/lib/dashboard/calendar-connection-queries";
 import { getEmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
+import { getWhatsAppConnectionStatus } from "@/lib/dashboard/whatsapp-connection-queries";
 import { getRecentTemplateAanvragen } from "@/lib/dashboard/template-queries";
 import { getAllPrefs } from "@/lib/dashboard/notifications/queries";
 import { countConverted, avgOfferteWaarde } from "@/lib/dashboard/stats-queries";
@@ -29,6 +30,7 @@ import {
   toMeldingen,
   toTeam,
   toEmailConnectionState,
+  toWhatsAppConnectionState,
   buildDienstKeyLookup,
   buildMeldingEventLookup,
   type TenantSettingsRow,
@@ -68,6 +70,7 @@ export default async function InstellingenPage() {
         tags={[]}
         gcal={{ connected: false, googleEmail: null, calendarId: null }}
         email={{ connected: false }}
+        whatsapp={{ connected: false }}
         basePostcode=""
         baseHuisnummer=""
         baseLabel="BASIS"
@@ -104,6 +107,7 @@ export default async function InstellingenPage() {
     notifPrefs,
     gcalStatus,
     emailStatus,
+    whatsappStatus,
     aanvragenRaw,
     convertedMaand,
     avgWaarde,
@@ -140,6 +144,10 @@ export default async function InstellingenPage() {
     // E-mailkoppel-status (email_connections, service-role). Niet-geheim; bevat
     // nooit het wachtwoord. Het EmailPanel toont hiermee de juiste status.
     getEmailConnectionStatus(),
+    // WhatsApp-koppel-status (whatsapp_connections, service-role). Niet-geheim;
+    // bevat nooit het access-token. Het WhatsAppPanel toont hiermee de juiste
+    // status (niet gekoppeld / gekoppeld / opnieuw koppelen).
+    getWhatsAppConnectionStatus(),
     // Template-aanvragen (openingsbericht + reminders); de panels filteren zelf
     // op de voor hen relevante templates.
     getRecentTemplateAanvragen(),
@@ -215,6 +223,7 @@ export default async function InstellingenPage() {
         calendarId: gcalStatus.calendarId,
       }}
       email={toEmailConnectionState(emailStatus)}
+      whatsapp={toWhatsAppConnectionState(whatsappStatus)}
       basePostcode={tenant?.postcode ?? ""}
       baseHuisnummer={tenant?.base_huisnummer ?? ""}
       baseLabel={tenant?.base_label ?? "BASIS"}

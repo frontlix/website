@@ -16,9 +16,11 @@ import type {
   TeamMember,
   OffertesInstellingen,
   EmailConnectionState,
+  WhatsAppConnectionState,
 } from "./instellingen-data";
-import { EMAIL_CONNECTION_DEFAULT } from "./instellingen-data";
+import { EMAIL_CONNECTION_DEFAULT, WHATSAPP_CONNECTION_DEFAULT } from "./instellingen-data";
 import type { EmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
+import type { WhatsAppConnectionStatus } from "@/lib/dashboard/whatsapp-connection-queries";
 import {
   REMINDERS_DEFAULT,
   WORK_RADIUS_DEFAULT,
@@ -276,6 +278,25 @@ export function toEmailConnectionState(
     replyTo: status.replyTo ?? null,
     provider: status.provider ?? null,
     testPassedAt: status.testPassedAt ?? null,
+    needsReconnect: Boolean(status.needsReconnect),
+  };
+}
+
+// ── WhatsApp-koppeling ──────────────────────────────────────────────────
+
+/**
+ * getWhatsAppConnectionStatus()-resultaat → de WhatsAppConnectionState-prop
+ * die het WhatsAppPanel verwacht. De vormen lopen vrijwel 1-op-1; deze mapper
+ * houdt de grens expliciet en geeft nooit een token door (de query-helper
+ * levert dat ook niet). Bij geen koppeling: { connected: false }.
+ */
+export function toWhatsAppConnectionState(
+  status: WhatsAppConnectionStatus,
+): WhatsAppConnectionState {
+  if (!status.connected) return WHATSAPP_CONNECTION_DEFAULT;
+  return {
+    connected: true,
+    displayPhoneNumber: status.displayPhoneNumber ?? null,
     needsReconnect: Boolean(status.needsReconnect),
   };
 }

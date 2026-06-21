@@ -18,6 +18,7 @@ import {
   type TeamMember,
   type OffertesInstellingen,
   type EmailConnectionState,
+  type WhatsAppConnectionState,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import type { PricingRuleRow } from "@/components/dashboard/v2/instellingen/instellingen-mappers";
 import type { PricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries";
@@ -34,6 +35,7 @@ import { BeschikbaarheidPanel } from "@/components/dashboard/v2/instellingen/pan
 import { KanalenPanel } from "@/components/dashboard/v2/instellingen/panels/KanalenPanel";
 import { IntegratiesPanel } from "@/components/dashboard/v2/instellingen/panels/IntegratiesPanel";
 import { EmailPanel } from "@/components/dashboard/v2/instellingen/panels/EmailPanel";
+import { WhatsAppPanel } from "@/components/dashboard/v2/instellingen/panels/WhatsAppPanel";
 import { OpeningsberichtPanel } from "@/components/dashboard/v2/instellingen/panels/OpeningsberichtPanel";
 import { RemindersPanel } from "@/components/dashboard/v2/instellingen/panels/RemindersPanel";
 import { OffertesPanel } from "@/components/dashboard/v2/instellingen/panels/OffertesPanel";
@@ -80,6 +82,8 @@ export interface InstellingenClientProps {
   gcal: { connected: boolean; googleEmail: string | null; calendarId: string | null };
   /** E-mailkoppel-status (email_connections), voor het EmailPanel. */
   email: EmailConnectionState;
+  /** WhatsApp-koppel-status (whatsapp_connections), voor het WhatsAppPanel. */
+  whatsapp: WhatsAppConnectionState;
   /** Bewerkbare thuisbasis-velden (saveTenantBase: postcode + huisnummer + label). */
   basePostcode: string;
   baseHuisnummer: string;
@@ -147,6 +151,12 @@ export function InstellingenClient(props: InstellingenClientProps) {
   // API-routes + router.refresh), net als het IntegratiesPanel. Niet gekoppeld
   // aan de globale Opslaan-knop.
   const [email] = useState<EmailConnectionState>(props.email);
+
+  // WhatsApp-koppeling: status uit whatsapp_connections. Het WhatsAppPanel
+  // koppelt via de Embedded Signup-pop-up en ontkoppelt via z'n eigen knoppen
+  // (eigen API-routes + router.refresh), net als het EmailPanel. Niet gekoppeld
+  // aan de globale Opslaan-knop.
+  const [whatsapp] = useState<WhatsAppConnectionState>(props.whatsapp);
 
   // Prijzen: PrijzenPanel registreert hier zijn batch-save-handle, zodat de
   // globale Opslaan-knop de pending prijswijzigingen wegschrijft (geen eigen
@@ -319,6 +329,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
               calendarId={props.gcal.calendarId}
             />
             <EmailPanel email={email} live={props.live} />
+            <WhatsAppPanel whatsapp={whatsapp} live={props.live} />
           </>
         );
       case "Openingsbericht":

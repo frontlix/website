@@ -457,6 +457,24 @@ export const EMAIL_PROVIDERS: Record<EmailProviderKey, EmailProviderPreset> = {
   },
 };
 
+// ── WhatsApp-koppeling (Integraties) ─────────────────────────────────────
+
+/**
+ * Niet-geheime WhatsApp-koppel-status zoals het WhatsAppPanel hem als prop
+ * krijgt. Gevuld server-side uit whatsapp_connections
+ * (getWhatsAppConnectionStatus); bevat NOOIT het access-token. In de
+ * demo-fallback simpelweg { connected: false }.
+ */
+export interface WhatsAppConnectionState {
+  connected: boolean;
+  /** Gekoppeld weergavenummer (display_phone_number), puur informatief. */
+  displayPhoneNumber?: string | null;
+  /** true zodra een echte verzending op een auth-/token-fout faalde. */
+  needsReconnect?: boolean;
+}
+
+export const WHATSAPP_CONNECTION_DEFAULT: WhatsAppConnectionState = { connected: false };
+
 // ── Team ─────────────────────────────────────────────────────────────────
 
 export interface TeamMember {
