@@ -171,6 +171,10 @@
   padding: 10px 15px;
   box-shadow: 0 1px 6px rgba(33, 42, 69, 0.06);
   word-break: break-word;
+  /* Regelafbrekingen uit het WhatsApp-bericht (\n) behouden, net als de
+     dossier-chat (ChatPanel .bubbleText). Anders worden bullets/regels tot één
+     doorlopende regel platgeslagen. */
+  white-space: pre-wrap;
 }
 
 .bubbleIn {
