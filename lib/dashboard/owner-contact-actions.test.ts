@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const update = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
+const eq = vi.fn().mockResolvedValue({ error: null })
+const update = vi.fn().mockReturnValue({ eq })
 const maybeSingle = vi.fn().mockResolvedValue({ data: { id: 'tenant-1' }, error: null })
 
 vi.mock('./supabase-admin', () => ({
@@ -16,7 +17,12 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import { saveOwnerContactSettings } from './owner-contact-actions'
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  maybeSingle.mockResolvedValue({ data: { id: 'tenant-1' }, error: null })
+  update.mockReturnValue({ eq })
+  eq.mockResolvedValue({ error: null })
+})
 
 describe('saveOwnerContactSettings', () => {
   it('schrijft basis + NULL voor "volg basis" en genormaliseerd whatsapp', async () => {
@@ -35,6 +41,7 @@ describe('saveOwnerContactSettings', () => {
         eigenaar_whatsapp: '31612345678',
       }),
     )
+    expect(eq).toHaveBeenCalledWith('id', 'tenant-1')
   })
 
   it('weigert een ongeldig basis-adres', async () => {
