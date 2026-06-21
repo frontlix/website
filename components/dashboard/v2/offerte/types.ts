@@ -11,6 +11,14 @@ export interface Regel {
   prijs: number;
   /** Past de bron-state aan (stepper in stap 3 / rail). */
   set: (v: number) => void;
+  /** De prijslijst-prijs zonder override. Maakt de "aangepast"-indicatie
+   *  (effectieve prijs !== prijsDefault) + reset-naar-lijstprijs mogelijk. */
+  prijsDefault?: number;
+  /** Rauwe override-invoer voor de eenheidsprijs (komma toegestaan; "" = geen
+   *  override → prijslijst). Afwezig = prijs niet bewerkbaar. */
+  prijsInvoer?: string;
+  /** Zet de rauwe override-invoer (text-input + steppers in stap 3 / rail). */
+  setPrijsInvoer?: (v: string) => void;
 }
 
 /** Een vrije regel (meerwerk, eigen omschrijving + bedrag). Het bedrag is een

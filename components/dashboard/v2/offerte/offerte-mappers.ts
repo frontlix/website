@@ -97,6 +97,10 @@ export interface WizardSubmitState {
   /** Dekkingsfactor (m² per zak), als vangnet als de zakken nog 0 zijn. */
   voegzandDekking: number;
   zandPrijzen: { normaal: string; onkruidwerend: string };
+  /** Per-offerte eenheidsprijs-overrides per regel-id (rauwe invoer; leeg/afwezig
+   *  = prijslijst). Keys: reinigen_dagprijs, reiniging_per_m2, invegenN, invegenO,
+   *  bescherm, onkruid, reiskosten. */
+  prijsOverrides?: Record<string, string>;
   diensten: Record<string, boolean>;
   groeneAanslag: boolean;
   kleur: Kleur;
@@ -182,6 +186,15 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
   const voegzandOnkruidwerendActief = invegenActief && Number(s.voegzandM2.onkruidwerend) > 0;
   const plantenActief = Number(s.qty.rollen) > 0;
 
+  // Per-offerte eenheidsprijs-override: rauwe invoer → prijs of undefined
+  // (leeg/whitespace/niet-parsebaar = prijslijst; "0" blijft 0 = gratis).
+  const ov = (raw: string | undefined): number | undefined => {
+    if (raw == null || raw.trim() === "") return undefined;
+    const n = parsePrijs(raw);
+    return Number.isFinite(n) ? n : undefined;
+  };
+  const po = s.prijsOverrides ?? {};
+
   return {
     ...DEFAULTS,
     existing_lead_id: k?.lead_id ?? null,
@@ -237,6 +250,15 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     planten_afschermen_actief: plantenActief,
     planten_afschermen_rollen: Number(s.qty.rollen) || 0,
     planten_afschermen_prijs: parsePrijs(s.rolPrijs),
+    // Per-offerte eenheidsprijs-overrides (undefined ⇒ prijslijst). computeRules
+    // past ze toe als `override ?? pricing.*`, identiek aan de wizard-rail.
+    reinigen_dagprijs_override: ov(po["reinigen_dagprijs"]),
+    reiniging_per_m2_override: ov(po["reiniging_per_m2"]),
+    arbeid_invegen_normaal_override: ov(po["invegenN"]),
+    arbeid_invegen_onkruidwerend_override: ov(po["invegenO"]),
+    beschermlaag_override: ov(po["bescherm"]),
+    preventieve_onkruid_override: ov(po["onkruid"]),
+    reiskosten_per_km_override: ov(po["reiskosten"]),
     // offerte — korting: percentage óf vast euro-bedrag. Bij euro-modus geven we
     // korting_bedrag mee (computeTotals capt het op de grondslag) en zetten we
     // het percentage op 0; bij percentage-modus andersom. Zo is opgeslagen ==

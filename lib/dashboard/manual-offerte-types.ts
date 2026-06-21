@@ -78,6 +78,18 @@ export type ManualOfferteData = {
   planten_afschermen_actief: boolean
   planten_afschermen_rollen: number
   planten_afschermen_prijs: number
+  // Per-offerte prijs-overrides (v2-wizard): de owner past de EENHEIDSPRIJS van
+  // een regel aan voor déze offerte; undefined ⇒ val terug op de prijslijst.
+  // computeRules past ze toe als `override ?? pricing.*`, zodat de wizard-rail,
+  // de server-berekening en de PDF identiek blijven. Voegzand/planten hebben hun
+  // eigen prijs-velden hierboven; dit dekt de overige dienst/arbeid-regels + km.
+  reinigen_dagprijs_override?: number
+  reiniging_per_m2_override?: number
+  arbeid_invegen_normaal_override?: number
+  arbeid_invegen_onkruidwerend_override?: number
+  beschermlaag_override?: number
+  preventieve_onkruid_override?: number
+  reiskosten_per_km_override?: number
   // offerte
   extra_arbeid_minuten: number
   extra_arbeid_personen: number

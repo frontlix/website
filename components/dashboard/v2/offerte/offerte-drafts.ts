@@ -33,6 +33,10 @@ export interface OfferteDraftState {
   voegzandM2: { normaal: number; onkruidwerend: number };
   voegzandZakken: { normaal: number; onkruidwerend: number };
   zandPrijzen: { normaal: string; onkruidwerend: string };
+  /** Per-offerte eenheidsprijs-overrides per regel-id (rauwe invoer; leeg/afwezig
+   *  = prijslijst). Keys: reinigen_dagprijs, reiniging_per_m2, invegenN, invegenO,
+   *  bescherm, onkruid, reiskosten. */
+  prijsOverrides?: Record<string, string>;
   diensten: Record<string, boolean>;
   bm2: number;
   om2: number;

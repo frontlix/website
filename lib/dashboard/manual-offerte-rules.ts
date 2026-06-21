@@ -51,11 +51,13 @@ export function computeRules(
     // Reiniging-regel, matcht Schoon Straatje:
     //  m² < 100 → "Reiniging oppervlak (dagprijs)" met aantal=1 dag
     //  m² ≥ 100 → "Reiniging oppervlak" met aantal=m², eenheid=m²
-    const reinPr = pricing.reiniging_per_m2
+    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    const reinPr = data.reiniging_per_m2_override ?? pricing.reiniging_per_m2
     if (reinigenActief && m2 < 100 && m2 > 0) {
       // Vaste dagprijs voor kleine oppervlakken (< 100 m²), Schoon Straatje-
       // conventie: niet m² × tarief maar één vast bedrag.
-      const dagprijs = pricing.reinigen_dagprijs_onder_100m2
+      // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+      const dagprijs = data.reinigen_dagprijs_override ?? pricing.reinigen_dagprijs_onder_100m2
       r.push({
         desc: 'Reiniging oppervlak (dagprijs)',
         aantal: 1,
@@ -76,7 +78,8 @@ export function computeRules(
     // Arbeid invegen, namen exact als SS: "Invegen normaal voegzand excl voegzand"
     if (data.voegzand_normaal_actief) {
       const am2 = Number(data.voegzand_normaal_m2) || 0
-      const arbPr = pricing.arbeid_invegen_normaal_per_m2
+      // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+      const arbPr = data.arbeid_invegen_normaal_override ?? pricing.arbeid_invegen_normaal_per_m2
       if (am2 > 0) {
         r.push({
           desc: 'Invegen normaal voegzand excl voegzand',
@@ -89,7 +92,8 @@ export function computeRules(
     }
     if (data.voegzand_onkruidwerend_actief) {
       const am2 = Number(data.voegzand_onkruidwerend_m2) || 0
-      const arbPr = pricing.arbeid_invegen_onkruidwerend_per_m2
+      // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+      const arbPr = data.arbeid_invegen_onkruidwerend_override ?? pricing.arbeid_invegen_onkruidwerend_per_m2
       if (am2 > 0) {
         r.push({
           desc: 'Invegen onkruidwerend voegzand excl voegzand',
@@ -128,7 +132,8 @@ export function computeRules(
   }
 
   if (data.sub.includes('preventieve_onkruid')) {
-    const pr = pricing.preventieve_onkruid_per_m2
+    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    const pr = data.preventieve_onkruid_override ?? pricing.preventieve_onkruid_per_m2
     // Eigen oppervlakte indien meegegeven (v2-wizard), anders de hoofd-m2.
     const qm2 = data.preventieve_onkruid_m2 != null ? Number(data.preventieve_onkruid_m2) : m2
     r.push({
@@ -140,7 +145,8 @@ export function computeRules(
     })
   }
   if (data.sub.includes('beschermlaag')) {
-    const pr = pricing.beschermlaag_per_m2
+    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    const pr = data.beschermlaag_override ?? pricing.beschermlaag_per_m2
     const qm2 = data.beschermlaag_m2 != null ? Number(data.beschermlaag_m2) : m2
     r.push({
       desc: 'Nieuwe beschermlaag incl product',
@@ -204,7 +210,8 @@ export function computeRules(
 
   if (Number(data.afstand_km) > pricing.reiskosten_drempel_km) {
     const km = Number(data.afstand_km) - pricing.reiskosten_drempel_km
-    const pr = pricing.reiskosten_per_km
+    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    const pr = data.reiskosten_per_km_override ?? pricing.reiskosten_per_km
     // SS-formaat: "Reiskosten (X km enkele reis, retour)" met aantal = 2× km
     const retourKm = Math.round(km * 2 * 100) / 100
     r.push({
