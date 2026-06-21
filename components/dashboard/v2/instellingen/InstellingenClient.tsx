@@ -18,6 +18,7 @@ import {
   type TeamMember,
   type OffertesInstellingen,
   type EmailConnectionState,
+  type OwnerContactState,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import type { PricingRuleRow } from "@/components/dashboard/v2/instellingen/instellingen-mappers";
 import type { PricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries";
@@ -80,6 +81,8 @@ export interface InstellingenClientProps {
   gcal: { connected: boolean; googleEmail: string | null; calendarId: string | null };
   /** E-mailkoppel-status (email_connections), voor het EmailPanel. */
   email: EmailConnectionState;
+  /** Owner-contact-instellingen (e-mailrollen), voor het EmailPanel. */
+  ownerContact: OwnerContactState;
   /** Bewerkbare thuisbasis-velden (saveTenantBase: postcode + huisnummer + label). */
   basePostcode: string;
   baseHuisnummer: string;
@@ -318,7 +321,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
               googleEmail={props.gcal.googleEmail}
               calendarId={props.gcal.calendarId}
             />
-            <EmailPanel email={email} live={props.live} />
+            <EmailPanel email={email} ownerContact={props.ownerContact} live={props.live} />
           </>
         );
       case "Openingsbericht":
