@@ -14,7 +14,8 @@ describe('leadStage', () => {
   it('afgehandeld → klaar (wint van fase)', () => {
     expect(leadStage({ ...base, dashboard_status: 'afgehandeld', gesprek_fase: 'datum_kiezen' })).toBe('klaar')
   })
-  it('onderhandelen → review', () => expect(leadStage({ ...base, gesprek_fase: 'onderhandelen' })).toBe('review'))
+  it('onderhandelen → uit (offerte is al verstuurd, klant onderhandelt)', () => expect(leadStage({ ...base, gesprek_fase: 'onderhandelen' })).toBe('uit'))
+  it('pending_eigenaar_review → review (wacht op jouw goedkeuring vóór verzending)', () => expect(leadStage({ ...base, pending_eigenaar_review: true })).toBe('review'))
   it('offerte_besproken → uit', () => expect(leadStage({ ...base, gesprek_fase: 'offerte_besproken' })).toBe('uit'))
   it('afspraak_bevestigd → gepland', () => expect(leadStage({ ...base, gesprek_fase: 'afspraak_bevestigd' })).toBe('gepland'))
   it('info_verzamelen/default → gesprek', () => expect(leadStage(base)).toBe('gesprek'))

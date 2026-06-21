@@ -23,9 +23,13 @@ export type MobileLeadCard = {
 export function leadStage(l: RawLead): MobileLeadStage {
   // afgehandeld wint van alles, zelfs als de fase 'datum_kiezen' is
   if (l.dashboard_status === 'afgehandeld') return 'klaar'
+  // "Offerte review" = een offerte die op een eigenaar-besluit wacht VÓÓR
+  // verzending (pending_eigenaar_review). "Onderhandelen" betekent dat de
+  // offerte al verstuurd is en de klant erover in gesprek is; die hoort dus bij
+  // "Offerte uit" (met een eigen "In onderhandeling"-status op de kaart).
+  if (l.pending_eigenaar_review) return 'review'
   switch (l.gesprek_fase) {
     case 'onderhandelen':
-      return 'review'
     case 'offerte_besproken':
       return 'uit'
     case 'datum_kiezen':

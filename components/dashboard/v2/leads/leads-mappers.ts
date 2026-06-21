@@ -58,7 +58,7 @@ function initialsFromNaam(naam: string | null): string {
  */
 const STAGE_TO_KIND: Record<MobileLeadStage, StatusKind> = {
   gesprek: "talking", // in gesprek -> blauw
-  review: "review", // offerte review / onderhandelen -> amber
+  review: "review", // offerte review (wacht op jouw goedkeuring) -> amber
   uit: "sent", // offerte verstuurd -> grijs-blauw
   gepland: "plan", // bezoek/afspraak gepland -> cyaan-teal
   klaar: "won", // afgerond / akkoord -> vol groen
@@ -66,6 +66,9 @@ const STAGE_TO_KIND: Record<MobileLeadStage, StatusKind> = {
 
 function statusKindForLead(lead: LeadListItem): StatusKind {
   if (isLeadUrgent(lead)) return "hot"; // wacht op jou / urgent -> koraal
+  // Onderhandelen valt in de "Offerte uit"-kolom (de offerte is al verstuurd)
+  // maar krijgt een eigen amber status: de klant onderhandelt, jouw beurt.
+  if (lead.gesprek_fase === "onderhandelen") return "review";
   return STAGE_TO_KIND[leadStage(lead)];
 }
 
@@ -81,6 +84,8 @@ const STAGE_LABEL: Record<MobileLeadStage, string> = {
 
 function statusLabelForLead(lead: LeadListItem): string {
   if (isLeadUrgent(lead)) return "Wacht op jou";
+  // Onderhandelen: offerte is uit, klant onderhandelt -> eigen label binnen "Offerte uit".
+  if (lead.gesprek_fase === "onderhandelen") return "In onderhandeling";
   return STAGE_LABEL[leadStage(lead)];
 }
 
