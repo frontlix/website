@@ -77,6 +77,12 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
   const [ocError, setOcError] = useState<string | null>(null);
   const [ocOk, setOcOk] = useState(false);
 
+  /** Wis de "Opgeslagen."-melding zodra de gebruiker een owner-contact-veld aanpast. */
+  function markOcDirty() {
+    setOcOk(false);
+    setOcError(null);
+  }
+
   // Effectieve bestemmingen voor de samenvattingsregel.
   const effGoedkeuring = resolveReceiveEmail(
     goedkeuringEigen ? goedkeuringEmail : "",
@@ -419,7 +425,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
             <Field
               label="Basis-ontvangadres"
               value={basisEmail}
-              onChange={setBasisEmail}
+              onChange={(v) => { setBasisEmail(v); markOcDirty(); }}
               placeholder="jij@jouwbedrijf.nl"
               breed
             />
@@ -431,7 +437,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <input
                 type="radio"
                 checked={!goedkeuringEigen}
-                onChange={() => setGoedkeuringEigen(false)}
+                onChange={() => { setGoedkeuringEigen(false); markOcDirty(); }}
               />{" "}
               Zelfde als basis
             </label>
@@ -439,7 +445,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <input
                 type="radio"
                 checked={goedkeuringEigen}
-                onChange={() => setGoedkeuringEigen(true)}
+                onChange={() => { setGoedkeuringEigen(true); markOcDirty(); }}
               />{" "}
               Eigen adres
             </label>
@@ -447,7 +453,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <Field
                 label="Goedkeuring-adres"
                 value={goedkeuringEmail}
-                onChange={setGoedkeuringEmail}
+                onChange={(v) => { setGoedkeuringEmail(v); markOcDirty(); }}
                 placeholder="goedkeuring@jouwbedrijf.nl"
                 breed
               />
@@ -460,7 +466,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <input
                 type="radio"
                 checked={!meldingenEigen}
-                onChange={() => setMeldingenEigen(false)}
+                onChange={() => { setMeldingenEigen(false); markOcDirty(); }}
               />{" "}
               Zelfde als basis
             </label>
@@ -468,7 +474,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <input
                 type="radio"
                 checked={meldingenEigen}
-                onChange={() => setMeldingenEigen(true)}
+                onChange={() => { setMeldingenEigen(true); markOcDirty(); }}
               />{" "}
               Eigen adres
             </label>
@@ -476,7 +482,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
               <Field
                 label="Meldingen-adres"
                 value={meldingenEmail}
-                onChange={setMeldingenEmail}
+                onChange={(v) => { setMeldingenEmail(v); markOcDirty(); }}
                 placeholder="meldingen@jouwbedrijf.nl"
                 breed
               />
@@ -486,7 +492,7 @@ export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
           <Field
             label="WhatsApp-ping voor goedkeuring"
             value={whatsapp}
-            onChange={setWhatsapp}
+            onChange={(v) => { setWhatsapp(v); markOcDirty(); }}
             placeholder="0612345678"
           />
         </div>
