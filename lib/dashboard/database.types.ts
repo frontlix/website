@@ -997,8 +997,10 @@ export type Database = {
           eigenaar_email: string | null
           eigenaar_spoed_telefoon: string | null
           eigenaar_whatsapp: string | null
+          goedkeuring_email: string | null
           google_review_url: string | null
           id: string
+          meldingen_email: string | null
           offerte_geldigheid_dagen: number
           plaats: string | null
           postcode: string | null
@@ -1023,8 +1025,10 @@ export type Database = {
           eigenaar_email?: string | null
           eigenaar_spoed_telefoon?: string | null
           eigenaar_whatsapp?: string | null
+          goedkeuring_email?: string | null
           google_review_url?: string | null
           id?: string
+          meldingen_email?: string | null
           offerte_geldigheid_dagen?: number
           plaats?: string | null
           postcode?: string | null
@@ -1049,8 +1053,10 @@ export type Database = {
           eigenaar_email?: string | null
           eigenaar_spoed_telefoon?: string | null
           eigenaar_whatsapp?: string | null
+          goedkeuring_email?: string | null
           google_review_url?: string | null
           id?: string
+          meldingen_email?: string | null
           offerte_geldigheid_dagen?: number
           plaats?: string | null
           postcode?: string | null
