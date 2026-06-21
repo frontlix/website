@@ -54,7 +54,7 @@ export function KanalenPanel() {
               <div className={styles.rowTitle}>{k.naam}</div>
               <div className={styles.rowSub}>{k.sub}</div>
             </div>
-            <span className={styles.demoBadge}>Demo</span>
+            <span className={styles.demoBadge}>Demo · binnenkort</span>
           </div>
         );
       })}
