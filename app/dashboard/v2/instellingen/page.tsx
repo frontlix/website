@@ -19,6 +19,7 @@ import {
   NOTIFICATIONS_DEFAULT,
   TEAM,
   OFFERTES_DEFAULT,
+  OWNER_CONTACT_DEFAULT,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import {
   toCompanyProfile,
@@ -29,6 +30,7 @@ import {
   toMeldingen,
   toTeam,
   toEmailConnectionState,
+  toOwnerContactState,
   buildDienstKeyLookup,
   buildMeldingEventLookup,
   type TenantSettingsRow,
@@ -68,6 +70,7 @@ export default async function InstellingenPage() {
         tags={[]}
         gcal={{ connected: false, googleEmail: null, calendarId: null }}
         email={{ connected: false }}
+        ownerContact={OWNER_CONTACT_DEFAULT}
         basePostcode=""
         baseHuisnummer=""
         baseLabel="BASIS"
@@ -215,6 +218,7 @@ export default async function InstellingenPage() {
         calendarId: gcalStatus.calendarId,
       }}
       email={toEmailConnectionState(emailStatus)}
+      ownerContact={toOwnerContactState(tenant)}
       basePostcode={tenant?.postcode ?? ""}
       baseHuisnummer={tenant?.base_huisnummer ?? ""}
       baseLabel={tenant?.base_label ?? "BASIS"}
