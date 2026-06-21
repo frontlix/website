@@ -886,7 +886,33 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
                 <span className={styles.lineLabel}>{r.desc}</span>
                 <span className={styles.lineRight}>
                   <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} &#215; {formatEuro(r.prijs)}
+                    {r.aantal} {r.eenheid} &#215;{" "}
+                    {r.overrideKey && live ? (
+                      <span className={styles.linePrijs}>
+                        <span className={styles.linePrijsEuro}>&#8364;</span>
+                        <NlNumberInput
+                          value={r.prijs}
+                          onChange={(v) => setField(r.overrideKey!, v)}
+                          min={0}
+                          className={styles.linePrijsInput}
+                          ariaLabel={`Prijs ${r.desc}`}
+                        />
+                        {r.overrideKey.endsWith("_override") &&
+                        data[r.overrideKey] != null ? (
+                          <button
+                            type="button"
+                            className={styles.linePrijsReset}
+                            onClick={() => setField(r.overrideKey!, undefined)}
+                            title="Terug naar de prijslijst"
+                            aria-label="Prijs terug naar de prijslijst"
+                          >
+                            <RotateCcw size={11} strokeWidth={2.5} />
+                          </button>
+                        ) : null}
+                      </span>
+                    ) : (
+                      formatEuro(r.prijs)
+                    )}
                   </span>
                   <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
                 </span>

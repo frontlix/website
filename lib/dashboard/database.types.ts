@@ -382,6 +382,7 @@ export type Database = {
           korstmos: string | null
           korting_bedrag: number
           korting_omschrijving: string | null
+          offerte_prijs_overrides: Json | null
           korting_percentage: number | null
           lat: number | null
           lead_id: string

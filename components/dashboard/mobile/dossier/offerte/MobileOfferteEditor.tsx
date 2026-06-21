@@ -32,6 +32,7 @@ import {
   MessageCircle,
   Clock,
   Download,
+  RotateCcw,
 } from 'lucide-react'
 import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
@@ -127,6 +128,8 @@ export function MobileOfferteEditor({
   pdfApiRef?: RefObject<{ openPdf: () => void } | null>
 }) {
   // ─── Enige bron van waarheid (gespiegeld van LeadOfferteForm) ───
+  // Echte lead_id ⇒ live opslaan/bewerken (gespiegeld van de desktop-editor).
+  const live = Boolean(leadId)
   const [data, setData] = useState<ManualOfferteData>(() => mapLeadToFormData(lead))
   const [geldigheidDagen, setGeldigheidDagen] = useState<number>(
     lead.offerte_geldigheid_dagen ?? 14,
@@ -884,7 +887,32 @@ export function MobileOfferteEditor({
                 <span className={styles.lineLabel}>{r.desc}</span>
                 <span className={styles.lineRight}>
                   <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} × {formatEuro(r.prijs)}
+                    {r.aantal} {r.eenheid} ×{' '}
+                    {r.overrideKey && live ? (
+                      <span className={styles.linePrijs}>
+                        <ONumField
+                          value={r.prijs}
+                          onChange={(v) => setField(r.overrideKey!, v)}
+                          prefix="€"
+                          dec
+                          align="right"
+                        />
+                        {r.overrideKey.endsWith('_override') &&
+                        data[r.overrideKey] != null ? (
+                          <button
+                            type="button"
+                            className={styles.linePrijsReset}
+                            onClick={() => setField(r.overrideKey!, undefined)}
+                            title="Terug naar de prijslijst"
+                            aria-label="Prijs terug naar de prijslijst"
+                          >
+                            <RotateCcw size={12} strokeWidth={2.5} />
+                          </button>
+                        ) : null}
+                      </span>
+                    ) : (
+                      formatEuro(r.prijs)
+                    )}
                   </span>
                   <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
                 </span>

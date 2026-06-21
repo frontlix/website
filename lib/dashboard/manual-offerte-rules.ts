@@ -64,6 +64,7 @@ export function computeRules(
         eenheid: 'dag',
         prijs: dagprijs,
         totaal: dagprijs,
+        overrideKey: 'reinigen_dagprijs_override',
       })
     } else if (reinigenActief && m2 > 0) {
       r.push({
@@ -72,6 +73,7 @@ export function computeRules(
         eenheid: 'm²',
         prijs: reinPr,
         totaal: m2 * reinPr,
+        overrideKey: 'reiniging_per_m2_override',
       })
     }
 
@@ -87,6 +89,7 @@ export function computeRules(
           eenheid: 'm²',
           prijs: arbPr,
           totaal: am2 * arbPr,
+          overrideKey: 'arbeid_invegen_normaal_override',
         })
       }
     }
@@ -101,6 +104,7 @@ export function computeRules(
           eenheid: 'm²',
           prijs: arbPr,
           totaal: am2 * arbPr,
+          overrideKey: 'arbeid_invegen_onkruidwerend_override',
         })
       }
     }
@@ -116,6 +120,7 @@ export function computeRules(
         eenheid: 'zakken',
         prijs,
         totaal: zakken * prijs,
+        overrideKey: 'voegzand_normaal_prijs',
       })
     }
     if (data.voegzand_onkruidwerend_actief && Number(data.voegzand_onkruidwerend_zakken) > 0) {
@@ -127,6 +132,7 @@ export function computeRules(
         eenheid: 'zakken',
         prijs,
         totaal: zakken * prijs,
+        overrideKey: 'voegzand_onkruidwerend_prijs',
       })
     }
   }
@@ -142,6 +148,7 @@ export function computeRules(
       eenheid: 'm²',
       prijs: pr,
       totaal: qm2 * pr,
+      overrideKey: 'preventieve_onkruid_override',
     })
   }
   if (data.sub.includes('beschermlaag')) {
@@ -154,6 +161,7 @@ export function computeRules(
       eenheid: 'm²',
       prijs: pr,
       totaal: qm2 * pr,
+      overrideKey: 'beschermlaag_override',
     })
   }
   if (data.sub.includes('onderhoud')) {
@@ -165,13 +173,15 @@ export function computeRules(
       12: pricing.plan_12w_per_m2,
       16: pricing.plan_16w_per_m2,
     }
-    const plPrice = planMap[w] ?? ONDERHOUD_PRIJZEN[w] ?? 1.75
+    // Per-offerte override (undefined = prijslijst-plan-tarief); 0 blijft 0.
+    const plPrice = data.onderhoud_per_m2_override ?? planMap[w] ?? ONDERHOUD_PRIJZEN[w] ?? 1.75
     r.push({
       desc: `Onderhoudsbeheersing (elke ${w} weken)`,
       aantal: m2,
       eenheid: 'm²',
       prijs: plPrice,
       totaal: m2 * plPrice,
+      overrideKey: 'onderhoud_per_m2_override',
     })
   }
 
@@ -184,6 +194,7 @@ export function computeRules(
       eenheid: 'rol',
       prijs,
       totaal: rollen * prijs,
+      overrideKey: 'planten_afschermen_prijs',
     })
   }
 
@@ -216,6 +227,7 @@ export function computeRules(
     const retourKm = Math.round(km * 2 * 100) / 100
     r.push({
       desc: `Reiskosten (${Math.round(Number(data.afstand_km))} km enkele reis, retour)`,
+      overrideKey: 'reiskosten_per_km_override',
       aantal: retourKm,
       eenheid: 'km',
       prijs: pr,
