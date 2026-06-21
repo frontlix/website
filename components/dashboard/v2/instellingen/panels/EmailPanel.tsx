@@ -9,13 +9,18 @@ import {
   EMAIL_PROVIDERS,
   type EmailConnectionState,
   type EmailProviderKey,
+  type OwnerContactState,
 } from "../instellingen-data";
+import { saveOwnerContactSettings } from "@/lib/dashboard/owner-contact-actions";
+import { resolveReceiveEmail } from "@/lib/dashboard/owner-contact";
 import integrStyles from "./IntegratiesPanel.module.css";
 import panelStyles from "./panels.module.css";
 
 export interface EmailPanelProps {
   /** Begin-status uit email_connections (server-side via getEmailConnectionStatus). */
   email: EmailConnectionState;
+  /** Owner-contact-instellingen (e-mailrollen) uit tenant_settings. */
+  ownerContact: OwnerContactState;
   /** false in de demo-fallback (geen sessie): de connect/disconnect-acties zijn dan no-op. */
   live: boolean;
 }
@@ -30,7 +35,7 @@ export interface EmailPanelProps {
  * geblokkeerd in de UI; de connect-route weigert het ook server-side.
  * Routes: POST /api/integrations/email/connect en /disconnect.
  */
-export function EmailPanel({ email, live }: EmailPanelProps) {
+export function EmailPanel({ email, ownerContact, live }: EmailPanelProps) {
   const router = useRouter();
 
   const connected = email.connected;
@@ -56,6 +61,56 @@ export function EmailPanel({ email, live }: EmailPanelProps) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Owner-contact: basis-adres + per-rol "volg basis" of "eigen adres".
+  const [basisEmail, setBasisEmail] = useState(ownerContact.basisEmail);
+  const [goedkeuringEigen, setGoedkeuringEigen] = useState(
+    ownerContact.goedkeuringEmail.trim() !== "",
+  );
+  const [goedkeuringEmail, setGoedkeuringEmail] = useState(ownerContact.goedkeuringEmail);
+  const [meldingenEigen, setMeldingenEigen] = useState(
+    ownerContact.meldingenEmail.trim() !== "",
+  );
+  const [meldingenEmail, setMeldingenEmail] = useState(ownerContact.meldingenEmail);
+  const [whatsapp, setWhatsapp] = useState(ownerContact.whatsapp);
+  const [ocBusy, setOcBusy] = useState(false);
+  const [ocError, setOcError] = useState<string | null>(null);
+  const [ocOk, setOcOk] = useState(false);
+
+  // Effectieve bestemmingen voor de samenvattingsregel.
+  const effGoedkeuring = resolveReceiveEmail(
+    goedkeuringEigen ? goedkeuringEmail : "",
+    basisEmail,
+  );
+  const effMeldingen = resolveReceiveEmail(
+    meldingenEigen ? meldingenEmail : "",
+    basisEmail,
+  );
+
+  async function saveOwnerContact() {
+    if (!live || ocBusy) return;
+    setOcBusy(true);
+    setOcError(null);
+    setOcOk(false);
+    try {
+      const res = await saveOwnerContactSettings({
+        basisEmail: basisEmail.trim(),
+        goedkeuringEmail: goedkeuringEigen ? goedkeuringEmail.trim() : null,
+        meldingenEmail: meldingenEigen ? meldingenEmail.trim() : null,
+        whatsapp: whatsapp.trim(),
+      });
+      if (!res.ok) {
+        setOcError(res.error);
+        return;
+      }
+      setOcOk(true);
+      router.refresh();
+    } catch {
+      setOcError("Opslaan mislukt. Probeer het opnieuw.");
+    } finally {
+      setOcBusy(false);
+    }
+  }
 
   const isMicrosoft = provider === "microsoft";
   const preset = EMAIL_PROVIDERS[provider];
@@ -347,6 +402,123 @@ export function EmailPanel({ email, live }: EmailPanelProps) {
             Koppelen test je op de live site. Een wijziging is binnen een minuut
             actief in je geautomatiseerde berichten.
           </span>
+        </div>
+
+        <div className={integrStyles.head} style={{ marginTop: 24 }}>
+          <div className={integrStyles.headBody}>
+            <span className={integrStyles.headTitle}>Waar krijg jij je dingen?</span>
+            <div className={integrStyles.headSub}>
+              Standaard gaan je goedkeuringen en meldingen naar je basis-adres.
+              Wijk per onderdeel af als je wilt.
+            </div>
+          </div>
+        </div>
+
+        <div className={`${panelStyles.grid2} ${panelStyles.gridTop}`}>
+          <div className={panelStyles.wide}>
+            <Field
+              label="Basis-ontvangadres"
+              value={basisEmail}
+              onChange={setBasisEmail}
+              placeholder="jij@jouwbedrijf.nl"
+              breed
+            />
+          </div>
+
+          <div className={panelStyles.wide}>
+            <span className={integrStyles.headSub}>Goedkeuring van offertes</span>
+            <label>
+              <input
+                type="radio"
+                checked={!goedkeuringEigen}
+                onChange={() => setGoedkeuringEigen(false)}
+              />{" "}
+              Zelfde als basis
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={goedkeuringEigen}
+                onChange={() => setGoedkeuringEigen(true)}
+              />{" "}
+              Eigen adres
+            </label>
+            {goedkeuringEigen && (
+              <Field
+                label="Goedkeuring-adres"
+                value={goedkeuringEmail}
+                onChange={setGoedkeuringEmail}
+                placeholder="goedkeuring@jouwbedrijf.nl"
+                breed
+              />
+            )}
+          </div>
+
+          <div className={panelStyles.wide}>
+            <span className={integrStyles.headSub}>Dashboard-meldingen</span>
+            <label>
+              <input
+                type="radio"
+                checked={!meldingenEigen}
+                onChange={() => setMeldingenEigen(false)}
+              />{" "}
+              Zelfde als basis
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={meldingenEigen}
+                onChange={() => setMeldingenEigen(true)}
+              />{" "}
+              Eigen adres
+            </label>
+            {meldingenEigen && (
+              <Field
+                label="Meldingen-adres"
+                value={meldingenEmail}
+                onChange={setMeldingenEmail}
+                placeholder="meldingen@jouwbedrijf.nl"
+                breed
+              />
+            )}
+          </div>
+
+          <Field
+            label="WhatsApp-ping voor goedkeuring"
+            value={whatsapp}
+            onChange={setWhatsapp}
+            placeholder="0612345678"
+          />
+        </div>
+
+        <div className={panelStyles.veldUitleg}>
+          Goedkeuringen gaan naar {effGoedkeuring ?? "je basis-adres"}, meldingen
+          naar {effMeldingen ?? "je basis-adres"}. Een wijziging is binnen een
+          minuut actief.
+        </div>
+
+        {ocError && (
+          <div className={`${integrStyles.status} ${integrStyles.statusErr}`}>
+            <AlertTriangle size={13} />
+            {ocError}
+          </div>
+        )}
+        {ocOk && (
+          <span className={`${integrStyles.status} ${integrStyles.statusOk}`}>
+            <Check size={13} strokeWidth={2.5} />
+            Opgeslagen.
+          </span>
+        )}
+
+        <div className={integrStyles.actions}>
+          <button
+            type="button"
+            className={`${integrStyles.btnLink} ${integrStyles.btnPrimary}`}
+            onClick={saveOwnerContact}
+            disabled={ocBusy || !live}
+          >
+            {ocBusy ? "Bezig..." : "Opslaan"}
+          </button>
         </div>
       </div>
     </>
