@@ -9,7 +9,7 @@
 import { useState, useTransition } from 'react'
 import { Check, AlertTriangle, Target } from 'lucide-react'
 import { saveOmzetDoelMaand } from '@/lib/dashboard/omzet-doel-actions'
-import type { TenantSettings } from '@/components/dashboard/instellingen/SettingSections'
+import type { TenantSettings } from '@/components/dashboard/instellingen/setting-types'
 import { InstField, InstGroupCard } from './InstAtoms'
 import styles from './InstBedrijf.module.css'
 

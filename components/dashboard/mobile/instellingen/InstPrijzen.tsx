@@ -22,7 +22,7 @@ import { Sparkles, Minus, Plus, Check, AlertTriangle, ChevronRight } from 'lucid
 import { updatePricingRulesBatch } from '@/lib/dashboard/pricing-actions'
 import { computeRevenueDelta } from '@/lib/dashboard/pricing-impact'
 import type { PricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
-import type { PricingRule } from '@/components/dashboard/instellingen/SettingSections'
+import type { PricingRule } from '@/components/dashboard/instellingen/setting-types'
 import { InstGroupCard, InstPrimaryBtn } from './InstAtoms'
 import { deltaPct } from './inst-helpers'
 import styles from './InstPrijzen.module.css'

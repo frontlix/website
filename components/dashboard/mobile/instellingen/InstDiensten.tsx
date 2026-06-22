@@ -6,7 +6,7 @@
 import { useState, useTransition } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { toggleServiceOffering } from '@/lib/dashboard/service-offerings-actions'
-import type { ServiceOffering } from '@/components/dashboard/instellingen/SettingSections'
+import type { ServiceOffering } from '@/components/dashboard/instellingen/setting-types'
 import { InstGroupCard } from './InstAtoms'
 import { MobileToggle } from '../shared/MobileToggle'
 import styles from './InstDiensten.module.css'

@@ -25,54 +25,14 @@ import type { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-qu
 import type { TagWithCount } from '@/lib/dashboard/tags-queries'
 import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
+import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from './setting-types'
 import styles from './SettingSections.module.css'
 
-/* ── Shared types ───────────────────────────────────────── */
+/* ── Shared types (verhuisd naar setting-types.ts) ──────── */
 
-export type TenantSettings = {
-  bedrijfsnaam: string | null
-  chatbot_naam: string | null
-  eigenaar_email: string | null
-  eigenaar_whatsapp: string | null
-  eigenaar_spoed_telefoon: string | null
-  plaats: string | null
-  postcode: string | null
-  adres: string | null
-  offerte_geldigheid_dagen: number | null
-  radius_max_km: number | null
-  reminder_dag_1: number | null
-  reminder_dag_2: number | null
-  reminder_dag_3: number | null
-  calendar_link: string | null
-  base_huisnummer: string | null
-  base_label: string | null
-  base_lat: number | null
-  base_lng: number | null
-  daily_digest_tijd: string | null
-  omzet_doel_maand: number | null
-}
-
-export type PricingRule = {
-  rule_key: string
-  label: string
-  waarde: number
-  eenheid: string | null
-  sort_order: number
-}
-
-export type ServiceOffering = {
-  dienst_key: string
-  label: string
-  actief: boolean
-  sort_order: number
-}
-
-export type TeamMember = {
-  user_id: string
-  bedrijfsnaam: string | null
-  is_owner: boolean
-  tenant_status: 'pending' | 'approved' | 'rejected'
-}
+// Re-export zodat bestaande importers (de v1 instellingen-pagina) blijven werken
+// tot SettingSections wordt verwijderd.
+export type { TenantSettings, PricingRule, ServiceOffering, TeamMember }
 
 /* ── SectionCard wrapper + atoms ────────────────────────── */
 

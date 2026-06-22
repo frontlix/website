@@ -7,7 +7,7 @@
 
 import { Plus } from 'lucide-react'
 import { InstGroupCard, InstGhostBtn } from './InstAtoms'
-import type { TeamMember } from '@/components/dashboard/instellingen/SettingSections'
+import type { TeamMember } from '@/components/dashboard/instellingen/setting-types'
 import styles from './InstTeam.module.css'
 
 // Owner = blauw, member = neutraal-paars (zelfde palet als de hub-tints).

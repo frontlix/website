@@ -24,7 +24,7 @@ import type {
   PricingRule,
   ServiceOffering,
   TeamMember,
-} from '@/components/dashboard/instellingen/SettingSections'
+} from '@/components/dashboard/instellingen/setting-types'
 import type { TagWithCount } from '@/lib/dashboard/tags-queries'
 import type { PricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
