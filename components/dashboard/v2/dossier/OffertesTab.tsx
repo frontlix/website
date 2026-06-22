@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, ChevronRight, ChevronDown } from "lucide-react";
+import type { RefObject } from "react";
+import { FileText } from "lucide-react";
 import type { DossierData } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
+import type { OfferteEditorApi } from "./OfferteEditor";
 import dynamic from "next/dynamic";
 import styles from "./OffertesTab.module.css";
 
@@ -28,6 +29,9 @@ interface OffertesTabProps {
   data?: DossierData;
   /** Echte lead_id ⇒ de inline editor slaat live op. Zonder = demo (inert). */
   leadId?: string;
+  /** Ref voor de editor-flush, doorgegeven aan de "Offerte versturen"-knop in
+   *  de dossier-kop (zodat die de laatste wijzigingen kan wegschrijven). */
+  offerteApiRef?: RefObject<OfferteEditorApi | null>;
 }
 
 /** Opent de losse nieuwe-offerte-wizard via het gedeelde event. Alleen voor
@@ -40,17 +44,14 @@ function openOfferteWizard() {
  *  uitgeklapt onder het concept, de inline OfferteEditor om de regels, korting
  *  en geldigheid te bewerken. De preview-regels blijven herkenbaar dezelfde
  *  layout/plek wanneer de editor dicht is. */
-export function OffertesTab({ data = DOSSIER, leadId }: OffertesTabProps) {
-  // Is er een bewerkbaar concept? De editor laadt de huidige lead-staat (=
-  // de inhoud van de offerte die nu bij de klant ligt); aanpassen + opslaan
-  // schrijft naar het concept (de nieuwe versie).
-  const hasConcept = data.offertes.some((o) => o.concept);
-  // Het concept staat STANDAARD uitgeklapt, zodat de huidige offerte meteen
-  // bewerkbaar in beeld is (de gebruiker hoeft niet eerst "Open" te klikken).
-  const [open, setOpen] = useState(true);
-  // Live totaal uit de editor, zodat de concept-rij hetzelfde bedrag toont als
-  // wat de editor berekent (i.p.v. het €0 van een vers concept-record).
-  const [liveTotaal, setLiveTotaal] = useState<string | null>(null);
+export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef }: OffertesTabProps) {
+  // De editor staat ALTIJD onderaan (gelijk aan mobiel): hij laadt de huidige
+  // offerte-inhoud en bewerken+opslaan schrijft naar het concept (nieuwe
+  // versie), ook als er nu nog geen concept maar alleen een verstuurde offerte
+  // is. In de lijst erboven tonen we daarom alleen de NIET-concept-offertes
+  // (verstuurd/archief) als alleen-lezen versie-rijen; het concept zelf is de
+  // editor.
+  const lijst = data.offertes.filter((o) => !o.concept);
 
   return (
     <div className={styles.root}>
@@ -60,89 +61,43 @@ export function OffertesTab({ data = DOSSIER, leadId }: OffertesTabProps) {
           type="button"
           className={styles.newLink}
           onClick={openOfferteWizard}
-          disabled
-          title="Binnenkort beschikbaar"
-          style={{ opacity: 0.5, cursor: "not-allowed" }}
         >
-          + Nieuwe offerte (binnenkort)
+          + Nieuwe offerte
         </button>
       </div>
 
-      {data.offertes.map((o) => {
-        const isConcept = o.concept;
-        // Kleur-toon per offerte: concept = blauw, archief (geweigerd/verlopen)
-        // = grijs, anders verstuurd = groen. Valt terug op `concept` zodat de
-        // demo-data (zonder `tone`) ongewijzigd correct kleurt.
-        const tone = o.tone ?? (isConcept ? "concept" : "verstuurd");
-        const tagClass =
-          tone === "concept"
-            ? styles.tagConcept
-            : tone === "archief"
-              ? styles.tagArchief
-              : styles.tagDone;
+      {lijst.map((o) => {
+        // Kleur-toon per offerte: archief (geweigerd/verlopen) = grijs, anders
+        // verstuurd = groen. Concepten staan niet in deze lijst.
+        const tone = o.tone ?? "verstuurd";
+        const tagClass = tone === "archief" ? styles.tagArchief : styles.tagDone;
         const iconClass =
-          tone === "concept"
-            ? styles.docIconConcept
-            : tone === "archief"
-              ? styles.docIconArchief
-              : styles.docIconDone;
-        const toggle = isConcept ? () => setOpen((v) => !v) : undefined;
+          tone === "archief" ? styles.docIconArchief : styles.docIconDone;
         return (
-          <div key={o.nr}>
-            <div
-              className={`${styles.row} ${isConcept ? styles.concept : ""}`}
-              onClick={toggle}
-              role={isConcept ? "button" : undefined}
-              tabIndex={isConcept ? 0 : undefined}
-              aria-expanded={isConcept ? open : undefined}
-              onKeyDown={
-                isConcept
-                  ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setOpen((v) => !v);
-                      }
-                    }
-                  : undefined
-              }
-            >
-              <span className={`${styles.docIcon} ${iconClass}`}>
-                <FileText size={18} strokeWidth={2} />
-              </span>
-              <div className={styles.rowMain}>
-                <div className={styles.rowTop}>
-                  <span className={styles.nr}>{o.nr}</span>
-                  <span className={`${styles.tag} ${tagClass}`}>{o.label}</span>
-                </div>
-                <div className={styles.rowSub}>{o.sub}</div>
+          <div key={o.nr} className={styles.row}>
+            <span className={`${styles.docIcon} ${iconClass}`}>
+              <FileText size={18} strokeWidth={2} />
+            </span>
+            <div className={styles.rowMain}>
+              <div className={styles.rowTop}>
+                <span className={styles.nr}>{o.nr}</span>
+                <span className={`${styles.tag} ${tagClass}`}>{o.label}</span>
               </div>
-              <span className={styles.totaal}>
-                {isConcept && liveTotaal ? liveTotaal : o.totaal}
-              </span>
-              {isConcept ? (
-                <span className={styles.openBtn}>
-                  {open ? "Sluit" : "Open"}
-                  {open ? (
-                    <ChevronDown size={14} strokeWidth={2.6} />
-                  ) : (
-                    <ChevronRight size={14} strokeWidth={2.6} />
-                  )}
-                </span>
-              ) : null}
+              <div className={styles.rowSub}>{o.sub}</div>
             </div>
-
-            {/* Concept uitgeklapt: de inline editor (bewerkt regels/korting/
-                geldigheid en slaat debounced op via saveOfferteForm). */}
-            {isConcept && open ? (
-              <OfferteEditor
-                leadId={leadId}
-                form={data.offerteForm}
-                onTotaal={setLiveTotaal}
-              />
-            ) : null}
+            <span className={styles.totaal}>{o.totaal}</span>
           </div>
         );
       })}
+
+      {/* De editor staat altijd onderaan en bewerkt het (te maken) concept. */}
+      <OfferteEditor
+        leadId={leadId}
+        form={data.offerteForm}
+        offertes={data.offertes}
+        fotosCount={data.fotos.length}
+        apiRef={offerteApiRef}
+      />
     </div>
   );
 }

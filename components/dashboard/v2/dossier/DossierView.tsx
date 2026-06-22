@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import type { OfferteEditorApi } from "./OfferteEditor";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, StickyNote, Archive, RotateCcw } from "lucide-react";
@@ -46,6 +47,10 @@ export function DossierView({
 }: DossierViewProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [sending, startSend] = useTransition();
+  // Flush-API van de offerte-editor (gevuld door OffertesTab -> OfferteEditor),
+  // zodat we vóór het versturen de laatste wijzigingen kunnen wegschrijven.
+  const offerteApiRef = useRef<OfferteEditorApi | null>(null);
 
   // Echte data wanneer aanwezig, anders de demo-set.
   const data = dossier ?? DOSSIER;
@@ -139,6 +144,16 @@ export function DossierView({
   const toggleArchief = () => {
     if (live && leadId) {
       const next = !archived;
+      // Archiveren haalt de lead VOLLEDIG uit de pipeline (de lijst-query
+      // filtert dashboard_archived weg). Daarom eerst bevestigen, met de
+      // huidige fase erbij, zodat een actieve deal niet per ongeluk spoorloos
+      // verdwijnt. Herstellen mag zonder bevestiging.
+      if (next && typeof window !== "undefined") {
+        const ok = window.confirm(
+          `Lead "${lead.naam}" archiveren? Hij verdwijnt dan uit de pipeline (nu in fase: ${lead.status}). Je kunt 'm later met "Herstel" terughalen.`,
+        );
+        if (!ok) return;
+      }
       setArchived(next); // optimistisch; revalidate bevestigt
       startTransition(async () => {
         const res = next ? await archiveLead(leadId) : await unarchiveLead(leadId);
@@ -157,8 +172,48 @@ export function DossierView({
     requestAnimationFrame(() => setNotesFocus(true));
   };
 
-  const openOfferteWizard = () => {
-    window.dispatchEvent(new CustomEvent("rb:new-offerte"));
+  // Is er al een offerte verstuurd? Dan kan deze knop niet opnieuw versturen
+  // (de bot-revisie-flow is een aparte stap). We leiden dit af uit de
+  // offertes-lijst: een niet-concept, niet-archief-offerte = verstuurd.
+  const alVerstuurd = data.offertes.some((o) => !o.concept && o.tone !== "archief");
+
+  // Offerte versturen naar de klant via de bot (WhatsApp). De editor slaat zijn
+  // wijzigingen debounced op (600ms); de bevestigingsdialoog overbrugt die tijd,
+  // zodat de bot het laatst opgeslagen concept verstuurt. Alleen eerste
+  // verzending; bij een reeds verstuurde offerte is de knop uitgeschakeld.
+  const handleVerstuur = () => {
+    if (!live || !leadId || sending || alVerstuurd) return;
+    if (
+      !window.confirm(
+        `Offerte nu naar ${lead.naam} sturen via WhatsApp? De klant ontvangt direct de PDF.`,
+      )
+    ) {
+      return;
+    }
+    startSend(async () => {
+      try {
+        // Schrijf eerst eventuele net-bewerkte concept-wijzigingen weg, zodat
+        // de bot exact de zichtbare offerte verstuurt (de editor auto-saved
+        // debounced; dit forceert de laatste staat).
+        await offerteApiRef.current?.flush();
+        const res = await fetch(`/api/dashboard/lead/${leadId}/approve-quote`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const body = await res.json().catch(() => ({}));
+        if (res.ok && body?.ok !== false) {
+          router.refresh();
+        } else {
+          window.alert(
+            typeof body?.error === "string"
+              ? body.error
+              : `Versturen mislukt (HTTP ${res.status}).`,
+          );
+        }
+      } catch {
+        window.alert("Versturen mislukt door een netwerkfout. Probeer het opnieuw.");
+      }
+    });
   };
 
   const tabOptions: { value: TabKey; label: string }[] = [
@@ -223,18 +278,22 @@ export function DossierView({
               </>
             )}
           </button>
-          {/* Offerte versturen vanuit het dossier is nog niet gekoppeld
-              (opende een blanco wizard). Uitgeschakeld met "binnenkort" zodat
-              het duidelijk is dat dit eraan komt. */}
+          {/* Offerte versturen naar de klant via de bot (WhatsApp). Alleen de
+              eerste verzending; bij een reeds verstuurde offerte toont de knop
+              "Al verstuurd" en is 'ie uitgeschakeld. */}
           <button
             type="button"
             className={styles.primaryBtn}
-            onClick={openOfferteWizard}
-            disabled
-            title="Binnenkort beschikbaar"
-            style={{ opacity: 0.5, cursor: "not-allowed" }}
+            onClick={handleVerstuur}
+            disabled={!live || alVerstuurd || sending}
+            title={
+              alVerstuurd
+                ? "Deze offerte is al verstuurd"
+                : "Offerte versturen naar de klant via WhatsApp"
+            }
+            style={!live || alVerstuurd ? { opacity: 0.55, cursor: "not-allowed" } : undefined}
           >
-            Offerte versturen (binnenkort)
+            {sending ? "Versturen…" : alVerstuurd ? "Al verstuurd" : "Offerte versturen"}
           </button>
         </div>
       </div>
@@ -252,7 +311,9 @@ export function DossierView({
           </div>
           <div className={styles.tabBody}>
             {tab === "Info" ? <InfoTab dienst={lead.dienst} data={data} /> : null}
-            {tab === "Offertes" ? <OffertesTab data={data} leadId={leadId} /> : null}
+            {tab === "Offertes" ? (
+              <OffertesTab data={data} leadId={leadId} offerteApiRef={offerteApiRef} />
+            ) : null}
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
             {tab === "Notities" ? (
               <NotitiesTab notities={notities} onAdd={voegNotitieToe} autoFocus={notesFocus} />

@@ -765,3 +765,308 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Uitklapbare sectie (accordion) ── */
+.acc {
+  background: var(--rb-card);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-card-sm);
+  overflow: hidden;
+}
+
+.accAccent {
+  border-color: var(--rb-blue);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rb-blue) 14%, transparent);
+}
+
+.accHead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 13px 15px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--rb-font);
+}
+
+.accHead:hover {
+  background: rgba(33, 42, 69, 0.025);
+}
+
+.accIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.accTitle {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  letter-spacing: -0.01em;
+}
+
+.accSummary {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+}
+
+.accChevron {
+  margin-left: auto;
+  color: var(--rb-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.acc[data-open="true"] .accChevron {
+  transform: rotate(180deg);
+}
+
+/* Open/dicht: grid-rij van 0fr naar 1fr collapst de hoogte vloeiend. Body
+   blijft altijd in de DOM (print/zonder-JS toont alles). */
+.accClip {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+
+.acc[data-open="true"] .accClip {
+  grid-template-rows: 1fr;
+}
+
+.accInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.accBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px 15px 16px;
+}
+
+.acc[data-open="true"] .accBody {
+  border-top: 1px solid var(--rb-line);
+  padding-top: 14px;
+}
+
+/* ── Sub-blok-label binnen een accordion (Extra diensten / arbeid / voegzand) ── */
+.subLabel {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rb-line);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rb-muted);
+}
+
+/* ── Preset-knoppenrij (korting %, geldigheid dagen) ── */
+.presetRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset {
+  flex: 1;
+  min-width: 64px;
+  padding: 9px 10px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.preset:hover:not(:disabled) {
+  border-color: var(--rb-blue);
+}
+
+.presetOn {
+  background: var(--rb-blue);
+  border-color: var(--rb-blue);
+  color: #fff;
+}
+
+.preset:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Inline hint binnen een accordion-body (zoals .cardHint maar in de body). */
+.cardHintRow {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+  margin-top: -2px;
+}
+
+/* ── Foto-regel onder het prijsoverzicht ── */
+.fotoLine {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+/* ── Actiebalk (PDF + historie) ── */
+.actionBar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  background: var(--rb-card);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-pill);
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.actionBtn:hover:not(:disabled) {
+  border-color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+
+.actionBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.actionBtnPrimary {
+  background: var(--rb-blue);
+  border-color: var(--rb-blue);
+  color: #fff;
+}
+
+.actionBtnPrimary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rb-blue) 88%, #000);
+  border-color: color-mix(in srgb, var(--rb-blue) 88%, #000);
+  color: #fff;
+}
+
+/* ── Modals (PDF-preview + versie-historie) ── */
+.modalTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  letter-spacing: -0.01em;
+}
+
+.pdfModal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdfModalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-right: 28px;
+}
+
+.pdfFrame {
+  width: 100%;
+  height: 72vh;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+  background: var(--rb-field);
+}
+
+.pdfLoading {
+  height: 72vh;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--rb-muted);
+}
+
+.histModal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.histList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.histRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--rb-field);
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field);
+}
+
+.histRowCurrent {
+  background: var(--rb-blue-soft);
+  border-color: var(--rb-blue);
+}
+
+.histMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.histNr {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--rb-ink);
+}
+
+.histSub {
+  font-size: 11.5px;
+  color: var(--rb-muted);
+}
+
+.histTotaal {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.histEmpty {
+  font-size: 12.5px;
+  color: var(--rb-muted);
+  padding: 4px 2px;
+}

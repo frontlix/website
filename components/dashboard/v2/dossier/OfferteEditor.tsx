@@ -41,8 +41,23 @@
 // ─────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import type { ReactNode, RefObject } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Minus, Plus, RotateCcw } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  ChevronDown,
+  Clock,
+  Download,
+  Eye,
+  Loader2,
+  Minus,
+  Percent,
+  Plus,
+  RotateCcw,
+  Ruler,
+  User,
+} from "lucide-react";
 import type { ManualOfferteData, SubDienst } from "@/lib/dashboard/manual-offerte-types";
 import { computeRules, computeTotals } from "@/lib/dashboard/manual-offerte-rules";
 import type { ManualOffertePricing } from "@/lib/dashboard/pricing-types";
@@ -50,9 +65,18 @@ import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
 import { formatEuro } from "@/lib/dashboard/format";
 import { saveOfferteForm } from "@/lib/dashboard/offerte-form-actions";
 import { revertConcept } from "@/lib/dashboard/offerte-draft-actions";
+import { OffertePdfDocument } from "@/components/dashboard/offerte/OffertePdf";
+import { deliverPdfBlob } from "@/components/dashboard/offerte/pdf-download";
 import { NlNumberInput } from "@/components/dashboard/NlNumberInput";
-import { SegmentedControl } from "@/components/dashboard/v2/ui";
+import { Modal, SegmentedControl } from "@/components/dashboard/v2/ui";
+import type { DossierOfferte } from "./dossier-data";
 import styles from "./OfferteEditor.module.css";
+
+/** Imperatieve API die de editor op een ref publiceert: schrijf eventuele
+ *  pending (debounced) wijzigingen direct weg. Gebruikt door de "Offerte
+ *  versturen"-knop in de dossier-kop, zodat de bot het laatst bewerkte
+ *  concept verstuurt. */
+export type OfferteEditorApi = { flush: () => Promise<void> };
 
 /** Wat de server-fetch aanlevert (of de demo-fallback). */
 export interface OfferteFormData {
@@ -69,6 +93,14 @@ interface OfferteEditorProps {
   leadId?: string;
   /** Init-data; zonder leadId is dit demo-input (niet gepersisteerd). */
   form: OfferteFormData;
+  /** Alle offertes van de lead (voor de versie-historie-modal). */
+  offertes?: DossierOfferte[];
+  /** Aantal bijgevoegde foto's (voor de "N foto's bijgevoegd"-regel). */
+  fotosCount?: number;
+  /** Ref waarop de editor een { flush } publiceert, zodat de "Offerte
+   *  versturen"-knop in de dossier-kop de laatste wijzigingen kan wegschrijven
+   *  vóór het versturen. */
+  apiRef?: RefObject<OfferteEditorApi | null>;
   /** Meldt het live totaal-incl-BTW (geformatteerd) terug, zodat de
    *  concept-rij in de lijst hetzelfde bedrag toont als de editor. */
   onTotaal?: (totaalIncl: string) => void;
@@ -132,7 +164,14 @@ const DIENST_OPTIES: { k: SubDienst; label: string }[] = [
  * totaal rekent live mee (computeRules/computeTotals) en slaat debounced op
  * via saveOfferteForm.
  */
-export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
+export function OfferteEditor({
+  leadId,
+  form,
+  offertes = [],
+  fotosCount = 0,
+  apiRef,
+  onTotaal,
+}: OfferteEditorProps) {
   const live = Boolean(leadId);
   const router = useRouter();
   const [reverting, startRevert] = useTransition();
@@ -171,6 +210,14 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
   const setNote = useCallback((k: keyof NotesState, v: string) => {
     setNotes((s) => ({ ...s, [k]: v }));
   }, []);
+
+  // ─── Accordion open/dicht-state (spiegelt de mobiele editor) ──
+  // Werk & oppervlakte staat standaard open zodat de kern-velden meteen in
+  // beeld zijn; de overige secties beginnen ingeklapt voor een rustig overzicht.
+  const [openKlant, setOpenKlant] = useState(false);
+  const [openWerk, setOpenWerk] = useState(true);
+  const [openKorting, setOpenKorting] = useState(false);
+  const [openGeldig, setOpenGeldig] = useState(false);
 
   // ─── Save-state ────────────────────────────────────────────
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -318,6 +365,31 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
     };
   }, []);
 
+  // Publiceer een imperatieve flush op apiRef: schrijf eventuele pending
+  // (debounced) wijzigingen direct weg. De "Offerte versturen"-knop in de
+  // dossier-kop wacht hierop, zodat de bot het laatst bewerkte concept
+  // verstuurt i.p.v. een net-niet-opgeslagen versie. Re-registreert bij elke
+  // data-wijziging zodat de closure altijd de laatste state heeft.
+  useEffect(() => {
+    if (!apiRef) return;
+    apiRef.current = {
+      flush: async () => {
+        if (!leadId) return;
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = null;
+        }
+        const fp = dataFingerprint(data, geldigheidDagen);
+        if (fp === lastFingerprintRef.current) return; // niets gewijzigd
+        lastFingerprintRef.current = fp;
+        await flushSave(data, geldigheidDagen);
+      },
+    };
+    return () => {
+      if (apiRef) apiRef.current = null;
+    };
+  }, [apiRef, leadId, data, geldigheidDagen, flushSave]);
+
   // ─── Live afleiding ────────────────────────────────────────
   const pricing = form.pricing ?? FALLBACK_PRICING;
   const rules = useMemo(() => computeRules(data, pricing), [data, pricing]);
@@ -371,10 +443,114 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
     }));
   }, []);
 
+  /** Zet een vast kortingsbedrag (overruling het percentage). */
+  const setKortingBedrag = useCallback((bedrag: number) => {
+    setData((s) => ({
+      ...s,
+      korting_bedrag: Math.max(0, bedrag),
+      korting_percentage: 0,
+    }));
+  }, []);
+
   const saveLabel =
     saveState === "saving" ? "Opslaan" : saveState === "saved" ? "Opgeslagen" : "";
 
   const showVoegzand = data.sub.includes("invegen");
+
+  // ─── Samenvattingen voor de accordion-koppen (rechts, ingeklapt zichtbaar) ──
+  const klantSummary = [data.naam, data.plaats].filter(Boolean).join(", ") || "Niet ingevuld";
+  const werkSummary = `${data.m2} m², ${data.sub.length} ${data.sub.length === 1 ? "dienst" : "diensten"}`;
+  const kortingSummary =
+    totals.kortingBedrag > 0
+      ? data.korting_bedrag > 0
+        ? `${formatEuro(totals.kortingBedrag)} korting`
+        : `${Math.round(effectiveKortingPct)}% korting`
+      : "Geen korting";
+  const geldigSummary = `${geldigheidDagen} dagen`;
+
+  // ─── PDF (bekijken/downloaden) + versie-historie ───────────
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [histOpen, setHistOpen] = useState(false);
+  const pdfUrlRef = useRef<string | null>(null);
+
+  const offerteNummer = leadId
+    ? `${new Date().getFullYear()}-${leadId.replace(/\D/g, "").slice(-4).padStart(4, "0")}`
+    : `${new Date().getFullYear()}-0000`;
+
+  /** Genereert de echte offerte-PDF (zelfde @react-pdf-document als de wizard,
+   *  client-side gerenderd uit de live state). */
+  const buildPdfBlob = useCallback(async (): Promise<Blob> => {
+    const { pdf } = await import("@react-pdf/renderer");
+    return pdf(
+      <OffertePdfDocument
+        data={data}
+        rules={rules}
+        totals={totals}
+        offerteNummer={offerteNummer}
+        geldigheidDagen={geldigheidDagen}
+        origin={typeof window !== "undefined" ? window.location.origin : undefined}
+      />,
+    ).toBlob();
+  }, [data, rules, totals, offerteNummer, geldigheidDagen]);
+
+  const handleViewPdf = useCallback(async () => {
+    if (pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const blob = await buildPdfBlob();
+      const url = URL.createObjectURL(blob);
+      if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current);
+      pdfUrlRef.current = url;
+      setPdfUrl(url);
+      setPdfOpen(true);
+    } catch (e) {
+      console.error("[OfferteEditor] PDF-preview mislukt:", e);
+      // eslint-disable-next-line no-alert
+      alert("PDF maken mislukt, probeer het opnieuw.");
+    } finally {
+      setPdfBusy(false);
+    }
+  }, [pdfBusy, buildPdfBlob]);
+
+  const closePdf = useCallback(() => {
+    setPdfOpen(false);
+    if (pdfUrlRef.current) {
+      URL.revokeObjectURL(pdfUrlRef.current);
+      pdfUrlRef.current = null;
+    }
+    setPdfUrl(null);
+  }, []);
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const blob = await buildPdfBlob();
+      const slug = (data.naam || "klant")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      await deliverPdfBlob(blob, `offerte-${slug || "schoon-straatje"}.pdf`);
+    } catch (e) {
+      console.error("[OfferteEditor] PDF-download mislukt:", e);
+      // eslint-disable-next-line no-alert
+      alert("PDF maken mislukt, probeer het opnieuw.");
+    } finally {
+      setPdfBusy(false);
+    }
+  }, [pdfBusy, buildPdfBlob, data.naam]);
+
+  // Eventuele open object-URL opruimen bij unmount.
+  useEffect(() => {
+    return () => {
+      if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current);
+    };
+  }, []);
+
+  // Eerdere (verstuurde/archief) versies voor de historie-modal.
+  const eerdereVersies = offertes.filter((o) => !o.concept);
 
   return (
     <div className={styles.editor} aria-disabled={!live}>
@@ -412,11 +588,14 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
         ) : null}
       </div>
 
-      {/* ── 0. Klantgegevens op offerte ── */}
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Klantgegevens op offerte</span>
-        </div>
+      {/* ── Klantgegevens ── */}
+      <AccordionSection
+        icon={<User size={15} strokeWidth={2.2} />}
+        title="Klantgegevens op offerte"
+        summary={klantSummary}
+        open={openKlant}
+        onToggle={() => setOpenKlant((o) => !o)}
+      >
         <div className={styles.grid2}>
           <label className={styles.field}>
             <span className={styles.label}>Naam</span>
@@ -551,13 +730,16 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
             </label>
           </div>
         ) : null}
-      </section>
+      </AccordionSection>
 
-      {/* ── 1. Werk & oppervlakte ── */}
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Werk &amp; oppervlakte</span>
-        </div>
+      {/* ── Werk & oppervlakte (incl. extra diensten, arbeid, voegzand) ── */}
+      <AccordionSection
+        icon={<Ruler size={15} strokeWidth={2.2} />}
+        title="Werk & oppervlakte"
+        summary={werkSummary}
+        open={openWerk}
+        onToggle={() => setOpenWerk((o) => !o)}
+      >
         <div className={styles.grid2}>
           <label className={styles.field}>
             <span className={styles.label}>Oppervlakte m&#178;</span>
@@ -611,13 +793,9 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           placeholder="Bijvoorbeeld, extra uitleg over het werk."
           disabled={!live}
         />
-      </section>
 
-      {/* ── 2. Extra diensten ── */}
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Extra diensten</span>
-        </div>
+        {/* Sub-blok: Extra diensten */}
+        <div className={styles.subLabel}>Extra diensten</div>
         <div className={styles.checks}>
           {DIENST_OPTIES.map((d) => {
             const on = data.sub.includes(d.k);
@@ -644,13 +822,9 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           placeholder="Bijvoorbeeld, wat de extra diensten inhouden."
           disabled={!live}
         />
-      </section>
 
-      {/* ── 3. Extra arbeid ── */}
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Extra arbeid</span>
-        </div>
+        {/* Sub-blok: Extra arbeid */}
+        <div className={styles.subLabel}>Extra arbeid</div>
         <div className={styles.arbeid}>
           <label className={styles.field}>
             <span className={styles.numLabel}>Minuten</span>
@@ -679,131 +853,151 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
             <span className={styles.arbeidBedrag}>{formatEuro(arbeidTotaal)}</span>
           </div>
         </div>
-      </section>
 
-      {/* ── 4. Voegzand (alleen bij invegen) ── */}
-      {showVoegzand ? (
-        <section className={styles.card}>
-          <div className={styles.cardHead}>
-            <span className={styles.cardTitle}>Voegzand</span>
-          </div>
+        {/* Sub-blok: Voegzand (alleen bij invegen) */}
+        {showVoegzand ? (
+          <>
+            <div className={styles.subLabel}>Voegzand</div>
+            <div className={styles.zandRow}>
+              <span className={styles.zandName}>Normaal</span>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>Aantal zakken</span>
+                <NumberField
+                  value={data.voegzand_normaal_zakken}
+                  onChange={(v) => setVoegzandNormaal({ voegzand_normaal_zakken: v })}
+                  min={0}
+                  step={1}
+                  disabled={!live}
+                  ariaLabel="Aantal zakken normaal voegzand"
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>Invegen-m&#178;</span>
+                <NumberField
+                  value={data.voegzand_normaal_m2}
+                  onChange={(v) => setVoegzandNormaal({ voegzand_normaal_m2: v })}
+                  min={0}
+                  step={5}
+                  affix="m²"
+                  disabled={!live}
+                  ariaLabel="Invegen oppervlak normaal voegzand"
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>&#8364; per zak</span>
+                <NumberField
+                  value={data.voegzand_normaal_prijs}
+                  onChange={(v) => setVoegzandNormaal({ voegzand_normaal_prijs: v })}
+                  min={0}
+                  step={0.5}
+                  prefix="€"
+                  disabled={!live}
+                  ariaLabel="Prijs per zak normaal voegzand"
+                />
+              </label>
+            </div>
 
-          <div className={styles.zandRow}>
-            <span className={styles.zandName}>Normaal</span>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>Aantal zakken</span>
-              <NumberField
-                value={data.voegzand_normaal_zakken}
-                onChange={(v) => setVoegzandNormaal({ voegzand_normaal_zakken: v })}
-                min={0}
-                step={1}
-                disabled={!live}
-                ariaLabel="Aantal zakken normaal voegzand"
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>Invegen-m&#178;</span>
-              <NumberField
-                value={data.voegzand_normaal_m2}
-                onChange={(v) => setVoegzandNormaal({ voegzand_normaal_m2: v })}
-                min={0}
-                step={5}
-                affix="m²"
-                disabled={!live}
-                ariaLabel="Invegen oppervlak normaal voegzand"
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>&#8364; per zak</span>
-              <NumberField
-                value={data.voegzand_normaal_prijs}
-                onChange={(v) => setVoegzandNormaal({ voegzand_normaal_prijs: v })}
-                min={0}
-                step={0.5}
-                prefix="€"
-                disabled={!live}
-                ariaLabel="Prijs per zak normaal voegzand"
-              />
-            </label>
-          </div>
+            <div className={styles.zandRow}>
+              <span className={styles.zandName}>Onkruidwerend</span>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>Aantal zakken</span>
+                <NumberField
+                  value={data.voegzand_onkruidwerend_zakken}
+                  onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_zakken: v })}
+                  min={0}
+                  step={1}
+                  disabled={!live}
+                  ariaLabel="Aantal zakken onkruidwerend voegzand"
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>Invegen-m&#178;</span>
+                <NumberField
+                  value={data.voegzand_onkruidwerend_m2}
+                  onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_m2: v })}
+                  min={0}
+                  step={5}
+                  affix="m²"
+                  disabled={!live}
+                  ariaLabel="Invegen oppervlak onkruidwerend voegzand"
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.numLabel}>&#8364; per zak</span>
+                <NumberField
+                  value={data.voegzand_onkruidwerend_prijs}
+                  onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_prijs: v })}
+                  min={0}
+                  step={0.5}
+                  prefix="€"
+                  disabled={!live}
+                  ariaLabel="Prijs per zak onkruidwerend voegzand"
+                />
+              </label>
+            </div>
 
-          <div className={styles.zandRow}>
-            <span className={styles.zandName}>Onkruidwerend</span>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>Aantal zakken</span>
-              <NumberField
-                value={data.voegzand_onkruidwerend_zakken}
-                onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_zakken: v })}
-                min={0}
-                step={1}
+            <div className={styles.kleuren}>
+              <button
+                type="button"
+                className={`${styles.kleur} ${data.kleur_naturel ? styles.kleurOn : ""}`}
+                aria-pressed={data.kleur_naturel}
+                onClick={() => setField("kleur_naturel", !data.kleur_naturel)}
                 disabled={!live}
-                ariaLabel="Aantal zakken onkruidwerend voegzand"
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>Invegen-m&#178;</span>
-              <NumberField
-                value={data.voegzand_onkruidwerend_m2}
-                onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_m2: v })}
-                min={0}
-                step={5}
-                affix="m²"
+              >
+                <span className={styles.swatch} style={{ background: "#C6BBA1" }} />
+                <span className={styles.checkL}>Naturel</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.kleur} ${data.kleur_antraciet ? styles.kleurOn : ""}`}
+                aria-pressed={data.kleur_antraciet}
+                onClick={() => setField("kleur_antraciet", !data.kleur_antraciet)}
                 disabled={!live}
-                ariaLabel="Invegen oppervlak onkruidwerend voegzand"
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.numLabel}>&#8364; per zak</span>
-              <NumberField
-                value={data.voegzand_onkruidwerend_prijs}
-                onChange={(v) => setVoegzandOnkruid({ voegzand_onkruidwerend_prijs: v })}
-                min={0}
-                step={0.5}
-                prefix="€"
-                disabled={!live}
-                ariaLabel="Prijs per zak onkruidwerend voegzand"
-              />
-            </label>
-          </div>
+              >
+                <span className={styles.swatch} style={{ background: "#3A3A3A" }} />
+                <span className={styles.checkL}>Antraciet</span>
+              </button>
+            </div>
 
-          <div className={styles.kleuren}>
-            <button
-              type="button"
-              className={`${styles.kleur} ${data.kleur_naturel ? styles.kleurOn : ""}`}
-              aria-pressed={data.kleur_naturel}
-              onClick={() => setField("kleur_naturel", !data.kleur_naturel)}
+            <NoteField
+              value={notes.voegzand}
+              onChange={(v) => setNote("voegzand", v)}
+              placeholder="Bijvoorbeeld, keuze van voegzand toelichten."
               disabled={!live}
-            >
-              <span className={styles.swatch} style={{ background: "#C6BBA1" }} />
-              <span className={styles.checkL}>Naturel</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.kleur} ${data.kleur_antraciet ? styles.kleurOn : ""}`}
-              aria-pressed={data.kleur_antraciet}
-              onClick={() => setField("kleur_antraciet", !data.kleur_antraciet)}
-              disabled={!live}
-            >
-              <span className={styles.swatch} style={{ background: "#3A3A3A" }} />
-              <span className={styles.checkL}>Antraciet</span>
-            </button>
-          </div>
+            />
+          </>
+        ) : null}
+      </AccordionSection>
 
-          <NoteField
-            value={notes.voegzand}
-            onChange={(v) => setNote("voegzand", v)}
-            placeholder="Bijvoorbeeld, keuze van voegzand toelichten."
-            disabled={!live}
-          />
-        </section>
-      ) : null}
+      {/* ── Actiekorting ── */}
+      <AccordionSection
+        icon={<Percent size={15} strokeWidth={2.2} />}
+        title="Actiekorting"
+        summary={kortingSummary}
+        accent
+        open={openKorting}
+        onToggle={() => setOpenKorting((o) => !o)}
+      >
+        <span className={styles.cardHintRow}>Alleen op diensten, niet op reiskosten</span>
 
-      {/* ── 5. Actiekorting ── */}
-      <section className={`${styles.card} ${styles.cardAccent}`}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Actiekorting</span>
-          <span className={styles.cardHint}>Alleen op diensten, niet op reiskosten</span>
+        {/* Snelkeuze-percentages */}
+        <div className={styles.presetRow}>
+          {[10, 20, 30, 50].map((p) => {
+            const on = data.korting_bedrag === 0 && Math.round(effectiveKortingPct) === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                className={`${styles.preset} ${on ? styles.presetOn : ""}`}
+                onClick={() => setKortingPct(p)}
+                disabled={!live}
+              >
+                {p}%
+              </button>
+            );
+          })}
         </div>
+
         <div className={styles.korting}>
           <input
             type="range"
@@ -830,6 +1024,23 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           </div>
           <span className={styles.kortingEur}>{formatEuro(totals.kortingBedrag)}</span>
         </div>
+
+        {/* Vast bedrag (overruled het percentage) */}
+        <label className={styles.field}>
+          <span className={styles.label}>Of een vast bedrag korting</span>
+          <NumberField
+            value={data.korting_bedrag}
+            onChange={(v) => setKortingBedrag(v)}
+            min={0}
+            step={5}
+            prefix="€"
+            blankWhenZero
+            placeholder="0,00"
+            disabled={!live}
+            ariaLabel="Vast kortingsbedrag in euro"
+          />
+        </label>
+
         {totals.kortingBedrag > 0 ? (
           <div className={styles.kortingHint}>
             Korting over {formatEuro(kortbareGrondslag)}, dat is{" "}
@@ -842,13 +1053,31 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           placeholder="Bijvoorbeeld, reden van de actiekorting."
           disabled={!live}
         />
-      </section>
+      </AccordionSection>
 
-      {/* ── 6. Geldigheid offerte ── */}
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <span className={styles.cardTitle}>Geldigheid offerte</span>
+      {/* ── Geldigheid offerte ── */}
+      <AccordionSection
+        icon={<Calendar size={15} strokeWidth={2.2} />}
+        title="Geldigheid offerte"
+        summary={geldigSummary}
+        open={openGeldig}
+        onToggle={() => setOpenGeldig((o) => !o)}
+      >
+        {/* Snelkeuze-dagen */}
+        <div className={styles.presetRow}>
+          {[7, 14, 30, 60].map((d) => (
+            <button
+              key={d}
+              type="button"
+              className={`${styles.preset} ${geldigheidDagen === d ? styles.presetOn : ""}`}
+              onClick={() => setGeldigheidDagen(d)}
+              disabled={!live}
+            >
+              {d} dgn
+            </button>
+          ))}
         </div>
+
         <div className={styles.geldig}>
           <span className={styles.geldigL}>Aantal dagen geldig vanaf vandaag</span>
           <NumberField
@@ -865,7 +1094,7 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           De vervaldatum wordt berekend als vandaag + dit aantal dagen:{" "}
           <strong>{formatDatumLang(vervalDatum)}</strong>
         </p>
-      </section>
+      </AccordionSection>
 
       {/* ── 7. Live prijsoverzicht ── */}
       <section className={styles.totals}>
@@ -973,8 +1202,154 @@ export function OfferteEditor({ leadId, form, onTotaal }: OfferteEditorProps) {
           </div>
           <span className={styles.grandLineV}>{formatEuro(totaalIncl)}</span>
         </div>
+
+        {fotosCount > 0 ? (
+          <div className={styles.fotoLine}>
+            {fotosCount} {fotosCount === 1 ? "foto" : "foto's"} bijgevoegd bij de offerte
+          </div>
+        ) : null}
       </section>
+
+      {/* ── Actiebalk: PDF bekijken/downloaden + versie-historie ── */}
+      {live ? (
+        <div className={styles.actionBar}>
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
+            onClick={handleViewPdf}
+            disabled={pdfBusy}
+          >
+            {pdfBusy ? (
+              <Loader2 size={15} strokeWidth={2.4} className={styles.spin} />
+            ) : (
+              <Eye size={15} strokeWidth={2.2} />
+            )}
+            Bekijk PDF
+          </button>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={handleDownloadPdf}
+            disabled={pdfBusy}
+          >
+            <Download size={15} strokeWidth={2.2} />
+            Download PDF
+          </button>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={() => setHistOpen(true)}
+          >
+            <Clock size={15} strokeWidth={2.2} />
+            Versie-historie
+          </button>
+        </div>
+      ) : null}
+
+      {/* ── PDF-preview modal (echte PDF in een iframe) ── */}
+      <Modal open={pdfOpen} onClose={closePdf} width={920} label="Offerte PDF">
+        <div className={styles.pdfModal}>
+          <div className={styles.pdfModalHead}>
+            <span className={styles.modalTitle}>Offerte-PDF</span>
+            <button
+              type="button"
+              className={styles.actionBtn}
+              onClick={handleDownloadPdf}
+              disabled={pdfBusy}
+            >
+              <Download size={14} strokeWidth={2.2} />
+              Download
+            </button>
+          </div>
+          {pdfUrl ? (
+            <iframe src={pdfUrl} className={styles.pdfFrame} title="Offerte PDF" />
+          ) : (
+            <div className={styles.pdfLoading}>PDF laden…</div>
+          )}
+        </div>
+      </Modal>
+
+      {/* ── Versie-historie modal ── */}
+      <Modal
+        open={histOpen}
+        onClose={() => setHistOpen(false)}
+        width={520}
+        label="Versie-historie"
+      >
+        <div className={styles.histModal}>
+          <span className={styles.modalTitle}>Versie-historie</span>
+          <div className={styles.histList}>
+            <div className={`${styles.histRow} ${styles.histRowCurrent}`}>
+              <div className={styles.histMain}>
+                <span className={styles.histNr}>Huidige versie</span>
+                <span className={styles.histSub}>Nu, nog niet verstuurd</span>
+              </div>
+              <span className={styles.histTotaal}>{formatEuro(totaalIncl)}</span>
+            </div>
+            {eerdereVersies.map((o) => (
+              <div key={o.nr} className={styles.histRow}>
+                <div className={styles.histMain}>
+                  <span className={styles.histNr}>{o.nr}</span>
+                  <span className={styles.histSub}>{o.sub}</span>
+                </div>
+                <span className={styles.histTotaal}>{o.totaal}</span>
+              </div>
+            ))}
+            {eerdereVersies.length === 0 ? (
+              <div className={styles.histEmpty}>Nog geen eerdere versies verstuurd.</div>
+            ) : null}
+          </div>
+        </div>
+      </Modal>
     </div>
+  );
+}
+
+/**
+ * Uitklapbare sectie-kaart (accordion) in v2-stijl. Kop = icoon-badge + titel
+ * + (ingeklapt zichtbare) samenvatting + chevron. Het lichaam blijft altijd in
+ * de DOM (open/dicht puur via CSS: een grid-rij-collapse van 0fr naar 1fr),
+ * zodat print/zonder-JS alles toont. `accent` geeft de blauwe rand (Actiekorting).
+ */
+function AccordionSection({
+  icon,
+  title,
+  summary,
+  open,
+  onToggle,
+  accent,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  summary?: string;
+  open: boolean;
+  onToggle: () => void;
+  accent?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      className={`${styles.acc} ${accent ? styles.accAccent : ""}`}
+      data-open={open}
+    >
+      <button
+        type="button"
+        className={styles.accHead}
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span className={styles.accIcon}>{icon}</span>
+        <span className={styles.accTitle}>{title}</span>
+        {summary ? <span className={styles.accSummary}>{summary}</span> : null}
+        <ChevronDown size={16} strokeWidth={2.4} className={styles.accChevron} />
+      </button>
+      <div className={styles.accClip}>
+        <div className={styles.accInner}>
+          <div className={styles.accBody}>{children}</div>
+        </div>
+      </div>
+    </section>
   );
 }
 
