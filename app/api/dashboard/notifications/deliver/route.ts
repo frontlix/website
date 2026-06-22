@@ -5,6 +5,7 @@ import {
 } from '@/lib/dashboard/notifications/mail-templates'
 import { sendNotificationMail } from '@/lib/dashboard/notifications/mail-sender'
 import { sendPushToUser } from '@/lib/dashboard/notifications/push-sender'
+import { resolveNotificationRecipient } from '@/lib/dashboard/notifications/recipient'
 import type { NotificationEventType, NotificationKanaal } from '@/lib/dashboard/notifications/types'
 
 /**
@@ -101,13 +102,9 @@ interface NotificationRowSlice {
 }
 
 async function deliverEmail(notif: NotificationRowSlice): Promise<void> {
-  const admin = getDashboardAdmin()
-
-  // E-mail van de ontvanger ophalen uit auth.users via service-role.
-  const { data: userRes, error: userErr } = await admin.auth.admin.getUserById(notif.user_id)
-  if (userErr || !userRes?.user?.email) {
-    throw new Error(`Geen email voor user ${notif.user_id}: ${userErr?.message}`)
-  }
+  // Ontvanger: ingesteld meldingen-adres (meldingen_email ?? eigenaar_email),
+  // anders het login-account-adres als vangnet.
+  const to = await resolveNotificationRecipient(notif.user_id)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.frontlix.com'
   const dashboardUrl = notif.lead_id
@@ -122,7 +119,7 @@ async function deliverEmail(notif: NotificationRowSlice): Promise<void> {
     payload: notif.payload ?? undefined,
   })
 
-  await sendNotificationMail(userRes.user.email, mail)
+  await sendNotificationMail(to, mail)
 }
 
 async function deliverPush(notif: NotificationRowSlice): Promise<void> {
