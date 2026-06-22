@@ -17,9 +17,8 @@ import type {
   OffertesInstellingen,
   EmailConnectionState,
   WhatsAppConnectionState,
-  OwnerContactState,
 } from "./instellingen-data";
-import { EMAIL_CONNECTION_DEFAULT, WHATSAPP_CONNECTION_DEFAULT, OWNER_CONTACT_DEFAULT } from "./instellingen-data";
+import { EMAIL_CONNECTION_DEFAULT, WHATSAPP_CONNECTION_DEFAULT } from "./instellingen-data";
 import type { EmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
 import type { WhatsAppConnectionStatus } from "@/lib/dashboard/whatsapp-connection-queries";
 import {
@@ -40,8 +39,6 @@ export type TenantSettingsRow = {
   eigenaar_email: string | null;
   eigenaar_whatsapp: string | null;
   eigenaar_spoed_telefoon: string | null;
-  goedkeuring_email: string | null;
-  meldingen_email: string | null;
   plaats: string | null;
   postcode: string | null;
   adres: string | null;
@@ -304,25 +301,10 @@ export function toWhatsAppConnectionState(
   };
 }
 
-/** Initialen uit een naam ("Anna Smit" -> "AS"), max 2 letters. */
+/** Initialen uit een naam ("Anna Smit" → "AS"), max 2 letters. */
 function initialen(naam: string): string {
   const delen = naam.split(/\s+/).filter(Boolean);
   if (delen.length === 0) return "?";
   if (delen.length === 1) return delen[0].slice(0, 2).toUpperCase();
   return (delen[0][0] + delen[delen.length - 1][0]).toUpperCase();
-}
-
-// ── Owner-contact (e-mailrollen) ─────────────────────────────────────────
-
-/** tenant_settings-rij -> OwnerContactState voor het e-mailrollen-blok. */
-export function toOwnerContactState(
-  t: TenantSettingsRow | null,
-): OwnerContactState {
-  if (!t) return OWNER_CONTACT_DEFAULT;
-  return {
-    basisEmail: t.eigenaar_email ?? "",
-    goedkeuringEmail: t.goedkeuring_email ?? "",
-    meldingenEmail: t.meldingen_email ?? "",
-    whatsapp: t.eigenaar_whatsapp ?? "",
-  };
 }

@@ -475,30 +475,6 @@ export interface WhatsAppConnectionState {
 
 export const WHATSAPP_CONNECTION_DEFAULT: WhatsAppConnectionState = { connected: false };
 
-// ── Owner-contact (e-mailrollen) ─────────────────────────────────────────
-
-/**
- * Owner-contact (e-mailrollen): basis-ontvangadres + per-rol override (leeg =
- * volg basis) + WhatsApp-ping-nummer. Gevuld server-side uit tenant_settings.
- */
-export interface OwnerContactState {
-  /** Basis-ontvangadres (tenant_settings.eigenaar_email). */
-  basisEmail: string
-  /** Override of leeg (= volg basis). */
-  goedkeuringEmail: string
-  /** Override of leeg (= volg basis). */
-  meldingenEmail: string
-  /** WhatsApp-ping-nummer of leeg. */
-  whatsapp: string
-}
-
-export const OWNER_CONTACT_DEFAULT: OwnerContactState = {
-  basisEmail: '',
-  goedkeuringEmail: '',
-  meldingenEmail: '',
-  whatsapp: '',
-}
-
 // ── Team ─────────────────────────────────────────────────────────────────
 
 export interface TeamMember {
