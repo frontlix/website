@@ -1,15 +1,4 @@
-import { cookies } from 'next/headers'
-import { FileText, Plus } from 'lucide-react'
-import { getLeadsList, countAllLeads, getLastInboundByLeadIds, type LeadListItem } from '@/lib/dashboard/lead-queries'
-import { LeadsPipeline } from '@/components/dashboard/leads/LeadsPipeline'
-import { LeadsTable } from '@/components/dashboard/leads/LeadsTable'
-import { LeadsKaarten } from '@/components/dashboard/leads/LeadsKaarten'
-import { LeadsFilterTabs } from '@/components/dashboard/leads/LeadsFilterTabs'
-import { WebChatToggle } from '@/components/dashboard/leads/WebChatToggle'
-import { LeadsFilterPanel } from '@/components/dashboard/leads/LeadsFilterPanel'
-import { MobileFiltersSheet } from '@/components/dashboard/leads/MobileFiltersSheet'
-import { LeadsRealtimeToast } from '@/components/dashboard/leads/LeadsRealtimeToast'
-import { LiveDot } from '@/components/dashboard/ui/LiveDot'
+import { getLeadsList, getLastInboundByLeadIds, type LeadListItem } from '@/lib/dashboard/lead-queries'
 import { MobileLeads } from '@/components/dashboard/mobile/leads/MobileLeads'
 import {
   mapLeadToCard,
@@ -86,33 +75,15 @@ export default async function LeadsPage({
       : 'all'
   ) as FilterKey
 
-  // View-resolutie: expliciete `?view=` wint, anders fallback op de
-  // `leads_view` cookie (geschreven door LeadsViewSwitcher). We doen GEEN
-  // redirect: dat zou een extra round-trip toevoegen waardoor je een
-  // korte flash van de pipeline-view ziet (Next router-cache toont eerst
-  // de oude RSC voor /leads voordat de redirect doorzet). Door direct te
-  // renderen vanaf de cookie is er één request en geen flash.
-  let view: 'pipeline' | 'tabel' | 'kaarten' = 'pipeline'
-  if (sp.view === 'pipeline' || sp.view === 'tabel' || sp.view === 'kaarten') {
-    view = sp.view
-  } else {
-    const cookieStore = await cookies()
-    const stored = cookieStore.get('leads_view')?.value
-    if (stored === 'tabel' || stored === 'kaarten' || stored === 'pipeline') {
-      view = stored
-    }
-  }
-
   const search = (sp.q ?? '').trim().toLowerCase()
   const kanaalFilter = sp.kanaal === 'web' ? 'web' : null
 
   // Voor de archief-tab vragen we een aparte query op (dashboard_archived=true);
   // anders zou matchesFilter('archief') altijd 0 leads tonen want de standaard
   // query filtert die juist weg.
-  const [allLeads, archivedLeads, total] = await Promise.all([
+  const [allLeads, archivedLeads] = await Promise.all([
     getLeadsList(),
     getLeadsList(undefined, { archived: true }),
-    countAllLeads(),
   ])
 
   // Counts per tab, over ALLE leads (niet de gefilterde view) zodat de
@@ -129,9 +100,6 @@ export default async function LeadsPage({
 
   // Bron-lijst: voor archief gebruiken we de aparte set, anders de standaard.
   const sourceLeads = activeFilter === 'archief' ? archivedLeads : allLeads
-
-  // Web-chat count over ALLE niet-gearchiveerde leads, los van actieve filters.
-  const webCount = allLeads.filter((l) => l.kanaal === 'web').length
 
   // Eerst tab-filter, dan kanaal-filter, dan search, alle cumulatief.
   let displayed = sourceLeads.filter((l) => matchesFilter(l, activeFilter))
@@ -182,11 +150,6 @@ export default async function LeadsPage({
     )
   }
 
-  // Of er geavanceerde filters actief zijn (voor de empty-state copy).
-  const advFiltersActive = bronFilter !== null || sp.urgent === '1'
-
-  const actief = allLeads.filter((l) => l.dashboard_status !== 'afgehandeld').length
-
   // chatbotNaam: default 'Surface' (geen extra query om race-conditions te vermijden;
   // de naam is puur cosmetic in de mobile UI)
   const chatbotNaam = 'Surface'
@@ -198,100 +161,26 @@ export default async function LeadsPage({
   const nowMs = Date.now()
 
   return (
-    <>
-      {/* ── Desktop tree (verborgen op ≤ 640px) ──────────────────────────── */}
-      <div className={styles.desktopTree}>
-        <div className="dash-section-head">
-          <div>
-            <div className="dash-section-title">Leads</div>
-            <div className="dash-section-sub">
-              <LiveDot />
-              <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-                {actief} actief · {total} totaal
-              </span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <a
-              href="/leads?export=1"
-              className="dash-btn dash-btn-secondary"
-            >
-              <FileText size={13} />
-              Export
-            </a>
-            <LeadsFilterPanel />
-            <a
-              href="/leads?nieuwe-offerte=1"
-              className="dash-btn dash-btn-primary"
-            >
-              <Plus size={13} />
-              Nieuwe offerte
-            </a>
-          </div>
-        </div>
-
-        {/* Filter-tabs bovenin */}
-        <div className={styles.filterRow}>
-          {/* Desktop-filters: verborgen op ≤ 640px; mobiel toont MobileFiltersSheet */}
-          <div className={styles.desktopFilters}>
-            <LeadsFilterTabs counts={counts} />
-            <WebChatToggle count={webCount} />
-          </div>
-          {/* Mobile-only filter-trigger */}
-          <MobileFiltersSheet
-            filterTabs={{ counts }}
-            webChat={{ count: webCount }}
-          />
-          <SearchBar initial={search} />
-        </div>
-
-        {displayed.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyTitle}>Geen leads gevonden</div>
-            <div className={styles.emptySub}>
-              {search || activeFilter !== 'all' || advFiltersActive
-                ? 'Wis filters of search om alle leads te zien.'
-                : "Zodra een aanvraag binnenkomt verschijnt 'ie hier in de pipeline."}
-            </div>
-          </div>
-        ) : view === 'tabel' ? (
-          <LeadsTable leads={displayed} />
-        ) : view === 'kaarten' ? (
-          <LeadsKaarten leads={displayed} />
-        ) : (
-          <LeadsPipeline leads={displayed} />
-        )}
-
-        <LeadsRealtimeToast />
-      </div>
-
-      {/* ── Mobile tree (alleen zichtbaar op ≤ 640px) ─────────────────────── */}
-      <div className={styles.mobileTree}>
-        <MobileLeads
-          data={{
-            cards: displayed.map((l) =>
-              mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
-            ),
-            telefoonById: Object.fromEntries(
-              displayed.map((l) => [l.lead_id, l.telefoon ?? '']),
-            ),
-            counts: {
-              all:     counts.all,
-              gesprek: counts.in_gesprek,
-              review:  counts.review,
-              uit:     counts.offerte_uit,
-              gepland: counts.ingepland,
-              klaar:   counts.afgerond,
-            },
-            chatbotNaam,
-          }}
-        />
-      </div>
-    </>
+    <div className={styles.mobileTree}>
+      <MobileLeads
+        data={{
+          cards: displayed.map((l) =>
+            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
+          ),
+          telefoonById: Object.fromEntries(
+            displayed.map((l) => [l.lead_id, l.telefoon ?? '']),
+          ),
+          counts: {
+            all:     counts.all,
+            gesprek: counts.in_gesprek,
+            review:  counts.review,
+            uit:     counts.offerte_uit,
+            gepland: counts.ingepland,
+            klaar:   counts.afgerond,
+          },
+          chatbotNaam,
+        }}
+      />
+    </div>
   )
-}
-
-import { LeadsSearchBar } from '@/components/dashboard/leads/LeadsSearchBar'
-function SearchBar({ initial }: { initial: string }) {
-  return <LeadsSearchBar initial={initial} />
 }

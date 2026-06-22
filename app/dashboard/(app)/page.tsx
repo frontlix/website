@@ -1,5 +1,3 @@
-import Link from 'next/link'
-import { FileText, Plus, Eye, Calendar } from 'lucide-react'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import {
@@ -29,31 +27,17 @@ import {
   getUnreadNotificationCount,
 } from '@/lib/dashboard/notification-queries'
 import {
-  buildFunnelRows,
   buildActivityFeed,
-  buildKpiMetrics,
-  buildOpenOffertesMetric,
   pickUpcomingAppointments,
 } from '@/lib/dashboard/overzicht-data'
 import { getGreeting, getVoornaam } from '@/lib/dashboard/greeting'
 import { getDagrapport } from '@/lib/dashboard/dagrapport-queries'
 import { buildSurfaceSummary } from '@/lib/dashboard/surface-summary'
 
-import { AreaChart } from '@/components/dashboard/ui/AreaChart'
-import { LiveDot } from '@/components/dashboard/ui/LiveDot'
-import { Pill } from '@/components/dashboard/ui/Pill'
-import { Trechter } from '@/components/dashboard/overzicht/Trechter'
-import { EerstDitDoen } from '@/components/dashboard/overzicht/EerstDitDoen'
-import { deriveActions, countByTone, type DashboardAction } from '@/lib/dashboard/eerst-dit-doen'
+import { deriveActions, type DashboardAction } from '@/lib/dashboard/eerst-dit-doen'
 import { DagrapportDrawer } from '@/components/dashboard/overzicht/DagrapportDrawer'
-import { LiveActivityFeed, type ActivityItem as LiveActivityItem } from '@/components/dashboard/overzicht/LiveActivityFeed'
-import { TrendRangeToggle } from '@/components/dashboard/overzicht/TrendRangeToggle'
-import { GreetingTitle } from '@/components/dashboard/overzicht/GreetingTitle'
-import { SurfaceDailySummary } from '@/components/dashboard/overzicht/SurfaceDailySummary'
-import { KpiModule, parseKpiKey } from '@/components/dashboard/overzicht/KpiModule'
-import { type KpiKey } from '@/components/dashboard/overzicht/kpi-types'
+import { type ActivityItem as LiveActivityItem } from '@/components/dashboard/overzicht/LiveActivityFeed'
 import { LiveActivityFocus } from '@/components/dashboard/overzicht/LiveActivityFocus'
-import { TrendStat } from '@/components/dashboard/overzicht/TrendStat'
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 
 import { MobileOverzicht, type MobileOverzichtData } from '@/components/dashboard/mobile/overzicht/MobileOverzicht'
@@ -88,7 +72,6 @@ export default async function OverzichtPage({
   const sp = await searchParams
   const trendRange: TrendRange = sp.trend === '7d' || sp.trend === '90d' ? sp.trend : '28d'
   const trendDays = RANGE_DAYS[trendRange]
-  const activeKpi: KpiKey = parseKpiKey(sp.kpi)
   const focusMode = sp.focus === 'live'
   const dagrapportOpen = sp.dagrapport === '1'
 
@@ -120,10 +103,10 @@ export default async function OverzichtPage({
   // `leadsTodayTomorrow` is nieuw voor de mobile-header-subline
   // ("14 leads vandaag · 4 morgen").
   const [
-    leadsMaand,
+    ,
     convertedMaand,
     avgWaarde,
-    trend,
+    ,
     appts,
     allLeads,
     tenantRaw,
@@ -189,13 +172,8 @@ export default async function OverzichtPage({
     (tenant?.omzet_doel_maand as number | null | undefined) ?? null
 
   // ── Afgeleide cijfers ─────────────────────────────────
-  const conversiePct =
-    leadsMaand > 0 ? Math.round((convertedMaand / leadsMaand) * 100) : 0
   const omzetMaand = avgWaarde !== null ? convertedMaand * avgWaarde : 0
   const gemTicket = avgWaarde ?? 0
-
-  const trendData = trend.map((d) => d.count)
-  const totaal30d = trendData.reduce((sum, n) => sum + n, 0)
 
   const conversiePctLast30 =
     leadsLast30d > 0 ? Math.round((convertedLast30d / leadsLast30d) * 100) : 0
@@ -207,26 +185,8 @@ export default async function OverzichtPage({
   const reactietijdPrev7S =
     reactietijdPrev7Ms !== null ? Math.round(reactietijdPrev7Ms / 1000) : 0
 
-  const kpiMetrics = buildKpiMetrics({
-    omzetMaand,
-    omzetMaandPrev,
-    leadsLast7d,
-    leadsPrev7d,
-    conversiePctLast30,
-    conversiePctPrev30,
-    reactietijdLast7S,
-    reactietijdPrev7S,
-    omzetDoelMaand,
-  })
-  const extraOffertesOpen = buildOpenOffertesMetric(openOffertes)
-
   const upcomingAppts = pickUpcomingAppointments(appts, 4)
-  const funnelRows = buildFunnelRows(allLeads, week.from!)
   const eerstDitDoenActies = deriveActions(allLeads, 5)
-  const eerstDitDoenCounts = countByTone(eerstDitDoenActies)
-  const ownerActieCount = allLeads.filter(
-    (l) => l.gesprek_fase === 'onderhandelen',
-  ).length
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
   // Dagrapport-data alleen ophalen als de drawer open is, voorkomt extra
@@ -312,187 +272,6 @@ export default async function OverzichtPage({
 
   return (
     <>
-      <div className={styles.desktopTree}>
-      <div className="dash-section-head">
-        <div>
-          <div className="dash-section-title">
-            <GreetingTitle initialGreeting={greeting} voornaam={voornaam} />
-          </div>
-          <div className="dash-section-sub">
-            <LiveDot />
-            <span style={{ marginLeft: 8, verticalAlign: 'middle' }}>
-              {chatbotName} is live · {upcomingAppts.length} komende afspra
-              {upcomingAppts.length === 1 ? 'ak' : 'ken'}
-            </span>
-          </div>
-        </div>
-        <div className="dash-section-actions">
-          {/* Desktop: Eye-knop opent focus-modus (full-width live feed).
-              Op mobile vervangen door een ankerlink 'Afspraken' die direct
-              naar de live-feed scrollt, geen extra view-state. */}
-          <Link
-            href="/dashboard?focus=live"
-            className="dash-btn dash-btn-secondary dash-hide-mobile"
-            scroll={false}
-            title="Focus-modus: alleen Live activiteit"
-            aria-label="Focus-modus openen"
-          >
-            <Eye size={14} />
-          </Link>
-          <a
-            href="#live-feed"
-            className="dash-btn dash-btn-secondary dash-show-mobile"
-            aria-label="Spring naar live feed"
-          >
-            <Calendar size={14} />
-            Afspraken
-          </a>
-          <a
-            href="/api/dashboard/export/leads-csv"
-            className="dash-btn dash-btn-secondary"
-          >
-            <FileText size={13} />
-            Export
-          </a>
-          <Link href="/?nieuwe-offerte=1" className="dash-btn dash-btn-primary" scroll={false}>
-            <Plus size={14} />
-            Nieuwe offerte
-          </Link>
-        </div>
-      </div>
-
-      <SurfaceDailySummary
-        greeting={greeting}
-        voornaam={voornaam}
-        chatbotName={chatbotName}
-        stats={{
-          leadsVandaag,
-          offertesWeek,
-          akkoordWeek,
-          omzetMaand: Math.round(omzetMaand),
-          gemTicket: Math.round(gemTicket),
-        }}
-      />
-
-      {/* "Eerst dit doen", alleen renderen als er daadwerkelijk acties zijn,
-          anders verdwijnt de hele sectie zodat we geen leeg blok tonen. */}
-      {eerstDitDoenActies.length > 0 && (
-        <EerstDitDoen
-          actions={eerstDitDoenActies}
-          counts={eerstDitDoenCounts}
-        />
-      )}
-
-      <KpiModule
-        metrics={kpiMetrics}
-        active={activeKpi}
-        hrefBase="/dashboard"
-        extraMetric={extraOffertesOpen}
-      />
-
-      <div className={styles.mainGrid}>
-        {/* LINKERKOLOM, trend chart + funnel */}
-        <div className={styles.colLeft}>
-          <div className="dash-card">
-            <div className="dash-card-head">
-              <div>
-                <div className="dash-card-title">
-                  Lead-instroom, laatste {trendDays} dagen
-                </div>
-                <div className="dash-card-sub">Aantal nieuwe leads per dag</div>
-              </div>
-              <TrendRangeToggle active={trendRange} />
-            </div>
-            <div style={{ padding: '8px 12px 12px' }}>
-              <AreaChart data={trendData} height={170} />
-            </div>
-            <div className={styles.trendStats}>
-              <TrendStat label="Totaal leads" value={String(totaal30d)} sub={`in ${trendDays}d`} />
-              <TrendStat label="Conversie" value={`${conversiePct}%`} sub="deze maand" />
-              <TrendStat label="Owner-acties" value={String(ownerActieCount)} sub="nog open" />
-              <TrendStat
-                label="Gem. ticket"
-                value={
-                  gemTicket > 0
-                    ? `€ ${Math.round(gemTicket).toLocaleString('nl-NL')}`
-                    : '—'
-                }
-                sub="per offerte"
-              />
-            </div>
-          </div>
-
-          <Trechter rows={funnelRows} />
-        </div>
-
-        {/* RECHTERKOLOM, live activity feed + komende afspraken */}
-        <div className={styles.colRight}>
-          {/* id voor de mobile 'Afspraken'-anchor button in de section-head.
-              scroll-margin-top in CSS zorgt dat de sticky topbar 'm niet
-              afdekt na de jump. */}
-          <div id="live-feed" className={styles.liveFeedAnchor}>
-            <LiveActivityFeed items={activityItems} />
-          </div>
-
-          <div className="dash-card">
-            <div className="dash-card-head">
-              <div className="dash-card-title">Komende afspraken</div>
-              <a href="/agenda" className="dash-btn dash-btn-ghost dash-btn-sm">
-                Agenda →
-              </a>
-            </div>
-            <div className={styles.apptList}>
-              {upcomingAppts.length === 0 && (
-                <div className={styles.apptEmpty}>
-                  Geen geplande afspraken.{' '}
-                  <a href="/agenda" style={{ color: 'var(--primary)' }}>
-                    Open agenda
-                  </a>
-                </div>
-              )}
-              {upcomingAppts.map((appt) => {
-                const date = new Date(appt.afspraak_geboekt_op!)
-                return (
-                  <a
-                    key={appt.lead_id}
-                    href={`/leads/${appt.lead_id}`}
-                    className={styles.apptRow}
-                  >
-                    <div className={styles.apptDate}>
-                      <div className={styles.apptMonth}>
-                        {date
-                          .toLocaleDateString('nl-NL', { month: 'short' })
-                          .toUpperCase()}
-                      </div>
-                      <div className={styles.apptDay}>{date.getDate()}</div>
-                    </div>
-                    <div className={styles.apptBody}>
-                      <div className={styles.apptName}>{appt.naam}</div>
-                      <div className={styles.apptMeta}>
-                        {date.toLocaleTimeString('nl-NL', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}{' '}
-                        · {appt.telefoon}
-                      </div>
-                    </div>
-                    <Pill
-                      tone={
-                        appt.dashboard_status === 'afgehandeld' ? 'green' : 'blue'
-                      }
-                    >
-                      {appt.dashboard_status ?? 'open'}
-                    </Pill>
-                  </a>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      </div>
-
       {/* Mobile-tree: zelfde server-data, andere widget-composition.
           Op desktops verbergt de @media-query in page.module.css 'm. */}
       <div className={styles.mobileTree}>

@@ -1,26 +1,6 @@
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
-import {
-  SettingsNav,
-  type SettingsSection,
-} from '@/components/dashboard/instellingen/SettingsNav'
-import { BotRefreshButton } from '@/components/dashboard/bot-actions/BotRefreshButton'
-import {
-  BedrijfSection,
-  PrijzenSection,
-  DienstenSection,
-  TagsSection,
-  OpeningSection,
-  RemindersSection,
-  NotificatiesSection,
-  TeamSection,
-  AccountWrapper,
-  AvgWrapper,
-  type TenantSettings,
-  type PricingRule,
-  type ServiceOffering,
-  type TeamMember,
-} from '@/components/dashboard/instellingen/SettingSections'
-import { IntegratiesSection } from '@/components/dashboard/instellingen/IntegratiesSection'
+import { type SettingsSection } from '@/components/dashboard/instellingen/SettingsNav'
+import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from '@/components/dashboard/instellingen/SettingSections'
 import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
 import { getEmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
 import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
@@ -144,54 +124,6 @@ export default async function InstellingenPage({
 
   return (
     <>
-      <div className={styles.desktopTree}>
-        <div className="dash-section-head">
-          <div>
-            <div className="dash-section-title">Instellingen</div>
-            <div className="dash-section-sub">
-              Bedrijf · Prijzen · Diensten · Openingsbericht · Reminders · Team
-            </div>
-          </div>
-          <BotRefreshButton />
-        </div>
-
-        <div className={styles.layout}>
-          <SettingsNav />
-          <div className={styles.content}>
-            {section === 'bedrijf' && <BedrijfSection tenant={tenant} />}
-            {section === 'prijzen' && <PrijzenSection pricing={pricing} baseline={baselineRaw} />}
-            {section === 'diensten' && <DienstenSection services={services} />}
-            {section === 'tags' && <TagsSection tags={tags} />}
-            {section === 'opening' && (
-              <OpeningSection
-                bedrijfsnaam={tenant?.bedrijfsnaam ?? 'Schoon Straatje'}
-                chatbot={tenant?.chatbot_naam ?? 'Surface'}
-                aanvragen={templateAanvragen}
-              />
-            )}
-            {section === 'reminders' && (
-              <RemindersSection tenant={tenant} aanvragen={templateAanvragen} />
-            )}
-            {section === 'notificaties' && (
-              <NotificatiesSection
-                prefs={notifPrefs}
-                digestTijd={tenant?.daily_digest_tijd ?? '08:00'}
-              />
-            )}
-            {section === 'team' && <TeamSection members={team} />}
-            {section === 'integraties' && gcalStatus && (
-              <IntegratiesSection
-                connected={gcalStatus.connected}
-                googleEmail={gcalStatus.googleEmail}
-                calendarId={gcalStatus.calendarId}
-              />
-            )}
-            {section === 'account' && <AccountWrapper email={user?.email ?? ''} />}
-            {section === 'avg' && <AvgWrapper />}
-          </div>
-        </div>
-      </div>
-
       <div className={styles.mobileTree}>
         {/* Echte Supabase-data wordt doorgesluisd naar elk mobiel detailscherm
             (geen mock meer). sp.section (rauw) opent het juiste detail bij een
