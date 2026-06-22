@@ -79,6 +79,30 @@ export function buildPricingFromRuleKeys(
   }
 }
 
+/** Minimale offerte-vorm die resolveSeedPricing nodig heeft. */
+type SeedOfferte = {
+  versie: number
+  is_concept: boolean
+  regels_snapshot: unknown
+}
+
+/**
+ * Bepaalt met welke prijslijst de concept-editor geseed moet worden: de
+ * bevroren `pricing` uit de snapshot van de laatste VERSTUURDE offerte
+ * (is_concept === false, hoogste versie) als die bestaat, anders de live
+ * prijslijst. Zo toont een ongewijzigd concept exact de verzonden prijzen.
+ */
+export function resolveSeedPricing(
+  offertes: SeedOfferte[],
+  livePricing: ManualOffertePricing,
+): ManualOffertePricing {
+  const verstuurd = offertes
+    .filter((o) => o.is_concept === false)
+    .sort((a, b) => b.versie - a.versie)[0]
+  if (!verstuurd) return livePricing
+  return readSnapshotPricing(verstuurd.regels_snapshot) ?? livePricing
+}
+
 /** Type-guard: is dit een plain object (geen array, geen null)? */
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)

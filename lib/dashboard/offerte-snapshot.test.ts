@@ -3,6 +3,7 @@ import {
   readSnapshotPricing,
   readSnapshotRegels,
   buildPricingFromRuleKeys,
+  resolveSeedPricing,
 } from './offerte-snapshot'
 import { FALLBACK_PRICING } from './pricing-types'
 
@@ -76,5 +77,61 @@ describe('buildPricingFromRuleKeys', () => {
   it('valt per veld terug op FALLBACK_PRICING bij een lege map', () => {
     const p = buildPricingFromRuleKeys(new Map())
     expect(p).toEqual(FALLBACK_PRICING)
+  })
+})
+
+describe('resolveSeedPricing', () => {
+  const live = { ...FALLBACK_PRICING, reiniging_per_m2: 5.25 }
+
+  function offerte(over: Record<string, unknown>) {
+    return { versie: 1, is_concept: false, regels_snapshot: null, ...over } as any
+  }
+
+  it('seedt uit de snapshot van de laatste verstuurde offerte', () => {
+    const offertes = [
+      offerte({
+        versie: 1,
+        is_concept: false,
+        regels_snapshot: {
+          schemaVersie: 1,
+          pricing: { ...FALLBACK_PRICING, reiniging_per_m2: 7.77 },
+          regels: [],
+          kortingPct: 0,
+        },
+      }),
+    ]
+    expect(resolveSeedPricing(offertes, live).reiniging_per_m2).toBe(7.77)
+  })
+
+  it('kiest de hoogste verstuurde versie, negeert het concept', () => {
+    const offertes = [
+      offerte({ versie: 3, is_concept: true, regels_snapshot: null }), // concept negeren
+      offerte({
+        versie: 2,
+        is_concept: false,
+        regels_snapshot: {
+          schemaVersie: 1,
+          pricing: { ...FALLBACK_PRICING, reiniging_per_m2: 2.22 },
+          regels: [],
+          kortingPct: 0,
+        },
+      }),
+      offerte({
+        versie: 1,
+        is_concept: false,
+        regels_snapshot: {
+          schemaVersie: 1,
+          pricing: { ...FALLBACK_PRICING, reiniging_per_m2: 1.11 },
+          regels: [],
+          kortingPct: 0,
+        },
+      }),
+    ]
+    expect(resolveSeedPricing(offertes, live).reiniging_per_m2).toBe(2.22)
+  })
+
+  it('valt terug op live pricing zonder bruikbare snapshot', () => {
+    expect(resolveSeedPricing([offerte({ regels_snapshot: null })], live).reiniging_per_m2).toBe(5.25)
+    expect(resolveSeedPricing([], live).reiniging_per_m2).toBe(5.25)
   })
 })
