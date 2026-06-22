@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
   // bij launch met missing chromium.
   serverExternalPackages: ['puppeteer'],
 
+  // Server Actions kappen de request-body standaard af op 1 MB (Next.js
+  // framework-default, vóórdat de action zelf draait). De logo-upload
+  // (uploadTenantLogo) belooft echter "max 2 MB", dus alles tussen 1 en
+  // 2 MB faalde stilletjes met een generieke error. We tillen de
+  // platform-limiet naar 3 MB: ruim boven de eigen 2 MB-check zodat die
+  // de bindende grens blijft (met de nette melding i.p.v. een crash),
+  // mét marge voor de multipart/form-data-overhead (~10-20 KB) die óók
+  // in deze rauwe body meetelt.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '3mb',
+    },
+  },
+
   // Sta dev-toegang vanaf het lokale LAN toe (telefoon op zelfde WiFi).
   // Zonder deze whitelist logt Next.js 15 een cross-origin warning en kan
   // het _next/* chunks of HMR-payload anders behandelen, wat op iPhone
