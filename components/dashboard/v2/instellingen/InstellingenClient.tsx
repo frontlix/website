@@ -48,6 +48,7 @@ import styles from "@/app/dashboard/v2/instellingen/page.module.css";
 
 import { saveOmzetDoelMaand } from "@/lib/dashboard/omzet-doel-actions";
 import { updateBedrijfsprofiel } from "@/lib/dashboard/bedrijfsprofiel-actions";
+import { triggerBotConfigReload } from "@/lib/dashboard/bot-reload-actions";
 import { saveOffertesInstellingen } from "@/lib/dashboard/offertes-instellingen-actions";
 import { saveBeschikbaarheid } from "@/lib/dashboard/beschikbaarheid-actions";
 import { toggleServiceOffering } from "@/lib/dashboard/service-offerings-actions";
@@ -251,6 +252,10 @@ export function InstellingenClient(props: InstellingenClientProps) {
         await saveBeschikbaarheid(dagen);
       }
       // Andere panels (toggles/meldingen) slaan direct op bij interactie.
+
+      // Vertel de bot dat de config is gewijzigd zodat hij direct herlaadt
+      // (best-effort; de 60s-refresh van de bot is het vangnet).
+      await triggerBotConfigReload();
     });
   }
 
