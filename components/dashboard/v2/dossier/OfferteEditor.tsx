@@ -66,7 +66,6 @@ import { formatEuro } from "@/lib/dashboard/format";
 import { saveOfferteForm } from "@/lib/dashboard/offerte-form-actions";
 import { revertConcept } from "@/lib/dashboard/offerte-draft-actions";
 import { OffertePdfDocument } from "@/components/dashboard/offerte/OffertePdf";
-import { deliverPdfBlob } from "@/components/dashboard/offerte/pdf-download";
 import { NlNumberInput } from "@/components/dashboard/NlNumberInput";
 import { Modal, SegmentedControl } from "@/components/dashboard/v2/ui";
 import type { DossierOfferte } from "./dossier-data";
@@ -413,6 +412,14 @@ export function OfferteEditor({
   const effectiveKortingPct =
     kortbareGrondslag > 0 ? (totals.kortingBedrag / kortbareGrondslag) * 100 : 0;
 
+  // Toon ALTIJD een heel percentage 0-100. In percentage-modus tonen we de
+  // expliciet gezette korting_percentage (de slider/preset-waarde), niet de
+  // teruggerekende effectieve pct, die door euro-afronding net naast een heel
+  // getal valt (bv. 56,999%). In vast-bedrag-modus tonen we de afgeleide pct.
+  const pctDisplay = Math.round(
+    data.korting_bedrag === 0 ? data.korting_percentage : effectiveKortingPct,
+  );
+
   const totaalIncl = totals.total + totals.btw;
 
   // Vervaldatum = vandaag + N dagen.
@@ -434,11 +441,11 @@ export function OfferteEditor({
   }, [totaalIncl, onTotaal]);
 
   // ─── Korting-helpers ───────────────────────────────────────
-  /** Zet percentage-korting (wist het vaste bedrag). */
+  /** Zet percentage-korting (heel getal 0-100, wist het vaste bedrag). */
   const setKortingPct = useCallback((pct: number) => {
     setData((s) => ({
       ...s,
-      korting_percentage: Math.max(0, Math.min(100, pct)),
+      korting_percentage: Math.round(Math.max(0, Math.min(100, pct))),
       korting_bedrag: 0,
     }));
   }, []);
@@ -464,7 +471,7 @@ export function OfferteEditor({
     totals.kortingBedrag > 0
       ? data.korting_bedrag > 0
         ? `${formatEuro(totals.kortingBedrag)} korting`
-        : `${Math.round(effectiveKortingPct)}% korting`
+        : `${pctDisplay}% korting`
       : "Geen korting";
   const geldigSummary = `${geldigheidDagen} dagen`;
 
@@ -532,7 +539,18 @@ export function OfferteEditor({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
-      await deliverPdfBlob(blob, `offerte-${slug || "schoon-straatje"}.pdf`);
+      // Desktop: directe download via <a download>. Bewust NIET de Web Share
+      // API (deliverPdfBlob), die opent op macOS/Windows het deel-/bewaar-vel
+      // i.p.v. direct te downloaden.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `offerte-${slug || "schoon-straatje"}.pdf`;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (e) {
       console.error("[OfferteEditor] PDF-download mislukt:", e);
       // eslint-disable-next-line no-alert
@@ -983,7 +1001,7 @@ export function OfferteEditor({
         {/* Snelkeuze-percentages */}
         <div className={styles.presetRow}>
           {[10, 20, 30, 50].map((p) => {
-            const on = data.korting_bedrag === 0 && Math.round(effectiveKortingPct) === p;
+            const on = data.korting_bedrag === 0 && pctDisplay === p;
             return (
               <button
                 key={p}
@@ -1005,14 +1023,14 @@ export function OfferteEditor({
             max={100}
             step={1}
             className={styles.slider}
-            value={Math.round(effectiveKortingPct)}
+            value={pctDisplay}
             onChange={(e) => setKortingPct(Number(e.target.value))}
             disabled={!live}
             aria-label="Actiekorting percentage"
           />
           <div className={styles.kortingPctField}>
             <NumberField
-              value={effectiveKortingPct}
+              value={pctDisplay}
               onChange={(v) => setKortingPct(v)}
               min={0}
               max={100}
@@ -1169,7 +1187,7 @@ export function OfferteEditor({
               <span>
                 {data.korting_bedrag > 0
                   ? "Actiekorting (vast bedrag)"
-                  : `Actiekorting (${Math.round(effectiveKortingPct)}%)`}
+                  : `Actiekorting (${pctDisplay}%)`}
               </span>
               <span className={styles.totalsValue}>
                 &#8722; {formatEuro(totals.kortingBedrag)}

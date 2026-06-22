@@ -985,6 +985,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 18px 20px 20px;
 }
 
 .pdfModalHead {
@@ -992,7 +993,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-right: 28px;
+  /* Ruimte rechts zodat de Download-knop niet onder de sluit-X (modal) valt. */
+  padding-right: 40px;
 }
 
 .pdfFrame {
@@ -1015,6 +1017,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 20px 22px 22px;
 }
 
 .histList {
