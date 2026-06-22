@@ -215,18 +215,23 @@ export interface OpeningTemplate {
   default: string;
 }
 
+// Beide tabs delen dezelfde echte opener: de bot stuurt voor oprit/terras en
+// onkruid hetzelfde openingsbericht (alleen de begroeting wisselt live met het
+// tijdstip: Goedemorgen/Goedemiddag/Goedenavond). De eigenaar kan per tab alsnog
+// afwijken als hij dat wil. Tekst = de productie-opener (Meta-template-kopie).
+const OPENING_DEFAULT_TEKST =
+  "Goedemorgen {voornaam} 👋\n\nDank je voor je offerteaanvraag bij {bedrijf}.\n\nIk ben {bot_naam}, de digitale assistent van {bedrijf}.\nIk stel je een paar korte vragen om je offerte snel en nauwkeurig te maken 👍\n\nDit duurt ongeveer 2 minuten.\n\nZal ik beginnen?🤗";
+
 export const OPENING_TEMPLATES: OpeningTemplate[] = [
   {
     key: "lead_intake_oprit",
     label: "Oprit / Terras",
-    default:
-      "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, jullie online assistent. Ik help je in een paar berichten aan een offerte op maat voor het reinigen en opnieuw invegen van je {hoofddienst}.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
+    default: OPENING_DEFAULT_TEKST,
   },
   {
     key: "lead_intake_onkruid",
     label: "Onkruidbeheersing",
-    default:
-      "Hoi {voornaam}\n\nBedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.\n\nKlopt het dat het gaat om ongeveer {m2} m²?",
+    default: OPENING_DEFAULT_TEKST,
   },
 ];
 
