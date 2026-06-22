@@ -15,6 +15,9 @@ interface SwipeableLeadCardProps {
   expanded: boolean
   onToggleExpand: (id: string) => void
   onArchive: (id: string) => void
+  /** Archief-modus: de veeg-actie wordt "Herstel" i.p.v. "Archief". */
+  archived?: boolean
+  onUnarchive?: (id: string) => void
   /** Id van de kaart die momenteel open-geveegd is (gedeeld via de parent). */
   swipeOpenId: string | null
   /** Meld dat DEZE kaart open-veegt, parent sluit dan de andere. */
@@ -37,6 +40,8 @@ export function SwipeableLeadCard({
   expanded,
   onToggleExpand,
   onArchive,
+  archived = false,
+  onUnarchive,
   swipeOpenId,
   onSwipeOpen,
 }: SwipeableLeadCardProps) {
@@ -114,29 +119,49 @@ export function SwipeableLeadCard({
             </Link>
           </div>
 
-          {/* Rechter lane (Archief), verschijnt bij veeg ← */}
+          {/* Rechter lane: "Archief" (actief) of "Herstel" (archief-modus),
+              verschijnt bij veeg ← */}
           <div
             className={styles.laneRight}
             style={{ pointerEvents: open === -1 ? 'auto' : 'none' }}
             aria-hidden={open !== -1}
           >
-            <button
-              type="button"
-              className={styles.actionBtn}
-              data-action="archief"
-              onClick={(e) => {
-                e.stopPropagation()
-                onArchive(lead.id)
-              }}
-            >
-              {/* Archive box icon */}
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="21 8 21 21 3 21 3 8" />
-                <rect x="1" y="3" width="22" height="5" />
-                <line x1="10" y1="12" x2="14" y2="12" />
-              </svg>
-              <span>Archief</span>
-            </button>
+            {archived ? (
+              <button
+                type="button"
+                className={styles.actionBtn}
+                data-action="herstel"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onUnarchive?.(lead.id)
+                }}
+              >
+                {/* Rotate/undo icon */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                <span>Herstel</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.actionBtn}
+                data-action="archief"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onArchive(lead.id)
+                }}
+              >
+                {/* Archive box icon */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="21 8 21 21 3 21 3 8" />
+                  <rect x="1" y="3" width="22" height="5" />
+                  <line x1="10" y1="12" x2="14" y2="12" />
+                </svg>
+                <span>Archief</span>
+              </button>
+            )}
           </div>
         </>
       )}

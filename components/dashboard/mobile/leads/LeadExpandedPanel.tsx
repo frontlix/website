@@ -56,6 +56,9 @@ interface LeadExpandedPanelProps {
   lead: MobileLeadCard
   onClose: () => void
   onOpenLead: (id: string) => void
+  /** Archief-modus: vervang de fase-actie door een "Herstel"-knop. */
+  archived?: boolean
+  onUnarchive?: (id: string) => void
 }
 
 /**
@@ -71,7 +74,7 @@ interface LeadExpandedPanelProps {
  *
  * Reveal-animatie: opacity + translateY(-6px) → 0 in 0.25s var(--ease-ios).
  */
-export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPanelProps) {
+export function LeadExpandedPanel({ lead, onClose, onOpenLead, archived = false, onUnarchive }: LeadExpandedPanelProps) {
   const meta = STAGE_META[lead.stage]
   const primary = PRIMARY_ACTION[lead.stage]
 
@@ -137,15 +140,30 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead }: LeadExpandedPan
         </div>
       </div>
 
-      {/* 5. Hoofdactie, vol breedte, accent gradient (label is stage-afhankelijk) */}
+      {/* 5. Hoofdactie, vol breedte, accent gradient. In archief-modus is dat
+            "Herstel naar pipeline" i.p.v. de fase-actie (die slaat nergens op
+            voor een gearchiveerde lead). */}
       <div className={styles.actionsGrid}>
-        <Link
-          href={primary.href(lead.id)}
-          className={styles.btnPrimary}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {primary.label}
-        </Link>
+        {archived ? (
+          <button
+            type="button"
+            className={styles.btnPrimary}
+            onClick={(e) => {
+              e.stopPropagation()
+              onUnarchive?.(lead.id)
+            }}
+          >
+            Herstel naar pipeline
+          </button>
+        ) : (
+          <Link
+            href={primary.href(lead.id)}
+            className={styles.btnPrimary}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {primary.label}
+          </Link>
+        )}
       </div>
 
       {/* 6. Open volledig dossier */}
