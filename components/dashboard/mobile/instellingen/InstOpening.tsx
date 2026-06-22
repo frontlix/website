@@ -11,26 +11,32 @@ import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import { InstTemplateBlock } from './InstTemplateBlock'
 import styles from './InstOpening.module.css'
 
+// Beide tabs delen dezelfde echte opener: de bot stuurt voor oprit/terras en
+// onkruid hetzelfde openingsbericht (alleen de begroeting wisselt live met het
+// tijdstip). De eigenaar kan per tab alsnog afwijken. 1-op-1 met desktop.
+const OPENING_DEFAULT_TEKST = `Goedemorgen {voornaam} 👋
+
+Dank je voor je offerteaanvraag bij {bedrijf}.
+
+Ik ben {bot_naam}, de digitale assistent van {bedrijf}.
+Ik stel je een paar korte vragen om je offerte snel en nauwkeurig te maken 👍
+
+Dit duurt ongeveer 2 minuten.
+
+Zal ik beginnen?🤗`
+
 const TEMPLATES = [
   {
     key: 'lead_intake_oprit',
     tabLabel: 'Oprit / Terras',
     hoofddienst: 'oprit',
-    default: `Hoi {voornaam}👋
-
-Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, jullie online assistent. Ik help je in een paar berichten aan een offerte op maat voor het reinigen en opnieuw invegen van je {hoofddienst}.
-
-Klopt het dat het gaat om ongeveer {m2} m²?`,
+    default: OPENING_DEFAULT_TEKST,
   },
   {
     key: 'lead_intake_onkruid',
     tabLabel: 'Onkruidbeheersing',
     hoofddienst: 'onkruidbeheersing',
-    default: `Hoi {voornaam}👋
-
-Bedankt voor je aanvraag bij {bedrijf}! Ik ben {bot_naam}, ik help je snel aan een passende offerte voor onkruidbeheersing op jullie locatie.
-
-Klopt het dat het gaat om ongeveer {m2} m²?`,
+    default: OPENING_DEFAULT_TEKST,
   },
 ] as const
 
