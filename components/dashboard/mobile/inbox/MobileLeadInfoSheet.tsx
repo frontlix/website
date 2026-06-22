@@ -61,6 +61,8 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
   if (!open) return null
 
   function handleArchive() {
+    // Bevestiging vóór archiveren: de lead verdwijnt hierna uit de pipeline.
+    if (!window.confirm(`Lead archiveren? Hij verdwijnt dan uit de pipeline. Je kunt 'm later met "Herstel" terughalen.`)) return
     startArchive(async () => {
       await archiveLead(lead.lead_id)
       onClose()

@@ -32,27 +32,34 @@ const STAGE_ORDER: Record<MobileLeadStage, number> = {
   klaar: 4,
 }
 
+// Eén bron van waarheid voor de fase-indeling: `leadStage()` (dezelfde functie
+// die mobiel/v2 én de pipeline gebruiken). Dit voorkomt drift waarbij de
+// desktop-tabs op rauwe `gesprek_fase` keken terwijl de pipeline/mobiel op
+// `leadStage` keken. Belangrijk: "Offerte review" hangt aan
+// `pending_eigenaar_review` (offerte wacht op owner-goedkeuring), NIET aan
+// `gesprek_fase === 'onderhandelen'` — die laatste betekent "offerte al
+// verstuurd, klant onderhandelt" en hoort dus bij "Offerte uit".
+const FILTER_TO_STAGE: Record<
+  Exclude<FilterKey, 'all' | 'archief'>,
+  MobileLeadStage
+> = {
+  in_gesprek: 'gesprek',
+  review: 'review',
+  offerte_uit: 'uit',
+  ingepland: 'gepland',
+  afgerond: 'klaar',
+}
+
 function matchesFilter(lead: LeadListItem, key: FilterKey): boolean {
   switch (key) {
     case 'all':
       return true
-    case 'in_gesprek':
-      return lead.gesprek_fase === 'info_verzamelen'
-    case 'review':
-      return lead.gesprek_fase === 'onderhandelen'
-    case 'offerte_uit':
-      return lead.gesprek_fase === 'offerte_besproken'
-    case 'ingepland':
-      return (
-        lead.gesprek_fase === 'datum_kiezen' ||
-        lead.gesprek_fase === 'afspraak_bevestigd'
-      )
-    case 'afgerond':
-      return lead.dashboard_status === 'afgehandeld'
     case 'archief':
       // Archief-leads worden via een aparte query opgehaald, dus matcht alles wat
       // door de query heen komt (al gefilterd op dashboard_archived=true).
       return true
+    default:
+      return leadStage(lead) === FILTER_TO_STAGE[key]
   }
 }
 

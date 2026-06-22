@@ -165,6 +165,8 @@ export function MobileLeads({ data }: Props) {
   }
 
   function handleArchive(id: string) {
+    // Bevestiging vóór archiveren: de lead verdwijnt hierna uit de pipeline.
+    if (!window.confirm(`Lead archiveren? Hij verdwijnt dan uit de pipeline. Je kunt 'm later met "Herstel" terughalen.`)) return
     startTransition(async () => {
       await archiveLead(id)
       // Server-data herladen zodat de gearchiveerde lead uit de lijst valt

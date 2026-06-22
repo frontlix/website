@@ -1,48 +1,31 @@
 import { Plus } from 'lucide-react'
 import { LeadCard } from './LeadCard'
 import type { LeadListItem } from '@/lib/dashboard/lead-queries'
+import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/leads/lead-mappers'
 
 /**
- * Vijf-koloms pipeline volgens design-spec. Mapped op een combinatie van
- * `gesprek_fase` en `dashboard_status` zodat afgeronde leads in de laatste
- * kolom verdwijnen. Per kolom een count-pill en een "+" snel-knop in de head.
+ * Vijf-koloms pipeline volgens design-spec. De kolom-indeling komt uit de
+ * gedeelde `leadStage()` (zelfde bron als mobiel/v2 en de filter-tabs), zodat
+ * de drie weergaves nooit uit elkaar lopen. `leadStage` regelt:
+ *  - "Offerte review" = `pending_eigenaar_review` (offerte wacht op owner-
+ *    goedkeuring vóór verzenden), NIET `gesprek_fase === 'onderhandelen'`.
+ *  - "Offerte uit" = `gesprek_fase` 'onderhandelen' of 'offerte_besproken'
+ *    (offerte is verstuurd; bij 'onderhandelen' praat de klant er nog over).
+ *  - "Afgerond" wint van alles bij `dashboard_status === 'afgehandeld'`.
+ * Per kolom een count-pill en een "+" snel-knop in de head.
  */
-type StageKey = 'info' | 'review' | 'verstuurd' | 'gepland' | 'klaar'
-
-const STAGES: ReadonlyArray<{ key: StageKey; label: string; match: (l: LeadListItem) => boolean }> = [
-  {
-    key: 'info',
-    label: 'In gesprek',
-    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'info_verzamelen',
-  },
-  {
-    key: 'review',
-    label: 'Offerte review',
-    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'onderhandelen',
-  },
-  {
-    key: 'verstuurd',
-    label: 'Offerte uit',
-    match: (l) => l.dashboard_status !== 'afgehandeld' && l.gesprek_fase === 'offerte_besproken',
-  },
-  {
-    key: 'gepland',
-    label: 'Ingepland',
-    match: (l) =>
-      l.dashboard_status !== 'afgehandeld' &&
-      (l.gesprek_fase === 'datum_kiezen' || l.gesprek_fase === 'afspraak_bevestigd'),
-  },
-  {
-    key: 'klaar',
-    label: 'Afgerond',
-    match: (l) => l.dashboard_status === 'afgehandeld',
-  },
+const STAGES: ReadonlyArray<{ key: MobileLeadStage; label: string }> = [
+  { key: 'gesprek', label: 'In gesprek' },
+  { key: 'review', label: 'Offerte review' },
+  { key: 'uit', label: 'Offerte uit' },
+  { key: 'gepland', label: 'Ingepland' },
+  { key: 'klaar', label: 'Afgerond' },
 ]
 
 export function LeadsPipeline({ leads }: { leads: LeadListItem[] }) {
   const cols = STAGES.map((stage) => ({
     ...stage,
-    items: leads.filter(stage.match),
+    items: leads.filter((l) => leadStage(l) === stage.key),
   }))
 
   return (
