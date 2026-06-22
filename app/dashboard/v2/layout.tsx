@@ -16,7 +16,7 @@ import { getV2ShellData } from "@/components/dashboard/v2/shell-data";
 import { getCurrentUser, getCurrentUserProfile } from "@/lib/dashboard/auth";
 
 export const metadata = {
-  title: "Frontlix Dashboard, v2",
+  title: "Frontlix Dashboard",
 };
 
 export default async function V2Layout({ children }: { children: React.ReactNode }) {
