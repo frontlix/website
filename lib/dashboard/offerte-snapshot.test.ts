@@ -4,6 +4,7 @@ import {
   readSnapshotRegels,
   buildPricingFromRuleKeys,
   resolveSeedPricing,
+  buildOfferteSnapshot,
 } from './offerte-snapshot'
 import { FALLBACK_PRICING } from './pricing-types'
 
@@ -133,5 +134,46 @@ describe('resolveSeedPricing', () => {
   it('valt terug op live pricing zonder bruikbare snapshot', () => {
     expect(resolveSeedPricing([offerte({ regels_snapshot: null })], live).reiniging_per_m2).toBe(5.25)
     expect(resolveSeedPricing([], live).reiniging_per_m2).toBe(5.25)
+  })
+})
+
+describe('buildOfferteSnapshot', () => {
+  const rules = [
+    { desc: 'Reiniging oppervlak (dagprijs)', aantal: 1, eenheid: 'dag', prijs: 395, totaal: 395 },
+    { desc: 'Preventieve onkruidbeheersing', aantal: 90, eenheid: 'm²', prijs: 4.5, totaal: 405.001 },
+  ]
+
+  it('bouwt een snapshot met pricing, kortingPct en gemapte regels', () => {
+    const snap = buildOfferteSnapshot({
+      pricing: FALLBACK_PRICING,
+      rules,
+      kortingPct: 10,
+      geldigheidDagen: 14,
+    })
+    expect(snap.schemaVersie).toBe(1)
+    expect(snap.pricing).toEqual(FALLBACK_PRICING)
+    expect(snap.kortingPct).toBe(10)
+    expect(snap.geldigheidDagen).toBe(14)
+    expect(snap.regels).toHaveLength(2)
+    // desc → omschrijving, prijs → stukprijs, totaal afgerond, volgorde oplopend
+    expect(snap.regels[0]).toMatchObject({
+      omschrijving: 'Reiniging oppervlak (dagprijs)',
+      stukprijs: 395,
+      bron: 'auto_lead',
+      volgorde: 1,
+    })
+    expect(snap.regels[1].totaal).toBe(405) // 405.001 afgerond op 2 decimalen
+    expect(snap.regels[1].volgorde).toBe(2)
+  })
+
+  it('laat geldigheidDagen weg als die niet is meegegeven', () => {
+    const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules: [], kortingPct: 0 })
+    expect(snap.geldigheidDagen).toBeUndefined()
+  })
+
+  // De seed (resolveSeedPricing) moet de pricing exact kunnen teruglezen.
+  it('produceert een snapshot die readSnapshotPricing accepteert', () => {
+    const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules, kortingPct: 0 })
+    expect(readSnapshotPricing(snap)).toEqual(FALLBACK_PRICING)
   })
 })

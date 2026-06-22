@@ -79,6 +79,45 @@ export function buildPricingFromRuleKeys(
   }
 }
 
+/** Minimale regel-vorm voor buildOfferteSnapshot (structureel, matcht RegelComputed). */
+type SnapshotRuleInput = {
+  desc: string
+  aantal: number | null
+  eenheid: string | null
+  prijs: number
+  totaal: number
+}
+
+/**
+ * Bouwt het OfferteSnapshot-object dat we bij versturen in
+ * `offertes.regels_snapshot` wegschrijven. Mapt de berekende regels naar de
+ * bevroren SnapshotRegel-vorm (desc→omschrijving, prijs→stukprijs) en bewaart
+ * de gebruikte prijslijst, zodat het concept later exact deze prijzen seedt.
+ */
+export function buildOfferteSnapshot(args: {
+  pricing: ManualOffertePricing
+  rules: SnapshotRuleInput[]
+  kortingPct: number
+  geldigheidDagen?: number
+}): OfferteSnapshot {
+  const { pricing, rules, kortingPct, geldigheidDagen } = args
+  return {
+    schemaVersie: 1,
+    pricing,
+    kortingPct,
+    ...(geldigheidDagen != null ? { geldigheidDagen } : {}),
+    regels: rules.map((r, idx) => ({
+      omschrijving: r.desc,
+      aantal: r.aantal,
+      eenheid: r.eenheid,
+      stukprijs: r.prijs,
+      totaal: Math.round(r.totaal * 100) / 100,
+      bron: 'auto_lead' as const,
+      volgorde: idx + 1,
+    })),
+  }
+}
+
 /** Minimale offerte-vorm die resolveSeedPricing nodig heeft. */
 type SeedOfferte = {
   versie: number
