@@ -37,6 +37,11 @@ export interface PrijzenPanelProps {
    * bij unmount.
    */
   onRegisterSave?: (handle: PricingSaveHandle | null) => void;
+  /**
+   * Meldt de parent of er nog niet-opgeslagen prijswijzigingen openstaan, zodat
+   * de globale Opslaan-knop bij prijswijzigingen om bevestiging kan vragen.
+   */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 /**
@@ -99,7 +104,7 @@ const EMPTY_BASELINE: PricingImpactBaseline = {
  *
  * Server-actions worden EXACT hergebruikt; geen nieuwe DB-logica.
  */
-export function PrijzenPanel({ rules, baseline, onRegisterSave }: PrijzenPanelProps) {
+export function PrijzenPanel({ rules, baseline, onRegisterSave, onDirtyChange }: PrijzenPanelProps) {
   const router = useRouter();
   const safeBaseline = baseline ?? EMPTY_BASELINE;
 
@@ -162,6 +167,11 @@ export function PrijzenPanel({ rules, baseline, onRegisterSave }: PrijzenPanelPr
     [safeBaseline.volumes, currentPrices, cleanPending],
   );
   const newRevenue = safeBaseline.baselineRevenue + revenueDelta;
+
+  // Meld openstaande prijswijzigingen aan de parent (voor de bevestig-vangrail).
+  useEffect(() => {
+    onDirtyChange?.(hasPending);
+  }, [hasPending, onDirtyChange]);
 
   // Saved-flash verbergt zich na 2s.
   useEffect(() => {

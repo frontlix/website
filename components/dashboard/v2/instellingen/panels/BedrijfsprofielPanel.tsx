@@ -191,13 +191,18 @@ export function BedrijfsprofielPanel({
           onChange={(v) => onProfiel({ spoedTel: v })}
           readOnly={!live}
         />
-        <Field
-          label="E-mail"
-          value={profiel.mail}
-          onChange={(v) => onProfiel({ mail: v })}
-          readOnly={!live}
-          breed
-        />
+        <div className={styles.fieldWide}>
+          <Field
+            label="E-mail"
+            value={profiel.mail}
+            onChange={(v) => onProfiel({ mail: v })}
+            readOnly={!live}
+            breed
+          />
+          <div className={styles.fieldHint}>
+            Hier komen de offerte-goedkeuringen binnen.
+          </div>
+        </div>
       </div>
 
       <div className={styles.section}>
