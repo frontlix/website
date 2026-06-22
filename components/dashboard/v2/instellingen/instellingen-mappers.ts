@@ -37,6 +37,7 @@ export type TenantSettingsRow = {
   bedrijfsnaam: string | null;
   chatbot_naam: string | null;
   eigenaar_email: string | null;
+  eigenaar_naam: string | null;
   eigenaar_whatsapp: string | null;
   eigenaar_spoed_telefoon: string | null;
   plaats: string | null;
@@ -100,6 +101,7 @@ export function toCompanyProfile(t: TenantSettingsRow | null): CompanyProfile {
     tel: t?.eigenaar_whatsapp ?? "",
     spoedTel: t?.eigenaar_spoed_telefoon ?? "",
     mail: t?.eigenaar_email ?? "",
+    eigenaarNaam: t?.eigenaar_naam ?? "",
     doel:
       t?.omzet_doel_maand != null
         ? formatDoel(t.omzet_doel_maand)

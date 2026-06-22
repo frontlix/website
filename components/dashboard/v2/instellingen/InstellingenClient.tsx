@@ -232,6 +232,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
           postcode: profiel.postcode,
           plaats: profiel.plaats,
           eigenaar_email: profiel.mail,
+          eigenaar_naam: profiel.eigenaarNaam,
           telefoon: profiel.tel,
           spoed_telefoon: profiel.spoedTel,
           radius_max_km: radius,

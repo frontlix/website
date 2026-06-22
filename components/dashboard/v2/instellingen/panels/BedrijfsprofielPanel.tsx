@@ -174,6 +174,12 @@ export function BedrijfsprofielPanel({
           readOnly={!live}
         />
         <Field
+          label="Eigenaar (naam)"
+          value={profiel.eigenaarNaam}
+          onChange={(v) => onProfiel({ eigenaarNaam: v })}
+          readOnly={!live}
+        />
+        <Field
           label="Eigenaar WhatsApp"
           value={profiel.tel}
           onChange={(v) => onProfiel({ tel: v })}
