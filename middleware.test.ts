@@ -106,4 +106,31 @@ describe('middleware host-based routing', () => {
 
     expect(res.headers.get('location')).toMatch(/\/leads$/)
   })
+
+  it('app.frontlix.com /statistieken (desktop, session) → redirect naar /analyses', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
+    const req = makeRequest('app.frontlix.com', '/statistieken', true)
+
+    const res = await middleware(req)
+
+    expect(res.headers.get('location')).toMatch(/\/analyses$/)
+  })
+
+  it('app.frontlix.com /veldwerk (desktop, session) → redirect naar /', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
+    const req = makeRequest('app.frontlix.com', '/veldwerk', true)
+
+    const res = await middleware(req)
+
+    expect(res.headers.get('location')).toBe('https://app.frontlix.com/')
+  })
+
+  it('app.frontlix.com /analyses (desktop, session) → rewrite naar /dashboard/v2/analyses', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
+    const req = makeRequest('app.frontlix.com', '/analyses', true)
+
+    const res = await middleware(req)
+
+    expect(res.headers.get('x-middleware-rewrite')).toMatch(/\/dashboard\/v2\/analyses/)
+  })
 })

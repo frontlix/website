@@ -144,16 +144,34 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // APPARAAT-ROUTING via REWRITE (de schone URL blijft staan): ingelogde
-  // desktop/tablet op een gedeelde sectie krijgt intern de v2-route; telefoon
-  // en oud-only routes (/statistieken, /veldwerk) blijven op het oude
-  // responsive dashboard. Niets verwijderd, puur intern doorsturen.
+  // DESKTOP/TABLET LEGACY-PADEN: v2 heeft geen /statistieken en geen
+  // /veldwerk. Voor ingelogde desktop/tablet sturen we die schone URLs door:
+  //  - /statistieken → /analyses (v2-equivalent)
+  //  - /veldwerk     → /        (Overzicht; veldwerk bestaat niet op desktop)
+  // Telefoon (isPhone) slaat dit over en houdt deze paden in de v1-boom.
   // ─────────────────────────────────────────────────────────────────────
-  const V2_SECTIONS = ['/leads', '/agenda', '/inbox', '/instellingen', '/reviews', '/analyses']
-  const inV2Section =
-    pathname === '/' ||
-    V2_SECTIONS.some((s) => pathname === s || pathname.startsWith(`${s}/`))
-  const useV2 = !!user && !isPhone && !isPublic && inV2Section
+  if (user && !isPhone) {
+    if (pathname === '/statistieken' || pathname.startsWith('/statistieken/')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/analyses'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
+    if (pathname === '/veldwerk' || pathname.startsWith('/veldwerk/')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // APPARAAT-ROUTING via REWRITE (de schone URL blijft staan): ingelogde
+  // desktop/tablet krijgt intern ALTIJD de v2-route (v2 is het complete
+  // desktopgezicht). Telefoon en publieke paden → de v1-boom (/dashboard/...).
+  // ─────────────────────────────────────────────────────────────────────
+  // Desktop/tablet (ingelogd, niet-publiek) → v2 voor ALLE secties.
+  const useV2 = !!user && !isPhone && !isPublic
 
   // Rewrite: app.frontlix.com/leads → intern /dashboard(/v2)/leads
   const rewriteUrl = request.nextUrl.clone()
