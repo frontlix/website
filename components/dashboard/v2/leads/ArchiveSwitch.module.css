@@ -1,0 +1,62 @@
+/* Segment-schakelaar Actief | Archief in de Leads-kop. Glas-pill in dezelfde
+   stijl als de zoekbalk/filter-trigger; het actieve segment is wit-verheven. */
+.wrap {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--rb-card);
+  border-radius: var(--rb-r-pill);
+  box-shadow: var(--rb-shadow-card);
+}
+
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: var(--rb-r-pill);
+  padding: 7px 14px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.seg svg {
+  color: currentColor;
+}
+
+.seg:hover {
+  color: var(--rb-ink);
+}
+
+.seg[data-on="true"] {
+  background: #fff;
+  color: var(--rb-ink);
+  box-shadow: var(--rb-shadow-nav);
+  cursor: default;
+}
+
+/* Aantal gearchiveerde leads, naast het Archief-label. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--rb-r-pill);
+  background: var(--rb-field-2);
+  color: var(--rb-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.seg[data-on="true"] .badge {
+  background: var(--rb-blue);
+  color: #fff;
+}
