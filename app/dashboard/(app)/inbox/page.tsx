@@ -7,11 +7,12 @@ import {
 import { MobileChatDetail } from '@/components/dashboard/mobile/inbox/MobileChatDetail'
 import { MobileInboxList } from '@/components/dashboard/mobile/inbox/MobileInboxList'
 import { bucketFor } from '@/components/dashboard/mobile/inbox/inbox-mappers'
-import { type InboxFilter } from '@/components/dashboard/inbox/InboxFilterTabs'
 import { InboxRealtime } from '@/components/dashboard/inbox/InboxRealtime'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
+
+type InboxFilter = 'all' | 'unread' | 'action'
 
 function matchesFilter(c: ConversationPreview, filter: InboxFilter): boolean {
   switch (filter) {

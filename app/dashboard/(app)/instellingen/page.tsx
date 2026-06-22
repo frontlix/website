@@ -1,6 +1,6 @@
 import { getDashboardSupabase } from '@/lib/dashboard/supabase-server'
 import { type SettingsSection } from '@/components/dashboard/instellingen/SettingsNav'
-import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from '@/components/dashboard/instellingen/SettingSections'
+import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from '@/components/dashboard/instellingen/setting-types'
 import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
 import { getEmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
 import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
