@@ -35,7 +35,6 @@ import { BeschikbaarheidPanel } from "@/components/dashboard/v2/instellingen/pan
 import { KanalenPanel } from "@/components/dashboard/v2/instellingen/panels/KanalenPanel";
 import { IntegratiesPanel } from "@/components/dashboard/v2/instellingen/panels/IntegratiesPanel";
 import { EmailPanel } from "@/components/dashboard/v2/instellingen/panels/EmailPanel";
-import { WhatsAppPanel } from "@/components/dashboard/v2/instellingen/panels/WhatsAppPanel";
 import { OpeningsberichtPanel } from "@/components/dashboard/v2/instellingen/panels/OpeningsberichtPanel";
 import { RemindersPanel } from "@/components/dashboard/v2/instellingen/panels/RemindersPanel";
 import { OffertesPanel } from "@/components/dashboard/v2/instellingen/panels/OffertesPanel";
@@ -152,11 +151,6 @@ export function InstellingenClient(props: InstellingenClientProps) {
   // aan de globale Opslaan-knop.
   const [email] = useState<EmailConnectionState>(props.email);
 
-  // WhatsApp-koppeling: status uit whatsapp_connections. Het WhatsAppPanel
-  // koppelt via de Embedded Signup-pop-up en ontkoppelt via z'n eigen knoppen
-  // (eigen API-routes + router.refresh), net als het EmailPanel. Niet gekoppeld
-  // aan de globale Opslaan-knop.
-  const [whatsapp] = useState<WhatsAppConnectionState>(props.whatsapp);
 
   // Prijzen: PrijzenPanel registreert hier zijn batch-save-handle, zodat de
   // globale Opslaan-knop de pending prijswijzigingen wegschrijft (geen eigen
@@ -329,7 +323,6 @@ export function InstellingenClient(props: InstellingenClientProps) {
               calendarId={props.gcal.calendarId}
             />
             <EmailPanel email={email} live={props.live} />
-            <WhatsAppPanel whatsapp={whatsapp} live={props.live} />
           </>
         );
       case "Openingsbericht":
