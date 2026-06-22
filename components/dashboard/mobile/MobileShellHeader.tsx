@@ -20,7 +20,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/agenda': 'Agenda',
   '/reviews': 'Reviews',
   '/statistieken': 'Statistieken',
-  '/veldwerk': 'Veldwerk',
   '/instellingen': 'Instellingen',
 }
 

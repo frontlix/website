@@ -144,25 +144,23 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // DESKTOP/TABLET LEGACY-PADEN: v2 heeft geen /statistieken en geen
-  // /veldwerk. Voor ingelogde desktop/tablet sturen we die schone URLs door:
-  //  - /statistieken → /analyses (v2-equivalent)
-  //  - /veldwerk     → /        (Overzicht; veldwerk bestaat niet op desktop)
-  // Telefoon (isPhone) slaat dit over en houdt deze paden in de v1-boom.
+  // LEGACY-PADEN.
+  // - /veldwerk bestaat niet meer (desktop noch mobiel) → altijd terug naar
+  //   het Overzicht, ook op telefoon.
+  // - /statistieken: alleen op desktop doorsturen naar /analyses (v2). De
+  //   telefoon houdt zijn eigen mobiele statistieken op /statistieken.
   // ─────────────────────────────────────────────────────────────────────
-  if (user && !isPhone) {
-    if (pathname === '/statistieken' || pathname.startsWith('/statistieken/')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/analyses'
-      url.search = ''
-      return NextResponse.redirect(url)
-    }
-    if (pathname === '/veldwerk' || pathname.startsWith('/veldwerk/')) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      url.search = ''
-      return NextResponse.redirect(url)
-    }
+  if (user && (pathname === '/veldwerk' || pathname.startsWith('/veldwerk/'))) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+  if (user && !isPhone && (pathname === '/statistieken' || pathname.startsWith('/statistieken/'))) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/analyses'
+    url.search = ''
+    return NextResponse.redirect(url)
   }
 
   // ─────────────────────────────────────────────────────────────────────

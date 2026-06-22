@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { BarChart3, Star, Truck } from 'lucide-react'
+import { BarChart3, Star } from 'lucide-react'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { ThemeToggle } from '@/components/dashboard/ui/ThemeToggle'
 import styles from './MeerSheet.module.css'
 
 /**
  * MeerSheet, slide-up bottom-sheet die opent vanuit de "Meer"-tab in
- * de BottomNav. Bevat secundaire navigatie (Reviews, Analyses, Veldwerk),
+ * de BottomNav. Bevat secundaire navigatie (Reviews, Analyses),
  * thema-toggle, profile-strip met instellingen-shortcut en een
  * "Uitloggen"-link onderaan.
  *
@@ -165,19 +165,6 @@ export function MeerSheet({
                   <span className={styles.rowTitle}>Analyses</span>
                   <span className={styles.rowSub}>Conversie, omzet, bot-prestaties</span>
                 </span>
-              </Link>
-            </li>
-
-            <li>
-              <Link href="/veldwerk" className={styles.row} onClick={onClose}>
-                <span className={`${styles.rowIcon} ${styles.rowIconBlue}`}>
-                  <Truck size={20} aria-hidden="true" />
-                </span>
-                <span className={styles.rowText}>
-                  <span className={styles.rowTitle}>Veldwerk</span>
-                  <span className={styles.rowSub}>Voor onderweg</span>
-                </span>
-                <span className={styles.rowTag}>In aanbouw</span>
               </Link>
             </li>
           </ul>

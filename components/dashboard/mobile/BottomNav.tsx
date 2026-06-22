@@ -41,7 +41,6 @@ const PAGE_TO_TAB: Record<string, Tab> = {
   '/agenda': 'cal',
   '/reviews': 'meer',
   '/statistieken': 'meer',
-  '/veldwerk': 'meer',
   '/instellingen': 'meer',
 }
 
