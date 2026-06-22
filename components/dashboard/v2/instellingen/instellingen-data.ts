@@ -254,21 +254,21 @@ export const REMINDERS_DEFAULT: Reminder[] = [
     label: "Eerste herinnering",
     sub: "Vriendelijk, zonder druk",
     tekst:
-      "Hoi {voornaam},\n\nIk heb de offerte van € {totaal} doorgestuurd. Heb je 'm kunnen bekijken? Stuur even een tikje als je nog vragen hebt, dan denk ik graag met je mee.\n\nGroet, {bedrijf}",
+      "Hoi {voornaam}, ik wilde even checken of je de offerte goed hebt ontvangen.\n\nMocht je vragen hebben of ergens over twijfelen, stuur gerust een berichtje. Ik denk graag met je mee.",
   },
   {
     dag: "5",
     label: "Tweede herinnering",
     sub: "Vraagt of klant nog interesse heeft",
     tekst:
-      "Hoi {voornaam},\n\nNog even een check: is de offerte voor {dienst} duidelijk? Geen druk, laat gewoon weten of je 'm in beraad houdt of liever afmeldt.\n\nDe offerte is geldig tot {geldig_tot}.",
+      "Hi {voornaam},\n\nEven een berichtje naar aanleiding van de offerte die we je hebben gestuurd.\n\nMocht je nog vragen hebben, iets aangepast willen zien of de offerte samen willen bespreken, dan horen we het graag. We denken graag met je mee.\n\nGroetjes,\nSurface",
   },
   {
     dag: "8",
     label: "Derde herinnering",
     sub: "Laatste poging, met optie tot afmelden",
     tekst:
-      "Hoi {voornaam},\n\nLaatste tikje, als ik niks hoor sluit ik de offerte automatisch af. Geen probleem als het niet doorgaat; wel fijn als je het even bevestigt voor {geldig_tot}.",
+      "Hoi {voornaam},\n\nMochten we deze week niets meer van je horen, dan gaan we ervan uit dat je er op dit moment geen gebruik van wilt maken en sluiten we de offerte voor nu af.\n\nUiteraard kun je op elk moment vrijblijvend opnieuw contact opnemen voor een nieuwe offerte.\n\nNogmaals dank voor je tijd.\n\nGroetjes,\nSurface",
   },
 ];
 
