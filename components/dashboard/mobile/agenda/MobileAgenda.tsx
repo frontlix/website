@@ -5,6 +5,7 @@ import { MobileDrilldownLayer } from '../drilldowns/MobileDrilldownLayer'
 import { AgendaWeek } from './AgendaWeek'
 import { FlowKlus } from './FlowKlus'
 import { FlowPlaatsbezoek } from './FlowPlaatsbezoek'
+import { FlowEigen } from './FlowEigen'
 import { FlowAfronden } from './FlowAfronden'
 import { AgendaHerplanSheet } from './AgendaHerplanSheet'
 import { AgendaAnnuleerSheet } from './AgendaAnnuleerSheet'
@@ -39,7 +40,12 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
   const [newOpen, setNewOpen] = useState(false)
 
   const isKlus = detail?.kind === 'klus'
-  const detailTitle = detail ? (isKlus ? 'Klus' : 'Plaatsbezoek') : ''
+  // Externe (lead-loze) Google-afspraken (kind 'eigen') zijn READ-ONLY: ze
+  // krijgen een eigen detail zonder lead-acties, en mogen nooit in de
+  // afrond-/herplan-/annuleer-flows belanden (die sturen anders een verkeerde
+  // leadId naar de bot).
+  const isEigen = detail?.kind === 'eigen'
+  const detailTitle = detail ? (isKlus ? 'Klus' : isEigen ? 'Eigen afspraak' : 'Plaatsbezoek') : ''
 
   return (
     <div className={styles.root}>
@@ -66,7 +72,8 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
             onAfronden={() => setAfronden(detail)}
           />
         )}
-        {detail && !isKlus && (
+        {detail && isEigen && <FlowEigen ev={detail} />}
+        {detail && !isKlus && !isEigen && (
           <FlowPlaatsbezoek
             ev={detail}
             onHerplan={() => setHerplan(detail)}

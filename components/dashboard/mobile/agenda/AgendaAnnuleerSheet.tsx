@@ -60,7 +60,10 @@ export function AgendaAnnuleerSheet({ ev, open, onClose, onConfirm }: AgendaAnnu
   if (!open) return null
 
   function handleConfirm() {
-    const leadId = ev.lead ?? ev.id
+    // Alleen lead-gekoppelde afspraken kunnen geannuleerd worden. Externe
+    // (lead-loze) Google-afspraken hebben geen ev.lead; ev.id ("ext-…") mag
+    // NOOIT als leadId naar de bot, dus we breken hier af.
+    const leadId = ev.lead
     if (!leadId) return
     setError(null)
     startSaving(async () => {

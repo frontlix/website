@@ -2,6 +2,7 @@
 // AgendaEvent-vorm. Vervangt de AG_EVENTS-mock op de lees-kant van /agenda.
 
 import type { Appointment } from '@/lib/dashboard/agenda-queries'
+import type { ExternalEvent } from '@/lib/dashboard/external-events-queries'
 import { durationUntilWorkdayEndMin } from '@/lib/dashboard/agenda-event'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 
@@ -89,6 +90,39 @@ export function mapAppointmentsToAgendaEvents(
         current: startMs <= nowMs && nowMs < startMs + durationMin * 60_000,
       }
     })
+    .sort((x, y) => `${x.date} ${x.start}`.localeCompare(`${y.date} ${y.start}`))
+}
+
+/**
+ * Mapt een externe (lead-loze) Google-afspraak naar een mobiele AgendaEvent.
+ * READ-ONLY: `kind: 'eigen'` en `lead: undefined`, zodat de drilldown/sheets
+ * geen lead-actie (afronden/verzetten/annuleren) op deze afspraak afvuren. De
+ * id krijgt het "ext-"-prefix, zodat hij nooit als lead_id geïnterpreteerd wordt.
+ */
+export function mapExternalEventToAgendaEvent(ev: ExternalEvent): AgendaEvent {
+  const start = ev.all_day ? '00:00' : amsterdamTime(ev.start_at)
+  const end = !ev.all_day && ev.end_at ? amsterdamTime(ev.end_at) : start
+  return {
+    id: `ext-${ev.google_event_id}`,
+    kind: 'eigen',
+    naam: ev.summary || 'Google-afspraak',
+    adres: 'Google Agenda',
+    start,
+    end,
+    date: amsterdamDayKey(ev.start_at),
+    lead: undefined,
+  }
+}
+
+/**
+ * Mapt + filtert externe events op de 7 zichtbare week-dagkeys (Amsterdam),
+ * gesorteerd op datum+tijd. Spiegelt mapAppointmentsToAgendaEvents' contract.
+ */
+export function mapExternalEventsToAgendaEvents(
+  external: ExternalEvent[],
+): AgendaEvent[] {
+  return external
+    .map(mapExternalEventToAgendaEvent)
     .sort((x, y) => `${x.date} ${x.start}`.localeCompare(`${y.date} ${y.start}`))
 }
 

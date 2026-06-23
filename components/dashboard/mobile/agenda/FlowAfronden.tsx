@@ -102,7 +102,10 @@ export function FlowAfronden({ ev, open, onClose, onDone }: Props) {
   }
 
   function handleDone() {
-    const leadId = ev?.lead ?? ev?.id
+    // Alleen lead-gekoppelde afspraken mogen afgerond worden. Externe (lead-loze)
+    // Google-afspraken hebben geen ev.lead; we sturen dan NOOIT ev.id (= "ext-…")
+    // als leadId naar de bot, maar sluiten alleen.
+    const leadId = ev?.lead
     if (!leadId) {
       onDone()
       return

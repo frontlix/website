@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Appointment } from '@/lib/dashboard/agenda-queries'
+import type { ExternalEvent } from '@/lib/dashboard/external-events-queries'
 import {
   amsterdamTime,
   amsterdamDayKey,
@@ -7,7 +8,20 @@ import {
   appointmentAdres,
   buildMobileWeekDays,
   mapAppointmentsToAgendaEvents,
+  mapExternalEventToAgendaEvent,
+  mapExternalEventsToAgendaEvents,
 } from './agenda-mobile-mappers'
+
+function ext(over: Partial<ExternalEvent>): ExternalEvent {
+  return {
+    google_event_id: 'g1',
+    summary: 'Tandarts',
+    start_at: '2026-05-13T07:00:00.000Z', // 09:00 Amsterdam (CEST)
+    end_at: '2026-05-13T08:30:00.000Z', // 10:30 Amsterdam
+    all_day: false,
+    ...over,
+  }
+}
 
 // Minimale Appointment-factory voor de tests (alleen velden die de mapper raakt).
 // `over` is bewust losjes getypeerd zodat we ook randgevallen (bv. ontbrekend
@@ -101,6 +115,36 @@ describe('mapAppointmentsToAgendaEvents', () => {
       now,
     )
     expect(out.map((e) => e.id)).toEqual(['early', 'late'])
+  })
+})
+
+describe('mapExternalEventToAgendaEvent', () => {
+  it('mapt naar een read-only eigen event zonder lead, met ext-id', () => {
+    const ev = mapExternalEventToAgendaEvent(ext({}))
+    expect(ev.id).toBe('ext-g1')
+    expect(ev.kind).toBe('eigen')
+    expect(ev.lead).toBeUndefined()
+    expect(ev.naam).toBe('Tandarts')
+    expect(ev.start).toBe('09:00')
+    expect(ev.end).toBe('10:30')
+    expect(ev.date).toBe('2026-05-13')
+  })
+
+  it('valt terug op een nette naam zonder summary', () => {
+    expect(mapExternalEventToAgendaEvent(ext({ summary: null })).naam).toBe('Google-afspraak')
+  })
+
+  it('zonder eindtijd is end gelijk aan start', () => {
+    const ev = mapExternalEventToAgendaEvent(ext({ end_at: null }))
+    expect(ev.end).toBe(ev.start)
+  })
+
+  it('sorteert meerdere events op datum + tijd', () => {
+    const out = mapExternalEventsToAgendaEvents([
+      ext({ google_event_id: 'b', start_at: '2026-05-13T10:00:00.000Z' }),
+      ext({ google_event_id: 'a', start_at: '2026-05-13T07:00:00.000Z' }),
+    ])
+    expect(out.map((e) => e.id)).toEqual(['ext-a', 'ext-b'])
   })
 })
 

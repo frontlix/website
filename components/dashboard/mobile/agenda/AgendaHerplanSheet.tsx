@@ -128,7 +128,10 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
   }
 
   function handleConfirm() {
-    const leadId = orig.lead ?? orig.id
+    // Alleen lead-gekoppelde afspraken kunnen verzet worden. Externe (lead-loze)
+    // Google-afspraken hebben geen orig.lead; orig.id ("ext-…") mag NOOIT als
+    // leadId naar de bot, dus we breken hier af.
+    const leadId = orig.lead
     if (!leadId || !selectedSlot || !activeDay) return
     // Lokale (Amsterdam) datum+tijd → ISO/UTC. De gebruiker zit in NL, dus
     // new Date('YYYY-MM-DDTHH:MM:00') interpreteert correct als Amsterdam-tijd.
