@@ -275,7 +275,6 @@ function buildOffertes(
       sub: datum ? `Versie ${o.versie} · ${datum}` : `Versie ${o.versie}`,
       concept,
       tone,
-      versie: o.versie,
       pdfModel,
     };
   });
