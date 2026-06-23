@@ -4,6 +4,7 @@ import { getTagsWithCounts, type TagWithCount } from "@/lib/dashboard/tags-queri
 import { getConnectionStatus } from "@/lib/dashboard/calendar-connection-queries";
 import { getEmailConnectionStatus } from "@/lib/dashboard/email-connection-queries";
 import { getWhatsAppConnectionStatus } from "@/lib/dashboard/whatsapp-connection-queries";
+import { getGmailConnectionStatus } from "@/lib/dashboard/gmail-connection-queries";
 import { getRecentTemplateAanvragen } from "@/lib/dashboard/template-queries";
 import { getAllPrefs } from "@/lib/dashboard/notifications/queries";
 import { countConverted, avgOfferteWaarde } from "@/lib/dashboard/stats-queries";
@@ -71,6 +72,7 @@ export default async function InstellingenPage() {
         gcal={{ connected: false, googleEmail: null, calendarId: null }}
         email={{ connected: false }}
         whatsapp={{ connected: false }}
+        gmail={{ connected: false, googleEmail: null, labelName: null }}
         basePostcode=""
         baseHuisnummer=""
         baseLabel="BASIS"
@@ -108,6 +110,7 @@ export default async function InstellingenPage() {
     gcalStatus,
     emailStatus,
     whatsappStatus,
+    gmailStatus,
     aanvragenRaw,
     convertedMaand,
     avgWaarde,
@@ -148,6 +151,10 @@ export default async function InstellingenPage() {
     // bevat nooit het access-token. Het WhatsAppPanel toont hiermee de juiste
     // status (niet gekoppeld / gekoppeld / opnieuw koppelen).
     getWhatsAppConnectionStatus(),
+    // Gmail-label-koppelstatus (gmail_connections, service-role). Niet-geheim;
+    // bevat nooit het OAuth-token. Het BedrijfsprofielPanel toont hiermee de
+    // juiste Gmail-koppelstatus.
+    getGmailConnectionStatus(),
     // Template-aanvragen (openingsbericht + reminders); de panels filteren zelf
     // op de voor hen relevante templates.
     getRecentTemplateAanvragen(),
@@ -224,6 +231,11 @@ export default async function InstellingenPage() {
       }}
       email={toEmailConnectionState(emailStatus)}
       whatsapp={toWhatsAppConnectionState(whatsappStatus)}
+      gmail={{
+        connected: gmailStatus.connected,
+        googleEmail: gmailStatus.googleEmail,
+        labelName: gmailStatus.labelName,
+      }}
       basePostcode={tenant?.postcode ?? ""}
       baseHuisnummer={tenant?.base_huisnummer ?? ""}
       baseLabel={tenant?.base_label ?? "BASIS"}
