@@ -11,7 +11,7 @@
   margin-top: 12px;
   border: 1.5px solid var(--rb-blue);
   border-radius: var(--rb-r-chip);
-  background: color-mix(in srgb, var(--rb-blue-soft) 22%, #fff);
+  background: color-mix(in srgb, var(--rb-blue-soft) 22%, var(--rb-card));
   padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;

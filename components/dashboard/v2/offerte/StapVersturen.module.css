@@ -116,7 +116,7 @@
   background-color: var(--rb-wa-bg);
   background-image: linear-gradient(var(--rb-wa-veil), var(--rb-wa-veil)), var(--rb-wa-bg-image);
   background-blend-mode: normal, var(--rb-wa-blend);
-  background-size: auto, 360px auto;
+  background-size: auto, var(--rb-wa-size) auto;
   background-repeat: repeat;
 }
 

@@ -39,13 +39,13 @@
 .concept {
   border: 1.5px solid var(--rb-blue);
   /* lichte translucent blue-soft, token-gebaseerd */
-  background: color-mix(in srgb, var(--rb-blue-soft) 40%, #fff);
+  background: color-mix(in srgb, var(--rb-blue-soft) 40%, var(--rb-card));
   cursor: pointer;
   transition: background 0.12s ease;
 }
 
 .concept:hover {
-  background: color-mix(in srgb, var(--rb-blue-soft) 60%, #fff);
+  background: color-mix(in srgb, var(--rb-blue-soft) 60%, var(--rb-card));
 }
 
 .docIcon {
