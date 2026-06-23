@@ -88,6 +88,14 @@
   gap: 9px;
 }
 
+/* Dark-mode: één dekkende, niet-herhaalde achtergrond i.p.v. tegels → geen naad
+   en geen helderheidsband. Blijft vast (scroll-attach) achter de berichten. */
+:global(html.dark) .thread {
+  background-repeat: no-repeat;
+  background-size: auto, cover;
+  background-position: center;
+}
+
 .bubble {
   max-width: 320px;
   padding: 8px 12px;
