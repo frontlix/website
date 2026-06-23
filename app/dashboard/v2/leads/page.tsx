@@ -16,6 +16,7 @@
 
 import { v2Session } from "@/lib/dashboard/v2/session";
 import { getLeadsList } from "@/lib/dashboard/lead-queries";
+import { getAllTags } from "@/lib/dashboard/tag-queries";
 import { LeadsView } from "@/components/dashboard/v2/leads/LeadsView";
 import {
   mapLeadsToV2,
@@ -36,9 +37,12 @@ export default async function LeadsPage({
     urgent?: string;
     sort?: string;
     archief?: string;
+    tags?: string;
   }>;
 }) {
   const sp = await searchParams;
+  const tagIds = sp.tags ? sp.tags.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+  const tagFilter = tagIds && tagIds.length > 0 ? { tags: tagIds } : undefined;
   const session = await v2Session();
   const isArchief = sp.archief === "1";
 
@@ -51,6 +55,7 @@ export default async function LeadsPage({
         pipeline={PIPELINE}
         archived={isArchief}
         archivedCount={0}
+        allTags={[]}
       />
     );
   }
@@ -58,7 +63,10 @@ export default async function LeadsPage({
   // Archief-modus: alleen de gearchiveerde leads ophalen; pipeline is hier niet
   // van toepassing (archief is geen pipeline-fase) en de lijst toont Herstel.
   if (isArchief) {
-    const archivedLeads = await getLeadsList(undefined, { archived: true });
+    const [archivedLeads, allTags] = await Promise.all([
+      getLeadsList(tagFilter, { archived: true }),
+      getAllTags(),
+    ]);
     const filtered = applyLeadsFilters(archivedLeads, sp);
     return (
       <LeadsView
@@ -66,15 +74,17 @@ export default async function LeadsPage({
         pipeline={[]}
         archived
         archivedCount={archivedLeads.length}
+        allTags={allTags}
       />
     );
   }
 
   // Actieve view: de standaard-leadslijst + het archief-aantal voor het segment.
   // Zelfde query als de (app)-pagina (RLS scoped 'm op de tenant).
-  const [allLeads, archivedLeads] = await Promise.all([
-    getLeadsList(),
+  const [allLeads, archivedLeads, allTags] = await Promise.all([
+    getLeadsList(tagFilter),
     getLeadsList(undefined, { archived: true }),
+    getAllTags(),
   ]);
 
   // Zelfde client-side filter/sortering als de (app)-pagina (search op
@@ -86,6 +96,7 @@ export default async function LeadsPage({
       leads={mapLeadsToV2(filtered)}
       pipeline={buildPipelineFromLeads(filtered)}
       archivedCount={archivedLeads.length}
+      allTags={allTags}
     />
   );
 }
