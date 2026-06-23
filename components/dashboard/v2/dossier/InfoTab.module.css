@@ -96,3 +96,19 @@
   gap: 8px;
   margin-top: 8px;
 }
+
+/* Klikbare strip-tegel: knop-reset, pointer-cursor en toets-toegankelijke
+   focus-ring. Foto zelf blijft klein (cover) als preview. */
+.stripTile {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--rb-r-chip);
+}
+
+.stripTile:focus-visible {
+  outline: 2px solid var(--rb-data-1);
+  outline-offset: 2px;
+}

@@ -112,15 +112,23 @@ export function DossRow({ icon, label, value, action }: DossRowProps) {
 // ── DossPhoto ──
 // 120px striped placeholder (135° repeating-linear-gradient on the two photo-stripe
 // tokens) with a monospace tag chip bottom-left.
+// `fit` bepaalt object-fit: 'cover' (standaard, beeldvullend) of 'contain'
+// (hele foto zichtbaar met letterboxing). In de Foto's-tab gebruiken we
+// 'contain' zodat de klantfoto nooit bijgesneden wordt.
+// `onOpen` gezet → de tegel wordt een knop die de lightbox opent.
 type DossPhotoProps = {
   tag: string
   /** Echte foto-URL (Supabase public_url); ontbreekt → gestreepte placeholder. */
   url?: string | null
+  /** Bijsnijden (cover) of hele foto tonen (contain). Standaard cover. */
+  fit?: 'cover' | 'contain'
+  /** Klik-handler; gezet → tegel wordt een klikbare knop (cursor pointer). */
+  onOpen?: () => void
 }
 
-export function DossPhoto({ tag, url }: DossPhotoProps) {
-  return (
-    <div className={styles.photo}>
+export function DossPhoto({ tag, url, fit = 'cover', onOpen }: DossPhotoProps) {
+  const content = (
+    <>
       {url && (
         // unoptimized: zelfde aanpak als de desktop LeadPhotos, geen
         // next/image domain-config of optimalisatie nodig voor Supabase-URLs.
@@ -130,12 +138,32 @@ export function DossPhoto({ tag, url }: DossPhotoProps) {
           fill
           sizes="50vw"
           unoptimized
-          className={styles.photoImg}
+          className={fit === 'contain' ? styles.photoImgContain : styles.photoImg}
         />
       )}
       <span className={styles.photoTag}>{tag}</span>
-    </div>
+    </>
   )
+
+  // Met echte foto → neutrale letterbox-achtergrond i.p.v. de placeholder-strepen.
+  const hasPhoto = Boolean(url) || undefined
+
+  // Klikbaar (lightbox) → echte <button> voor toetsenbord/tik-toegankelijkheid.
+  if (onOpen && url) {
+    return (
+      <button
+        type="button"
+        className={`${styles.photo} ${styles.photoButton}`}
+        data-photo={hasPhoto}
+        onClick={onOpen}
+        aria-label={`Foto ${tag} groot bekijken`}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return <div className={styles.photo} data-photo={hasPhoto}>{content}</div>
 }
 
 // ── DossCheckPill ──

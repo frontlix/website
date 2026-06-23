@@ -15,9 +15,9 @@
   );
 }
 
-.photoImg {
-  object-fit: cover;
-}
+/* object-fit wordt per-tegel inline gezet (cover/contain prop), zodat de
+   contain-variant de hele foto laat zien met nette letterboxing tegen de
+   neutrale tegel-achtergrond. */
 
 .tag {
   position: absolute;

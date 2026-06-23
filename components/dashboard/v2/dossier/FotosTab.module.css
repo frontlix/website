@@ -41,9 +41,37 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   margin-top: 10px;
+}
+
+/* Klikbare foto-tegel: knop-reset zodat alleen de foto zichtbaar blijft,
+   maar wel toetstoegankelijk (focus-ring) en met pointer-cursor. */
+.tile {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--rb-r-chip);
+  transition: transform 0.12s ease;
+}
+
+.tile:hover {
+  transform: translateY(-1px);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--rb-blue);
+  outline-offset: 2px;
+}
+
+/* Smaller scherm: terug naar 2 koloms zodat de tegels niet te klein worden. */
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .hint {
