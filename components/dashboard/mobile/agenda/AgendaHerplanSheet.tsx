@@ -139,7 +139,10 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
     }
     setError(null)
     startSaving(async () => {
-      const res = await rescheduleAppointment(leadId, local.toISOString())
+      const res = await rescheduleAppointment(leadId, local.toISOString(), {
+        notifyWhatsapp: notifyWa,
+        notifyEmail: notifyWa,
+      })
       if (res.ok) {
         router.refresh() // agenda herladen → afspraak staat op de nieuwe tijd
         onConfirm()
@@ -278,7 +281,7 @@ export function AgendaHerplanSheet({ ev, events, open, onClose, onConfirm }: Age
         {/* Foutmelding bij opslaan */}
         {error && <div className={styles.saveError}>{error}</div>}
 
-        {/* WhatsApp-notify toggle, UI; automatische WA-notificatie is nog niet ingericht. */}
+        {/* Klant-notify toggle: bij aan stuurt de bot een WhatsApp + e-mail bevestiging. */}
         <div className={styles.notifyRow}>
           <MessageCircle size={18} className={styles.notifyIcon} aria-hidden="true" />
           <div className={styles.notifyBody}>

@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Clock, MessageCircle, FileText } from 'lucide-react'
+import { Clock, MessageCircle, FileText, X } from 'lucide-react'
 import {
   FHero,
   FDetailCard,
@@ -24,6 +24,8 @@ type FlowPlaatsbezoekProps = {
   ev: AgendaEvent
   onHerplan: () => void
   onStartOfferte: () => void
+  /** Afspraak annuleren. Zonder handler blijft de knop verborgen. */
+  onAnnuleer?: () => void
 }
 
 // Initialen voor de klant-avatar (stabiel, geen externe afhankelijkheid).
@@ -42,7 +44,7 @@ const INTAKE_STEPS = [
   'Toegang voor uitvoering afspreken',
 ]
 
-export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbezoekProps) {
+export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte, onAnnuleer }: FlowPlaatsbezoekProps) {
   // Lokale toggle-state per intake-stap. // TODO: functional pass, persist intake
   const [checked, setChecked] = useState<boolean[]>(() => INTAKE_STEPS.map(() => false))
   const toggle = (i: number) =>
@@ -130,10 +132,14 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte }: FlowPlaatsbe
 
       {/* Footer-acties (sticky onderaan) */}
       <div className={styles.footer}>
-        {/* TODO: functional pass, open herplan-sheet (reschedule server action) */}
         <button type="button" onClick={onHerplan} className={styles.btnGhost}>
           <Clock size={14} /> Herplannen
         </button>
+        {onAnnuleer && (
+          <button type="button" onClick={onAnnuleer} className={styles.btnGhost}>
+            <X size={14} /> Annuleren
+          </button>
+        )}
         {/* TODO: functional pass, start offerte (create-quote server action) */}
         <button type="button" onClick={onStartOfferte} className={styles.btnPrimary}>
           <FileText size={16} /> Offerte starten

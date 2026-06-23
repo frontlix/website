@@ -157,11 +157,8 @@ export function InstellingenClient(props: InstellingenClientProps) {
   // globale Opslaan-knop de pending prijswijzigingen wegschrijft (geen eigen
   // "Alles opslaan"-knop meer in het paneel).
   const prijzenSaveRef = useRef<PricingSaveHandle | null>(null);
-  // Vangrail: PrijzenPanel meldt hier of er nog niet-opgeslagen prijswijzigingen
-  // openstaan, en we onthouden het oorspronkelijk geladen e-mailadres, zodat
-  // bewaar() bij een e-mail- of prijswijziging om bevestiging kan vragen.
+  // PrijzenPanel meldt hier of er nog niet-opgeslagen prijswijzigingen openstaan.
   const pricingDirtyRef = useRef(false);
-  const initialMailRef = useRef(props.profiel.mail);
 
   function flashOpgeslagen() {
     setOpgeslagen(true);
@@ -187,7 +184,10 @@ export function InstellingenClient(props: InstellingenClientProps) {
       if (!res.ok) {
         // rollback bij fout
         setDiensten((ds) => ds.map((x) => (x.naam === naam ? { ...x, actief: !actief } : x)));
+        return;
       }
+      // Dienst aan/uit direct naar de bot (best-effort; 60s-refresh is vangnet).
+      await triggerBotConfigReload();
     });
   }
 
@@ -197,20 +197,8 @@ export function InstellingenClient(props: InstellingenClientProps) {
 
   /** Globale Opslaan-knop: schrijft de batch-bare velden van het actieve paneel. */
   function bewaar() {
-    // Vangrail: het e-mailadres voor offerte-goedkeuringen en de prijzen gaan
-    // direct live naar de bot. Vraag om bevestiging als een van beide is
-    // gewijzigd t.o.v. de oorspronkelijk geladen waarde. Bij annuleren: niets
-    // opslaan.
-    const mailGewijzigd = profiel.mail.trim() !== initialMailRef.current.trim();
-    const prijsGewijzigd = pricingDirtyRef.current;
-    if (
-      (mailGewijzigd || prijsGewijzigd) &&
-      !window.confirm(
-        "Je wijzigt het e-mailadres voor offerte-goedkeuringen en/of de prijzen. Deze gaan direct live naar de bot. Doorgaan?",
-      )
-    ) {
-      return;
-    }
+    // Let op: e-mailadres voor offerte-goedkeuringen en prijzen gaan bij opslaan
+    // direct live naar de bot (geen extra bevestiging meer, op verzoek verwijderd).
 
     // Openingsbericht is geen "opslaan" maar een AANVRAAG (Meta-goedkeuring): het
     // OpeningsberichtPanel dient zelf in via requestTemplateChange en toont zijn

@@ -1,6 +1,6 @@
 "use client";
 
-import { Navigation, Phone, MessageCircle, Check } from "lucide-react";
+import { Navigation, Phone, MessageCircle, Check, CalendarClock, X } from "lucide-react";
 import { Modal, Button } from "@/components/dashboard/v2/ui";
 import type { AgendaItem, RouteBase } from "./agenda-data";
 import { klantNaam, klantAdres, klantTelefoon, mapsHref, normalizeTel, reisLabel } from "./agenda-derive";
@@ -13,6 +13,10 @@ interface RouteContactModalProps {
   onClose: () => void;
   /** Afspraak afronden (klus/bezoek). Zonder handler blijft de knop verborgen. */
   onAfronden?: () => void;
+  /** Afspraak verzetten (klus/bezoek). Zonder handler blijft de knop verborgen. */
+  onVerzetten?: () => void;
+  /** Afspraak annuleren (klus/bezoek). Zonder handler blijft de knop verborgen. */
+  onAnnuleren?: () => void;
   /** Vertrekadres/werkplaats voor de live routekaart; null = SVG-fallback. */
   base?: RouteBase | null;
 }
@@ -20,12 +24,14 @@ interface RouteContactModalProps {
 /** Route & contact-kaart: mini-route, adres/telefoon en navigeren/bellen/
  *  WhatsApp (port van PAgenda). De knoppen openen echte deep-links naar Google
  *  Maps, de telefoon en WhatsApp op basis van het klantadres/-nummer. */
-export function RouteContactModal({ item, onClose, onAfronden, base }: RouteContactModalProps) {
+export function RouteContactModal({ item, onClose, onAfronden, onVerzetten, onAnnuleren, base }: RouteContactModalProps) {
   const reis = item ? reisLabel(item.afstandKm) : null;
   const adres = item ? klantAdres(item) : "";
   const telefoon = item ? klantTelefoon(item) : "";
   const tel = normalizeTel(telefoon);
   const kanAfronden = Boolean(item && onAfronden && item.type !== "deadline");
+  const kanVerzetten = Boolean(item && onVerzetten && item.type !== "deadline");
+  const kanAnnuleren = Boolean(item && onAnnuleren && item.type !== "deadline");
 
   return (
     <Modal open={!!item} onClose={onClose} width={540} label="Route en contact">
@@ -69,6 +75,23 @@ export function RouteContactModal({ item, onClose, onAfronden, base }: RouteCont
               <Check size={15} strokeWidth={2.6} />
               Afronden
             </Button>
+          ) : null}
+
+          {kanVerzetten || kanAnnuleren ? (
+            <div className={styles.beheerRow}>
+              {kanVerzetten ? (
+                <Button variant="secondary" className={styles.flex} onClick={onVerzetten}>
+                  <CalendarClock size={15} strokeWidth={2.4} />
+                  Verzetten
+                </Button>
+              ) : null}
+              {kanAnnuleren ? (
+                <Button variant="ghost" className={styles.flex} onClick={onAnnuleren}>
+                  <X size={15} strokeWidth={2.4} />
+                  Annuleren
+                </Button>
+              ) : null}
+            </div>
           ) : null}
 
           <div className={styles.actions}>

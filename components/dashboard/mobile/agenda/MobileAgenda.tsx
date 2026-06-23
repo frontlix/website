@@ -7,6 +7,7 @@ import { FlowKlus } from './FlowKlus'
 import { FlowPlaatsbezoek } from './FlowPlaatsbezoek'
 import { FlowAfronden } from './FlowAfronden'
 import { AgendaHerplanSheet } from './AgendaHerplanSheet'
+import { AgendaAnnuleerSheet } from './AgendaAnnuleerSheet'
 import { AgendaNewSheet } from './AgendaNewSheet'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import styles from './MobileAgenda.module.css'
@@ -33,6 +34,7 @@ export type MobileAgendaData = {
 export function MobileAgenda({ data }: { data: MobileAgendaData }) {
   const [detail, setDetail] = useState<AgendaEvent | null>(null)
   const [herplan, setHerplan] = useState<AgendaEvent | null>(null)
+  const [annuleer, setAnnuleer] = useState<AgendaEvent | null>(null)
   const [afronden, setAfronden] = useState<AgendaEvent | null>(null)
   const [newOpen, setNewOpen] = useState(false)
 
@@ -57,10 +59,20 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
 
       <MobileDrilldownLayer open={detail !== null} title={detailTitle} onClose={() => setDetail(null)}>
         {detail && isKlus && (
-          <FlowKlus ev={detail} onHerplan={() => setHerplan(detail)} onAfronden={() => setAfronden(detail)} />
+          <FlowKlus
+            ev={detail}
+            onHerplan={() => setHerplan(detail)}
+            onAnnuleer={() => setAnnuleer(detail)}
+            onAfronden={() => setAfronden(detail)}
+          />
         )}
         {detail && !isKlus && (
-          <FlowPlaatsbezoek ev={detail} onHerplan={() => setHerplan(detail)} onStartOfferte={() => { /* TODO functional pass */ }} />
+          <FlowPlaatsbezoek
+            ev={detail}
+            onHerplan={() => setHerplan(detail)}
+            onAnnuleer={() => setAnnuleer(detail)}
+            onStartOfferte={() => { /* TODO functional pass */ }}
+          />
         )}
       </MobileDrilldownLayer>
 
@@ -71,6 +83,14 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
           open
           onClose={() => setHerplan(null)}
           onConfirm={() => setHerplan(null)}
+        />
+      )}
+      {annuleer && (
+        <AgendaAnnuleerSheet
+          ev={annuleer}
+          open
+          onClose={() => setAnnuleer(null)}
+          onConfirm={() => { setAnnuleer(null); setDetail(null) }}
         />
       )}
       {afronden && (
