@@ -282,6 +282,13 @@
   color: #fff;
 }
 
+/* Dark-mode: --rb-ink wordt licht in dark -> witte tekst onleesbaar. Blauwe
+   gevulde pill (witte tekst) = leesbaar + duidelijk geselecteerd. */
+:global(html.dark) .btwActive,
+:global(html.dark) .btwActive:hover {
+  background: var(--rb-blue);
+}
+
 .btwBtn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
