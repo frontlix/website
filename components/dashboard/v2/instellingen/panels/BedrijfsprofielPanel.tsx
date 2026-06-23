@@ -174,6 +174,12 @@ export function BedrijfsprofielPanel({
           readOnly={!live}
         />
         <Field
+          label="Eigenaar (naam)"
+          value={profiel.eigenaarNaam}
+          onChange={(v) => onProfiel({ eigenaarNaam: v })}
+          readOnly={!live}
+        />
+        <Field
           label="Eigenaar WhatsApp"
           value={profiel.tel}
           onChange={(v) => onProfiel({ tel: v })}
@@ -185,13 +191,18 @@ export function BedrijfsprofielPanel({
           onChange={(v) => onProfiel({ spoedTel: v })}
           readOnly={!live}
         />
-        <Field
-          label="E-mail"
-          value={profiel.mail}
-          onChange={(v) => onProfiel({ mail: v })}
-          readOnly={!live}
-          breed
-        />
+        <div className={styles.fieldWide}>
+          <Field
+            label="E-mail"
+            value={profiel.mail}
+            onChange={(v) => onProfiel({ mail: v })}
+            readOnly={!live}
+            breed
+          />
+          <div className={styles.fieldHint}>
+            Het e-mailadres dat hier staat, is waar offertes ter goedkeuring naartoe worden gestuurd.
+          </div>
+        </div>
       </div>
 
       <div className={styles.section}>
