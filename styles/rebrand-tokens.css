@@ -186,12 +186,13 @@ html.dark .rbRoot {
   /* WhatsApp-gesprek (donker, à la WA dark): donkere doodle-variant van het
      eigen patroon (omgekeerd naar licht-op-donker) + lichtere sluier zodat het
      patroon subtiel zichtbaar blijft. */
-  --rb-wa-bg: #0b141a;
+  --rb-wa-bg: #0a0a0a;
   --rb-wa-bg-image: url("/whatsapp-achtergrond-dark.png");
-  /* screen i.p.v. multiply: op donker moet de doodle de achtergrond OPLICHTEN
-     (multiply zou een donker patroon bijna zwart maken = onzichtbaar). */
-  --rb-wa-blend: screen;
-  --rb-wa-veil: rgba(11, 20, 26, 0.55);
+  /* Normaal blend: het donkere doodle-patroon (negate+greyscale van het eigen
+     asset) IS al de definitieve WhatsApp-dark-look (neutraal bijna-zwart +
+     subtiele doodles), dus tonen zoals het is, zonder oplichting of sluier. */
+  --rb-wa-blend: normal;
+  --rb-wa-veil: rgba(10, 10, 10, 0);
   --rb-wa-in: #1f2c33; /* inkomende bubbel */
   --rb-wa-out: #134d37; /* uitgaande bubbel */
 
