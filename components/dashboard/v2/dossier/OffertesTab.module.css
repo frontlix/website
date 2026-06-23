@@ -234,25 +234,3 @@
   opacity: 0.6;
   cursor: default;
 }
-
-/* ── Heropgemaakt-label (oude offerte zonder snapshot) ── */
-.heropTag {
-  align-self: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--rb-status-sent-ink, #6b7280);
-  background: var(--rb-status-sent-bg, #f3f4f6);
-  border-radius: var(--rb-r-pill, 999px);
-  padding: 2px 8px;
-  cursor: help;
-  white-space: nowrap;
-}
-.heropNote {
-  font-size: 12px;
-  color: var(--rb-muted, #6b7280);
-  background: var(--rb-field-2, #f9fafb);
-  border: 1px solid var(--rb-line, #e5e7eb);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-}

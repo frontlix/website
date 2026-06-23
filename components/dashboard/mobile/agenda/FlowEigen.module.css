@@ -1,0 +1,31 @@
+/* ── FlowEigen.module.css ──────────────────────────────────────────────────
+   Read-only detail voor een externe (lead-loze) Google-afspraak (kind 'eigen').
+   De MobileDrilldownLayer levert header + scroll-container + padding; dit
+   bestand stylet alleen de body. Theming via tokens; geen inline kleuren.
+   --tone (door FlowEigen.tsx gezet → muted) draagt de event-kleur door.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* De FlowAtoms (hero/card) dragen zelf hun 16px-gutter; de drilldown-laag voegt
+   óók 16px content-padding toe. We annuleren de horizontale + onderste padding
+   van de laag zodat de atoms exact op de handoff-gutter (16px) uitkomen. */
+.root {
+  display: flex;
+  flex-direction: column;
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--mobile-content-pad)) calc(-1 * var(--space-3));
+}
+
+.note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.noteIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}

@@ -28,11 +28,21 @@ export function vandaagItem(
 ): { dag: AgendaDag; item: AgendaItem } | null {
   const dag = week.find((d) => d.vandaag);
   if (!dag || dag.items.length === 0) return null;
+  // Externe (lead-loze) Google-afspraken (key "ext-…") zijn READ-ONLY: ze mogen
+  // het "Vandaag"-paneel niet vullen (geen Afronden-knop, geen afgeleide
+  // contactgegevens). We kiezen daarom alleen uit de echte/demo-afspraken.
+  const eigen = dag.items.filter((it) => !isExternItem(it));
+  if (eigen.length === 0) return null;
   const item =
-    dag.items.find((it) => !it.klaar && it.type !== "deadline") ??
-    dag.items.find((it) => it.type !== "deadline") ??
-    dag.items[0];
+    eigen.find((it) => !it.klaar && it.type !== "deadline") ??
+    eigen.find((it) => it.type !== "deadline") ??
+    eigen[0];
   return { dag, item };
+}
+
+/** True voor een extern (lead-loos) Google-agenda-item (mapper zet key "ext-…"). */
+function isExternItem(item: AgendaItem): boolean {
+  return typeof item.key === "string" && item.key.startsWith("ext-");
 }
 
 /** Duur-label ("3u" / "90m" / "2u30m") → minuten. EMPTY_DUUR → 0. */

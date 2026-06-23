@@ -165,6 +165,33 @@ export type Database = {
           },
         ]
       }
+      external_calendar_events: {
+        Row: {
+          all_day: boolean
+          end_at: string | null
+          google_event_id: string
+          last_synced_at: string
+          start_at: string
+          summary: string | null
+        }
+        Insert: {
+          all_day?: boolean
+          end_at?: string | null
+          google_event_id: string
+          last_synced_at?: string
+          start_at: string
+          summary?: string | null
+        }
+        Update: {
+          all_day?: boolean
+          end_at?: string | null
+          google_event_id?: string
+          last_synced_at?: string
+          start_at?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
       fotos: {
         Row: {
           aangemaakt: string | null

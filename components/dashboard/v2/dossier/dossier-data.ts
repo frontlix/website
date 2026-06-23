@@ -44,8 +44,6 @@ export interface DossierOfferte {
   concept: boolean;
   /** Tag-kleur. Zonder = afgeleid uit `concept` (concept=blauw, anders groen). */
   tone?: OfferteTone;
-  /** Versienummer van deze offerte (voor de server-render van de echte PDF). */
-  versie?: number;
   /** PDF-model van deze verstuurde versie (inzien + download). Alleen aanwezig
    *  voor verstuurde offertes met een bruikbare snapshot; concepten en oude
    *  offertes zonder snapshot hebben dit niet. */

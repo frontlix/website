@@ -68,10 +68,14 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte, onAnnuleer }: 
             <div className={styles.klantNaam}>{ev.naam}</div>
             <div className={styles.klantTel}>Contact: Karin Visser · +31 6 33 02 11 87</div>
           </div>
-          {/* Echte ingang naar het lead-dossier (ev.lead = lead_id). */}
-          <Link href={`/leads/${ev.lead ?? ev.id}`} className={styles.leadChip}>
-            Lead
-          </Link>
+          {/* Echte ingang naar het lead-dossier (ev.lead = lead_id). Alleen tonen
+              als er een lead is: een lead-loos event (ev.id "ext-…") mag geen
+              dode /leads/ext-…-link maken. */}
+          {ev.lead && (
+            <Link href={`/leads/${ev.lead}`} className={styles.leadChip}>
+              Lead
+            </Link>
+          )}
         </div>
 
         <div className={styles.waCallout}>

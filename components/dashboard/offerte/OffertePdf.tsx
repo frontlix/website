@@ -89,12 +89,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   headerCenter: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
     alignSelf: 'flex-start',
+    gap: 8,
   },
   headerBadge: {
+    height: 75,
+    objectFit: 'contain',
+  },
+  headerKeurmerk: {
     height: 75,
     objectFit: 'contain',
   },
@@ -319,10 +324,20 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBg,
     borderTopColor: COLORS.gold,
     borderTopWidth: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  footerText: {
     fontSize: 8,
     color: COLORS.textSubtle,
     lineHeight: 1.6,
-    textAlign: 'center',
+    flex: 1,
+  },
+  footerBadge: {
+    height: 46,
+    objectFit: 'contain',
   },
   footerBrand: {
     fontWeight: 700,
@@ -386,6 +401,8 @@ export function OffertePdfDocument({
   const baseUrl = origin ?? (typeof window !== 'undefined' ? window.location.origin : '')
   const logoSrc = `${baseUrl}/assets/schoon-straatje/logo.png`
   const badgeSrc = `${baseUrl}/assets/schoon-straatje/top-30-vakbedrijven.png`
+  const keurmerkSrc = `${baseUrl}/assets/schoon-straatje/keurmerk-vakman.png`
+  const besteVakmanSrc = `${baseUrl}/assets/schoon-straatje/beste-vakman-buurt.png`
 
   const klantNaam = data.bedrijf?.trim() ? data.bedrijf : data.naam
   const klantContact = data.bedrijf?.trim() ? `T.a.v. ${data.naam}` : ''
@@ -424,6 +441,8 @@ export function OffertePdfDocument({
           <View style={styles.headerCenter}>
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image src={badgeSrc} style={styles.headerBadge} />
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image src={keurmerkSrc} style={styles.headerKeurmerk} />
           </View>
           <View style={styles.headerRight}>
             {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -598,11 +617,13 @@ export function OffertePdfDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>
+          <Text style={styles.footerText}>
             <Text style={styles.footerBrand}>{bedrijfsnaam}</Text>
             {'  |  '}KvK 62612018{'  |  '}BTW NL001708304B31
             {'  |  '}welkom@schoon-straatje.nl
           </Text>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image src={besteVakmanSrc} style={styles.footerBadge} />
         </View>
       </Page>
     </Document>

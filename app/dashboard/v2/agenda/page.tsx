@@ -16,6 +16,10 @@ import {
   getAppointmentsForRange,
   getAppointmentsForMonth,
 } from "@/lib/dashboard/agenda-queries";
+import {
+  getExternalEventsForRange,
+  getExternalEventsForMonth,
+} from "@/lib/dashboard/external-events-queries";
 import { getLeadsList } from "@/lib/dashboard/lead-queries";
 import { getTenantBase, DEFAULT_TENANT_BASE } from "@/lib/dashboard/tenant-base";
 import { AgendaView } from "@/components/dashboard/v2/agenda/AgendaView";
@@ -23,6 +27,8 @@ import type { KlantOptie } from "@/components/dashboard/v2/agenda/KlantSelect";
 import {
   mapWeekToAgendaDays,
   mapMonthToCells,
+  mergeExternalIntoWeekByKeys,
+  mergeExternalIntoMonth,
   buildDemoWeek,
   buildDemoMonthCells,
 } from "@/components/dashboard/v2/agenda/agenda-mappers";
@@ -95,17 +101,35 @@ export default async function AgendaPage({
   }
 
   // Echte data: zelfde week-bepaling + queries als de (app)-agenda. De
-  // sessie-client (RLS) scope't op de tenant van de ingelogde user.
-  const [weekAppointments, monthAppointments, leads, tenantBase] = await Promise.all([
+  // sessie-client (RLS) scope't op de tenant van de ingelogde user. Daarnaast
+  // de externe (lead-loze) Google-afspraken uit external_calendar_events; die
+  // tonen we READ-ONLY mee in de week- en maandweergave.
+  const [
+    weekAppointments,
+    monthAppointments,
+    weekExternal,
+    monthExternal,
+    leads,
+    tenantBase,
+  ] = await Promise.all([
     getAppointmentsForRange(week.queryStart, week.queryEnd),
     getAppointmentsForMonth(monthRef.year, monthRef.month),
+    getExternalEventsForRange(weekDateKeys[0], weekDateKeys[weekDateKeys.length - 1]),
+    getExternalEventsForMonth(monthRef.year, monthRef.month),
     getLeadsList(),
     // Vertrekadres/werkplaats (tenant_settings base_lat/lng), voor de live route.
     getTenantBase(),
   ]);
 
-  const days = mapWeekToAgendaDays(week.mondayKey, weekAppointments);
-  const cells = mapMonthToCells(grid.cells, monthAppointments);
+  const days = mergeExternalIntoWeekByKeys(
+    mapWeekToAgendaDays(week.mondayKey, weekAppointments),
+    weekDateKeys,
+    weekExternal,
+  );
+  const cells = mergeExternalIntoMonth(
+    mapMonthToCells(grid.cells, monthAppointments),
+    monthExternal,
+  );
 
   // Bestaande leads om aan te koppelen in "Nieuwe afspraak".
   const klanten: KlantOptie[] = leads
