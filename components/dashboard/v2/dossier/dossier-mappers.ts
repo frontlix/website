@@ -15,10 +15,15 @@ import { aggregateActivityTimeline } from "@/lib/dashboard/lead-queries";
 import { shortTimeAgo } from "@/lib/dashboard/relative-time";
 import { leadStage } from "@/components/dashboard/mobile/leads/lead-mappers";
 import { formatEuro } from "@/lib/dashboard/format";
-import { DIENST_LABELS, type SubDienst } from "@/lib/dashboard/manual-offerte-types";
+import {
+  DIENST_LABELS,
+  type SubDienst,
+  type ManualOfferteData,
+} from "@/lib/dashboard/manual-offerte-types";
 import { mapLeadToFormData } from "@/lib/dashboard/offerte-form-mapping";
 import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
+import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type {
   DossierData,
@@ -218,7 +223,7 @@ function shortDate(iso: string | null | undefined): string {
 }
 
 /** Offertes-lijst voor de Offertes-tab (concept = blauwe rand + Open-knop). */
-function buildOffertes(detail: LeadDetail): DossierOfferte[] {
+function buildOffertes(detail: LeadDetail, baseData: ManualOfferteData): DossierOfferte[] {
   const l = detail.lead;
   return detail.offertes.map((o) => {
     const concept = o.is_concept === true;
@@ -240,6 +245,24 @@ function buildOffertes(detail: LeadDetail): DossierOfferte[] {
       : o.status === "geweigerd" || o.status === "verlopen"
         ? "archief"
         : "verstuurd";
+    // Per verstuurde versie een PDF-model bouwen (inzien + download). Concepten
+    // worden niet ingezien, die bewerk je in de editor. Een verstuurde offerte
+    // zonder bruikbare snapshot levert null op en toont geen knoppen.
+    const pdfModel = concept
+      ? null
+      : buildSentOffertePdfModel({
+          offerte: {
+            regels_snapshot: o.regels_snapshot,
+            totaal_incl: o.totaal_incl,
+            korting_pct: o.korting_pct,
+            versie: o.versie,
+            aangemaakt_op: o.aangemaakt_op,
+            offertenummer: (o as { offertenummer?: string | null }).offertenummer ?? null,
+          },
+          baseData,
+          leadId: l.id,
+          geldigheidFallback: detail.lead.offerte_geldigheid_dagen ?? 14,
+        });
     return {
       nr: `Offerte v${o.versie}`,
       label,
@@ -247,6 +270,7 @@ function buildOffertes(detail: LeadDetail): DossierOfferte[] {
       sub: datum ? `Versie ${o.versie} · ${datum}` : `Versie ${o.versie}`,
       concept,
       tone,
+      pdfModel,
     };
   });
 }
@@ -357,6 +381,10 @@ export function mapLeadDetailToDossierData(
   // aparte activity-timeline, dus we gebruiken alleen het transcript hierboven.
   void aggregateActivityTimeline(detail);
 
+  // Basis-form-model uit de lead, eenmalig: dient zowel als bron voor de PDF-
+  // modellen per verstuurde offerte als voor de inline editor (via buildOfferteForm).
+  const baseData = mapLeadToFormData(detail.lead);
+
   return {
     tel: l.telefoon ?? "Geen nummer",
     afstand: l.afstand_km != null ? `${l.afstand_km} km` : "onbekend",
@@ -365,7 +393,7 @@ export function mapLeadDetailToDossierData(
     werk: buildWerk(l),
     fotos: buildFotos(detail),
     surface: buildSurface(l),
-    offertes: buildOffertes(detail),
+    offertes: buildOffertes(detail, baseData),
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
     offerteForm: buildOfferteForm(detail, pricing),
