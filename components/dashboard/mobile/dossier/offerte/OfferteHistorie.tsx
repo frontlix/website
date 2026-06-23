@@ -14,7 +14,8 @@ import { OFullSheet } from './OfferteEditAtoms'
 import { eur } from './offerte-edit-model'
 import { OffertePdfPreview, type OffertePdfData } from './OffertePdfPreview'
 import type { SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
-import { renderOffertePdfBlob, offertePdfFileName } from '@/components/dashboard/offerte/render-offerte-pdf'
+import { offertePdfFileName, base64ToPdfBlob } from '@/components/dashboard/offerte/render-offerte-pdf'
+import { renderSentOffertePdf } from '@/lib/dashboard/offerte/sent-offerte-pdf-action'
 import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
 import styles from './OfferteHistorie.module.css'
 
@@ -35,6 +36,10 @@ type OfferteVersie = {
 type OfferteHistorieProps = {
   open: boolean
   onClose: () => void
+  /** Lead-id (route lead_id) voor de server-render van de echte PDF bij download.
+   *  Optioneel zodat de legacy DossOfferteEdit (zonder lead-context) blijft compileren;
+   *  zonder leadId is download niet beschikbaar. */
+  leadId?: string
   /** Bedrag van het huidige (nog niet verstuurde) concept. */
   huidigBedrag: number
   /** Echte eerdere versies; deze component toont ze meest recent eerst. */
@@ -58,18 +63,20 @@ const EMPTY_PDF_DATA: OffertePdfData = {
   totaalIncl: 0,
 }
 
-export function OfferteHistorie({ open, onClose, huidigBedrag, versies }: OfferteHistorieProps) {
+export function OfferteHistorie({ open, onClose, leadId, huidigBedrag, versies }: OfferteHistorieProps) {
   // Meest recente eerst (hoogste versienummer bovenaan), zonder de input te muteren.
   const gesorteerd = [...versies].sort((a, b) => b.versie - a.versie)
   const [preview, setPreview] = useState<OffertePdfData | null>(null)
   const [busyVersie, setBusyVersie] = useState<number | null>(null)
 
   const download = async (h: OfferteVersie) => {
-    if (!h.downloadModel || busyVersie != null) return
+    if (!leadId || !h.downloadModel || busyVersie != null) return
     setBusyVersie(h.versie)
     try {
-      const blob = await renderOffertePdfBlob(h.downloadModel)
-      await deliverPdfBlob(blob, offertePdfFileName(h.downloadModel.data.naam))
+      // Echte server-PDF (zelfde Puppeteer-template als de mail, met keurmerken).
+      const res = await renderSentOffertePdf(leadId, h.versie)
+      if ('error' in res) throw new Error(res.error)
+      await deliverPdfBlob(base64ToPdfBlob(res.base64), offertePdfFileName(h.downloadModel.data.naam))
     } catch (e) {
       console.error('[OfferteHistorie] PDF download mislukt:', e)
       // eslint-disable-next-line no-alert

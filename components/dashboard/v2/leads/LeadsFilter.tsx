@@ -9,6 +9,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, Zap, Check } from "lucide-react";
 import { Toggle } from "@/components/dashboard/v2/ui";
+import { ICON_REGISTRY } from "@/components/dashboard/instellingen/tag-icons";
+import type { IconKey } from "@/lib/dashboard/tag-presets";
+import type { Tag } from "@/lib/dashboard/database.types";
 import styles from "./LeadsFilter.module.css";
 
 type Bron = "wa" | "form";
@@ -26,7 +29,7 @@ const SORTS: ReadonlyArray<{ k: Sort; l: string }> = [
   { k: "fase", l: "Fase" },
 ];
 
-export function LeadsFilter() {
+export function LeadsFilter({ allTags }: { allTags: Tag[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -37,10 +40,16 @@ export function LeadsFilter() {
   const urgent = searchParams.get("urgent") === "1";
   const sort = (searchParams.get("sort") ?? "binnen") as Sort;
 
+  const selectedTags = (() => {
+    const raw = searchParams.get("tags");
+    return raw ? raw.split(",").filter(Boolean) : [];
+  })();
+
   const activeCount =
     (bron === "wa" || bron === "form" ? 1 : 0) +
     (urgent ? 1 : 0) +
-    (sort !== "binnen" ? 1 : 0);
+    (sort !== "binnen" ? 1 : 0) +
+    selectedTags.length;
 
   // Klik-buiten + Escape sluiten het paneel.
   useEffect(() => {
@@ -70,11 +79,19 @@ export function LeadsFilter() {
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
+  function toggleTag(tagId: string) {
+    const next = selectedTags.includes(tagId)
+      ? selectedTags.filter((t) => t !== tagId)
+      : [...selectedTags, tagId];
+    setParam("tags", next.length > 0 ? next.join(",") : null);
+  }
+
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("bron");
     params.delete("urgent");
     params.delete("sort");
+    params.delete("tags");
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
@@ -153,6 +170,33 @@ export function LeadsFilter() {
               ))}
             </div>
           </div>
+
+          {allTags.length > 0 ? (
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>Tags (alle gekozen)</div>
+              <div className={styles.sortList}>
+                {allTags.map((t) => {
+                  const Icon = ICON_REGISTRY[(t.icon as IconKey) ?? "Tag"] ?? ICON_REGISTRY.Tag;
+                  const on = selectedTags.includes(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={styles.sortItem}
+                      data-on={on ? "true" : undefined}
+                      onClick={() => toggleTag(t.id)}
+                    >
+                      <span style={{ color: t.kleur ?? "#64748b", display: "inline-flex", marginRight: 6 }}>
+                        <Icon size={14} strokeWidth={2.2} />
+                      </span>
+                      {t.naam}
+                      {on ? <Check size={14} strokeWidth={2.6} /> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           <div className={styles.footer}>
             <button

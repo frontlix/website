@@ -18,6 +18,8 @@ import { OffertesTab } from "./OffertesTab";
 import { FotosTab } from "./FotosTab";
 import { NotitiesTab } from "./NotitiesTab";
 import { ChatPanel } from "./ChatPanel";
+import { LeadTagsRow } from "./LeadTagsRow";
+import type { Tag } from "@/lib/dashboard/database.types";
 import styles from "./DossierView.module.css";
 
 type TabKey = "Info" | "Offertes" | "Foto's" | "Notities";
@@ -32,6 +34,8 @@ interface DossierViewProps {
   botPaused?: boolean;
   /** Echte dashboard_archived-stand uit de lead. */
   archivedInitial?: boolean;
+  leadTags?: Tag[];
+  allTags?: Tag[];
 }
 
 /** Lead-dossier (split view). Kop met terug-link, naam, status + acties;
@@ -44,6 +48,8 @@ export function DossierView({
   leadId,
   botPaused,
   archivedInitial,
+  leadTags,
+  allTags,
 }: DossierViewProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -247,6 +253,14 @@ export function DossierView({
           <div className={styles.meta}>
             {lead.dienst} · {lead.plaats} · via {lead.bron} · laatste bericht {data.binnen}
           </div>
+          {leadId ? (
+            <LeadTagsRow
+              leadId={leadId}
+              leadTags={leadTags ?? []}
+              allTags={allTags ?? []}
+              live={live}
+            />
+          ) : null}
         </div>
         <div className={styles.acties}>
           <button type="button" className={styles.actieBtn} onClick={naarNotities}>

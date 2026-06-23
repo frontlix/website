@@ -10,6 +10,7 @@ import { LeadsPipeline } from "./LeadsPipeline";
 import { LeadsList } from "./LeadsList";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
 import type { PipelineCol } from "./leads-data";
+import type { Tag } from "@/lib/dashboard/database.types";
 import styles from "@/app/dashboard/v2/leads/page.module.css";
 
 /** Client-wrapper voor de Leads-pagina: houdt de view-toggle (pipeline/lijst)
@@ -25,11 +26,13 @@ export function LeadsView({
   pipeline,
   archived = false,
   archivedCount = 0,
+  allTags,
 }: {
   leads: Lead[];
   pipeline: PipelineCol[];
   archived?: boolean;
   archivedCount?: number;
+  allTags: Tag[];
 }) {
   const [view, setView] = useState<LeadsViewMode>("pipeline");
 
@@ -40,7 +43,7 @@ export function LeadsView({
         <div className={styles.controls}>
           <ArchiveSwitch archivedCount={archivedCount} />
           <LeadsSearch />
-          <LeadsFilter />
+          <LeadsFilter allTags={allTags} />
           {!archived ? <ViewSwitcher value={view} onChange={setView} /> : null}
         </div>
       </div>

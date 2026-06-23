@@ -19,6 +19,7 @@ import {
   type OffertesInstellingen,
   type EmailConnectionState,
   type WhatsAppConnectionState,
+  type GmailConnectionState,
 } from "@/components/dashboard/v2/instellingen/instellingen-data";
 import type { PricingRuleRow } from "@/components/dashboard/v2/instellingen/instellingen-mappers";
 import type { PricingImpactBaseline } from "@/lib/dashboard/pricing-impact-queries";
@@ -84,6 +85,8 @@ export interface InstellingenClientProps {
   email: EmailConnectionState;
   /** WhatsApp-koppel-status (whatsapp_connections), voor het WhatsAppPanel. */
   whatsapp: WhatsAppConnectionState;
+  /** Gmail-label-koppelstatus (gmail_connections), voor het BedrijfsprofielPanel. */
+  gmail: GmailConnectionState;
   /** Bewerkbare thuisbasis-velden (saveTenantBase: postcode + huisnummer + label). */
   basePostcode: string;
   baseHuisnummer: string;
@@ -286,6 +289,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
             logoUrl={props.logoUrl}
             huidigeStand={props.huidigeStand}
             live={props.live}
+            gmail={props.gmail}
           />
         );
       case "Diensten":

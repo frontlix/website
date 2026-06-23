@@ -483,6 +483,15 @@ export interface WhatsAppConnectionState {
 
 export const WHATSAPP_CONNECTION_DEFAULT: WhatsAppConnectionState = { connected: false };
 
+// ── Gmail-label-koppeling (Bedrijfsprofiel) ──────────────────────────────
+
+/** Gmail-label-koppelstatus (gmail_connections), voor het bedrijfsprofiel. */
+export interface GmailConnectionState {
+  connected: boolean
+  googleEmail: string | null
+  labelName: string | null
+}
+
 // ── Team ─────────────────────────────────────────────────────────────────
 
 export interface TeamMember {

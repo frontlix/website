@@ -4,22 +4,44 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Eye, Download } from 'lucide-react'
 import { Modal } from '@/components/dashboard/v2/ui'
 import { HEROPGEMAAKT_NOTE, type SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
-import { renderOffertePdfBlob, offertePdfFileName } from '@/components/dashboard/offerte/render-offerte-pdf'
+import { offertePdfFileName, base64ToPdfBlob } from '@/components/dashboard/offerte/render-offerte-pdf'
+import { renderSentOffertePdf } from '@/lib/dashboard/offerte/sent-offerte-pdf-action'
 import styles from './OffertesTab.module.css'
 
-/** Inzien (PDF-voorbeeld in een Modal) + download voor een verstuurde versie. */
-export function SentOfferteActions({ model, titel }: { model: SentOffertePdfModel; titel: string }) {
+/**
+ * Inzien (PDF-voorbeeld in een Modal) + download voor een verstuurde versie.
+ * De PDF wordt op de server gerenderd met dezelfde Puppeteer-template als de
+ * verzonden mail-PDF (inclusief alle keurmerken), dus de opmaak loopt nooit
+ * achter. `model` wordt nog gebruikt voor de bestandsnaam + het heropmaak-label.
+ */
+export function SentOfferteActions({
+  model,
+  titel,
+  leadId,
+  versie,
+}: {
+  model: SentOffertePdfModel
+  titel: string
+  leadId: string
+  versie: number
+}) {
   const [open, setOpen] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const urlRef = useRef<string | null>(null)
   const fileName = offertePdfFileName(model.data.naam)
 
+  const fetchBlob = useCallback(async (): Promise<Blob> => {
+    const res = await renderSentOffertePdf(leadId, versie)
+    if ('error' in res) throw new Error(res.error)
+    return base64ToPdfBlob(res.base64)
+  }, [leadId, versie])
+
   const view = useCallback(async () => {
     if (busy) return
     setBusy(true)
     try {
-      const blob = await renderOffertePdfBlob(model)
+      const blob = await fetchBlob()
       const u = URL.createObjectURL(blob)
       if (urlRef.current) URL.revokeObjectURL(urlRef.current)
       urlRef.current = u
@@ -32,7 +54,7 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
     } finally {
       setBusy(false)
     }
-  }, [busy, model])
+  }, [busy, fetchBlob])
 
   const close = useCallback(() => {
     setOpen(false)
@@ -47,7 +69,7 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
     if (busy) return
     setBusy(true)
     try {
-      const blob = await renderOffertePdfBlob(model)
+      const blob = await fetchBlob()
       const u = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = u
@@ -64,7 +86,7 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
     } finally {
       setBusy(false)
     }
-  }, [busy, model, fileName])
+  }, [busy, fetchBlob, fileName])
 
   useEffect(() => {
     return () => {
