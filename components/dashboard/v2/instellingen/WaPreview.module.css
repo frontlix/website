@@ -9,13 +9,6 @@
   min-height: 120px;
 }
 
-/* Dark-mode: één dekkende, niet-herhaalde achtergrond i.p.v. tegels → geen naad
-   en geen helderheidsband. */
-:global(html.dark) .canvas {
-  background-repeat: no-repeat;
-  background-size: auto, cover;
-  background-position: center;
-}
 
 .bubble {
   background: var(--rb-wa-in);

@@ -137,13 +137,6 @@
   background-repeat: repeat;
 }
 
-/* Dark-mode: één dekkende, niet-herhaalde achtergrond i.p.v. tegels → geen naad
-   en geen helderheidsband. Blijft vast (scroll-attach) achter de berichten. */
-:global(html.dark) .stream {
-  background-repeat: no-repeat;
-  background-size: auto, cover;
-  background-position: center;
-}
 
 .bubbles {
   display: flex;

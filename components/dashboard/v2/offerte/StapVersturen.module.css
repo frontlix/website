@@ -120,13 +120,6 @@
   background-repeat: repeat;
 }
 
-/* Dark-mode: één dekkende, niet-herhaalde achtergrond i.p.v. tegels → geen naad
-   en geen helderheidsband. */
-:global(html.dark) .canvasWa {
-  background-repeat: no-repeat;
-  background-size: auto, cover;
-  background-position: center;
-}
 
 .canvasMail {
   background: var(--rb-field);
