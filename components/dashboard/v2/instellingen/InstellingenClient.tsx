@@ -288,7 +288,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
             live={props.live}
           />
         );
-      case "Diensten & prijzen":
+      case "Diensten":
         return (
           <DienstenPanel
             diensten={diensten}
