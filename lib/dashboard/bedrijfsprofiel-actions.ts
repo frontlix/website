@@ -48,6 +48,10 @@ export interface BedrijfsprofielInput {
   spoed_telefoon: string
   /** Werkstraal in km → tenant_settings.radius_max_km. */
   radius_max_km: number
+  /** Minimale klusgrootte (m2) waaronder we buiten de straal niets aannemen. */
+  min_m2_buiten_straal: number
+  /** Harde max-afstand (km); null = geen grens. */
+  max_afstand_km: number | null
 }
 
 export async function updateBedrijfsprofiel(
@@ -86,6 +90,20 @@ export async function updateBedrijfsprofiel(
       ? Math.min(Math.round(input.radius_max_km), 1000)
       : null
 
+  // Minimale m2-grens: alleen wegschrijven bij een plausibel getal (0–100000);
+  // lege/ongeldige invoer laat de bestaande waarde ongemoeid (net als radius).
+  const minM2 =
+    Number.isFinite(input.min_m2_buiten_straal) && input.min_m2_buiten_straal >= 0
+      ? Math.min(Math.round(input.min_m2_buiten_straal), 100000)
+      : null
+
+  // Harde max-afstand: 0/leeg/ongeldig => null (= grens wissen, expliciet
+  // toegestaan). Een positief getal wordt afgerond en geclampt.
+  const maxAfstand =
+    Number.isFinite(input.max_afstand_km as number) && (input.max_afstand_km as number) > 0
+      ? Math.min(Math.round(input.max_afstand_km as number), 100000)
+      : null
+
   const updatePayload = {
     bedrijfsnaam: input.bedrijfsnaam.trim() || null,
     chatbot_naam: input.bot_naam.trim() || null,
@@ -98,6 +116,8 @@ export async function updateBedrijfsprofiel(
     eigenaar_spoed_telefoon: input.spoed_telefoon.trim() || null,
     bijgewerkt_op: new Date().toISOString(),
     ...(radius != null ? { radius_max_km: radius } : {}),
+    ...(minM2 != null ? { radius_min_m2_buiten_straal: minM2 } : {}),
+    radius_max_afstand_km: maxAfstand,
   }
 
   const { error: updErr } = await admin

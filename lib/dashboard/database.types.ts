@@ -1031,6 +1031,8 @@ export type Database = {
           postcode: string | null
           radius_doorverwijs_bedrijf: string | null
           radius_max_km: number
+          radius_max_afstand_km: number | null
+          radius_min_m2_buiten_straal: number
           reminder_dag_1: number
           reminder_dag_2: number
           reminder_dag_3: number
@@ -1057,6 +1059,8 @@ export type Database = {
           postcode?: string | null
           radius_doorverwijs_bedrijf?: string | null
           radius_max_km?: number
+          radius_max_afstand_km?: number | null
+          radius_min_m2_buiten_straal?: number
           reminder_dag_1?: number
           reminder_dag_2?: number
           reminder_dag_3?: number
@@ -1083,6 +1087,8 @@ export type Database = {
           postcode?: string | null
           radius_doorverwijs_bedrijf?: string | null
           radius_max_km?: number
+          radius_max_afstand_km?: number | null
+          radius_min_m2_buiten_straal?: number
           reminder_dag_1?: number
           reminder_dag_2?: number
           reminder_dag_3?: number

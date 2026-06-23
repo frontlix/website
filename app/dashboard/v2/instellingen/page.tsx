@@ -25,6 +25,8 @@ import {
 import {
   toCompanyProfile,
   toWorkRadius,
+  toMinM2BuitenStraal,
+  toMaxAfstandKm,
   toDiensten,
   toOffertesInstellingen,
   toReminders,
@@ -58,6 +60,8 @@ export default async function InstellingenPage() {
       <InstellingenClient
         profiel={PROFILE_DEFAULT}
         radius={WORK_RADIUS_DEFAULT}
+        minM2={200}
+        maxAfstand={null}
         diensten={SERVICES_DEFAULT}
         dagen={DAYS_DEFAULT}
         dienstKeyByNaam={{}}
@@ -117,6 +121,7 @@ export default async function InstellingenPage() {
     beschRaw,
     logoRaw,
     offRaw,
+    radiusExtraRaw,
   ] = await Promise.all([
     supabase
       .from("tenant_settings")
@@ -172,6 +177,13 @@ export default async function InstellingenPage() {
       .select("offerte_btw_tarief, offerte_betaaltermijn_dagen, offerte_nummer_prefix")
       .limit(1)
       .maybeSingle(),
+    // Werkgebied-grenzen (057): aparte defensieve query, zodat een ontbrekende
+    // migratie-kolom alleen op default terugvalt i.p.v. de hele query te breken.
+    supabase
+      .from("tenant_settings")
+      .select("radius_min_m2_buiten_straal, radius_max_afstand_km")
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   // Casten zoals de bestaande code (Supabase geeft zonder gegen. types `never`).
@@ -205,6 +217,12 @@ export default async function InstellingenPage() {
     Array.isArray(beschVal) && beschVal.length === 7 ? beschVal : DAYS_DEFAULT;
   const logoUrl = (logoRaw.data as { logo_url?: string | null } | null)?.logo_url ?? null;
   const offRowObj = (offRaw.data as Partial<TenantSettingsRow> | null) ?? {};
+  const radiusExtra =
+    (radiusExtraRaw.data as
+      | { radius_min_m2_buiten_straal?: number | null; radius_max_afstand_km?: number | null }
+      | null) ?? null;
+  const minM2 = toMinM2BuitenStraal(radiusExtra as TenantSettingsRow | null);
+  const maxAfstand = toMaxAfstandKm(radiusExtra as TenantSettingsRow | null);
   const offertes = toOffertesInstellingen(
     tenant ? ({ ...tenant, ...offRowObj } as TenantSettingsRow) : null,
   );
@@ -213,6 +231,8 @@ export default async function InstellingenPage() {
     <InstellingenClient
       profiel={toCompanyProfile(tenant)}
       radius={toWorkRadius(tenant)}
+      minM2={minM2}
+      maxAfstand={maxAfstand}
       diensten={toDiensten(services)}
       dagen={dagen}
       dienstKeyByNaam={dienstKeyByNaam}
