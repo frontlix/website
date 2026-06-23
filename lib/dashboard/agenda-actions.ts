@@ -53,6 +53,7 @@ export async function completeAppointment(leadId: string): Promise<AgendaActionR
 export async function rescheduleAppointment(
   leadId: string,
   newIso: string,
+  opts: { notifyWhatsapp?: boolean; notifyEmail?: boolean } = {},
 ): Promise<AgendaActionResult> {
   if (!leadId.trim()) return { ok: false, error: 'Lead-id ontbreekt.' }
   const ms = new Date(newIso).getTime()
@@ -71,9 +72,42 @@ export async function rescheduleAppointment(
     hour12: false,
   }).format(new Date(ms)) // HH:MM
 
-  const result = await callBotLeadApi(leadId, 'reschedule', { datum, starttijd })
+  const result = await callBotLeadApi(leadId, 'reschedule', {
+    datum,
+    starttijd,
+    notifyWhatsapp: opts.notifyWhatsapp ?? true,
+    notifyEmail: opts.notifyEmail ?? true,
+  })
   if (!result.ok) {
     return { ok: false, error: botApiError(result, 'Verzetten mislukt.') }
+  }
+
+  revalidateAgenda(leadId)
+  return { ok: true }
+}
+
+/**
+ * Annuleert de afspraak: de bot verwijdert het Google-event, maakt de
+ * afspraak-velden leeg en stuurt (optioneel) een bericht naar de klant.
+ * Loopt via dezelfde bot-route als de andere agenda-acties.
+ */
+export async function cancelAppointment(
+  leadId: string,
+  opts: { notifyWhatsapp?: boolean; notifyEmail?: boolean } = {},
+): Promise<AgendaActionResult> {
+  if (!leadId.trim()) return { ok: false, error: 'Lead-id ontbreekt.' }
+
+  // Approved-gate: alleen goedgekeurde tenant-users mogen agenda-acties doen.
+  // Deze acties triggeren bot-calls, Google-events en klant-bevestigingen, dus
+  // een ingelogde-maar-niet-approved user mag ze niet kunnen aanroepen.
+  await requireApprovedUser()
+
+  const result = await callBotLeadApi(leadId, 'cancel-appointment', {
+    notifyWhatsapp: opts.notifyWhatsapp ?? true,
+    notifyEmail: opts.notifyEmail ?? true,
+  })
+  if (!result.ok) {
+    return { ok: false, error: botApiError(result, 'Annuleren mislukt.') }
   }
 
   revalidateAgenda(leadId)
