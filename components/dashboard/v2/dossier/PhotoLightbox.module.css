@@ -1,0 +1,22 @@
+/* Frame om de grote foto: centreert de afbeelding en geeft een neutrale
+   achtergrond achter eventuele letterboxing (contain). */
+.frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rb-field);
+  border-radius: var(--rb-r-card);
+  padding: 14px;
+}
+
+/* De foto zelf: groot, volledig zichtbaar (contain) en begrensd op de
+   viewport zodat hij nooit buiten beeld valt. */
+.img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 85vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--rb-r-chip);
+}

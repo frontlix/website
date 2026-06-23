@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { Check } from "lucide-react";
 import type { DossierData, InfoRow } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
 import { PhotoPlaceholder } from "./PhotoPlaceholder";
+import { PhotoLightbox } from "./PhotoLightbox";
 import styles from "./InfoTab.module.css";
 
 interface InfoTabProps {
@@ -48,6 +52,11 @@ function InfoColumn({
 
 /** Info-tab: 2-koloms klant- en werk-gegevens, daaronder de fotostrip. */
 export function InfoTab({ data = DOSSIER }: InfoTabProps) {
+  /** Index van de foto die groot in de lightbox open staat (null = dicht). */
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const open = openIndex !== null ? data.fotos[openIndex] : null;
+
   return (
     <div className={styles.root}>
       <div className={styles.cols}>
@@ -57,10 +66,24 @@ export function InfoTab({ data = DOSSIER }: InfoTabProps) {
 
       <div className={`rb-section-label ${styles.spaced}`}>Foto&apos;s van de klant</div>
       <div className={styles.fotoStrip}>
-        {data.fotos.map((f, i) => (
-          <PhotoPlaceholder key={i} tag={f.tag} url={f.url} height={70} />
-        ))}
+        {data.fotos.map((f, i) =>
+          f.url ? (
+            <button
+              key={i}
+              type="button"
+              className={styles.stripTile}
+              onClick={() => setOpenIndex(i)}
+              aria-label={`Foto ${f.tag} groot bekijken`}
+            >
+              <PhotoPlaceholder tag={f.tag} url={f.url} height={70} fit="cover" />
+            </button>
+          ) : (
+            <PhotoPlaceholder key={i} tag={f.tag} url={f.url} height={70} fit="cover" />
+          ),
+        )}
       </div>
+
+      <PhotoLightbox url={open?.url} alt={open?.tag} onClose={() => setOpenIndex(null)} />
     </div>
   );
 }

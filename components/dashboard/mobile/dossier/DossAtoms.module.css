@@ -71,7 +71,7 @@
 
 .photo {
   position: relative;
-  height: 120px;
+  height: 140px;
   border-radius: 12px;
   overflow: hidden;
   /* 135° diagonal stripes using the photo-stripe tokens. */
@@ -82,9 +82,37 @@
   );
 }
 
+/* Met echte foto: rustige neutrale letterbox-achtergrond i.p.v. de strepen,
+   zodat de volledig getoonde (contain) foto goed contrasteert. */
+.photo[data-photo] {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
 /* Echte foto vult de tegel; de tag-chip ligt eroverheen (z-index). */
 .photoImg {
   object-fit: cover;
+}
+
+/* Hele foto zichtbaar (geen bijsnijden); letterboxing op de stripe-achtergrond. */
+.photoImgContain {
+  object-fit: contain;
+}
+
+/* Klikbare tegel (opent lightbox): reset de native button-stijl + pointer. */
+.photoButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.photoButton:active {
+  opacity: 0.85;
 }
 
 .photoTag {

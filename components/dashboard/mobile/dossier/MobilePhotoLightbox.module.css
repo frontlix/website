@@ -1,0 +1,58 @@
+/* ── MobilePhotoLightbox.module.css ────────────────────────────────────────
+   Full-screen foto-lightbox op telefoon. Donkere overlay over het hele scherm,
+   de foto groot en gecentreerd (contain). Sluiten via overlay-tik, kruisje, Esc.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  /* Donkere overlay: bewust dieper dan de standaard sheet-backdrop zodat de
+     foto goed contrasteert. */
+  background: rgba(0, 0, 0, 0.88);
+  cursor: pointer;
+  animation: lbFade 0.18s ease-out both;
+}
+
+@keyframes lbFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Foto-wrapper: bepaalt het maximale formaat; next/image vult 'm met fill. */
+.figure {
+  position: relative;
+  width: 92vw;
+  height: 85vh;
+  cursor: default;
+}
+
+.image {
+  object-fit: contain;
+}
+
+/* Kruisje rechtsboven, binnen de safe-area. */
+.close {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-glass-bg);
+  color: #fff;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.close:active {
+  opacity: 0.75;
+}
