@@ -72,8 +72,6 @@ export function FotosTab({ onVraagFotos, data = DOSSIER }: FotosTabProps) {
         )}
       </div>
 
-      <div className={styles.hint}>Foto&apos;s komen automatisch op de offerte te staan.</div>
-
       <PhotoLightbox url={open?.url} alt={open?.tag} onClose={() => setOpenIndex(null)} />
     </div>
   );
