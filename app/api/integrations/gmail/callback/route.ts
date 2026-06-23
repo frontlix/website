@@ -7,11 +7,15 @@ import { encryptToken } from '@/lib/crypto/calendar-token'
 import { getTenantId, saveGmailConnection } from '@/lib/dashboard/gmail-connection-queries'
 
 const SETTINGS_URL = '/dashboard/v2/instellingen'
+// Terugkeer-URL op basis van de dashboard-host, niet request.url: achter de
+// nginx-proxy is request.url intern http://localhost:3000, wat de gebruiker
+// na het koppelen op localhost zou doen belanden.
+const SITE_BASE = process.env.NEXT_PUBLIC_SITE_URL_DASHBOARD || 'http://localhost:3000'
 
 export async function GET(request: NextRequest) {
   const profile = await getCurrentUserProfile()
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=forbidden`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=forbidden`, SITE_BASE))
   }
 
   const url = new URL(request.url)
@@ -21,7 +25,7 @@ export async function GET(request: NextRequest) {
   const labelName = request.cookies.get('gmail_label_name')?.value || 'Offertes ter goedkeuring'
 
   if (!code || !state || !cookieState || state !== cookieState) {
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=state_error`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=state_error`, SITE_BASE))
   }
 
   try {
@@ -38,12 +42,12 @@ export async function GET(request: NextRequest) {
       labelId,
       filterId,
     })
-    const res = NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=ok`, request.url))
+    const res = NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=ok`, SITE_BASE))
     res.cookies.delete('gmail_oauth_state')
     res.cookies.delete('gmail_label_name')
     return res
   } catch (e) {
     console.error('[gmail-callback]', e)
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=error`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=error`, SITE_BASE))
   }
 }
