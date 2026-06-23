@@ -58,7 +58,8 @@ export async function exchangeGmailCode(
   if (!res.ok) throw new Error(`Token-exchange faalde: ${res.status} ${await res.text()}`)
   const json = (await res.json()) as { refresh_token?: string; access_token?: string }
   if (!json.refresh_token) throw new Error('Geen refresh_token van Google (prompt=consent vereist)')
-  return { refreshToken: json.refresh_token, accessToken: json.access_token || '' }
+  if (!json.access_token) throw new Error('Geen access_token van Google')
+  return { refreshToken: json.refresh_token, accessToken: json.access_token }
 }
 
 // append in lib/gmail-oauth.ts
@@ -96,10 +97,15 @@ export async function ensureApprovalFilter(accessToken: string, labelId: string)
   const list = (await listRes.json()) as {
     filter?: Array<{ id?: string; criteria?: { query?: string }; action?: { addLabelIds?: string[] } }>
   }
-  const existing = (list.filter ?? []).find(
-    (f) => f.criteria?.query === APPROVAL_FILTER_QUERY && (f.action?.addLabelIds ?? []).includes(labelId),
-  )
-  if (existing?.id) return existing.id
+  // Dedup op de subject-query (ongeacht label): een tweede filter met dezelfde
+  // query zou de mail dubbel labelen. Een exacte match (zelfde query + label)
+  // hergebruiken; verouderde filters met dezelfde query maar een ander label opruimen.
+  const sameQuery = (list.filter ?? []).filter((f) => f.criteria?.query === APPROVAL_FILTER_QUERY)
+  const exact = sameQuery.find((f) => (f.action?.addLabelIds ?? []).includes(labelId))
+  if (exact?.id) return exact.id
+  for (const stale of sameQuery) {
+    if (stale.id) await deleteFilter(accessToken, stale.id)
+  }
 
   const createRes = await fetch(`${GMAIL_API}/settings/filters`, {
     method: 'POST',

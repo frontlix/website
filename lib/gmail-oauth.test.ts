@@ -1,6 +1,14 @@
 // lib/gmail-oauth.test.ts
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest'
-import { buildGmailConsentUrl, gmailRedirectUri, exchangeGmailCode } from './gmail-oauth'
+import {
+  buildGmailConsentUrl,
+  gmailRedirectUri,
+  exchangeGmailCode,
+  ensureLabel,
+  ensureApprovalFilter,
+  deleteFilter,
+  APPROVAL_FILTER_QUERY,
+} from './gmail-oauth'
 
 beforeAll(() => {
   process.env.GOOGLE_CALENDAR_CLIENT_ID = 'test-client-id'
@@ -51,10 +59,12 @@ describe('exchangeGmailCode', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'x' }) }))
     await expect(exchangeGmailCode('c')).rejects.toThrow(/Geen refresh_token/)
   })
-})
 
-// append in lib/gmail-oauth.test.ts
-import { ensureLabel, ensureApprovalFilter, deleteFilter, APPROVAL_FILTER_QUERY } from './gmail-oauth'
+  it('gooit als er geen access_token terugkomt', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ refresh_token: 'r' }) }))
+    await expect(exchangeGmailCode('c')).rejects.toThrow(/Geen access_token/)
+  })
+})
 
 describe('ensureLabel', () => {
   it('hergebruikt een bestaand label met dezelfde naam', async () => {
@@ -109,6 +119,29 @@ describe('ensureApprovalFilter', () => {
     const id = await ensureApprovalFilter('acc', 'Label_9')
     expect(id).toBe('Filter_x')
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ruimt een filter met dezelfde query maar ander label op en maakt een nieuw', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filter: [
+            { id: 'Filter_old', criteria: { query: APPROVAL_FILTER_QUERY }, action: { addLabelIds: ['Label_OUD'] } },
+          ],
+        }),
+      }) // list
+      .mockResolvedValueOnce({ ok: true, text: async () => '' }) // delete oude
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'Filter_new' }) }) // create nieuw
+    vi.stubGlobal('fetch', fetchMock)
+    const id = await ensureApprovalFilter('acc', 'Label_NIEUW')
+    expect(id).toBe('Filter_new')
+    const [delUrl, delInit] = fetchMock.mock.calls[1]
+    expect(delUrl).toBe('https://gmail.googleapis.com/gmail/v1/users/me/settings/filters/Filter_old')
+    expect(delInit.method).toBe('DELETE')
+    const [, createInit] = fetchMock.mock.calls[2]
+    expect(JSON.parse(createInit.body).action.addLabelIds).toEqual(['Label_NIEUW'])
   })
 })
 

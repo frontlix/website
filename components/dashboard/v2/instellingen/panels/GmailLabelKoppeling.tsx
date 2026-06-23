@@ -18,6 +18,7 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
   const [labelName, setLabelName] = useState(gmail.labelName ?? DEFAULT_LABEL);
   const [busy, setBusy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [ontkoppelFout, setOntkoppelFout] = useState(false);
 
   const result = searchParams.get("gmail"); // ok | error | state_error | forbidden | null
 
@@ -28,8 +29,13 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
 
   async function ontkoppel() {
     setBusy(true);
-    await fetch("/api/integrations/gmail/disconnect", { method: "POST" });
+    setOntkoppelFout(false);
+    const res = await fetch("/api/integrations/gmail/disconnect", { method: "POST" });
     setBusy(false);
+    if (!res.ok) {
+      setOntkoppelFout(true);
+      return;
+    }
     router.refresh();
   }
 
@@ -51,6 +57,7 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
           <button type="button" onClick={ontkoppel} disabled={busy}>
             {busy ? "Bezig..." : "Ontkoppelen"}
           </button>
+          {ontkoppelFout && <p>Ontkoppelen is niet gelukt. Probeer het opnieuw.</p>}
         </div>
       ) : (
         <div>
