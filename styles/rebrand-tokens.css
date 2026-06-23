@@ -193,7 +193,7 @@ html.dark .rbRoot {
      asset) IS al de definitieve WhatsApp-dark-look (neutraal bijna-zwart +
      subtiele doodles), dus tonen zoals het is, zonder oplichting of sluier. */
   --rb-wa-blend: normal;
-  --rb-wa-size: 720px; /* naadloze 2x2 spiegel-tegel (1280px) op halve schaal = gelijke doodle-grootte als licht */
+  --rb-wa-size: 360px; /* naadloze tegel (offset+heal, 640px) op zelfde schaal als licht = kleine doodles */
   --rb-wa-veil: rgba(10, 10, 10, 0);
   --rb-wa-in: #1f2c33; /* inkomende bubbel */
   --rb-wa-out: #134d37; /* uitgaande bubbel */
