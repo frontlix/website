@@ -14,7 +14,13 @@ import type {
   RegelComputed,
   TotalsComputed,
 } from '@/lib/dashboard/manual-offerte-types'
+import { computeRules } from '@/lib/dashboard/manual-offerte-rules'
+import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import { readSnapshotRegels } from '@/lib/dashboard/offerte-snapshot'
+
+/** Notitie die in de PDF en de UI verschijnt bij een heropgemaakte (oude) offerte. */
+export const HEROPGEMAAKT_NOTE =
+  'Let op: deze offerte is heropgemaakt uit de huidige gegevens. Het eindbedrag is het oorspronkelijk verzonden bedrag; losse regelprijzen kunnen afwijken van het origineel.'
 
 export type SentOffertePdfModel = {
   data: ManualOfferteData
@@ -22,6 +28,9 @@ export type SentOffertePdfModel = {
   totals: TotalsComputed
   offerteNummer: string
   geldigheidDagen: number
+  /** true = geen opgeslagen snapshot, regels heropgemaakt uit de huidige
+   *  leadgegevens + huidige prijslijst. Eindbedrag blijft het verzonden bedrag. */
+  reconstructed: boolean
 }
 
 type SentOfferteRow = {
@@ -45,23 +54,33 @@ export function buildSentOffertePdfModel(input: {
   offerte: SentOfferteRow
   baseData: ManualOfferteData
   leadId: string
+  pricing: ManualOffertePricing
   btwTarief?: number
   geldigheidFallback?: number
 }): SentOffertePdfModel | null {
-  const { offerte, baseData, leadId, btwTarief = 21, geldigheidFallback = 14 } = input
+  const { offerte, baseData, leadId, pricing, btwTarief = 21, geldigheidFallback = 14 } = input
 
   const snap = readSnapshotRegels(offerte.regels_snapshot)
-  if (!snap || snap.length === 0) return null
 
-  const rules: RegelComputed[] = [...snap]
-    .sort((a, b) => a.volgorde - b.volgorde)
-    .map((r) => ({
-      desc: r.omschrijving,
-      aantal: r.aantal ?? 0,
-      eenheid: r.eenheid ?? '',
-      prijs: r.stukprijs,
-      totaal: r.totaal,
-    }))
+  // Bron van de regels: de bevroren snapshot als die er is (exact zoals verstuurd),
+  // anders heropmaken uit de huidige leadgegevens + huidige prijslijst (dezelfde
+  // engine als de concept-editor). Bij heropmaken kan een regelprijs afwijken van
+  // het origineel; het eindbedrag blijft leidend uit offerte.totaal_incl.
+  const reconstructed = !snap || snap.length === 0
+  const rules: RegelComputed[] = reconstructed
+    ? computeRules(baseData, pricing)
+    : [...snap]
+        .sort((a, b) => a.volgorde - b.volgorde)
+        .map((r) => ({
+          desc: r.omschrijving,
+          aantal: r.aantal ?? 0,
+          eenheid: r.eenheid ?? '',
+          prijs: r.stukprijs,
+          totaal: r.totaal,
+        }))
+
+  // Niets te tonen als ook heropmaken geen regels oplevert (lead zonder diensten).
+  if (rules.length === 0) return null
 
   const subtotal = rules.reduce((s, r) => s + r.totaal, 0)
   const totaalIncl = offerte.totaal_incl
@@ -93,5 +112,16 @@ export function buildSentOffertePdfModel(input: {
 
   const geldigheidDagen = readSnapshotGeldigheid(offerte.regels_snapshot) ?? geldigheidFallback
 
-  return { data: baseData, rules, totals, offerteNummer, geldigheidDagen }
+  // Bij heropmaken een waarschuwingsnotitie vooraan in de PDF-toelichting zetten,
+  // zodat de heropgemaakte PDF zelf ook duidelijk maakt dat hij kan afwijken.
+  const data: ManualOfferteData = reconstructed
+    ? {
+        ...baseData,
+        notitie: baseData.notitie
+          ? `${HEROPGEMAAKT_NOTE}\n\n${baseData.notitie}`
+          : HEROPGEMAAKT_NOTE,
+      }
+    : baseData
+
+  return { data, rules, totals, offerteNummer, geldigheidDagen, reconstructed }
 }

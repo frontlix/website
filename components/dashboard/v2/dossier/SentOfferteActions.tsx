@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Eye, Download } from 'lucide-react'
 import { Modal } from '@/components/dashboard/v2/ui'
-import type { SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
+import { HEROPGEMAAKT_NOTE, type SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { renderOffertePdfBlob, offertePdfFileName } from '@/components/dashboard/offerte/render-offerte-pdf'
 import styles from './OffertesTab.module.css'
 
@@ -75,6 +75,9 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
   return (
     <>
       <div className={styles.rowActions}>
+        {model.reconstructed ? (
+          <span className={styles.heropTag} title={HEROPGEMAAKT_NOTE}>heropgemaakt</span>
+        ) : null}
         <button type="button" className={styles.actBtn} onClick={view} disabled={busy} aria-label="Offerte inzien" title="Inzien">
           <Eye size={16} strokeWidth={2} />
         </button>
@@ -84,6 +87,7 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
       </div>
       <Modal open={open} onClose={close} width={900} label={`Offerte ${titel}`}>
         <div className={styles.pdfModalHead}>{titel}</div>
+        {model.reconstructed ? <div className={styles.heropNote}>{HEROPGEMAAKT_NOTE}</div> : null}
         {url ? <iframe src={url} className={styles.pdfFrame} title="Offerte-PDF" /> : null}
         <div className={styles.pdfModalFoot}>
           <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
