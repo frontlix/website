@@ -118,6 +118,71 @@ export function buildOfferteSnapshot(args: {
   }
 }
 
+/** Eén prijsregel-rij uit de DB (backfill-input). */
+type PrijsregelRow = {
+  omschrijving: string | null
+  aantal: number | null
+  eenheid: string | null
+  stukprijs: number | null
+  totaal: number | null
+  bron?: string | null
+  volgorde?: number | null
+}
+
+/**
+ * Herkenningstabel voor de backfill: omschrijving-patroon → prijs-key. Volgorde
+ * telt: specifieker patroon vóór generieker (dagprijs vóór generieke reiniging,
+ * onkruidwerend vóór normaal). Onherkende regels laten hun key op de live-waarde.
+ */
+const BACKFILL_HERKENNING: Array<[RegExp, keyof ManualOffertePricing]> = [
+  [/reiniging oppervlak \(dagprijs\)/i, 'reinigen_dagprijs_onder_100m2'],
+  [/reiniging oppervlak/i, 'reiniging_per_m2'],
+  [/invegen onkruidwerend/i, 'arbeid_invegen_onkruidwerend_per_m2'],
+  [/invegen normaal/i, 'arbeid_invegen_normaal_per_m2'],
+  [/voegzand onkruidwerend/i, 'voegzand_onkruidwerend_per_zak'],
+  [/voegzand normaal/i, 'voegzand_normaal_per_zak'],
+  [/preventieve onkruid/i, 'preventieve_onkruid_per_m2'],
+  [/beschermlaag/i, 'beschermlaag_per_m2'],
+  [/afdekfolie/i, 'plantenafscherming_per_rol'],
+  [/reiskosten/i, 'reiskosten_per_km'],
+]
+
+/**
+ * Best-effort backfill: reconstrueert een OfferteSnapshot uit de bestaande
+ * prijsregels van een verstuurde offerte. De `stukprijs` per herkende regel IS
+ * het bevroren tarief; onherkende regels laten hun prijs-key op de live-waarde.
+ * Zo bevriest een bestaande offerte (zonder snapshot) alsnog haar verzonden
+ * prijzen, voor zover de regels herkenbaar zijn.
+ */
+export function reconstructSnapshotFromRegels(
+  regels: PrijsregelRow[],
+  livePricing: ManualOffertePricing,
+  kortingPct = 0,
+): OfferteSnapshot {
+  const pricing: ManualOffertePricing = { ...livePricing }
+  for (const r of regels) {
+    const stuk = r.stukprijs
+    if (stuk == null || !Number.isFinite(stuk)) continue
+    const oms = r.omschrijving ?? ''
+    const hit = BACKFILL_HERKENNING.find(([re]) => re.test(oms))
+    if (hit) pricing[hit[1]] = stuk
+  }
+  return {
+    schemaVersie: 1,
+    pricing,
+    kortingPct,
+    regels: regels.map((r, idx) => ({
+      omschrijving: r.omschrijving ?? 'Regel',
+      aantal: r.aantal ?? null,
+      eenheid: r.eenheid ?? null,
+      stukprijs: r.stukprijs ?? 0,
+      totaal: r.totaal ?? 0,
+      bron: r.bron === 'manual' ? 'manual' : 'auto_lead',
+      volgorde: r.volgorde ?? idx + 1,
+    })),
+  }
+}
+
 /** Minimale offerte-vorm die resolveSeedPricing nodig heeft. */
 type SeedOfferte = {
   versie: number

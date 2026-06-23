@@ -5,6 +5,7 @@ import {
   buildPricingFromRuleKeys,
   resolveSeedPricing,
   buildOfferteSnapshot,
+  reconstructSnapshotFromRegels,
 } from './offerte-snapshot'
 import { FALLBACK_PRICING } from './pricing-types'
 
@@ -175,5 +176,50 @@ describe('buildOfferteSnapshot', () => {
   it('produceert een snapshot die readSnapshotPricing accepteert', () => {
     const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules, kortingPct: 0 })
     expect(readSnapshotPricing(snap)).toEqual(FALLBACK_PRICING)
+  })
+})
+
+describe('reconstructSnapshotFromRegels (backfill)', () => {
+  // Live prijslijst staat op 5,25 (de afwijking), maar de verzonden regels
+  // bevatten de bevroren 4,50.
+  const live = {
+    ...FALLBACK_PRICING,
+    reiniging_per_m2: 5.25,
+    preventieve_onkruid_per_m2: 5.25,
+    reinigen_dagprijs_onder_100m2: 395,
+  }
+
+  it('reconstrueert de bevroren pricing uit herkende regels', () => {
+    const rows = [
+      { omschrijving: 'Reiniging oppervlak (dagprijs)', aantal: 1, eenheid: 'dag', stukprijs: 395, totaal: 395, volgorde: 1 },
+      { omschrijving: 'Invegen normaal voegzand excl voegzand', aantal: 90, eenheid: 'm²', stukprijs: 0.9, totaal: 81, volgorde: 2 },
+      { omschrijving: 'Preventieve onkruidbeheersing', aantal: 90, eenheid: 'm²', stukprijs: 4.5, totaal: 405, volgorde: 3 },
+      { omschrijving: 'Afdekfolie planten', aantal: 2, eenheid: 'rol', stukprijs: 8.5, totaal: 17, volgorde: 4 },
+      { omschrijving: 'Reiskosten (157 km enkele reis, retour)', aantal: 163.8, eenheid: 'km', stukprijs: 0.23, totaal: 37.67, volgorde: 5 },
+    ]
+    const snap = reconstructSnapshotFromRegels(rows, live, 0)
+    // Bevroren tarieven, niet de live 5,25.
+    expect(snap.pricing.reinigen_dagprijs_onder_100m2).toBe(395)
+    expect(snap.pricing.arbeid_invegen_normaal_per_m2).toBe(0.9)
+    expect(snap.pricing.preventieve_onkruid_per_m2).toBe(4.5)
+    expect(snap.pricing.plantenafscherming_per_rol).toBe(8.5)
+    expect(snap.pricing.reiskosten_per_km).toBe(0.23)
+    expect(snap.regels).toHaveLength(5)
+    expect(readSnapshotPricing(snap)).not.toBeNull()
+  })
+
+  it('laat onherkende prijs-keys ongemoeid op de live-waarde', () => {
+    const rows = [
+      { omschrijving: 'Een of andere maatwerkregel', aantal: 1, eenheid: 'st', stukprijs: 99, totaal: 99, volgorde: 1 },
+    ]
+    const snap = reconstructSnapshotFromRegels(rows, live, 0)
+    expect(snap.pricing.reiniging_per_m2).toBe(5.25) // ongewijzigd
+    expect(snap.regels).toHaveLength(1)
+    expect(snap.regels[0].omschrijving).toBe('Een of andere maatwerkregel')
+  })
+
+  it('neemt het kortingspercentage over', () => {
+    const snap = reconstructSnapshotFromRegels([], live, 12.5)
+    expect(snap.kortingPct).toBe(12.5)
   })
 })
