@@ -17,6 +17,7 @@ export type MobileLeadCard = {
   bron: 'wa' | 'form'
   urgent: boolean
   surfaceContext: string
+  tagIds: string[]
 }
 
 /** Bepaal de mobile-stage op basis van dashboard_status + gesprek_fase. */
@@ -82,6 +83,7 @@ export function mapLeadToCard(
   l: RawLead,
   now: number = Date.now(),
   laatsteInteractieAt?: string | null,
+  tagIds: string[] = [],
 ): MobileLeadCard {
   return {
     id: l.lead_id,
@@ -96,5 +98,6 @@ export function mapLeadToCard(
     bron: l.kanaal === 'web' ? 'form' : 'wa',
     urgent: isLeadUrgent(l),
     surfaceContext: botStatusForFase(l.gesprek_fase),
+    tagIds,
   }
 }

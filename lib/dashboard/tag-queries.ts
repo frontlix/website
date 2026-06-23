@@ -39,3 +39,33 @@ export async function getTagsForLead(leadId: string): Promise<Tag[]> {
   type LeadTagJoin = { tag_id: string; tags: Tag }
   return ((data as unknown as LeadTagJoin[] | null) ?? []).map((row) => row.tags)
 }
+
+/**
+ * Haalt per lead de tag-ids op, voor client-side tag-filtering in de mobiele
+ * leadlijst. Eén query over lead_tags, gefilterd op de meegegeven lead-ids.
+ */
+export async function getTagIdsByLeadIds(
+  leadIds: string[],
+): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>()
+  if (leadIds.length === 0) return out
+
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('lead_tags')
+    .select('lead_id, tag_id')
+    .in('lead_id', leadIds)
+
+  if (error) {
+    console.error('[getTagIdsByLeadIds] query failed:', error)
+    return out
+  }
+
+  type Row = { lead_id: string; tag_id: string }
+  for (const row of (data as unknown as Row[] | null) ?? []) {
+    const arr = out.get(row.lead_id) ?? []
+    arr.push(row.tag_id)
+    out.set(row.lead_id, arr)
+  }
+  return out
+}

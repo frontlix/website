@@ -6,6 +6,7 @@ import {
   isLeadUrgent,
   type MobileLeadStage,
 } from '@/components/dashboard/mobile/leads/lead-mappers'
+import { getAllTags, getTagIdsByLeadIds } from '@/lib/dashboard/tag-queries'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -163,6 +164,10 @@ export default async function LeadsPage({
     ...archivedLeads.map((l) => l.lead_id),
   ]
   const lastInboundById = await getLastInboundByLeadIds(shownIds)
+  const [tagIdsByLead, allTags] = await Promise.all([
+    getTagIdsByLeadIds(shownIds),
+    getAllTags(),
+  ])
   const nowMs = Date.now()
 
   return (
@@ -170,12 +175,12 @@ export default async function LeadsPage({
       <MobileLeads
         data={{
           cards: displayed.map((l) =>
-            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
+            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null, tagIdsByLead.get(l.lead_id) ?? []),
           ),
           // Gearchiveerde leads voor de Archief-chip (client-side geschakeld,
           // net als de stage-chips). Eigen query, dashboard_archived=true.
           archivedCards: archivedLeads.map((l) =>
-            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
+            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null, tagIdsByLead.get(l.lead_id) ?? []),
           ),
           telefoonById: Object.fromEntries(
             [...displayed, ...archivedLeads].map((l) => [l.lead_id, l.telefoon ?? '']),
@@ -190,6 +195,7 @@ export default async function LeadsPage({
             archief: counts.archief,
           },
           chatbotNaam,
+          allTags,
         }}
       />
     </div>
