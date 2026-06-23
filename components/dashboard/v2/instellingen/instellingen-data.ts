@@ -81,6 +81,8 @@ export interface CompanyProfile {
   /** Spoed-telefoon (tenant_settings.eigenaar_spoed_telefoon). */
   spoedTel: string;
   mail: string;
+  /** Voornaam eigenaar (tenant_settings.eigenaar_naam), ondertekening mails. */
+  eigenaarNaam: string;
   doel: string;
 }
 
@@ -93,6 +95,7 @@ export const PROFILE_DEFAULT: CompanyProfile = {
   tel: "06 12 34 56 78",
   spoedTel: "06 87 65 43 21",
   mail: "info@schoonstraatje.nl",
+  eigenaarNaam: "Thierry",
   doel: "25.000",
 };
 

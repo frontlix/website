@@ -40,6 +40,8 @@ export interface BedrijfsprofielInput {
   postcode: string
   plaats: string
   eigenaar_email: string
+  /** Voornaam eigenaar → tenant_settings.eigenaar_naam (ondertekening mails). */
+  eigenaar_naam: string
   /** Eigenaar-WhatsApp → tenant_settings.eigenaar_whatsapp. */
   telefoon: string
   /** Spoed-telefoon → tenant_settings.eigenaar_spoed_telefoon. */
@@ -91,6 +93,7 @@ export async function updateBedrijfsprofiel(
     postcode: input.postcode.trim() || null,
     plaats: input.plaats.trim() || null,
     eigenaar_email: email || null,
+    eigenaar_naam: input.eigenaar_naam.trim() || null,
     eigenaar_whatsapp: input.telefoon.trim() || null,
     eigenaar_spoed_telefoon: input.spoed_telefoon.trim() || null,
     bijgewerkt_op: new Date().toISOString(),
