@@ -37,6 +37,18 @@
   --rb-surface-raised: #ffffff; /* solide opstaand vlak (actieve segment-thumb, witte tegels) */
   --rb-col-base: rgba(255, 255, 255, 0.4); /* basislaag onder gekleurde kolomtint (pipeline) */
 
+  /* Alias-tokens: sommige v2-CSS gebruikt deze namen met (lichte) fallbacks.
+     Hier laten wijzen naar de echte tokens zodat ze automatisch meeflippen in
+     dark (de fallback wordt dan nooit gebruikt). */
+  --rb-surface: var(--rb-card);
+  --rb-text: var(--rb-ink);
+  --rb-text-muted: var(--rb-muted);
+  --rb-border: var(--rb-line);
+  --rb-hover: var(--rb-field-2);
+  --rb-accent: var(--rb-blue);
+  --rb-danger: #dc2626;
+  --rb-danger-soft: #fef3f2;
+
   /* WhatsApp-gesprek */
   --rb-wa-bg: #ece6dd; /* chat-achtergrond (basiskleur onder het patroon) */
   --rb-wa-bg-image: url("/whatsapp-achtergrond.jpg"); /* officieel doodle-patroon */
@@ -190,6 +202,11 @@ html.dark .rbRoot {
   --rb-glass-soft: rgba(40, 50, 68, 0.6);
   --rb-surface-raised: #232c3d; /* opstaand vlak op donker (segment-thumb e.d.) */
   --rb-col-base: rgba(255, 255, 255, 0.03); /* subtiel licht filmpje onder de kolomtint op donker */
+
+  /* Danger iets helderder + donkere soft-tint op donker (alias-tokens flippen
+     automatisch mee via de echte tokens; deze twee zijn vaste kleuren). */
+  --rb-danger: #f26d6d;
+  --rb-danger-soft: rgba(220, 38, 38, 0.2);
 
   /* WhatsApp-gesprek (donker, à la WA dark): donkere doodle-variant van het
      eigen patroon (omgekeerd naar licht-op-donker) + lichtere sluier zodat het
