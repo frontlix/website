@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import { Check, AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/components/dashboard/v2/ui";
 import { saveTenantBase } from "@/lib/dashboard/tenant-base-actions";
+import { triggerBotConfigReload } from "@/lib/dashboard/bot-reload-actions";
 import { uploadTenantLogo } from "@/lib/dashboard/logo-actions";
 import { Field } from "../Field";
 import type { CompanyProfile } from "../instellingen-data";
@@ -98,6 +99,8 @@ export function BedrijfsprofielPanel({
       const res = await saveTenantBase({ postcode, huisnummer, label });
       if (res.ok) {
         setStatus({ kind: "success", lat: res.lat, lng: res.lng, city: res.city });
+        // Nieuwe thuisbasis direct naar de bot (best-effort; 60s-refresh vangt af).
+        await triggerBotConfigReload();
       } else {
         setStatus({ kind: "error", message: res.error });
       }
