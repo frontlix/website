@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { v2Session } from "@/lib/dashboard/v2/session";
 import { getLeadDetail } from "@/lib/dashboard/lead-queries";
 import { getManualOffertePricing } from "@/lib/dashboard/pricing-queries";
+import { getAllTags, getTagsForLead } from "@/lib/dashboard/tag-queries";
 import { LEADS, findLead } from "@/components/dashboard/v2/demo-data";
 import { DossierView } from "@/components/dashboard/v2/dossier/DossierView";
 import {
@@ -37,9 +38,11 @@ export default async function LeadDossierPage({ params }: PageProps) {
   // gebruikt dezelfde gescopete client + condities als de (app)-pagina. De
   // prijslijst komt uit dezelfde helper als de (app)-pagina, zodat de inline
   // offerte-editor exact dezelfde regels/totalen berekent.
-  const [detail, pricing] = await Promise.all([
+  const [detail, pricing, allTags, leadTags] = await Promise.all([
     getLeadDetail(lead_id),
     getManualOffertePricing(),
+    getAllTags(),
+    getTagsForLead(lead_id),
   ]);
   if (!detail) {
     notFound();
@@ -55,6 +58,8 @@ export default async function LeadDossierPage({ params }: PageProps) {
       leadId={detail.lead.lead_id}
       botPaused={detail.lead.bot_gepauzeerd}
       archivedInitial={detail.lead.dashboard_archived}
+      leadTags={leadTags}
+      allTags={allTags}
     />
   );
 }
