@@ -107,7 +107,7 @@
   width: 17px;
   height: 17px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--rb-card);
   box-shadow: var(--rb-shadow-knob);
   transition: left 0.15s ease;
 }
@@ -175,7 +175,7 @@
   font-size: 14px;
   font-weight: 700;
   color: var(--rb-ink);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-chip);
   padding: 8px 12px;

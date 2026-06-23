@@ -85,7 +85,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--rb-muted);
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--rb-glass-strong);
   padding: 10px 16px;
   border-radius: var(--rb-r-pill);
   border: none;
@@ -97,7 +97,7 @@
 }
 
 .actieBtn:hover {
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
 }
 
@@ -139,7 +139,7 @@
 .tabCard {
   background: var(--rb-card);
   box-shadow: var(--rb-shadow-card);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--rb-glass-border);
   border-radius: var(--rb-r-card);
   padding: 16px 24px;
   overflow: hidden;

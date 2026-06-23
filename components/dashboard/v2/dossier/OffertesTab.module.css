@@ -101,7 +101,7 @@
 
 .tagConcept {
   color: var(--rb-blue);
-  background: #fff;
+  background: var(--rb-card);
 }
 
 /* Verstuurd/afgerond = vol groen, archief = neutraal grijs-blauw. */

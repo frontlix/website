@@ -31,7 +31,7 @@
   /* ruimte voor de sluit-knop van de Modal (top:16 right:18, 32px) */
   padding-right: 64px;
   border-bottom: 1px solid var(--rb-line);
-  background: #fff;
+  background: var(--rb-card);
   flex-shrink: 0;
 }
 
@@ -114,7 +114,7 @@
   padding: 0 12px;
   border-radius: var(--rb-r-pill);
   border: 1px solid var(--rb-line);
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
   font-family: var(--rb-font);
   font-size: 12.5px;
@@ -158,7 +158,7 @@
   max-height: 420px;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-card);
   box-shadow: var(--rb-shadow-modal);

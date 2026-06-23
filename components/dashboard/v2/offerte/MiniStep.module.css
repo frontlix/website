@@ -2,7 +2,7 @@
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   color: var(--rb-muted);
   display: inline-flex;

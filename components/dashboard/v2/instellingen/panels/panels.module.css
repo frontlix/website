@@ -193,7 +193,7 @@
   font-family: var(--rb-font);
   font-size: 14px;
   color: var(--rb-ink);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-card-sm);
   padding: 10px 14px;
@@ -912,7 +912,7 @@
   font-weight: 800;
   font-family: var(--rb-font);
   color: var(--rb-ink);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: 9px;
   padding: 7px 0;
@@ -991,7 +991,7 @@
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   display: inline-flex;
   align-items: center;
@@ -1127,7 +1127,7 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--rb-blue);
-  background: #fff;
+  background: var(--rb-card);
   padding: 7px 14px;
   border-radius: var(--rb-r-pill);
   border: none;

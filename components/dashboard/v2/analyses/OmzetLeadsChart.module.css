@@ -26,6 +26,12 @@
   transition: r 0.12s ease;
 }
 
+/* Dark-mode: de tooltip gebruikt --rb-ink als achtergrond (donker in licht);
+   op donker zou dat licht worden (wit-op-wit). Forceer een donker opstaand vlak. */
+:global(html.dark) .tooltip {
+  background: var(--rb-surface-raised);
+}
+
 .tooltip {
   position: absolute;
   top: 0;

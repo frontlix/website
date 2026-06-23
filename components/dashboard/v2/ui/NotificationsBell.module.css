@@ -13,7 +13,7 @@
   height: 40px;
   border-radius: 50%;
   border: 1px solid var(--rb-line);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--rb-glass-soft);
   color: var(--rb-ink);
   cursor: pointer;
   transition:
@@ -28,9 +28,14 @@
 }
 
 .bellBtnActive {
-  background: #fff;
+  background: var(--rb-card);
   border-color: var(--rb-blue);
   color: var(--rb-blue);
+}
+
+/* Dark-mode: witte hover-vulling → licht filmpje op donker. */
+:global(html.dark) .bellBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .badge {
@@ -59,7 +64,7 @@
   right: 0;
   width: 360px;
   max-width: calc(100vw - 32px);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-card);
   box-shadow:

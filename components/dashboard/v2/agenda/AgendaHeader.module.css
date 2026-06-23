@@ -47,7 +47,7 @@
 }
 
 .navBtn:hover {
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
 }
 
@@ -60,6 +60,14 @@
   border-radius: var(--rb-r-pill);
   padding: 3px;
   box-shadow: var(--rb-shadow-nav);
+}
+
+/* Dark-mode: witte glas-knoppen/containers → lichte films op donker. */
+:global(html.dark) .navBtn {
+  background: rgba(255, 255, 255, 0.08);
+}
+:global(html.dark) .viewToggle {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .viewSeg {

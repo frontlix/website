@@ -28,6 +28,15 @@
   --rb-field: #f8f9fd; /* veld-/tegel-achtergrond (bijzonderheden, info) */
   --rb-field-2: #f1f3f9; /* segmented-container achtergrond */
 
+  /* Glas-oppervlakken (nav-pill, avatar e.d.). Eigen tokens zodat dark-mode
+     ze kan omzetten zonder hardgecodeerd wit. */
+  --rb-glass: rgba(255, 255, 255, 0.75); /* nav-pill achtergrond */
+  --rb-glass-strong: rgba(255, 255, 255, 0.85); /* avatar achtergrond */
+  --rb-glass-border: rgba(255, 255, 255, 0.9); /* rand op glas */
+  --rb-glass-soft: rgba(255, 255, 255, 0.6); /* lichter glas (bel, kleine knoppen) */
+  --rb-surface-raised: #ffffff; /* solide opstaand vlak (actieve segment-thumb, witte tegels) */
+  --rb-col-base: rgba(255, 255, 255, 0.4); /* basislaag onder gekleurde kolomtint (pipeline) */
+
   /* WhatsApp-gesprek */
   --rb-wa-bg: #ece6dd; /* chat-achtergrond (basiskleur onder het patroon) */
   --rb-wa-bg-image: url("/whatsapp-achtergrond.jpg"); /* officieel doodle-patroon */
@@ -132,6 +141,110 @@
   --rb-aurora-1: radial-gradient(closest-side, rgba(26, 86, 255, 0.2), transparent);
   --rb-aurora-2: radial-gradient(closest-side, rgba(0, 207, 255, 0.18), transparent);
   --rb-aurora-3: radial-gradient(closest-side, rgba(26, 86, 255, 0.1), transparent);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   DARK MODE (v2-desktop). Opt-in via `.dark` op <html> (gezet door de
+   ThemeToggle in de v2-shell + een no-flash-script in de v2-layout). De
+   marketingsite en het mobiele dashboard hebben hun eigen mechaniek; deze
+   overrides raken alléén de v2-tree (`.rbRoot`).
+
+   Strategie: oppervlakken/tekst/lijnen donker, merk-accenten (blauw/cyaan/
+   succes) iets opgehelderd voor leesbaarheid, status-/avatar-/agenda-pillen
+   als donker-translucente vlakken met heldere inkt. Data-viz-, ster- en
+   metriek-kleuren blijven gelijk (al verzadigd, lezen op donker).
+   ───────────────────────────────────────────────────────────────────── */
+html.dark .rbRoot {
+  --rb-bg: #0b0f17; /* paginakleur */
+  --rb-card: #151b27; /* kaarten */
+  --rb-ink: #eceff4; /* primaire tekst */
+  --rb-muted: #8b95a8; /* secundaire tekst */
+  --rb-blue: #3f6fff; /* accent / CTA, iets helderder op donker */
+  --rb-blue-soft: rgba(63, 111, 255, 0.18); /* accent-achtergrond */
+  --rb-blue-ink: #9db4ff; /* tekst op blue-soft */
+  --rb-cyan: #22c3ec;
+  --rb-cyan-bright: #34d6ff;
+  --rb-mint: rgba(43, 196, 138, 0.16); /* succes-pill achtergrond */
+  --rb-mint-ink: #5fd6a3;
+  --rb-success: #2bc48a;
+  --rb-note: #2a2615; /* notitie-kaartjes (donker amber) */
+  --rb-warn-ink: #f0b84e;
+  --rb-warn-soft: rgba(245, 166, 35, 0.16);
+  --rb-line: rgba(255, 255, 255, 0.09); /* hairlines/dividers */
+  --rb-field: #1b2230; /* veld-/tegel-achtergrond */
+  --rb-field-2: #11161f; /* segmented-container achtergrond */
+
+  /* Glas */
+  --rb-glass: rgba(30, 38, 53, 0.7);
+  --rb-glass-strong: rgba(40, 50, 68, 0.85);
+  --rb-glass-border: rgba(255, 255, 255, 0.1);
+  --rb-glass-soft: rgba(40, 50, 68, 0.6);
+  --rb-surface-raised: #232c3d; /* opstaand vlak op donker (segment-thumb e.d.) */
+  --rb-col-base: rgba(255, 255, 255, 0.03); /* subtiel licht filmpje onder de kolomtint op donker */
+
+  /* WhatsApp-gesprek (donker, à la WA dark) */
+  --rb-wa-bg: #0b141a;
+  --rb-wa-veil: rgba(11, 20, 26, 0.8);
+  --rb-wa-in: #1f2c33; /* inkomende bubbel */
+  --rb-wa-out: #134d37; /* uitgaande bubbel */
+
+  /* Status-pills: donker-translucente vlakken + heldere inkt */
+  --rb-status-hot-bg: rgba(214, 48, 106, 0.2);
+  --rb-status-hot-ink: #ff8fb0;
+  --rb-status-new-bg: rgba(15, 138, 79, 0.22);
+  --rb-status-new-ink: #5fd99a;
+  --rb-status-plan-bg: rgba(14, 116, 144, 0.26);
+  --rb-status-plan-ink: #5fd0ec;
+  --rb-status-sent-bg: rgba(107, 116, 147, 0.24);
+  --rb-status-sent-ink: #aab3cc;
+  --rb-status-talking-bg: rgba(63, 111, 255, 0.22);
+  --rb-status-talking-ink: #9db4ff;
+  --rb-status-review-bg: rgba(245, 166, 35, 0.18);
+  --rb-status-review-ink: #f0b84e;
+  --rb-status-won-bg: rgba(16, 185, 129, 0.22);
+  --rb-status-won-ink: #5fd99a;
+  --rb-status-lost-bg: rgba(239, 68, 68, 0.2);
+  --rb-status-lost-ink: #f08a8a;
+
+  /* Avatar-tinten: donker-translucent + heldere inkt */
+  --rb-avatar-1-bg: rgba(26, 86, 255, 0.22);
+  --rb-avatar-1-ink: #9db4ff;
+  --rb-avatar-2-bg: rgba(81, 69, 224, 0.26);
+  --rb-avatar-2-ink: #b3aaff;
+  --rb-avatar-3-bg: rgba(15, 118, 110, 0.26);
+  --rb-avatar-3-ink: #5fd0c4;
+  --rb-avatar-4-bg: rgba(15, 138, 79, 0.22);
+  --rb-avatar-4-ink: #5fd99a;
+  --rb-avatar-5-bg: rgba(180, 83, 9, 0.28);
+  --rb-avatar-5-ink: #f0b84e;
+  --rb-avatar-6-bg: rgba(219, 39, 119, 0.22);
+  --rb-avatar-6-ink: #ff8fc0;
+  --rb-avatar-7-bg: rgba(124, 58, 237, 0.26);
+  --rb-avatar-7-ink: #c4a3ff;
+  --rb-avatar-8-bg: rgba(14, 116, 144, 0.26);
+  --rb-avatar-8-ink: #5fd0ec;
+
+  /* Type-kleuren agenda */
+  --rb-agenda-klus-bg: rgba(15, 138, 79, 0.22);
+  --rb-agenda-klus-ink: #5fd99a;
+  --rb-agenda-bezoek-bg: rgba(14, 116, 144, 0.26);
+  --rb-agenda-bezoek-ink: #5fd0ec;
+  --rb-agenda-deadline-bg: rgba(245, 166, 35, 0.18);
+  --rb-agenda-deadline-ink: #f0b84e;
+
+  /* Schaduwen: donkerder/dieper op donker */
+  --rb-shadow-card: 0 2px 16px rgba(0, 0, 0, 0.45);
+  --rb-shadow-btn: 0 5px 14px rgba(0, 0, 0, 0.45);
+  --rb-shadow-btn-strong: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --rb-shadow-modal: 0 40px 100px rgba(0, 0, 0, 0.65);
+  --rb-shadow-dropdown: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --rb-shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.4);
+  --rb-shadow-knob: 0 1px 4px rgba(0, 0, 0, 0.55);
+
+  /* Aurora iets ingetogener op donker */
+  --rb-aurora-1: radial-gradient(closest-side, rgba(63, 111, 255, 0.16), transparent);
+  --rb-aurora-2: radial-gradient(closest-side, rgba(0, 207, 255, 0.12), transparent);
+  --rb-aurora-3: radial-gradient(closest-side, rgba(63, 111, 255, 0.1), transparent);
 }
 
 /* Basis-reset binnen de v2-tree (raakt niets erbuiten). */

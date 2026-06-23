@@ -30,6 +30,11 @@
   padding: 4px 10px;
 }
 
+/* Dark-mode: het witte route-pilletje wordt een donker opstaand chipje. */
+:global(html.dark) .tagStart {
+  background: var(--rb-surface-raised);
+}
+
 .tagRide {
   position: absolute;
   bottom: 10px;

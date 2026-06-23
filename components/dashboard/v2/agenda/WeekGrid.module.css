@@ -20,8 +20,14 @@
 }
 
 .colToday {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--rb-glass-strong);
   border: 1.5px solid rgba(26, 86, 255, 0.35);
+}
+
+/* Dark-mode: witte kolomvlakken → subtiel licht filmpje op donker. */
+:global(html.dark) .col {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Dag-kop ── */
@@ -95,7 +101,7 @@
 /* ── Afspraakblok ── */
 .item {
   --item-accent: var(--rb-muted);
-  --item-bg: #fff;
+  --item-bg: var(--rb-card);
   position: relative;
   display: block;
   width: 100%;

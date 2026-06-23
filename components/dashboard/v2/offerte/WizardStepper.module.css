@@ -3,7 +3,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 26px;
-  background: #fff;
+  background: var(--rb-card);
   border-bottom: 1px solid var(--rb-line);
   flex-shrink: 0;
 }

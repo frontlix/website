@@ -75,7 +75,7 @@
       color-mix(in srgb, var(--col-bg, transparent) 45%, transparent),
       color-mix(in srgb, var(--col-bg, transparent) 22%, transparent)
     ),
-    rgba(255, 255, 255, 0.4);
+    var(--rb-col-base);
   /* Rand in een lichte tint van de kolomkleur (geen wit aan de zijkanten),
      met een vollere gekleurde bovenrand als accent. */
   border: 1px solid color-mix(in srgb, var(--col-ink, var(--rb-line)) 22%, transparent);

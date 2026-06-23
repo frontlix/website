@@ -2,7 +2,7 @@
   position: relative;
   background: var(--rb-card);
   box-shadow: var(--rb-shadow-card);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--rb-glass-border);
   border-radius: var(--rb-r-card);
   display: flex;
   flex-direction: column;

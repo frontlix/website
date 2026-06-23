@@ -213,7 +213,7 @@
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   color: var(--rb-ink);
   display: inline-flex;

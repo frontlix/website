@@ -62,6 +62,22 @@
   opacity: 1;
 }
 
+/* Dark-mode: witte celvlakken → subtiele lichte films op donker. */
+:global(html.dark) .cell {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+:global(html.dark) .cellOut {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+:global(html.dark) .cellPast {
+  background: rgba(255, 255, 255, 0.03);
+}
+:global(html.dark) .cellToday {
+  background: rgba(63, 111, 255, 0.16);
+}
+
 /* ── Cel-kop (dag-getal + Vrij) ── */
 .cellHead {
   display: flex;
@@ -132,7 +148,7 @@
 
 .block {
   --cell-accent: var(--rb-muted);
-  --cell-bg: #fff;
+  --cell-bg: var(--rb-card);
   display: block;
   width: 100%;
   flex: 1 1 0;

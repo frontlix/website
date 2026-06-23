@@ -35,7 +35,7 @@
 }
 
 .seg[data-on="true"] {
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
   box-shadow: var(--rb-shadow-nav);
   cursor: default;

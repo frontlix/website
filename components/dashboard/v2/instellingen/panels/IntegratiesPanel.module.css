@@ -106,7 +106,7 @@
   font-size: 13.5px;
   font-weight: 600;
   color: var(--rb-ink);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-field);
   padding: 10px 14px;

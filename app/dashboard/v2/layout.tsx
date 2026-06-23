@@ -35,18 +35,28 @@ export default async function V2Layout({ children }: { children: React.ReactNode
   const shell = await getV2ShellData();
 
   return (
-    <Shell
-      tenant={shell.tenant}
-      userInitials={shell.userInitials}
-      nav={shell.nav}
-      isDemo={shell.isDemo}
-      logoUrl={shell.logoUrl}
-      notifications={shell.notifications}
-      unreadCount={shell.unreadCount}
-    >
-      {children}
-      {/* Offerte-wizard-modal: luistert centraal op "rb:new-offerte". */}
-      <NewOfferteMount />
-    </Shell>
+    <>
+      {/* No-flash: zet de donker-class op <html> vóór de eerste paint zodat
+          de pagina meteen in de juiste modus opent (voorkomt licht-flits). */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "(function(){try{if(localStorage.getItem('frontlix-dashboard-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})()",
+        }}
+      />
+      <Shell
+        tenant={shell.tenant}
+        userInitials={shell.userInitials}
+        nav={shell.nav}
+        isDemo={shell.isDemo}
+        logoUrl={shell.logoUrl}
+        notifications={shell.notifications}
+        unreadCount={shell.unreadCount}
+      >
+        {children}
+        {/* Offerte-wizard-modal: luistert centraal op "rb:new-offerte". */}
+        <NewOfferteMount />
+      </Shell>
+    </>
   );
 }

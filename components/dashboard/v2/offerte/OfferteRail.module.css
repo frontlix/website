@@ -1,6 +1,6 @@
 .rail {
   border-left: 1px solid var(--rb-line);
-  background: #fff;
+  background: var(--rb-card);
   padding: 18px 18px;
   display: flex;
   flex-direction: column;

@@ -5,7 +5,7 @@
 }
 
 .card {
-  background: #fff;
+  background: var(--rb-card);
   border-radius: var(--rb-r-card-sm);
   border: 1px solid var(--rb-line);
   padding: 15px 20px;
@@ -80,7 +80,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: 9px;
   padding: 4px 8px;
@@ -303,7 +303,7 @@
 }
 
 .segActive {
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
   box-shadow: 0 1px 4px rgba(33, 42, 69, 0.12);
 }

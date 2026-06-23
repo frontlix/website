@@ -31,3 +31,8 @@
   padding: 2px 6px;
   border-radius: var(--rb-r-chip-sm);
 }
+
+/* Dark-mode: het witte tag-chipje wordt een donker opstaand vlak. */
+:global(html.dark) .tag {
+  background: var(--rb-surface-raised);
+}

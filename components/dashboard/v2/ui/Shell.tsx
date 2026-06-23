@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { PRIMARY_NAV, TENANT, type NavItem } from "../demo-data";
 import { NotificationsBell } from "./NotificationsBell";
+import { ThemeToggle } from "./ThemeToggle";
 import type { NotifItem } from "@/components/dashboard/NotificationPanel";
 import styles from "./Shell.module.css";
 
@@ -120,6 +121,7 @@ export function Shell({
               <Plus size={16} strokeWidth={2.5} />
               Nieuwe offerte
             </button>
+            <ThemeToggle />
             <NotificationsBell items={notifications} unreadCount={unreadCount} />
             <Link
               href={`${V2_BASE}/instellingen`}

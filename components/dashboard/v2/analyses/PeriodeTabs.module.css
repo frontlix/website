@@ -20,6 +20,11 @@
   color: var(--rb-ink);
 }
 
+/* Dark-mode: witte (inactieve) periode-pill → licht filmpje op donker. */
+:global(html.dark) .pill {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .pillActive {
   background: var(--rb-blue);
   color: #fff;

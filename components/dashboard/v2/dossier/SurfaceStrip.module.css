@@ -52,7 +52,7 @@
   font-size: 11.5px;
   font-weight: 700;
   color: var(--rb-muted);
-  background: #fff;
+  background: var(--rb-card);
   border: 1px solid var(--rb-line);
   border-radius: var(--rb-r-pill);
   padding: 6px 12px;

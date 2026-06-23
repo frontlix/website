@@ -16,7 +16,7 @@
   max-width: 100%;
   max-height: 92vh;
   overflow: auto;
-  background: #fff;
+  background: var(--rb-card);
   border-radius: var(--rb-r-card);
   box-shadow: var(--rb-shadow-modal);
   position: relative;

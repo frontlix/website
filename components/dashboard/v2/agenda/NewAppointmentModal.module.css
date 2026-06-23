@@ -52,7 +52,7 @@
 
 .input:focus {
   border-color: var(--rb-blue);
-  background: #fff;
+  background: var(--rb-card);
 }
 
 select.input {
@@ -73,7 +73,7 @@ select.input {
 
 .suffixField:focus-within {
   border-color: var(--rb-blue);
-  background: #fff;
+  background: var(--rb-card);
 }
 
 .suffixInput {

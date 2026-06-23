@@ -17,7 +17,7 @@
 
 .field:focus-within {
   border-color: var(--rb-blue);
-  background: #fff;
+  background: var(--rb-card);
 }
 
 .icon {

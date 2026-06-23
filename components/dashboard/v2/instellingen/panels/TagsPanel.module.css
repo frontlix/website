@@ -273,7 +273,7 @@
 
 .swatchActive {
   border-color: var(--rb-ink);
-  box-shadow: 0 0 0 2px #fff inset;
+  box-shadow: 0 0 0 2px var(--rb-card) inset;
 }
 
 .swatchClear {
@@ -367,7 +367,7 @@
 .cancel {
   font-family: var(--rb-font);
   border: 1px solid var(--rb-line);
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-ink);
   padding: 9px 18px;
   font-size: 13px;

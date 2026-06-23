@@ -84,7 +84,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--rb-card);
   color: var(--rb-muted);
   display: flex;
   align-items: center;
