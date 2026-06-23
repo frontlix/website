@@ -7,7 +7,7 @@
 // Een live "bezig"-staat (ev.current) krijgt een Bezig-badge; verder is er bewust
 // geen verzonnen voortgang/track-data, de DB kent die kolommen (nog) niet.
 
-import { Clock, MapPin, Zap, Check } from 'lucide-react'
+import { Clock, MapPin, Zap, Check, X } from 'lucide-react'
 import {
   FHero,
   FDetailCard,
@@ -25,6 +25,8 @@ type FlowKlusProps = {
   ev: AgendaEvent
   onHerplan: () => void
   onAfronden: () => void
+  /** Afspraak annuleren. Zonder handler blijft de knop verborgen. */
+  onAnnuleer?: () => void
 }
 
 // Stabiele initialen voor de klant-avatar.
@@ -42,7 +44,7 @@ function TrackIcon({ kind }: { kind: 'check' | 'clock' | 'zap' | 'pin' }) {
   return <MapPin size={11} className={styles.trackIcon} />
 }
 
-export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
+export function FlowKlus({ ev, onHerplan, onAfronden, onAnnuleer }: FlowKlusProps) {
   const router = useRouter()
   // Live = de afspraak loopt nu (mapper zet ev.current op absolute tijd).
   const isNow = !!ev.current
@@ -156,6 +158,11 @@ export function FlowKlus({ ev, onHerplan, onAfronden }: FlowKlusProps) {
         <button type="button" onClick={onHerplan} className={styles.btnGhost}>
           <Clock size={14} /> Herplannen
         </button>
+        {onAnnuleer && (
+          <button type="button" onClick={onAnnuleer} className={styles.btnGhost}>
+            <X size={14} /> Annuleren
+          </button>
+        )}
         <button type="button" onClick={onAfronden} className={styles.btnPrimary}>
           <Check size={16} /> Klus afronden
         </button>

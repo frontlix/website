@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { mockCallBot, mockApproved, mockRevalidate } = vi.hoisted(() => ({
-  mockCallBot: vi.fn(async (_leadId: string, _endpoint: string, _payload?: unknown) => ({
-    ok: true,
-    status: 200,
-    data: {},
-  })),
+  // Getypeerde signatuur (zelfde als callBotLeadApi) zodat mock.calls[0] een
+  // tuple is en de payload-assertions type-clean blijven.
+  mockCallBot: vi.fn<
+    (leadId: string, endpoint: string, payload?: unknown) => Promise<{ ok: boolean; status: number; data: unknown }>
+  >(async () => ({ ok: true, status: 200, data: {} })),
   mockApproved: vi.fn(async () => {}),
   mockRevalidate: vi.fn(),
 }))
