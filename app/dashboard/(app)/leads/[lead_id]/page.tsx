@@ -3,6 +3,7 @@ import { getLeadDetail } from '@/lib/dashboard/lead-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getManualOffertePricing } from '@/lib/dashboard/pricing-queries'
 import { resolveSeedPricing } from '@/lib/dashboard/offerte-snapshot'
+import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
 import { MobileLeadDossier } from '@/components/dashboard/mobile/dossier/MobileLeadDossier'
 import { mapLeadDetailToDossier } from '@/components/dashboard/mobile/dossier/dossier-mappers'
 import styles from './page.module.css'
@@ -16,9 +17,11 @@ export default async function LeadDetailPage({
 }) {
   await requireApprovedUser()
   const { lead_id } = await params
-  const [detail, pricing] = await Promise.all([
+  const [detail, pricing, allTags, leadTags] = await Promise.all([
     getLeadDetail(lead_id),
     getManualOffertePricing(),
+    getAllTags(),
+    getTagsForLead(lead_id),
   ])
 
   if (!detail) {
@@ -39,6 +42,8 @@ export default async function LeadDetailPage({
       <div className={styles.mobileTree}>
         <MobileLeadDossier
           data={mapLeadDetailToDossier(detail)}
+          leadTags={leadTags}
+          allTags={allTags}
           offerteForm={{
             leadId: lead.lead_id,
             lead,

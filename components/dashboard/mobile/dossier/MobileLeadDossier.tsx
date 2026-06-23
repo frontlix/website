@@ -12,6 +12,8 @@ import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
 import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
+import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
+import type { Tag } from '@/lib/dashboard/database.types'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 import styles from './MobileLeadDossier.module.css'
@@ -33,9 +35,13 @@ export type MobileOfferteFormProps = {
 
 export function MobileLeadDossier({
   data,
+  leadTags,
+  allTags,
   offerteForm,
 }: {
   data: MobileDossierData
+  leadTags: Tag[]
+  allTags: Tag[]
   offerteForm: MobileOfferteFormProps
 }) {
   const router = useRouter()
@@ -51,6 +57,7 @@ export function MobileLeadDossier({
       <div className={styles.scroll}>
         <DossierHeader lead={lead} onBack={() => router.push('/leads')} />
         <DossierFactStrip facts={factStrip(lead)} />
+        <LeadTagsRow leadId={lead.id} leadTags={leadTags} allTags={allTags} live />
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />
         <div className={styles.tabBody}>
           {tab === 'info' && (
