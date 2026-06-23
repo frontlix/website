@@ -187,7 +187,10 @@ export function InstellingenClient(props: InstellingenClientProps) {
       if (!res.ok) {
         // rollback bij fout
         setDiensten((ds) => ds.map((x) => (x.naam === naam ? { ...x, actief: !actief } : x)));
+        return;
       }
+      // Dienst aan/uit direct naar de bot (best-effort; 60s-refresh is vangnet).
+      await triggerBotConfigReload();
     });
   }
 
