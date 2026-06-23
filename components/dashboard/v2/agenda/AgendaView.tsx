@@ -16,10 +16,17 @@ import { MonthGrid } from "./MonthGrid";
 import { TodayPanel } from "./TodayPanel";
 import { RouteContactModal } from "./RouteContactModal";
 import { NewAppointmentModal, type NieuweAfspraak } from "./NewAppointmentModal";
+import { CancelAppointmentModal } from "./CancelAppointmentModal";
+import { RescheduleModal } from "./RescheduleModal";
 import type { KlantOptie } from "./KlantSelect";
 import type { AgendaDag, AgendaItem, AgendaType, AgendaMaandCel, RouteBase } from "./agenda-data";
-import { vandaagItem } from "./agenda-derive";
-import { completeAppointment, bookAppointment } from "@/lib/dashboard/agenda-actions";
+import { vandaagItem, klantNaam } from "./agenda-derive";
+import {
+  completeAppointment,
+  bookAppointment,
+  cancelAppointment,
+  rescheduleAppointment,
+} from "@/lib/dashboard/agenda-actions";
 import styles from "@/app/dashboard/v2/agenda/page.module.css";
 
 interface AgendaViewProps {
@@ -74,6 +81,11 @@ export function AgendaView({
   const [route, setRoute] = useState<AgendaItem | null>(null);
   const [nieuw, setNieuw] = useState(false);
   const [nieuwError, setNieuwError] = useState<string | null>(null);
+
+  // Verzetten/annuleren van een afspraak (los van de route-modal).
+  const [annuleerItem, setAnnuleerItem] = useState<AgendaItem | null>(null);
+  const [verzetItem, setVerzetItem] = useState<AgendaItem | null>(null);
+  const [actieError, setActieError] = useState<string | null>(null);
 
   function openNieuw() {
     setNieuwError(null);
@@ -204,6 +216,51 @@ export function AgendaView({
     setNieuw(false);
   }
 
+  /** Geselecteerde afspraak annuleren (live: bot verwijdert het Google-event +
+   *  maakt de afspraak-velden leeg + optioneel klantbericht). Demo: vink lokaal
+   *  niets af, sluit alleen de modal. */
+  function annuleer(opts: { notifyWhatsapp: boolean; notifyEmail: boolean }) {
+    const leadId = annuleerItem?.leadId;
+    if (!live || !leadId) {
+      setAnnuleerItem(null);
+      setRoute(null);
+      return;
+    }
+    setActieError(null);
+    startTransition(async () => {
+      const res = await cancelAppointment(leadId, opts);
+      if (res.ok) {
+        router.refresh();
+        setAnnuleerItem(null);
+        setRoute(null);
+      } else {
+        setActieError(res.error);
+      }
+    });
+  }
+
+  /** Geselecteerde afspraak verzetten naar een nieuw moment (live: via de bot,
+   *  oud event weg + nieuw event + optioneel klantbericht). Demo: sluit alleen. */
+  function verzet(iso: string, opts: { notifyWhatsapp: boolean; notifyEmail: boolean }) {
+    const leadId = verzetItem?.leadId;
+    if (!live || !leadId) {
+      setVerzetItem(null);
+      setRoute(null);
+      return;
+    }
+    setActieError(null);
+    startTransition(async () => {
+      const res = await rescheduleAppointment(leadId, iso, opts);
+      if (res.ok) {
+        router.refresh();
+        setVerzetItem(null);
+        setRoute(null);
+      } else {
+        setActieError(res.error);
+      }
+    });
+  }
+
   return (
     <div className={styles.page}>
       <AgendaHeader
@@ -240,7 +297,20 @@ export function AgendaView({
         />
       )}
 
-      <RouteContactModal item={route} onClose={() => setRoute(null)} onAfronden={rondAfRoute} base={base} />
+      <RouteContactModal
+        item={route}
+        onClose={() => setRoute(null)}
+        onAfronden={rondAfRoute}
+        onVerzetten={() => {
+          setActieError(null);
+          setVerzetItem(route);
+        }}
+        onAnnuleren={() => {
+          setActieError(null);
+          setAnnuleerItem(route);
+        }}
+        base={base}
+      />
       <NewAppointmentModal
         open={nieuw}
         onClose={() => {
@@ -252,6 +322,28 @@ export function AgendaView({
         bezig={bezig}
         error={nieuwError}
         onOpslaan={voegToe}
+      />
+      <RescheduleModal
+        open={!!verzetItem}
+        klantNaam={verzetItem ? klantNaam(verzetItem) : ""}
+        bezig={bezig}
+        error={actieError}
+        onClose={() => {
+          setVerzetItem(null);
+          setActieError(null);
+        }}
+        onBevestig={verzet}
+      />
+      <CancelAppointmentModal
+        open={!!annuleerItem}
+        klantNaam={annuleerItem ? klantNaam(annuleerItem) : ""}
+        bezig={bezig}
+        error={actieError}
+        onClose={() => {
+          setAnnuleerItem(null);
+          setActieError(null);
+        }}
+        onBevestig={annuleer}
       />
     </div>
   );
