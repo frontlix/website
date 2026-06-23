@@ -60,6 +60,11 @@
   background: var(--danger);
 }
 
+/* Herstel — positief groen (terug naar de pipeline) */
+.actionBtn[data-action='herstel'] {
+  background: var(--success, #16a34a);
+}
+
 /* ── Card slider ────────────────────────────────────────────────────────────── */
 /* position:relative zodat het boven de lanes ligt (geen explicit z-index nodig
    omdat het later in de DOM staat — maar we zetten 'm voor de veiligheid). */

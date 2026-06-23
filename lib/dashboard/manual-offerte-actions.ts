@@ -5,6 +5,7 @@ import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
 import { computeRules, computeTotals } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
+import { buildOfferteSnapshot } from './offerte-snapshot'
 import { geocodeAddress } from './geocoding'
 import type { ManualOfferteData } from './manual-offerte-types'
 import { buildLeadFieldsFromForm } from './offerte-form-mapping'
@@ -223,6 +224,14 @@ export async function createManualLeadEnOfferte(
       totaal_incl: totaalIncl,
       korting_pct: Number(data.korting_percentage) || 0,
       offertenummer,
+      // Bevries de gebruikte prijslijst + regels, zodat het concept later exact
+      // deze verzonden prijzen seedt i.p.v. live te herberekenen.
+      regels_snapshot: buildOfferteSnapshot({
+        pricing,
+        rules,
+        kortingPct: Number(data.korting_percentage) || 0,
+        geldigheidDagen: bedrijf.offerte_geldigheid_dagen,
+      }),
     })
     .select('id')
     .single()

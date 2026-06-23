@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { archiveLead } from '@/lib/dashboard/lead-actions'
+import { archiveLead, unarchiveLead } from '@/lib/dashboard/lead-actions'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { type MobileLeadCard, type MobileLeadStage } from './lead-mappers'
 import { LeadsSegmentedChips, type SegmentedChip } from './LeadsSegmentedChips'
@@ -20,6 +20,7 @@ const CHIPS: SegmentedChip[] = [
   { key: 'uit',     label: 'Offerte',  count: 0, tone: 'violet' },
   { key: 'gepland', label: 'Gepland',  count: 0, tone: 'green' },
   { key: 'klaar',   label: 'Klaar',    count: 0, tone: 'gray' },
+  { key: 'archief', label: 'Archief',  count: 0, tone: 'gray' },
 ]
 
 // ── Stage-volgorde voor sortering op fase ─────────────────────────────────────
@@ -29,9 +30,11 @@ const STAGE_ORDER: Record<MobileLeadStage, number> = {
 
 export interface MobileLeadsData {
   cards: MobileLeadCard[]
+  /** Gearchiveerde leads (dashboard_archived=true), getoond via de Archief-chip. */
+  archivedCards: MobileLeadCard[]
   /** leadId → telefoonnummer, voor swipe Bel/WA */
   telefoonById: Record<string, string>
-  /** Counts per stage + 'all' */
+  /** Counts per stage + 'all' + 'archief' */
   counts: {
     all: number
     gesprek: number
@@ -39,6 +42,7 @@ export interface MobileLeadsData {
     uit: number
     gepland: number
     klaar: number
+    archief: number
   }
   chatbotNaam: string
 }
@@ -93,9 +97,11 @@ export function MobileLeads({ data }: Props) {
   // segmented-chip + de meegegeven geavanceerde filter + de zoekterm toe.
   const filterCards = useCallback(
     (f: AdvFilter): MobileLeadCard[] => {
-      let list = data.cards
-      // Segmented-chip filter
-      if (filter !== 'all') {
+      // Archief-chip toont de gearchiveerde set; de stage-chips de actieve.
+      const isArchief = filter === 'archief'
+      let list = isArchief ? data.archivedCards : data.cards
+      // Segmented-chip filter (overslaan in archief: 'archief' is geen stage)
+      if (!isArchief && filter !== 'all') {
         list = list.filter((c) => c.stage === filter)
       }
       // Advanced filter: stages
@@ -116,7 +122,7 @@ export function MobileLeads({ data }: Props) {
       }
       return list
     },
-    [data.cards, data.telefoonById, filter, search],
+    [data.cards, data.archivedCards, data.telefoonById, filter, search],
   )
 
   // ── Gefilterd + gesorteerde kaarten ──────────────────────────────────────────
@@ -165,11 +171,19 @@ export function MobileLeads({ data }: Props) {
   }
 
   function handleArchive(id: string) {
-    // Bevestiging vóór archiveren: de lead verdwijnt hierna uit de pipeline.
-    if (!window.confirm(`Lead archiveren? Hij verdwijnt dan uit de pipeline. Je kunt 'm later met "Herstel" terughalen.`)) return
+    // Geen bevestiging: de lead verschijnt direct onder de Archief-chip en is
+    // daar met één veeg/knop ("Herstel") terug te halen.
     startTransition(async () => {
       await archiveLead(id)
       // Server-data herladen zodat de gearchiveerde lead uit de lijst valt
+      router.refresh()
+    })
+  }
+
+  function handleUnarchive(id: string) {
+    // Herstel zet de lead terug in de pipeline; verdwijnt dan uit het archief.
+    startTransition(async () => {
+      await unarchiveLead(id)
       router.refresh()
     })
   }
@@ -221,7 +235,10 @@ export function MobileLeads({ data }: Props) {
               <h1 className={styles.title}>Leads</h1>
               <p className={styles.subtitle}>
                 <LiveDot />
-                <span>{visible.length} van {data.counts.all} zichtbaar</span>
+                <span>
+                  {visible.length} van{' '}
+                  {filter === 'archief' ? data.counts.archief : data.counts.all} zichtbaar
+                </span>
               </p>
             </div>
             <div className={styles.actions}>
@@ -316,6 +333,8 @@ export function MobileLeads({ data }: Props) {
                 expanded={expandedId === lead.id}
                 onToggleExpand={handleToggleExpand}
                 onArchive={handleArchive}
+                archived={filter === 'archief'}
+                onUnarchive={handleUnarchive}
                 swipeOpenId={swipeOpenId}
                 onSwipeOpen={handleSwipeOpen}
               />
@@ -324,6 +343,8 @@ export function MobileLeads({ data }: Props) {
                   lead={lead}
                   onClose={() => setExpandedId(null)}
                   onOpenLead={handleOpenLead}
+                  archived={filter === 'archief'}
+                  onUnarchive={handleUnarchive}
                 />
               )}
             </div>

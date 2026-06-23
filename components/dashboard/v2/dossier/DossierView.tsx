@@ -144,16 +144,9 @@ export function DossierView({
   const toggleArchief = () => {
     if (live && leadId) {
       const next = !archived;
-      // Archiveren haalt de lead VOLLEDIG uit de pipeline (de lijst-query
-      // filtert dashboard_archived weg). Daarom eerst bevestigen, met de
-      // huidige fase erbij, zodat een actieve deal niet per ongeluk spoorloos
-      // verdwijnt. Herstellen mag zonder bevestiging.
-      if (next && typeof window !== "undefined") {
-        const ok = window.confirm(
-          `Lead "${lead.naam}" archiveren? Hij verdwijnt dan uit de pipeline (nu in fase: ${lead.status}). Je kunt 'm later met "Herstel" terughalen.`,
-        );
-        if (!ok) return;
-      }
+      // Geen bevestiging: archiveren haalt de lead uit de pipeline, maar de
+      // knop flipt meteen naar "Herstel" (hier én in de archief-lijst), dus
+      // per ongeluk archiveren is altijd één klik terug te draaien.
       setArchived(next); // optimistisch; revalidate bevestigt
       startTransition(async () => {
         const res = next ? await archiveLead(leadId) : await unarchiveLead(leadId);

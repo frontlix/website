@@ -28,6 +28,7 @@ import { revalidatePath } from 'next/cache'
 import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
 import { isReiskostenRegel } from './btw-calc'
+import { readSnapshotRegels } from './offerte-snapshot'
 
 const BTW_FACTOR = 1.21
 
@@ -55,21 +56,8 @@ export type DraftSavePayload = {
 /** Universele result-shape: success of error-string. */
 type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string }
 
-/**
- * Format van de regels-snapshot die we in offertes.regels_snapshot schrijven
- * bij het versturen (Fase 2.5) én lezen bij revertConcept hieronder.
- *
- * Bewust GEEN id of uid, dit is een momentopname, geen referentie.
- */
-type RegelsSnapshot = Array<{
-  omschrijving: string
-  aantal: number | null
-  eenheid: string | null
-  stukprijs: number
-  totaal: number
-  bron: 'auto_lead' | 'manual'
-  volgorde: number
-}>
+// Het regels-snapshot-formaat (SnapshotRegel) + het lezen ervan leven nu in
+// offerte-snapshot.ts; revertConcept gebruikt readSnapshotRegels.
 
 /** Bereken totaal-incl-BTW uit een lijst regels + kortingspercentage. */
 function computeTotaalIncl(
@@ -334,16 +322,16 @@ export async function revertConcept(leadId: string): Promise<Result> {
     }
 
     // Snapshot kan null zijn voor oude verstuurde versies (van vóór deze
-    // feature). In dat geval kunnen we niet veilig herstellen.
-    const snapshotRaw = verstuurd.regels_snapshot as unknown
-    if (!snapshotRaw || !Array.isArray(snapshotRaw)) {
+    // feature). readSnapshotRegels ondersteunt zowel het object-formaat
+    // ({ regels: [...] }) als het legacy bare-array-formaat.
+    const snapshot = readSnapshotRegels(verstuurd.regels_snapshot)
+    if (!snapshot) {
       return {
         ok: false,
         error:
           'Verzonden versie heeft geen regels-snapshot, terugdraaien niet mogelijk.',
       }
     }
-    const snapshot = snapshotRaw as RegelsSnapshot
 
     // ── 3. REPLACE prijsregels ─────────────────────────────────────
     const { error: delErr } = await admin
@@ -357,7 +345,8 @@ export async function revertConcept(leadId: string): Promise<Result> {
     if (snapshot.length > 0) {
       const rows = snapshot.map((r, idx) => ({
         lead_id: leadId,
-        bron: r.bron,
+        // Bot-snapshots hebben geen bron → default naar 'auto_lead'.
+        bron: r.bron ?? 'auto_lead',
         omschrijving: r.omschrijving,
         aantal: r.aantal,
         eenheid: r.eenheid,

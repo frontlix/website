@@ -156,8 +156,13 @@ export default async function LeadsPage({
 
   // Laatste klant-interactie (laatste inkomende bericht) per getoonde lead, voor
   // de "binnen"-indicator op de mobiele kaart. Bewust niet leads.bijgewerkt (zie
-  // getLastInboundByLeadIds). Eén extra query, gescoped op de zichtbare leads.
-  const lastInboundById = await getLastInboundByLeadIds(displayed.map((l) => l.lead_id))
+  // getLastInboundByLeadIds). Eén query, gescoped op de zichtbare + gearchiveerde
+  // leads (de mobiele UI toont beide sets, geschakeld via de Archief-chip).
+  const shownIds = [
+    ...displayed.map((l) => l.lead_id),
+    ...archivedLeads.map((l) => l.lead_id),
+  ]
+  const lastInboundById = await getLastInboundByLeadIds(shownIds)
   const nowMs = Date.now()
 
   return (
@@ -167,8 +172,13 @@ export default async function LeadsPage({
           cards: displayed.map((l) =>
             mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
           ),
+          // Gearchiveerde leads voor de Archief-chip (client-side geschakeld,
+          // net als de stage-chips). Eigen query, dashboard_archived=true.
+          archivedCards: archivedLeads.map((l) =>
+            mapLeadToCard(l, nowMs, lastInboundById.get(l.lead_id) ?? null),
+          ),
           telefoonById: Object.fromEntries(
-            displayed.map((l) => [l.lead_id, l.telefoon ?? '']),
+            [...displayed, ...archivedLeads].map((l) => [l.lead_id, l.telefoon ?? '']),
           ),
           counts: {
             all:     counts.all,
@@ -177,6 +187,7 @@ export default async function LeadsPage({
             uit:     counts.offerte_uit,
             gepland: counts.ingepland,
             klaar:   counts.afgerond,
+            archief: counts.archief,
           },
           chatbotNaam,
         }}

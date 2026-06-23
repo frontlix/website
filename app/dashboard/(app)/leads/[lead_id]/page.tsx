@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getLeadDetail } from '@/lib/dashboard/lead-queries'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { getManualOffertePricing } from '@/lib/dashboard/pricing-queries'
+import { resolveSeedPricing } from '@/lib/dashboard/offerte-snapshot'
 import { MobileLeadDossier } from '@/components/dashboard/mobile/dossier/MobileLeadDossier'
 import { mapLeadDetailToDossier } from '@/components/dashboard/mobile/dossier/dossier-mappers'
 import styles from './page.module.css'
@@ -26,6 +27,11 @@ export default async function LeadDetailPage({
 
   const { lead } = detail
 
+  // Seed de mobiele offerte-editor met de bevroren prijslijst van de laatste
+  // verstuurde offerte, anders de live prijslijst. Zo toont een ongewijzigd
+  // concept exact de verzonden prijzen. (De v2-desktop seedt via dossier-mappers.)
+  const seedPricing = resolveSeedPricing(detail.offertes, pricing)
+
   return (
     <>
       {/* Mobile-only: volledig scherm lead-dossier, gevoed met echte
@@ -39,7 +45,7 @@ export default async function LeadDetailPage({
             prijsregels: detail.prijsregels,
             offertes: detail.offertes,
             fotosCount: detail.fotos.length,
-            pricing,
+            pricing: seedPricing,
           }}
         />
       </div>

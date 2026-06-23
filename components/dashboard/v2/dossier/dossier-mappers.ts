@@ -18,6 +18,7 @@ import { formatEuro } from "@/lib/dashboard/format";
 import { DIENST_LABELS, type SubDienst } from "@/lib/dashboard/manual-offerte-types";
 import { mapLeadToFormData } from "@/lib/dashboard/offerte-form-mapping";
 import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
+import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type {
   DossierData,
@@ -284,7 +285,10 @@ function buildOfferteForm(
 ): OfferteFormData {
   return {
     data: mapLeadToFormData(detail.lead),
-    pricing,
+    // Seed met de bevroren prijslijst van de laatste verstuurde offerte (uit
+    // de regels_snapshot), anders de live prijslijst. Zo toont een ongewijzigd
+    // concept exact de verzonden prijzen i.p.v. live te herberekenen.
+    pricing: resolveSeedPricing(detail.offertes, pricing),
     geldigheidDagen: detail.lead.offerte_geldigheid_dagen ?? 14,
   };
 }
