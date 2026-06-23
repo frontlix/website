@@ -44,6 +44,7 @@ import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
 import { toOffertePdfData } from '@/components/dashboard/offerte/offerte-pdf-data'
 import {
   buildSentOffertePdfModel,
+  HEROPGEMAAKT_NOTE,
   type SentOffertePdfModel,
 } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { OStepper, ONumField, OSwitch, OClientNote, OAddrInput } from './OfferteEditAtoms'
@@ -386,6 +387,7 @@ export function MobileOfferteEditor({
               },
               baseData: baseDataVoorVersies,
               leadId,
+              pricing,
               geldigheidFallback: lead.offerte_geldigheid_dagen ?? 14,
             })
         const datum = o.aangemaakt_op ? formatDatumKort(new Date(o.aangemaakt_op)) : '—'
@@ -403,6 +405,7 @@ export function MobileOfferteEditor({
                 ),
               ),
               effectiveKortingPct: model.totals.discount,
+              toelichting: model.reconstructed ? HEROPGEMAAKT_NOTE : undefined,
             })
           : null
         return {
@@ -412,6 +415,7 @@ export function MobileOfferteEditor({
           verstuurd: !o.is_concept,
           pdfData,
           downloadModel: model,
+          reconstructed: model?.reconstructed ?? false,
         }
       }),
     [offertes, baseDataVoorVersies, leadId, lead.offerte_geldigheid_dagen],
