@@ -145,6 +145,13 @@
   --rb-aurora-3: radial-gradient(closest-side, rgba(26, 86, 255, 0.1), transparent);
 }
 
+/* Native browser-controls (datum-/tijdkiezer-popup, scrollbars, dropdowns)
+   donker renderen zodra dark mode actief is. Op <html> zodat het ook geldt voor
+   modals die buiten de .rbRoot-boom worden geportald. */
+html.dark {
+  color-scheme: dark;
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    DARK MODE (v2-desktop). Opt-in via `.dark` op <html> (gezet door de
    ThemeToggle in de v2-shell + een no-flash-script in de v2-layout). De

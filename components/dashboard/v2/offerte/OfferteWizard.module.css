@@ -11,7 +11,7 @@
   height: auto;
   min-height: 560px;
   max-height: 92vh;
-  background: #fbfcfe;
+  background: var(--rb-card);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -124,7 +124,7 @@
 }
 
 .conceptenBtn:hover {
-  background: #f4f6fb;
+  background: var(--rb-field-2);
   border-color: var(--rb-blue);
 }
 
@@ -193,7 +193,7 @@
 }
 
 .conceptenNieuw:hover {
-  background: #e4ecff;
+  background: var(--rb-blue-soft);
 }
 
 .conceptenLeeg {
@@ -218,7 +218,7 @@
 }
 
 .conceptItem:hover {
-  background: #f4f6fb;
+  background: var(--rb-field-2);
 }
 
 .conceptActief {

@@ -28,7 +28,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f4f6fb;
+  background: var(--rb-field-2);
   color: var(--rb-muted);
   border: none;
   cursor: pointer;
@@ -39,7 +39,7 @@
 }
 
 .close:hover {
-  background: #e9edf6;
+  background: var(--rb-field-2);
 }
 
 @keyframes rbFade {

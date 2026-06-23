@@ -10,6 +10,12 @@
   flex-direction: column;
 }
 
+/* Dark-mode: de lokale pill-achtergronden waren licht (lekken in donker). */
+:global(html.dark) .card {
+  --rev-pill-bg: var(--rb-field-2);
+  --rev-pill-bg-hover: rgba(255, 255, 255, 0.08);
+}
+
 .header {
   display: flex;
   align-items: center;
