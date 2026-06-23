@@ -41,6 +41,11 @@ import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
 import { OffertePdfDocument } from '@/components/dashboard/offerte/OffertePdf'
 import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
+import { toOffertePdfData } from '@/components/dashboard/offerte/offerte-pdf-data'
+import {
+  buildSentOffertePdfModel,
+  type SentOffertePdfModel,
+} from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { OStepper, ONumField, OSwitch, OClientNote, OAddrInput } from './OfferteEditAtoms'
 import { OffertePdfPreview, type OffertePdfData } from './OffertePdfPreview'
 import { OfferteHistorie } from './OfferteHistorie'
@@ -316,49 +321,16 @@ export function MobileOfferteEditor({
   }, [])
 
   // ─── PDF-data uit de live state (OffertePdfData-contract) ───
-  const pdfKlant = data.factuur_zelfde
-    ? {
-        naam: data.naam,
-        bedrijf: data.bedrijf || undefined,
-        straat: `${data.straat} ${data.huisnummer}`.trim(),
-        pcplaats: `${data.postcode} ${data.plaats}`.trim(),
-        email: data.email || undefined,
-        telefoon: data.telefoon || undefined,
-      }
-    : {
-        naam: data.naam,
-        bedrijf: data.bedrijf || undefined,
-        straat: `${data.factuur_straat} ${data.factuur_huisnummer}`.trim(),
-        pcplaats: `${data.factuur_postcode} ${data.factuur_plaats}`.trim(),
-      }
-
-  const pdfData: OffertePdfData = {
+  const pdfData: OffertePdfData = toOffertePdfData({
+    data,
+    rules,
+    totals,
     nr: `${new Date().getFullYear()}-${leadId.replace(/\D/g, '').slice(-4).padStart(4, '0')}`,
     datum: formatDatumKort(new Date()),
     geldigTot: formatDatumKort(vervalDatum),
-    dienst: data.sub.includes('invegen') ? 'Reinigen en invegen' : 'Onkruidbeheersing',
-    m2: data.m2 > 0 ? data.m2 : undefined,
-    klant: pdfKlant,
-    regels: rules.map((r) => ({
-      omschrijving: r.desc,
-      aantalLabel: `${r.aantal} ${r.eenheid}`,
-      stukprijs: r.prijs,
-      totaal: r.totaal,
-    })),
-    subtotaal: totals.subtotal,
-    toeslagen:
-      totals.korstmosToeslag > 0
-        ? [{ label: 'Korstmos-toeslag (10%)', bedrag: totals.korstmosToeslag }]
-        : [],
-    kortingPct: Math.round(effectiveKortingPct),
-    kortingBedrag: totals.kortingBedrag,
-    kortingNote: data.korting_omschrijving || undefined,
-    totaalExcl: totals.total,
-    btwPct: 21,
-    btwBedrag: totals.btw,
-    totaalIncl: totals.total + totals.btw,
+    effectiveKortingPct,
     toelichting: voegzandNote || undefined,
-  }
+  })
 
   // Download de offerte als echte PDF: zelfde @react-pdf-document als de
   // desktop-wizard (OffertePdfDocument), client-side gegenereerd. Aflevering via
@@ -395,15 +367,54 @@ export function MobileOfferteEditor({
   }
 
   // ─── Versies voor de historie-overlay (afgeleid van offertes) ───
+  // Basisgegevens (klant/adres) voor verstuurde versies, afgeleid van de lead.
+  const baseDataVoorVersies = useMemo(() => mapLeadToFormData(lead), [lead])
+
   const versies = useMemo(
     () =>
-      offertes.map((o) => ({
-        versie: o.versie,
-        totaalIncl: o.totaal_incl,
-        datum: o.aangemaakt_op ? formatDatumKort(new Date(o.aangemaakt_op)) : '—',
-        verstuurd: !o.is_concept,
-      })),
-    [offertes],
+      offertes.map((o) => {
+        const model: SentOffertePdfModel | null = o.is_concept
+          ? null
+          : buildSentOffertePdfModel({
+              offerte: {
+                regels_snapshot: o.regels_snapshot,
+                totaal_incl: o.totaal_incl,
+                korting_pct: o.korting_pct,
+                versie: o.versie,
+                aangemaakt_op: o.aangemaakt_op,
+                offertenummer: (o as { offertenummer?: string | null }).offertenummer ?? null,
+              },
+              baseData: baseDataVoorVersies,
+              leadId,
+              geldigheidFallback: lead.offerte_geldigheid_dagen ?? 14,
+            })
+        const datum = o.aangemaakt_op ? formatDatumKort(new Date(o.aangemaakt_op)) : '—'
+        const pdfData: OffertePdfData | null = model
+          ? toOffertePdfData({
+              data: model.data,
+              rules: model.rules,
+              totals: model.totals,
+              nr: model.offerteNummer,
+              datum,
+              geldigTot: formatDatumKort(
+                new Date(
+                  (o.aangemaakt_op ? new Date(o.aangemaakt_op).getTime() : Date.now()) +
+                    model.geldigheidDagen * 24 * 60 * 60 * 1000,
+                ),
+              ),
+              effectiveKortingPct: model.totals.discount,
+            })
+          : null
+        return {
+          versie: o.versie,
+          totaalIncl: o.totaal_incl,
+          datum,
+          verstuurd: !o.is_concept,
+          pdfData,
+          downloadModel: model,
+        }
+      }),
+    [offertes, baseDataVoorVersies, leadId, lead.offerte_geldigheid_dagen],
   )
 
   // ─── Summaries voor de kop-rijen ───
