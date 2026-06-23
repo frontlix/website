@@ -200,7 +200,7 @@ export function BedrijfsprofielPanel({
             breed
           />
           <div className={styles.fieldHint}>
-            Hier komen de offerte-goedkeuringen binnen.
+            Het e-mailadres dat hier staat, is waar offertes ter goedkeuring naartoe worden gestuurd.
           </div>
         </div>
       </div>
