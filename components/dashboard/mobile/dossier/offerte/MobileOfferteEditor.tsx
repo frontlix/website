@@ -1021,6 +1021,7 @@ export function MobileOfferteEditor({
       <OfferteHistorie
         open={histOpen}
         onClose={() => setHistOpen(false)}
+        leadId={leadId}
         huidigBedrag={totals.total + totals.btw}
         versies={versies}
       />

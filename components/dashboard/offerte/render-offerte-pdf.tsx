@@ -32,3 +32,11 @@ export function offertePdfFileName(naam: string | undefined): string {
     .replace(/^-+|-+$/g, '')
   return `offerte-${slug || 'schoon-straatje'}.pdf`
 }
+
+/** Zet een base64-PDF (van de server-action) om naar een Blob voor iframe/download. */
+export function base64ToPdfBlob(base64: string): Blob {
+  const bin = atob(base64)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return new Blob([bytes], { type: 'application/pdf' })
+}
