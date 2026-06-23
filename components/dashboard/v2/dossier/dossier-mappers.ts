@@ -223,11 +223,7 @@ function shortDate(iso: string | null | undefined): string {
 }
 
 /** Offertes-lijst voor de Offertes-tab (concept = blauwe rand + Open-knop). */
-function buildOffertes(
-  detail: LeadDetail,
-  baseData: ManualOfferteData,
-  pricing: ManualOffertePricing,
-): DossierOfferte[] {
+function buildOffertes(detail: LeadDetail, baseData: ManualOfferteData): DossierOfferte[] {
   const l = detail.lead;
   return detail.offertes.map((o) => {
     const concept = o.is_concept === true;
@@ -265,7 +261,6 @@ function buildOffertes(
           },
           baseData,
           leadId: l.id,
-          pricing,
           geldigheidFallback: detail.lead.offerte_geldigheid_dagen ?? 14,
         });
     return {
@@ -398,7 +393,7 @@ export function mapLeadDetailToDossierData(
     werk: buildWerk(l),
     fotos: buildFotos(detail),
     surface: buildSurface(l),
-    offertes: buildOffertes(detail, baseData, pricing),
+    offertes: buildOffertes(detail, baseData),
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
     offerteForm: buildOfferteForm(detail, pricing),

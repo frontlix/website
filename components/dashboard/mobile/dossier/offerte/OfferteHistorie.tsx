@@ -28,8 +28,6 @@ type OfferteVersie = {
   pdfData?: OffertePdfData | null
   /** Model om de PDF te downloaden; null = geen bruikbare snapshot. */
   downloadModel?: SentOffertePdfModel | null
-  /** true = oude offerte zonder snapshot, heropgemaakt (kan afwijken). */
-  reconstructed?: boolean
 }
 
 type OfferteHistorieProps = {
@@ -123,10 +121,7 @@ export function OfferteHistorie({ open, onClose, huidigBedrag, versies }: Offert
                       {statusLabel}
                     </span>
                   </div>
-                  <div className={styles.datum}>
-                    {h.datum}
-                    {h.reconstructed ? ' · heropgemaakt, kan afwijken' : ''}
-                  </div>
+                  <div className={styles.datum}>{h.datum}</div>
                 </div>
               </div>
 
