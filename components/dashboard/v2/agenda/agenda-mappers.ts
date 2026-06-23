@@ -12,6 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────
 
 import type { Appointment } from "@/lib/dashboard/agenda-queries";
+import type { ExternalEvent } from "@/lib/dashboard/external-events-queries";
 import { buildWeekDays, toAmsterdamDayKey } from "@/lib/dashboard/agenda-week";
 import type { GridCell } from "@/lib/dashboard/calendar";
 import {
@@ -116,6 +117,37 @@ export function mapAppointmentToItem(a: Appointment): AgendaItem {
 }
 
 /**
+ * Eén externe (lead-loze) Google-afspraak → AgendaItem. READ-ONLY: er is geen
+ * leadId, dus de detail/route-modal verbergt afronden/verzetten/annuleren (die
+ * checken `item.leadId`). `type: "intern"` (grijs accent), `sub: "Google Agenda"`
+ * zodat de bron herkenbaar is. De duur komt uit start/end; ontbreekt de eindtijd
+ * (of all-day), dan tonen we geen duur (EMPTY_DUUR).
+ */
+export function mapExternalEventToItem(ev: ExternalEvent): AgendaItem {
+  const tijd = ev.all_day ? "" : formatHHmm(ev.start_at);
+  let duur = EMPTY_DUUR;
+  if (!ev.all_day && ev.end_at) {
+    const min = Math.round(
+      (new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000,
+    );
+    if (min > 0) duur = durationLabel(min);
+  }
+
+  return {
+    tijd,
+    duur,
+    titel: ev.summary || "Google-afspraak",
+    sub: "Google Agenda",
+    plaats: "",
+    type: "intern",
+    klaar: false,
+    key: `ext-${ev.google_event_id}`,
+    // Geen leadId: read-only. De UI verbergt zo de lead-acties.
+    leadId: undefined,
+  };
+}
+
+/**
  * Map de afspraken van een week (UTC-range met buffer) naar exact 7
  * AgendaDag-kolommen (ma–zo), gefilterd op de Amsterdam-dagkeys van de week.
  * Items per dag op tijd gesorteerd.
@@ -146,6 +178,66 @@ export function mapWeekToAgendaDays(
       vandaag: day.isToday,
       items,
     };
+  });
+}
+
+/**
+ * Voeg de externe (lead-loze) Google-afspraken toe aan de reeds gebouwde
+ * week-kolommen, op hun Amsterdam-dagkey. De Amsterdam-dagkeys (YYYY-MM-DD) van
+ * de 7 kolommen worden expliciet meegegeven (AgendaDag bewaart die niet); ze
+ * staan in dezelfde volgorde als `days` (ma..zo), zoals buildWeekDays ze levert.
+ * Externe events buiten de 7 zichtbare dagen vallen weg. Per dag opnieuw op tijd
+ * gesorteerd (all-day, lege tijd, sorteert vooraan). Read-only: geen leadId.
+ */
+export function mergeExternalIntoWeekByKeys(
+  days: AgendaDag[],
+  dayKeys: string[],
+  external: ExternalEvent[],
+): AgendaDag[] {
+  if (external.length === 0) return days;
+  const byKey = new Map<string, AgendaItem[]>();
+  for (const ev of external) {
+    const key = toAmsterdamDayKey(ev.start_at);
+    const list = byKey.get(key) ?? [];
+    list.push(mapExternalEventToItem(ev));
+    byKey.set(key, list);
+  }
+  return days.map((day, i) => {
+    const extra = byKey.get(dayKeys[i]);
+    if (!extra || extra.length === 0) return day;
+    const items = [...day.items, ...extra].sort((x, y) =>
+      x.tijd.localeCompare(y.tijd),
+    );
+    return { ...day, items };
+  });
+}
+
+/**
+ * Voeg de externe Google-afspraken toe aan de reeds gebouwde maand-cellen, op
+ * hun Amsterdam-dagkey (= cel.dateKey). Alleen in-maand-cellen krijgen items
+ * (gedimde voor-/naloop blijft leeg, net als de leads). Per cel op tijd
+ * gesorteerd. Read-only: geen leadId.
+ */
+export function mergeExternalIntoMonth(
+  cells: AgendaMaandCel[],
+  external: ExternalEvent[],
+): AgendaMaandCel[] {
+  if (external.length === 0) return cells;
+  const byKey = new Map<string, AgendaItem[]>();
+  for (const ev of external) {
+    const key = toAmsterdamDayKey(ev.start_at);
+    const list = byKey.get(key) ?? [];
+    list.push(mapExternalEventToItem(ev));
+    byKey.set(key, list);
+  }
+  return cells.map((c) => {
+    if (!c.inMaand) return c;
+    const extra = byKey.get(c.dateKey);
+    if (!extra || extra.length === 0) return c;
+    const items = [...c.items, ...extra].sort((x, y) =>
+      x.tijd.localeCompare(y.tijd),
+    );
+    return { ...c, items };
   });
 }
 

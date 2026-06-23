@@ -300,15 +300,27 @@ export function AgendaView({
       <RouteContactModal
         item={route}
         onClose={() => setRoute(null)}
-        onAfronden={rondAfRoute}
-        onVerzetten={() => {
-          setActieError(null);
-          setVerzetItem(route);
-        }}
-        onAnnuleren={() => {
-          setActieError(null);
-          setAnnuleerItem(route);
-        }}
+        // Externe (lead-loze) Google-afspraken zijn READ-ONLY: zonder leadId
+        // geven we de actie-handlers niet door, zodat de modal de knoppen
+        // Afronden/Verzetten/Annuleren verbergt. Demo (geen sessie, geen leadId)
+        // mag wel lokaal afvinken, dus daar blijft Afronden beschikbaar.
+        onAfronden={!live || route?.leadId ? rondAfRoute : undefined}
+        onVerzetten={
+          route?.leadId
+            ? () => {
+                setActieError(null);
+                setVerzetItem(route);
+              }
+            : undefined
+        }
+        onAnnuleren={
+          route?.leadId
+            ? () => {
+                setActieError(null);
+                setAnnuleerItem(route);
+              }
+            : undefined
+        }
         base={base}
       />
       <NewAppointmentModal
