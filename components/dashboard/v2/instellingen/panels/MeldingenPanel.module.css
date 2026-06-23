@@ -116,6 +116,18 @@
   left: 20px;
 }
 
+/* Dark-mode: uit-stand was bijna onzichtbaar. Zichtbare lichte track + lichte
+   knop, zodat duidelijk is dat de toggle uitstaat. */
+:global(html.dark) .toggle {
+  background: rgba(255, 255, 255, 0.18);
+}
+:global(html.dark) .toggleOn {
+  background: var(--rb-blue);
+}
+:global(html.dark) .knob {
+  background: #e8ecf3;
+}
+
 /* ── "Binnenkort"-label voor kanalen die voor dit event nog niet live zijn ── */
 .binnenkort {
   display: inline-block;

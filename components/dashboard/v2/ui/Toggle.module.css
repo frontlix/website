@@ -32,3 +32,15 @@
 .on .knob {
   left: 21px;
 }
+
+/* Dark-mode: de uit-stand was bijna onzichtbaar (donkere track op donkere bg).
+   Zichtbare lichte track + lichte knop, zodat duidelijk is dat de knop uitstaat. */
+:global(html.dark) .track {
+  background: rgba(255, 255, 255, 0.18);
+}
+:global(html.dark) .on {
+  background: var(--rb-blue);
+}
+:global(html.dark) .knob {
+  background: #e8ecf3;
+}

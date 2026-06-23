@@ -182,9 +182,12 @@ html.dark .rbRoot {
   --rb-surface-raised: #232c3d; /* opstaand vlak op donker (segment-thumb e.d.) */
   --rb-col-base: rgba(255, 255, 255, 0.03); /* subtiel licht filmpje onder de kolomtint op donker */
 
-  /* WhatsApp-gesprek (donker, à la WA dark) */
+  /* WhatsApp-gesprek (donker, à la WA dark): donkere doodle-variant van het
+     eigen patroon (omgekeerd naar licht-op-donker) + lichtere sluier zodat het
+     patroon subtiel zichtbaar blijft. */
   --rb-wa-bg: #0b141a;
-  --rb-wa-veil: rgba(11, 20, 26, 0.8);
+  --rb-wa-bg-image: url("/whatsapp-achtergrond-dark.png");
+  --rb-wa-veil: rgba(11, 20, 26, 0.45);
   --rb-wa-in: #1f2c33; /* inkomende bubbel */
   --rb-wa-out: #134d37; /* uitgaande bubbel */
 
