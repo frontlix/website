@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useModalSheet } from '@/hooks/useModalSheet'
 import type { MobileLeadStage } from './lead-mappers'
+import { ICON_REGISTRY } from '@/components/dashboard/instellingen/tag-icons'
+import type { IconKey } from '@/lib/dashboard/tag-presets'
+import type { Tag } from '@/lib/dashboard/database.types'
 import styles from './LeadsFilterSheet.module.css'
 
 export type AdvFilter = {
@@ -10,6 +13,7 @@ export type AdvFilter = {
   bronnen: Set<'wa' | 'form'>
   urgentOnly: boolean
   sort: 'binnen' | 'prijs' | 'naam' | 'fase'
+  tags: Set<string>
 }
 
 // ── Alle stages met label + tone ──────────────────────────────────────────────
@@ -27,6 +31,7 @@ const ALL_BRONNEN = new Set<'wa' | 'form'>(['wa', 'form'])
 interface LeadsFilterSheetProps {
   open: boolean
   value: AdvFilter
+  allTags: Tag[]
   /** Telt hoeveel leads matchen met een (concept-)filter — voor de live footer-knop */
   countFor: (f: AdvFilter) => number
   onApply: (f: AdvFilter) => void
@@ -49,6 +54,7 @@ interface LeadsFilterSheetProps {
 export function LeadsFilterSheet({
   open,
   value,
+  allTags,
   countFor,
   onApply,
   onClose,
@@ -58,6 +64,7 @@ export function LeadsFilterSheet({
   const [bronnen, setBronnen]     = useState<Set<'wa' | 'form'>>(value.bronnen)
   const [urgentOnly, setUrgent]   = useState(value.urgentOnly)
   const [sort, setSort]           = useState<AdvFilter['sort']>(value.sort)
+  const [tags, setTags]           = useState<Set<string>>(value.tags)
 
   // Scroll-lock + Escape + focus-move/-restore (vóór de early return, zodat de
   // hook-volgorde stabiel blijft). Ref komt op de role="dialog"-div.
@@ -74,6 +81,7 @@ export function LeadsFilterSheet({
       setBronnen(value.bronnen)
       setUrgent(value.urgentOnly)
       setSort(value.sort)
+      setTags(value.tags)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- bewust alleen op open-event syncen (zie comment hierboven)
   }, [open])
@@ -93,15 +101,16 @@ export function LeadsFilterSheet({
     setBronnen(new Set(ALL_BRONNEN))
     setUrgent(false)
     setSort('binnen')
+    setTags(new Set<string>())
   }
 
   function apply() {
-    onApply({ stages, bronnen, urgentOnly, sort })
+    onApply({ stages, bronnen, urgentOnly, sort, tags })
     onClose()
   }
 
   // Live aantal op basis van de huidige draft-keuzes (sort telt niet mee).
-  const resultCount = countFor({ stages, bronnen, urgentOnly, sort })
+  const resultCount = countFor({ stages, bronnen, urgentOnly, sort, tags })
 
   return (
     <div className={styles.overlay}>
@@ -230,6 +239,32 @@ export function LeadsFilterSheet({
             })}
           </div>
         </FilterSection>
+
+        {/* ── Tags ────────────────────────────────────────────────────────────── */}
+        {allTags.length > 0 && (
+          <FilterSection title="Tags" sub="Alleen leads met alle gekozen tags">
+            <div className={styles.chipRow}>
+              {allTags.map((t) => {
+                const Icon = ICON_REGISTRY[(t.icon as IconKey) ?? 'Tag'] ?? ICON_REGISTRY.Tag
+                const on = tags.has(t.id)
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={styles.faseChip}
+                    data-on={on ? 'true' : undefined}
+                    onClick={() => toggle(tags, setTags, t.id)}
+                  >
+                    <span style={{ color: t.kleur ?? '#64748b', display: 'inline-flex' }}>
+                      <Icon size={12} strokeWidth={2.2} />
+                    </span>
+                    {t.naam}
+                  </button>
+                )
+              })}
+            </div>
+          </FilterSection>
+        )}
 
         {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <div className={styles.footer}>

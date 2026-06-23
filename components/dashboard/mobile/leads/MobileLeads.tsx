@@ -10,6 +10,7 @@ import { LeadsSegmentedChips, type SegmentedChip } from './LeadsSegmentedChips'
 import { SwipeableLeadCard } from './SwipeableLeadCard'
 import { LeadExpandedPanel } from './LeadExpandedPanel'
 import { LeadsFilterSheet, type AdvFilter } from './LeadsFilterSheet'
+import type { Tag } from '@/lib/dashboard/database.types'
 import styles from './MobileLeads.module.css'
 
 // ── Stage-chips configuratie (volgorde = navigatie) ───────────────────────────
@@ -45,6 +46,7 @@ export interface MobileLeadsData {
     archief: number
   }
   chatbotNaam: string
+  allTags: Tag[]
 }
 
 interface Props {
@@ -56,6 +58,7 @@ const DEFAULT_ADV_FILTER: AdvFilter = {
   bronnen:    new Set<'wa' | 'form'>(['wa', 'form']),
   urgentOnly: false,
   sort:       'binnen',
+  tags:       new Set<string>(),
 }
 
 /**
@@ -110,6 +113,11 @@ export function MobileLeads({ data }: Props) {
       list = list.filter((c) => f.bronnen.has(c.bron))
       // Advanced filter: urgentOnly
       if (f.urgentOnly) list = list.filter((c) => c.urgent)
+      // Advanced filter: tags (AND) — lead matcht alleen met ALLE gekozen tags
+      if (f.tags.size > 0) {
+        const wanted = [...f.tags]
+        list = list.filter((c) => wanted.every((t) => c.tagIds.includes(t)))
+      }
       // Client-side zoeken: naam / plaats (telefoon via swipe-acties, geen tekst in card)
       if (search) {
         const q = search.toLowerCase()
@@ -153,7 +161,8 @@ export function MobileLeads({ data }: Props) {
     (advFilter.stages.size < 5 ? 1 : 0) +
     (advFilter.bronnen.size < 2 ? 1 : 0) +
     (advFilter.urgentOnly ? 1 : 0) +
-    (advFilter.sort !== 'binnen' ? 1 : 0)
+    (advFilter.sort !== 'binnen' ? 1 : 0) +
+    (advFilter.tags.size > 0 ? 1 : 0)
 
   // Collapse expanded card bij filter-wijziging
   function handleFilter(key: string) {
@@ -356,6 +365,7 @@ export function MobileLeads({ data }: Props) {
       <LeadsFilterSheet
         open={sheetOpen}
         value={advFilter}
+        allTags={data.allTags}
         countFor={countFor}
         onApply={setAdvFilter}
         onClose={() => setSheetOpen(false)}
