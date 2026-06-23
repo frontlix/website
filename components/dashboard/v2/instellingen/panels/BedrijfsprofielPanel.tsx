@@ -8,7 +8,8 @@ import { saveTenantBase } from "@/lib/dashboard/tenant-base-actions";
 import { triggerBotConfigReload } from "@/lib/dashboard/bot-reload-actions";
 import { uploadTenantLogo } from "@/lib/dashboard/logo-actions";
 import { Field } from "../Field";
-import type { CompanyProfile } from "../instellingen-data";
+import GmailLabelKoppeling from "./GmailLabelKoppeling";
+import type { CompanyProfile, GmailConnectionState } from "../instellingen-data";
 import styles from "./panels.module.css";
 
 interface BedrijfsprofielPanelProps {
@@ -29,6 +30,7 @@ interface BedrijfsprofielPanelProps {
   currentLng: number | null;
   /** false in demo-fallback (geen sessie): de geocode-actie wordt dan niet aangeroepen. */
   live: boolean;
+  gmail: GmailConnectionState;
 }
 
 type BaseStatus =
@@ -51,6 +53,7 @@ export function BedrijfsprofielPanel({
   currentLng,
   huidigeStand,
   live,
+  gmail,
 }: BedrijfsprofielPanelProps) {
   // Thuisbasis-velden, bewerkbaar (gemirrord van v1 TenantBaseForm).
   const [postcode, setPostcode] = useState(basePostcode);
@@ -205,6 +208,7 @@ export function BedrijfsprofielPanel({
           <div className={styles.fieldHint}>
             Het e-mailadres dat hier staat, is waar offertes ter goedkeuring naartoe worden gestuurd.
           </div>
+          <GmailLabelKoppeling gmail={gmail} live={live} />
         </div>
       </div>
 
