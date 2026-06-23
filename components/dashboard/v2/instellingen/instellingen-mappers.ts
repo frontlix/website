@@ -131,7 +131,7 @@ export function toWorkRadius(t: TenantSettingsRow | null): number {
   return t?.radius_max_km != null ? Number(t.radius_max_km) : WORK_RADIUS_DEFAULT;
 }
 
-// ── Diensten & prijzen ──────────────────────────────────────────────────
+// ── Diensten ──────────────────────────────────────────────────
 
 /**
  * service_offerings (aan/uit + label) → de Service[]-vorm die DienstenPanel

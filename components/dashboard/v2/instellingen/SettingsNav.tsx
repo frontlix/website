@@ -32,7 +32,7 @@ interface SettingsNavProps {
 /** Lucide-icoon per sectie, in dezelfde geest als de bestaande (app)-nav. */
 const SECTION_ICON: Record<SettingsSection, LucideIcon> = {
   Bedrijfsprofiel: Building2,
-  "Diensten & prijzen": Wrench,
+  "Diensten": Wrench,
   Prijzen: Euro,
   Tags: Tag,
   Beschikbaarheid: CalendarClock,
@@ -56,7 +56,7 @@ const SECTION_ICON: Record<SettingsSection, LucideIcon> = {
  */
 const SECTION_ACCENT: Record<SettingsSection, string> = {
   Bedrijfsprofiel: "var(--rb-data-1)", // blauw
-  "Diensten & prijzen": "var(--rb-data-2)", // groen
+  "Diensten": "var(--rb-data-2)", // groen
   Prijzen: "var(--rb-data-3)", // amber
   Tags: "var(--rb-data-4)", // paars
   Beschikbaarheid: "var(--rb-data-7)", // teal

@@ -10,7 +10,7 @@
 
 export type SettingsSection =
   | "Bedrijfsprofiel"
-  | "Diensten & prijzen"
+  | "Diensten"
   | "Prijzen"
   | "Tags"
   | "Beschikbaarheid"
@@ -27,7 +27,7 @@ export type SettingsSection =
 
 export const SETTINGS_MENU: SettingsSection[] = [
   "Bedrijfsprofiel",
-  "Diensten & prijzen",
+  "Diensten",
   "Prijzen",
   "Tags",
   "Beschikbaarheid",
@@ -47,7 +47,7 @@ export const SETTINGS_MENU: SettingsSection[] = [
 export const SETTINGS_SUBHEAD: Record<SettingsSection, string> = {
   "Bedrijfsprofiel":
     "Je gegevens, werkgebied en maanddoel, dit gebruikt Surface overal",
-  "Diensten & prijzen":
+  "Diensten":
     "Welke diensten biedt je aan? Schakel ze aan of uit, Surface gebruikt dit voor automatische offertes",
   "Prijzen":
     "De prijsregels die Surface gebruikt om offertes te berekenen",
@@ -102,7 +102,7 @@ export const PROFILE_DEFAULT: CompanyProfile = {
 export const WORK_BASE_DEFAULT = "Werkplaatsweg 12, 3812 AB Amersfoort";
 export const WORK_RADIUS_DEFAULT = 50;
 
-// ── Diensten & prijzen ───────────────────────────────────────────────────
+// ── Diensten ───────────────────────────────────────────────────
 
 export interface Service {
   naam: string;
