@@ -174,3 +174,63 @@
   font-size: 13.5px;
   font-weight: 800;
 }
+
+/* ── Inzien + download voor verstuurde offertes ── */
+.rowActions {
+  display: flex;
+  gap: 6px;
+  margin-left: 8px;
+}
+.actBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rb-line, #e5e7eb);
+  border-radius: 8px;
+  background: var(--rb-card, #fff);
+  color: var(--rb-ink, #1a1a1a);
+  cursor: pointer;
+}
+.actBtn:hover:not(:disabled) {
+  background: var(--rb-field-2, #f3f4f6);
+}
+.actBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pdfModalHead {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 12px;
+  padding-right: 28px;
+}
+.pdfFrame {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid var(--rb-line, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+}
+.pdfModalFoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.dlBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--rb-accent, #002d63);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dlBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

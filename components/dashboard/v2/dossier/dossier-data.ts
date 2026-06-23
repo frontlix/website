@@ -44,6 +44,10 @@ export interface DossierOfferte {
   concept: boolean;
   /** Tag-kleur. Zonder = afgeleid uit `concept` (concept=blauw, anders groen). */
   tone?: OfferteTone;
+  /** PDF-model van deze verstuurde versie (inzien + download). Alleen aanwezig
+   *  voor verstuurde offertes met een bruikbare snapshot; concepten en oude
+   *  offertes zonder snapshot hebben dit niet. */
+  pdfModel?: SentOffertePdfModel | null;
 }
 
 /** Een regel in de concept-offerte-preview. */
@@ -59,6 +63,7 @@ export interface OfferteRegel {
 // inert voorbeeld-input.
 import { DEFAULTS } from "@/lib/dashboard/manual-offerte-types";
 import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
+import type { SentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import type { OfferteFormData } from "./OfferteEditor";
 
 export type { OfferteFormData };

@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import type { DossierData } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
 import type { OfferteEditorApi } from "./OfferteEditor";
+import { SentOfferteActions } from "./SentOfferteActions";
 import dynamic from "next/dynamic";
 import styles from "./OffertesTab.module.css";
 
@@ -86,6 +87,7 @@ export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef }: OffertesT
               <div className={styles.rowSub}>{o.sub}</div>
             </div>
             <span className={styles.totaal}>{o.totaal}</span>
+            {o.pdfModel ? <SentOfferteActions model={o.pdfModel} titel={o.nr} /> : null}
           </div>
         );
       })}
