@@ -79,7 +79,7 @@
      zodat het patroon subtiel/matter blijft. */
   background-color: var(--rb-wa-bg);
   background-image: linear-gradient(var(--rb-wa-veil), var(--rb-wa-veil)), var(--rb-wa-bg-image);
-  background-blend-mode: normal, multiply;
+  background-blend-mode: normal, var(--rb-wa-blend);
   background-size: auto, 360px auto;
   background-repeat: repeat;
   padding: 14px 16px;

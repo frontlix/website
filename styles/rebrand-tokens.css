@@ -40,6 +40,7 @@
   /* WhatsApp-gesprek */
   --rb-wa-bg: #ece6dd; /* chat-achtergrond (basiskleur onder het patroon) */
   --rb-wa-bg-image: url("/whatsapp-achtergrond.jpg"); /* officieel doodle-patroon */
+  --rb-wa-blend: multiply; /* doodle-laag: multiply op licht (donkert alleen de lijnen) */
   /* Lichte sluier over het doodle-patroon, maakt het subtieler/matter. Hoger
      alfa = lichter patroon. */
   --rb-wa-veil: rgba(236, 230, 221, 0.72);
@@ -187,7 +188,10 @@ html.dark .rbRoot {
      patroon subtiel zichtbaar blijft. */
   --rb-wa-bg: #0b141a;
   --rb-wa-bg-image: url("/whatsapp-achtergrond-dark.png");
-  --rb-wa-veil: rgba(11, 20, 26, 0.45);
+  /* screen i.p.v. multiply: op donker moet de doodle de achtergrond OPLICHTEN
+     (multiply zou een donker patroon bijna zwart maken = onzichtbaar). */
+  --rb-wa-blend: screen;
+  --rb-wa-veil: rgba(11, 20, 26, 0.55);
   --rb-wa-in: #1f2c33; /* inkomende bubbel */
   --rb-wa-out: #134d37; /* uitgaande bubbel */
 
