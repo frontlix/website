@@ -350,6 +350,8 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     voegzandType: l.voegzand_type,
     zandKleur: l.zand_kleur,
     groeneAanslag: l.groene_aanslag,
+    // Team-notities van de lead op de bon (nieuwste eerst, zoals desktop).
+    notities: detail.notes.map((n) => n.tekst),
   })
 
   return {

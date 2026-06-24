@@ -40,9 +40,9 @@ export async function addNote(
 }
 
 /**
- * Verwijdert een notitie. RLS-policy laat alleen de auteur dit doen.
- * leadId is nodig voor revalidatePath; het is niet onderdeel van de query
- * (id is uniek).
+ * Verwijdert een notitie. RLS-policy (migratie 061) laat elk goedgekeurd
+ * teamlid dit doen, niet alleen de auteur. leadId is nodig voor revalidatePath;
+ * het is niet onderdeel van de query (id is uniek).
  */
 export async function deleteNote(
   noteId: string,
@@ -50,6 +50,35 @@ export async function deleteNote(
 ): Promise<NoteActionResult> {
   const supabase = await getDashboardSupabase()
   const { error } = await supabase.from('lead_notes').delete().eq('id', noteId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath(`/leads/${leadId}`)
+  return { ok: true }
+}
+
+/**
+ * Bewerkt de tekst van een notitie. RLS-policy (migratie 061) laat elk
+ * goedgekeurd teamlid dit doen. De auteur en aanmaaktijd blijven ongewijzigd;
+ * we werken alleen `tekst` bij. leadId is voor revalidatePath.
+ */
+export async function updateNote(
+  noteId: string,
+  leadId: string,
+  tekst: string
+): Promise<NoteActionResult> {
+  const trimmed = tekst.trim()
+  if (!trimmed) {
+    return { ok: false, error: 'Notitie mag niet leeg zijn.' }
+  }
+
+  const supabase = await getDashboardSupabase()
+  const { error } = await supabase
+    .from('lead_notes')
+    .update({ tekst: trimmed })
+    .eq('id', noteId)
 
   if (error) {
     return { ok: false, error: error.message }

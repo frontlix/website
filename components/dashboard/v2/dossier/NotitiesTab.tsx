@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 import type { DossierNotitie } from "./dossier-data";
 import styles from "./NotitiesTab.module.css";
 
@@ -8,24 +9,63 @@ interface NotitiesTabProps {
   notities: DossierNotitie[];
   /** Voegt een nieuwe notitie bovenaan toe. */
   onAdd: (tekst: string) => void;
+  /** Verwijdert een notitie op id. */
+  onDelete: (id: string) => void;
+  /** Werkt de tekst van een bestaande notitie bij. */
+  onUpdate: (id: string, tekst: string) => void;
   /** True wanneer de tab net is geopend (focus op het invoerveld). */
   autoFocus?: boolean;
 }
 
 /** Notities-tab: invoerveld + "Toevoegen" (Enter werkt) en de lijst gele
- *  team-notities (nieuwste bovenaan). */
-export function NotitiesTab({ notities, onAdd, autoFocus }: NotitiesTabProps) {
+ *  team-notities (nieuwste bovenaan). Elke notitie is te bewerken (potlood,
+ *  inline veld) of te verwijderen (prullenbak, met bevestiging). */
+export function NotitiesTab({
+  notities,
+  onAdd,
+  onDelete,
+  onUpdate,
+  autoFocus,
+}: NotitiesTabProps) {
   const [tekst, setTekst] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTekst, setEditTekst] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
 
+  useEffect(() => {
+    if (editId) editRef.current?.focus();
+  }, [editId]);
+
   const voegToe = () => {
     if (!tekst.trim()) return;
     onAdd(tekst.trim());
     setTekst("");
+  };
+
+  const startBewerken = (n: DossierNotitie) => {
+    setEditId(n.id);
+    setEditTekst(n.tekst);
+  };
+
+  const annuleerBewerken = () => {
+    setEditId(null);
+    setEditTekst("");
+  };
+
+  const bewaarBewerken = () => {
+    const trimmed = editTekst.trim();
+    if (!editId || !trimmed) return;
+    onUpdate(editId, trimmed);
+    annuleerBewerken();
+  };
+
+  const verwijder = (id: string) => {
+    if (window.confirm("Deze notitie verwijderen?")) onDelete(id);
   };
 
   return (
@@ -38,7 +78,7 @@ export function NotitiesTab({ notities, onAdd, autoFocus }: NotitiesTabProps) {
           onKeyDown={(e) => {
             if (e.key === "Enter") voegToe();
           }}
-          placeholder="Typ een notitie, alleen zichtbaar voor je team…"
+          placeholder="Typ een notitie, verschijnt ook op de opdrachtbon…"
           className={styles.input}
         />
         <button type="button" className={styles.addBtn} onClick={voegToe}>
@@ -47,12 +87,69 @@ export function NotitiesTab({ notities, onAdd, autoFocus }: NotitiesTabProps) {
       </div>
 
       <div className={styles.list}>
-        {notities.map((n, i) => (
-          <div key={`${n.tijd}-${i}`} className={styles.note}>
-            <div className={styles.noteText}>{n.tekst}</div>
-            <div className={styles.noteMeta}>
-              {n.wie} · {n.tijd}
-            </div>
+        {notities.map((n) => (
+          <div key={n.id} className={styles.note}>
+            {editId === n.id ? (
+              <div className={styles.editRow}>
+                <input
+                  ref={editRef}
+                  value={editTekst}
+                  onChange={(e) => setEditTekst(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") bewaarBewerken();
+                    if (e.key === "Escape") annuleerBewerken();
+                  }}
+                  className={styles.editInput}
+                />
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  onClick={bewaarBewerken}
+                  title="Opslaan"
+                  aria-label="Opslaan"
+                >
+                  <Check size={15} strokeWidth={2.4} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  onClick={annuleerBewerken}
+                  title="Annuleren"
+                  aria-label="Annuleren"
+                >
+                  <X size={15} strokeWidth={2.4} />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={styles.noteHead}>
+                  <div className={styles.noteText}>{n.tekst}</div>
+                  <div className={styles.noteActions}>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => startBewerken(n)}
+                      title="Bewerken"
+                      aria-label="Notitie bewerken"
+                    >
+                      <Pencil size={14} strokeWidth={2.2} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => verwijder(n.id)}
+                      title="Verwijderen"
+                      aria-label="Notitie verwijderen"
+                    >
+                      <Trash2 size={14} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.noteMeta}>
+                  {n.wie} · {n.tijd}
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

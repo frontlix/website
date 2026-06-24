@@ -8,7 +8,7 @@ import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
-import { addNote } from "@/lib/dashboard/note-actions";
+import { addNote, deleteNote, updateNote } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
 import { DOSSIER } from "./dossier-data";
@@ -87,7 +87,34 @@ export function DossierView({
       });
       return;
     }
-    setNotitiesDemo((prev) => [{ wie: "Christiaan", tijd: "zojuist", tekst }, ...prev]);
+    setNotitiesDemo((prev) => [
+      { id: `demo-${prev.length + 1}-${tekst.length}`, wie: "Christiaan", tijd: "zojuist", tekst },
+      ...prev,
+    ]);
+  };
+
+  const verwijderNotitie = (id: string) => {
+    if (live && leadId) {
+      startTransition(async () => {
+        const res = await deleteNote(id, leadId);
+        if (res.ok) router.refresh();
+        else window.alert(res.error || "Verwijderen mislukt.");
+      });
+      return;
+    }
+    setNotitiesDemo((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const bewerkNotitie = (id: string, tekst: string) => {
+    if (live && leadId) {
+      startTransition(async () => {
+        const res = await updateNote(id, leadId, tekst);
+        if (res.ok) router.refresh();
+        else window.alert(res.error || "Bewerken mislukt.");
+      });
+      return;
+    }
+    setNotitiesDemo((prev) => prev.map((n) => (n.id === id ? { ...n, tekst } : n)));
   };
 
   // Zelf een bericht sturen pauzeert Surface (server-side, na 24u-window-check).
@@ -361,7 +388,13 @@ export function DossierView({
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
             {tab === "Afspraak" ? <AfspraakTab data={data} /> : null}
             {tab === "Notities" ? (
-              <NotitiesTab notities={notities} onAdd={voegNotitieToe} autoFocus={notesFocus} />
+              <NotitiesTab
+                notities={notities}
+                onAdd={voegNotitieToe}
+                onDelete={verwijderNotitie}
+                onUpdate={bewerkNotitie}
+                autoFocus={notesFocus}
+              />
             ) : null}
           </div>
         </div>

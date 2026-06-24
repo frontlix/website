@@ -95,4 +95,13 @@ describe('buildOpdrachtbonModel', () => {
       { label: 'Groene aanslag', waarde: 'Ja' },
     ])
   })
+
+  it('neemt de team-notities over op de bon, getrimd en zonder lege regels', () => {
+    expect(buildOpdrachtbonModel(base).notities).toEqual([])
+    const m = buildOpdrachtbonModel({
+      ...base,
+      notities: ['  Hond in de tuin  ', '', '   ', 'Poort linksachter'],
+    })
+    expect(m.notities).toEqual(['Hond in de tuin', 'Poort linksachter'])
+  })
 })

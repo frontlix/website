@@ -5,6 +5,7 @@ const {
   mockInsert,
   mockEq,
   mockDelete,
+  mockUpdate,
   mockFrom,
   mockRevalidatePath,
 } = vi.hoisted(() => {
@@ -12,9 +13,10 @@ const {
   const mockInsert = vi.fn(() => Promise.resolve({ error: null }))
   const mockEq = vi.fn(() => Promise.resolve({ error: null }))
   const mockDelete = vi.fn(() => ({ eq: mockEq }))
-  const mockFrom = vi.fn(() => ({ insert: mockInsert, delete: mockDelete }))
+  const mockUpdate = vi.fn(() => ({ eq: mockEq }))
+  const mockFrom = vi.fn(() => ({ insert: mockInsert, delete: mockDelete, update: mockUpdate }))
   const mockRevalidatePath = vi.fn()
-  return { mockGetUser, mockInsert, mockEq, mockDelete, mockFrom, mockRevalidatePath }
+  return { mockGetUser, mockInsert, mockEq, mockDelete, mockUpdate, mockFrom, mockRevalidatePath }
 })
 
 vi.mock('./supabase-server', () => ({
@@ -25,7 +27,7 @@ vi.mock('./supabase-server', () => ({
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidatePath }))
 
-import { addNote, deleteNote } from './note-actions'
+import { addNote, deleteNote, updateNote } from './note-actions'
 
 describe('addNote', () => {
   beforeEach(() => {
@@ -99,5 +101,42 @@ describe('deleteNote', () => {
     expect(mockEq).toHaveBeenCalledWith('id', 'NOTE-1')
     expect(mockRevalidatePath).toHaveBeenCalledWith('/leads/LEAD-1')
     expect(result.ok).toBe(true)
+  })
+})
+
+describe('updateNote', () => {
+  beforeEach(() => {
+    mockEq.mockReset()
+    mockEq.mockResolvedValue({ error: null })
+    mockUpdate.mockClear()
+    mockFrom.mockClear()
+    mockRevalidatePath.mockReset()
+  })
+
+  it('update tekst (getrimd) op id + revalidate', async () => {
+    const result = await updateNote('NOTE-1', 'LEAD-1', '  nieuwe tekst  ')
+
+    expect(mockFrom).toHaveBeenCalledWith('lead_notes')
+    expect(mockUpdate).toHaveBeenCalledWith({ tekst: 'nieuwe tekst' })
+    expect(mockEq).toHaveBeenCalledWith('id', 'NOTE-1')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/leads/LEAD-1')
+    expect(result.ok).toBe(true)
+  })
+
+  it('weigert lege tekst zonder DB-call', async () => {
+    const result = await updateNote('NOTE-1', 'LEAD-1', '   ')
+
+    expect(result.ok).toBe(false)
+    expect((result as any).error).toMatch(/leeg/i)
+    expect(mockUpdate).not.toHaveBeenCalled()
+  })
+
+  it('returnt error bij Supabase-failure', async () => {
+    mockEq.mockResolvedValueOnce({ error: { message: 'rls denied' } } as any)
+
+    const result = await updateNote('NOTE-1', 'LEAD-1', 'tekst')
+
+    expect(result.ok).toBe(false)
+    expect((result as any).error).toMatch(/rls denied/)
   })
 })

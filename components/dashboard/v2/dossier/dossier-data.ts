@@ -76,6 +76,8 @@ export type { OfferteFormData };
 
 /** Een notitie (team-zichtbaar geel kaartje). */
 export interface DossierNotitie {
+  /** lead_notes.id, nodig om te verwijderen/bewerken. In demo-modus synthetisch. */
+  id: string;
   wie: string;
   tijd: string;
   tekst: string;
@@ -199,11 +201,13 @@ export const DOSSIER: DossierData = {
   },
   notities: [
     {
+      id: "demo-note-1",
       wie: "Christiaan",
       tijd: "gisteren 16:20",
       tekst: "Klant wil starten voor eind juni. Let op: smalle doorgang achterom.",
     },
     {
+      id: "demo-note-2",
       wie: "Surface",
       tijd: "vandaag 09:42",
       tekst: "Noemde buurman Jan de Vries als referentie, mogelijk kortingsafspraak.",
@@ -246,6 +250,10 @@ export const DOSSIER: DossierData = {
     detailregels: [
       { label: "Voegzand", waarde: "Onkruidwerend · Antraciet" },
       { label: "Groene aanslag", waarde: "Ja" },
+    ],
+    notities: [
+      "Klant wil starten voor eind juni. Let op: smalle doorgang achterom.",
+      "Noemde buurman Jan de Vries als referentie, mogelijk kortingsafspraak.",
     ],
   },
   afspraak: {

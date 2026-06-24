@@ -331,6 +331,7 @@ function buildOfferteForm(
 /** Notities (nieuwste eerst, zoals getLeadDetail ze al sorteert). */
 function buildNotities(detail: LeadDetail): DossierNotitie[] {
   return detail.notes.map((n) => ({
+    id: n.id,
     wie: n.auteur ? "Teamlid" : "Surface",
     tijd: relTime(n.aangemaakt_op),
     tekst: n.tekst,
@@ -425,6 +426,8 @@ export function mapLeadDetailToDossierData(
     voegzandType: l.voegzand_type,
     zandKleur: l.zand_kleur,
     groeneAanslag: l.groene_aanslag,
+    // Team-notities van de lead op de bon (nieuwste eerst, zoals het tabblad).
+    notities: detail.notes.map((n) => n.tekst),
   });
 
   return {

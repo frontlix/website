@@ -147,6 +147,15 @@ const styles = StyleSheet.create({
     padding: 12,
     minHeight: 80,
   },
+  notitieRegel: {
+    flexDirection: 'row',
+    fontSize: 10,
+    color: COLORS.text,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
+  notitieBullet: { width: 12, color: COLORS.blueAccent },
+  notitieTekst: { flex: 1 },
 
   aftekenRow: { marginTop: 18, fontSize: 10, color: COLORS.textMuted },
 
@@ -263,9 +272,17 @@ export function OpdrachtbonPdfDocument({
             </View>
           ) : null}
 
-          {/* Bijzonderheden / notities (handmatig in te vullen) */}
+          {/* Bijzonderheden / notities: de team-notities van de lead. Zijn er
+              geen, dan blijft het een leeg vak om met de hand in te vullen. */}
           <Text style={[styles.sectionTitle, { marginTop: 18 }]}>Bijzonderheden / notities</Text>
-          <View style={styles.notitieBox} />
+          <View style={styles.notitieBox}>
+            {model.notities.map((n, i) => (
+              <View key={i} style={styles.notitieRegel}>
+                <Text style={styles.notitieBullet}>•</Text>
+                <Text style={styles.notitieTekst}>{n}</Text>
+              </View>
+            ))}
+          </View>
 
           {/* Aftekenregel */}
           <Text style={styles.aftekenRow}>

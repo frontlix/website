@@ -32,6 +32,9 @@ export type OpdrachtbonModel = {
   werkzaamheden: OpdrachtbonRegel[]
   /** Materiaal-detail (voegzand, groene aanslag), alleen indien aanwezig. */
   detailregels: { label: string; waarde: string }[]
+  /** Team-notities van de lead, getrimd en zonder lege regels. Leeg ⇒ de PDF
+   *  toont een leeg vak om met de hand in te vullen. */
+  notities: string[]
 }
 
 /** Eén verstuurde offerteregel, prijs-loos doorgegeven (uit RegelComputed). */
@@ -58,6 +61,8 @@ export type BuildOpdrachtbonInput = {
   voegzandType: string | null
   zandKleur: string | null
   groeneAanslag: string | null
+  /** Team-notities van de lead (nieuwste eerst, zoals getoond in het dossier). */
+  notities?: string[] | null
   /** Default 'Schoon Straatje'. */
   bedrijfsnaam?: string
 }
@@ -144,6 +149,10 @@ export function buildOpdrachtbonModel(input: BuildOpdrachtbonInput): Opdrachtbon
     detailregels.push({ label: 'Groene aanslag', waarde: humanize(input.groeneAanslag) })
   }
 
+  const notities = (input.notities ?? [])
+    .map((t) => (t ?? '').trim())
+    .filter((t) => t.length > 0)
+
   return {
     bonnummer,
     bedrijfsnaam: input.bedrijfsnaam ?? 'Schoon Straatje',
@@ -154,5 +163,6 @@ export function buildOpdrachtbonModel(input: BuildOpdrachtbonInput): Opdrachtbon
     afspraak: formatAfspraak(input.afspraakDatum, input.afspraakStarttijd),
     werkzaamheden,
     detailregels,
+    notities,
   }
 }
