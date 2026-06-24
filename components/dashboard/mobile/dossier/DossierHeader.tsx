@@ -8,14 +8,17 @@ import styles from './DossierHeader.module.css'
 interface DossierHeaderProps {
   lead: DossierLead
   onBack: () => void
+  /** Toont een "Gearchiveerd"-badge in de kop wanneer de lead in het archief zit. */
+  archived?: boolean
 }
 
 /**
  * DossierHeader, terug-knop ("Leads", primary) + lead-identiteit:
  * 50×50 accent-getinte initialen-avatar, naam (21/800) en een stage-pill
- * ("In gesprek", primary dot+tekst) naast {plaats} · {id}.
+ * ("In gesprek", primary dot+tekst) naast {plaats}. Bij een gearchiveerde lead
+ * een grijze "Gearchiveerd"-badge (parity met de desktop-kop).
  */
-export function DossierHeader({ lead, onBack }: DossierHeaderProps) {
+export function DossierHeader({ lead, onBack, archived = false }: DossierHeaderProps) {
   return (
     <div className={styles.header}>
       <button type="button" className={styles.back} onClick={onBack}>
@@ -34,6 +37,7 @@ export function DossierHeader({ lead, onBack }: DossierHeaderProps) {
               <span className={styles.stageDot} aria-hidden="true" />
               {lead.stage}
             </span>
+            {archived && <span className={styles.archivedBadge}>Gearchiveerd</span>}
             <span className={styles.sub}>{lead.plaats}</span>
           </div>
         </div>

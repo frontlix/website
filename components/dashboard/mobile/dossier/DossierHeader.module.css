@@ -83,6 +83,20 @@
   background: var(--color-primary);
 }
 
+/* Grijze "Gearchiveerd"-badge naast de stage-pill (parity met desktop-kop). */
+.archivedBadge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .sub {
   font-size: 12px;
   color: var(--color-text-muted);
