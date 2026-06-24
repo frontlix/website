@@ -3,6 +3,7 @@ import { type SettingsSection } from '@/components/dashboard/instellingen/Settin
 import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from '@/components/dashboard/instellingen/setting-types'
 import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
 import { getEmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
+import { getGmailConnectionStatus } from '@/lib/dashboard/gmail-connection-queries'
 import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
@@ -113,6 +114,9 @@ export default async function InstellingenPage({
   // E-mailkoppel-status (zonder wachtwoord) voor het mobiele E-mailkoppeling-scherm.
   const emailStatus = await getEmailConnectionStatus()
 
+  // Gmail-label-koppelstatus voor het Gmail-koppelblok in het Bedrijfsprofiel.
+  const gmailStatus = await getGmailConnectionStatus()
+
   // Beschikbaarheid (werkdagen + tijden) voor het mobiele Beschikbaarheid-scherm.
   // Uit tenant_settings.beschikbaarheid; valt terug op een standaard-werkweek als
   // de kolom (nog) leeg is, zodat het scherm altijd 7 dagen toont.
@@ -140,6 +144,7 @@ export default async function InstellingenPage({
           gcalStatus={gcalStatus}
           beschikbaarheid={beschikbaarheid}
           emailStatus={emailStatus}
+          gmailStatus={gmailStatus}
           userEmail={user?.email ?? ''}
           initialSection={sp.section}
         />

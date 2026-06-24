@@ -10,16 +10,22 @@ import { useState, useTransition } from 'react'
 import { Check, AlertTriangle, Target } from 'lucide-react'
 import { saveOmzetDoelMaand } from '@/lib/dashboard/omzet-doel-actions'
 import type { TenantSettings } from '@/components/dashboard/instellingen/setting-types'
+import type { GmailConnectionState } from '@/components/dashboard/v2/instellingen/instellingen-data'
 import { InstField, InstGroupCard } from './InstAtoms'
+import { InstGmailKoppeling } from './InstGmailKoppeling'
 import styles from './InstBedrijf.module.css'
 
 /** Bedrijfsgegevens-detailscherm. Plain content, drilldown layer levert header. */
 export function InstBedrijf({
   tenant,
   omzetDoel = null,
+  gmail,
+  live = true,
 }: {
   tenant: TenantSettings | null
   omzetDoel?: number | null
+  gmail: GmailConnectionState
+  live?: boolean
 }) {
   return (
     <div className={styles.container}>
@@ -41,6 +47,9 @@ export function InstBedrijf({
           <InstField label="WhatsApp" value={tenant?.eigenaar_whatsapp} />
         </div>
       </InstGroupCard>
+
+      {/* Gmail-label koppeling bij het eigenaar-e-mailveld */}
+      <InstGmailKoppeling gmail={gmail} live={live} />
 
       {/* Eerlijke hint i.p.v. een dode opslaan-knop: deze velden zijn (nog) niet
           zelf te bewerken; wijzigingen lopen via Frontlix-support. */}

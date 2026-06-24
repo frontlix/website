@@ -1,0 +1,246 @@
+/* InstGmailKoppeling.module.css
+   Mobiele Gmail-label-koppeling in het Bedrijfsprofiel-scherm.
+   Theming uitsluitend via CSS custom properties, geen hardgecodeerde kleuren.
+   Patroon gebaseerd op InstEmail.module.css + InstBedrijf.module.css. */
+
+/* ── Wrapper ────────────────────────────────────────────────────────────── */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Sectiekop ──────────────────────────────────────────────────────────── */
+
+.kop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.kopIcon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.kopTitel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.kopSub {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ── Velden (binnen InstGroupCard) ─────────────────────────────────────── */
+
+.velden {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 14px 16px;
+}
+
+.statusRij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.statusLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pill {
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.pillOk {
+  color: #15803d;
+  background: color-mix(in srgb, #16a34a 15%, transparent);
+}
+
+.pillNeutraal {
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+
+/* Donker-modus aanpassing voor de pills */
+:global(.dark) .pillOk {
+  color: #4ade80;
+  background: color-mix(in srgb, #16a34a 20%, transparent);
+}
+
+:global(.dark) .pillNeutraal {
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+}
+
+/* Gekoppeld account-rij */
+.accountRij {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.accountKey {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-soft);
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.accountVal {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+/* ── Labelnaam-veld ─────────────────────────────────────────────────────── */
+
+.veld {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.veldLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.veldHint {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  padding: 11px 12px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* ── Banner (feedback-meldingen) ────────────────────────────────────────── */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.bannerOk {
+  color: #15803d;
+  background: color-mix(in srgb, #16a34a 12%, transparent);
+}
+
+.bannerErr {
+  color: #b42318;
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+}
+
+:global(.dark) .bannerOk {
+  color: #4ade80;
+  background: color-mix(in srgb, #16a34a 20%, transparent);
+}
+
+:global(.dark) .bannerErr {
+  color: #fca5a5;
+  background: color-mix(in srgb, #dc2626 20%, transparent);
+}
+
+/* ── Geen Gmail, uitklap-help ───────────────────────────────────────────── */
+
+.helpToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.helpContent {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.helpTekst {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-text);
+  line-height: 1.55;
+}
+
+.helpLijst {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.code {
+  font-family: inherit;
+  font-weight: 700;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.helpMuted {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}

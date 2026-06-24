@@ -29,6 +29,7 @@ import type { TagWithCount } from '@/lib/dashboard/tags-queries'
 import type { PricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import type { NotificationPreferenceRow } from '@/lib/dashboard/notifications/types'
 import type { TemplateAanvraag } from '@/lib/dashboard/template-queries'
+import type { GmailConnectionState } from '@/components/dashboard/v2/instellingen/instellingen-data'
 import styles from './MobileInstellingen.module.css'
 
 // Desktop gebruikt iets andere sectie-keys in de URL; map die naar onze keys
@@ -75,6 +76,8 @@ type Props = {
   beschikbaarheid: DagBeschikbaarheid[]
   /** E-mailkoppel-status (zonder wachtwoord) voor het E-mailkoppeling-scherm. */
   emailStatus: EmailConnectionStatus
+  /** Gmail-label-koppelstatus voor het Gmail-koppelblok in het Bedrijfsprofiel. */
+  gmailStatus: GmailConnectionState
   /** Ingelogde gebruiker-e-mail voor het Account-scherm. */
   userEmail: string
   /**
@@ -97,6 +100,7 @@ export function MobileInstellingen({
   gcalStatus,
   beschikbaarheid,
   emailStatus,
+  gmailStatus,
   userEmail,
   initialSection,
 }: Props) {
@@ -129,7 +133,11 @@ export function MobileInstellingen({
       >
         {/* Elk detailscherm krijgt de echte data uit de route doorgegeven. */}
         {view === 'bedrijf' && (
-          <InstBedrijf tenant={tenant} omzetDoel={tenant?.omzet_doel_maand ?? null} />
+          <InstBedrijf
+            tenant={tenant}
+            omzetDoel={tenant?.omzet_doel_maand ?? null}
+            gmail={gmailStatus}
+          />
         )}
         {view === 'team' && <InstTeam members={team} />}
         {view === 'prijzen' && <InstPrijzen rules={pricing} baseline={baseline} />}
