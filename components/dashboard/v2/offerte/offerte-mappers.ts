@@ -13,9 +13,10 @@
 
 import type { ExistingClientMatch } from "@/lib/dashboard/manual-offerte-search";
 import { DEFAULTS, type ManualOfferteData } from "@/lib/dashboard/manual-offerte-types";
-import { parsePrijs } from "./offerte-utils";
+import { naarKomma, parsePrijs } from "./offerte-utils";
 import type { OfferteKlant } from "./offerte-data";
-import type { Kanaal, Kleur, KortingType } from "./types";
+import type { OfferteDraftState } from "./offerte-drafts";
+import type { Kanaal, Kleur, KlantType, KortingType } from "./types";
 
 /** Initialen uit een naam ("Familie Bakker" → "FB", "Jan" → "JA"). */
 function initialsFromNaam(naam: string): string {
@@ -280,4 +281,144 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     // "Download PDF": de server rendert + retourneert de PDF voor de browser.
     lever_pdf_download: s.kanaal === "pdf",
   };
+}
+
+/** kleur-booleans → v2-kleurkeuze (inverse van kleurToBooleans). */
+function booleansToKleur(naturel: boolean, antraciet: boolean): Kleur {
+  if (naturel && antraciet) return "Allebei";
+  if (antraciet) return "Antraciet";
+  return "Naturel";
+}
+
+/** SendKanaal → v2-kanaal. 'mail' → 'email', anders 'pdf' (de v2-Kanaal heeft
+ *  geen 'manual'; server-side 'manual' = download, dus we tonen 'pdf' bij
+ *  hervatten — round-trip-consistent met kanaalToSend('pdf') === 'manual'). */
+function sendToKanaal(kanaal: ManualOfferteData["kanaal"]): Kanaal {
+  return kanaal === "mail" ? "email" : "pdf";
+}
+
+/** Override-getal → rauwe invoerstring (komma); undefined ⇒ lege string. */
+function ovStr(n: number | undefined): string {
+  return n == null ? "" : naarKomma(n);
+}
+
+/**
+ * ManualOfferteData → v2-wizard-state. Fallback voor concepten zonder v2State
+ * (legacy/mobiel gemaakt). Inhoudelijke velden komen 1-op-1 terug; pure
+ * navigatie-state (stap/zoek) krijgt defaults en de wizard opent op stap 1.
+ * `perMin` (live tarief) zet extra_arbeid terug als één vrije meerwerk-regel.
+ */
+export function mapManualOfferteToWizard(
+  data: ManualOfferteData,
+  perMin: number,
+): OfferteDraftState {
+  const klantType: KlantType = data.bedrijf.trim() ? "Zakelijk" : "Particulier";
+  const invegenActief = data.voegzand_normaal_actief || data.voegzand_onkruidwerend_actief;
+
+  const vrij =
+    data.extra_arbeid_minuten > 0
+      ? [
+          {
+            id: 1,
+            naam: data.extra_arbeid_omschrijving || "Meerwerk",
+            bedrag: naarKomma(Math.round(data.extra_arbeid_minuten * (perMin > 0 ? perMin : 1))),
+          },
+        ]
+      : [];
+
+  return {
+    stap: 1,
+    zoek: "",
+    klant: {
+      naam: data.naam,
+      bedrijf: data.bedrijf,
+      straat: data.straat,
+      nr: data.huisnummer,
+      postcode: data.postcode,
+      plaats: data.plaats,
+      tel: data.telefoon,
+      email: data.email,
+      sub: "",
+      initials: "",
+      bestaand: !!data.existing_lead_id,
+      lead_id: data.existing_lead_id ?? undefined,
+    },
+    klantType,
+    aiGebruikt: false,
+    factuurZelfde: data.factuur_zelfde,
+    factuur: {
+      straat: data.factuur_straat,
+      nr: data.factuur_huisnummer,
+      postcode: data.factuur_postcode,
+      plaats: data.factuur_plaats,
+    },
+    afstandKm: data.afstand_km > 0 ? data.afstand_km : null,
+    m2: data.m2,
+    qty: { invegen: 0, rollen: data.planten_afschermen_rollen },
+    rolPrijs: naarKomma(data.planten_afschermen_prijs),
+    voegzandM2: { normaal: data.voegzand_normaal_m2, onkruidwerend: data.voegzand_onkruidwerend_m2 },
+    voegzandZakken: { normaal: data.voegzand_normaal_zakken, onkruidwerend: data.voegzand_onkruidwerend_zakken },
+    zandPrijzen: {
+      normaal: naarKomma(data.voegzand_normaal_prijs),
+      onkruidwerend: naarKomma(data.voegzand_onkruidwerend_prijs),
+    },
+    prijsOverrides: {
+      reinigen_dagprijs: ovStr(data.reinigen_dagprijs_override),
+      reiniging_per_m2: ovStr(data.reiniging_per_m2_override),
+      invegenN: ovStr(data.arbeid_invegen_normaal_override),
+      invegenO: ovStr(data.arbeid_invegen_onkruidwerend_override),
+      bescherm: ovStr(data.beschermlaag_override),
+      onkruid: ovStr(data.preventieve_onkruid_override),
+      reiskosten: ovStr(data.reiskosten_per_km_override),
+    },
+    diensten: {
+      Reinigen: data.reinigen_actief ?? true,
+      Invegen: invegenActief,
+      Beschermlaag: data.sub.includes("beschermlaag"),
+      "Preventieve onkruid": data.sub.includes("preventieve_onkruid"),
+      Onderhoudsabonnement: data.sub.includes("onderhoud"),
+    },
+    bm2: data.beschermlaag_m2 ?? 0,
+    om2: data.preventieve_onkruid_m2 ?? 0,
+    groeneAanslag: data.groene_aanslag === "ja",
+    kleur: booleansToKleur(data.kleur_naturel, data.kleur_antraciet),
+    korstmosConditie: data.korstmos === "ja",
+    onderhoudWeken: data.onderhoud_weken,
+    korstmosToeslag: false,
+    kortingType: data.korting_bedrag > 0 ? "euro" : "procent",
+    kortingPct: data.korting_percentage ? String(data.korting_percentage) : "",
+    kortingEuro: data.korting_bedrag ? String(data.korting_bedrag) : "",
+    kortingReden: data.korting_omschrijving,
+    geldigDagen: data.geldigheid_dagen,
+    btw: "21%",
+    vrij,
+    volgorde: [],
+    bericht: data.notitie,
+    kanaal: sendToKanaal(data.kanaal),
+  };
+}
+
+export type BuildInput = Omit<WizardSubmitState, "extraArbeid"> & {
+  /** Vrije meerwerk-regels (naam + euro). */
+  vrij: { id: number; naam: string; bedrag: string }[];
+  /** Live arbeidstarief per minuut, voor de euro→minuten-omzetting. */
+  perMin: number;
+};
+
+/**
+ * Bouwt de definitieve ManualOfferteData uit de wizard-state. Bevat de
+ * vrij→extra_arbeid-omzetting die voorheen inline in handleVerstuur stond, zodat
+ * verzenden én auto-save exact dezelfde payload produceren.
+ */
+export function buildManualOfferteFromWizard(input: BuildInput): ManualOfferteData {
+  const { vrij, perMin, ...wizard } = input;
+  const vrijSom = vrij.reduce((s, v) => s + parsePrijs(v.bedrag), 0);
+  const perMinSafe = perMin > 0 ? perMin : 1;
+  const extraMinuten = vrijSom > 0 ? Math.round(vrijSom / perMinSafe) : 0;
+  const vrijOmschrijving = vrij.map((v) => v.naam.trim()).filter(Boolean).join("; ");
+  const extraArbeid =
+    extraMinuten > 0
+      ? { minuten: extraMinuten, personen: 1, omschrijving: vrijOmschrijving || "Meerwerk" }
+      : { minuten: 0, personen: 0, omschrijving: "" };
+  return mapWizardToManualOfferte({ ...wizard, extraArbeid });
 }
