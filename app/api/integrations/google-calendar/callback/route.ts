@@ -6,11 +6,15 @@ import { encryptToken } from '@/lib/crypto/calendar-token'
 import { getTenantId, saveConnection } from '@/lib/dashboard/calendar-connection-queries'
 
 const SETTINGS_URL = '/instellingen?section=integraties'
+// Terugkeer op basis van de dashboard-host, niet request.url: achter de nginx-
+// proxy is request.url intern http://localhost:3000, wat de gebruiker na het
+// koppelen op localhost zou doen belanden.
+const SITE_BASE = process.env.NEXT_PUBLIC_SITE_URL_DASHBOARD || 'http://localhost:3000'
 
 export async function GET(request: NextRequest) {
   const profile = await getCurrentUserProfile()
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=forbidden`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=forbidden`, SITE_BASE))
   }
 
   const url = new URL(request.url)
@@ -19,7 +23,7 @@ export async function GET(request: NextRequest) {
   const cookieState = request.cookies.get('gcal_oauth_state')?.value
 
   if (!code || !state || !cookieState || state !== cookieState) {
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=state_error`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=state_error`, SITE_BASE))
   }
 
   try {
@@ -32,11 +36,11 @@ export async function GET(request: NextRequest) {
       calendarId: 'primary',
       refreshTokenEncrypted: encryptToken(refreshToken),
     })
-    const res = NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=ok`, request.url))
+    const res = NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=ok`, SITE_BASE))
     res.cookies.delete('gcal_oauth_state')
     return res
   } catch (e) {
     console.error('[gcal-callback]', e)
-    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=error`, request.url))
+    return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=error`, SITE_BASE))
   }
 }
