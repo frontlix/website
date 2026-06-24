@@ -23,6 +23,12 @@ import { createManualLeadEnOfferte } from '@/lib/dashboard/manual-offerte-action
 import { getAutoAfstandKm } from '@/lib/dashboard/afstand-actions'
 import { getPricingForOffertePreview } from '@/lib/dashboard/pricing-actions'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
+import {
+  listConcepten,
+  upsertConcept,
+  removeConcept,
+  type Concept,
+} from '@/lib/dashboard/offerte-concept-actions'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { StepStart } from './StepStart'
 import { StepKlant, isValidEmail } from './StepKlant'
@@ -320,7 +326,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // de eerste save 'm aan zodat de UI nooit "leeg" raakt.
   //
   // Migratie: één keer V1 (single draft) → V2 (array) op modal-open.
-  const [drafts, setDrafts] = useState<DraftEntry[]>([])
+  const [drafts, setDrafts] = useState<Concept[]>([])
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
   const [bannersDismissed, setBannersDismissed] = useState(false)
   const [draftSavedFlash, setDraftSavedFlash] = useState(false)
@@ -330,42 +336,56 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // drafts-banner laten flashen bij modal-open.
   const userHasEditedRef = useRef(false)
 
-  // Mount: migrate V1 → V2 (1×) en load drafts-array
+  // Mount: eenmalige migratie van lokale concepten (V1 + V2) naar de DB,
+  // daarna laad de gedeelde concepten uit de database.
   useEffect(() => {
     if (typeof window === 'undefined') return
-    try {
-      const v1 = window.localStorage.getItem(DRAFT_KEY_V1)
-      if (v1) {
-        try {
-          const parsedV1 = JSON.parse(v1) as { data?: ManualOfferteData; savedAt?: string }
-          if (parsedV1?.data && typeof parsedV1.savedAt === 'string') {
-            const migrated: DraftEntry = {
-              id: makeDraftId(),
-              savedAt: parsedV1.savedAt,
-              klantNaam: deriveKlantNaam(parsedV1.data),
-              data: parsedV1.data,
-            }
-            // Schrijf migrated naar V2 (prepend), houdt MAX_DRAFTS aan.
-            const existingV2 = window.localStorage.getItem(DRAFTS_KEY_V2)
-            const v2List: DraftEntry[] = existingV2 ? JSON.parse(existingV2) : []
-            const merged = [migrated, ...v2List].slice(0, MAX_DRAFTS)
-            window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(merged))
+    void (async () => {
+      // Eenmalige migratie van lokale concepten (V1 + V2) naar de database.
+      try {
+        const raws: string[] = []
+        const v1 = window.localStorage.getItem(DRAFT_KEY_V1)
+        if (v1) {
+          try {
+            raws.push(JSON.stringify([JSON.parse(v1)]))
+          } catch {
+            /* skip */
           }
-        } catch {
-          // V1-payload corrupt, gewoon negeren bij migratie.
         }
-        window.localStorage.removeItem(DRAFT_KEY_V1)
+        const v2 = window.localStorage.getItem(DRAFTS_KEY_V2)
+        if (v2) raws.push(v2)
+        const lokale: DraftEntry[] = raws
+          .flatMap((r) => {
+            try {
+              const p = JSON.parse(r)
+              return Array.isArray(p) ? p : []
+            } catch {
+              return []
+            }
+          })
+          .filter((d) => d && d.id && d.data)
+        let allesOk = true
+        for (const d of lokale) {
+          const res = await upsertConcept({
+            id: d.id,
+            data: d.data,
+            v2State: null,
+            label: deriveKlantNaam(d.data),
+            totaal: 0,
+          })
+          if (!res.ok) allesOk = false
+        }
+        if (allesOk) {
+          window.localStorage.removeItem(DRAFT_KEY_V1)
+          window.localStorage.removeItem(DRAFTS_KEY_V2)
+        }
+      } catch (e) {
+        console.error('[ManualOfferteModal] concept-migratie:', e)
       }
 
-      const raw = window.localStorage.getItem(DRAFTS_KEY_V2)
-      if (!raw) return
-      const list = JSON.parse(raw) as DraftEntry[]
-      if (Array.isArray(list)) {
-        setDrafts(list.slice(0, MAX_DRAFTS))
-      }
-    } catch (e) {
-      console.error('[ManualOfferteModal] draft load failed:', e)
-    }
+      const res = await listConcepten()
+      if (res.ok && res.data) setDrafts(res.data)
+    })()
   }, [])
 
   // Auto-save: schrijft current data naar een draft-entry (debounced).
@@ -378,29 +398,15 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     if (!userHasEditedRef.current) return
     if (isDefaultsData(data)) return
     const t = setTimeout(() => {
-      try {
-        const id = currentDraftId ?? makeDraftId()
-        const entry: DraftEntry = {
-          id,
-          savedAt: new Date().toISOString(),
-          klantNaam: deriveKlantNaam(data),
-          data,
-        }
-        setDrafts((prev) => {
-          const existingIdx = prev.findIndex((d) => d.id === id)
-          const next =
-            existingIdx >= 0
-              ? prev.map((d, i) => (i === existingIdx ? entry : d))
-              : [entry, ...prev]
-          const trimmed = next.slice(0, MAX_DRAFTS)
-          window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(trimmed))
-          return trimmed
-        })
+      const id = currentDraftId ?? makeDraftId()
+      void upsertConcept({ id, data, v2State: null, label: deriveKlantNaam(data), totaal: 0 }).then((res) => {
+        if (!res.ok) return
         if (!currentDraftId) setCurrentDraftId(id)
         setDraftSavedFlash(true)
-      } catch {
-        // localStorage vol of disabled, silently fail.
-      }
+        void listConcepten().then((r) => {
+          if (r.ok && r.data) setDrafts(r.data)
+        })
+      })
     }, DRAFT_DEBOUNCE_MS)
     return () => clearTimeout(t)
   }, [data, currentDraftId])
@@ -425,16 +431,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   }
 
   const verwijderDraft = (id: string) => {
-    setDrafts((prev) => {
-      const next = prev.filter((d) => d.id !== id)
-      try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(DRAFTS_KEY_V2, JSON.stringify(next))
-        }
-      } catch {
-        // Niets te doen, localStorage is mogelijk niet beschikbaar.
-      }
-      return next
+    void removeConcept(id).then(() => {
+      void listConcepten().then((r) => {
+        if (r.ok && r.data) setDrafts(r.data)
+      })
     })
     // Als de user dit draft nét aan't bewerken was, reset id zodat de
     // volgende auto-save een nieuw draft begint.
@@ -651,9 +651,9 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               {drafts.map((d) => (
                 <div key={d.id} className={styles.draftBanner} role="status">
                   <div className={styles.draftBannerBody}>
-                    <div className={styles.draftBannerTitle}>{d.klantNaam}</div>
+                    <div className={styles.draftBannerTitle}>{d.label}</div>
                     <div className={styles.draftBannerMeta}>
-                      opgeslagen {formatDraftSavedAt(d.savedAt)}
+                      opgeslagen {formatDraftSavedAt(new Date(d.bijgewerktOp).toISOString())}
                     </div>
                   </div>
                   <button
@@ -667,7 +667,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
                     type="button"
                     onClick={() => verwijderDraft(d.id)}
                     className={styles.draftBannerDismiss}
-                    aria-label={`Concept van ${d.klantNaam} verwijderen`}
+                    aria-label={`Concept van ${d.label} verwijderen`}
                     title="Concept verwijderen"
                   >
                     <X size={14} />
