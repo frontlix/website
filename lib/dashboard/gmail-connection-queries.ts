@@ -32,6 +32,7 @@ export interface SaveGmailConnectionInput {
   refreshTokenEncrypted: string
   labelName: string
   labelId: string
+  filterId: string
 }
 
 export async function saveGmailConnection(input: SaveGmailConnectionInput): Promise<void> {
@@ -43,6 +44,7 @@ export async function saveGmailConnection(input: SaveGmailConnectionInput): Prom
       refresh_token_encrypted: input.refreshTokenEncrypted,
       label_name: input.labelName,
       label_id: input.labelId,
+      filter_id: input.filterId,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'tenant_id' },
@@ -54,4 +56,19 @@ export async function deleteGmailConnection(tenantId: string): Promise<void> {
   const admin = getDashboardAdmin()
   const { error } = await admin.from('gmail_connections').delete().eq('tenant_id', tenantId)
   if (error) throw new Error(`Ontkoppelen Gmail faalde: ${error.message}`)
+}
+
+/** Leest het versleutelde token + filter-id (voor opruimen bij ontkoppelen). */
+export async function getGmailConnectionSecrets(): Promise<{
+  refreshTokenEncrypted: string
+  filterId: string | null
+} | null> {
+  const admin = getDashboardAdmin()
+  const { data } = await admin
+    .from('gmail_connections')
+    .select('refresh_token_encrypted, filter_id')
+    .limit(1)
+    .maybeSingle()
+  if (!data) return null
+  return { refreshTokenEncrypted: data.refresh_token_encrypted, filterId: data.filter_id ?? null }
 }

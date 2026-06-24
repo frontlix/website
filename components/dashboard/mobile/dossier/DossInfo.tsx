@@ -1,5 +1,6 @@
 'use client'
 
+import { MapPin } from 'lucide-react'
 import {
   DossLabel,
   DossRow,
@@ -7,6 +8,7 @@ import {
   DossDotRow,
   DossCheckbox,
 } from './DossAtoms'
+import { streetViewHref, satelliteHref } from '@/lib/dashboard/maps-links'
 import type { DossierLead, DossBijzonder, DossVraag } from './dossier-mock'
 import styles from './DossInfo.module.css'
 
@@ -15,7 +17,7 @@ import styles from './DossInfo.module.css'
 // met echte lead-data (props) i.p.v. de DOSS-mock.
 type DossInfoProps = {
   lead: Pick<DossierLead, 'm2' | 'id'>
-  contact: { telefoon: string; email: string; adres: string; afstand: number | null }
+  contact: { telefoon: string; email: string; adres: string; afstand: number | null; lat: number | null; lng: number | null }
   /** Genormaliseerd WhatsApp-nummer (0→31, alleen cijfers); leeg → geen WA-link. */
   waTel: string
   dienst: { hoofd: string; sub: string[] }
@@ -29,6 +31,17 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen 
   const mapsHref = heeftAdres
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.adres)}`
     : undefined
+  // Street View + Satelliet op de geocode-coordinaten (m2 + terras inschatten).
+  // Alleen tonen als de lead coordinaten heeft; anders dekt de maps-pin het al.
+  const streetView = streetViewHref(contact.lat, contact.lng)
+  const satelliet = satelliteHref(contact.lat, contact.lng)
+  const viewLinks =
+    streetView && satelliet
+      ? [
+          { label: 'Street View', href: streetView },
+          { label: 'Satelliet', href: satelliet },
+        ]
+      : []
   return (
     <div className={styles.wrap}>
       {/* Contact-kaart: telefoon + e-mail + adres met getinte actie-knop. */}
@@ -50,6 +63,22 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen 
             value={contact.adres}
             action={{ icon: 'pin', tone: 'var(--color-primary)', href: mapsHref }}
           />
+          {viewLinks.length > 0 && (
+            <div className={styles.locLinks}>
+              {viewLinks.map((link) => (
+                <a
+                  key={link.label}
+                  className={styles.locLink}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MapPin size={12} aria-hidden="true" />
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

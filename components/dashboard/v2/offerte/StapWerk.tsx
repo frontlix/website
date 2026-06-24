@@ -2,10 +2,18 @@
 
 import { Check } from "lucide-react";
 import { MiniStep } from "./MiniStep";
+import { OpmerkingVeld } from "./OpmerkingVeld";
 import { DIENST_REGELS, ONDERHOUD_WEKEN } from "./offerte-data";
 import { fmtEuro, parsePrijs } from "./offerte-utils";
 import type { Kleur } from "./types";
+import type { OpmerkingKey, RegelOpmerking } from "@/lib/dashboard/manual-offerte-types";
 import styles from "./StapWerk.module.css";
+
+/** Diensten-chip-key (StapWerk) → opmerking-onderdeel. */
+const DIENST_OPMERKING_KEY: Record<string, OpmerkingKey> = {
+  Beschermlaag: "beschermlaag",
+  "Preventieve onkruid": "preventieve_onkruid",
+};
 
 interface StapWerkProps {
   m2: number;
@@ -45,6 +53,9 @@ interface StapWerkProps {
   /** Echte enkele-reis-afstand van het werkadres (tenant-basis) naar de klant,
    *  uit de geocode in StapKlant; null = nog geen/niet geocodeerbaar adres. */
   afstandKm: number | null;
+  /** Per-onderdeel opmerkingen (tekst + schakelaar) + setter. */
+  regelOpmerkingen: Partial<Record<OpmerkingKey, RegelOpmerking>>;
+  zetOpmerking: (key: OpmerkingKey, next: RegelOpmerking) => void;
 }
 
 /** Stap 2 · Werk: diensten-chips, oppervlakte-stepper, voegzand per soort,
@@ -81,7 +92,17 @@ export function StapWerk({
   onderhoudWeken,
   setOnderhoudWeken,
   afstandKm,
+  regelOpmerkingen,
+  zetOpmerking,
 }: StapWerkProps) {
+  /** Render het opmerking-veld voor één onderdeel. */
+  const opm = (key: OpmerkingKey) => (
+    <OpmerkingVeld
+      waarde={regelOpmerkingen[key]}
+      zet={(next) => zetOpmerking(key, next)}
+    />
+  );
+
   const wisselDienst = (d: string) => {
     const aan = !diensten[d];
     setDiensten({ ...diensten, [d]: aan });
@@ -127,41 +148,47 @@ export function StapWerk({
         </div>
         {DIENST_REGELS.map(({ key, naam, prijs }) =>
           diensten[key] ? (
-            <div key={key} className={styles.dienstRegel}>
-              <span className={styles.dienstNaam}>{naam}</span>
-              <span className={styles.m2Box}>
-                <MiniStep dir="min" onClick={() => dienstM2[key].zet(Math.max(0, dienstM2[key].val - 5))} />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className={styles.stepInput}
-                  value={dienstM2[key].val}
-                  onChange={(e) => dienstM2[key].zet(parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
-                  aria-label={`${naam}, m²`}
-                />
-                <span className={styles.unit}>m²</span>
-                <MiniStep dir="plus" onClick={() => dienstM2[key].zet(dienstM2[key].val + 5)} />
-              </span>
-              <span className={styles.dienstMeta}>× {fmtEuro(prijs)}</span>
-              <span className={styles.dienstBedrag}>{fmtEuro(dienstM2[key].val * prijs)}</span>
+            <div key={key}>
+              <div className={styles.dienstRegel}>
+                <span className={styles.dienstNaam}>{naam}</span>
+                <span className={styles.m2Box}>
+                  <MiniStep dir="min" onClick={() => dienstM2[key].zet(Math.max(0, dienstM2[key].val - 5))} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={styles.stepInput}
+                    value={dienstM2[key].val}
+                    onChange={(e) => dienstM2[key].zet(parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
+                    aria-label={`${naam}, m²`}
+                  />
+                  <span className={styles.unit}>m²</span>
+                  <MiniStep dir="plus" onClick={() => dienstM2[key].zet(dienstM2[key].val + 5)} />
+                </span>
+                <span className={styles.dienstMeta}>× {fmtEuro(prijs)}</span>
+                <span className={styles.dienstBedrag}>{fmtEuro(dienstM2[key].val * prijs)}</span>
+              </div>
+              {opm(DIENST_OPMERKING_KEY[key])}
             </div>
           ) : null,
         )}
         {diensten["Onderhoudsabonnement"] ? (
-          <div className={styles.dienstRegel}>
-            <span className={styles.dienstNaam}>Onderhoudsinterval</span>
-            <span className={styles.segmented}>
-              {ONDERHOUD_WEKEN.map((w) => (
-                <button
-                  type="button"
-                  key={w}
-                  onClick={() => setOnderhoudWeken(w)}
-                  className={`${styles.seg} ${onderhoudWeken === w ? styles.segActive : ""}`}
-                >
-                  {w} wkn
-                </button>
-              ))}
-            </span>
+          <div>
+            <div className={styles.dienstRegel}>
+              <span className={styles.dienstNaam}>Onderhoudsinterval</span>
+              <span className={styles.segmented}>
+                {ONDERHOUD_WEKEN.map((w) => (
+                  <button
+                    type="button"
+                    key={w}
+                    onClick={() => setOnderhoudWeken(w)}
+                    className={`${styles.seg} ${onderhoudWeken === w ? styles.segActive : ""}`}
+                  >
+                    {w} wkn
+                  </button>
+                ))}
+              </span>
+            </div>
+            {opm("onderhoud")}
           </div>
         ) : null}
       </div>
@@ -183,6 +210,7 @@ export function StapWerk({
           <span className={styles.oppUnit}>m²</span>
         </div>
         <div className={styles.note}>Stuurt de regels en het voegzand automatisch aan</div>
+        {opm("reiniging")}
       </div>
 
       {/* Voegzand hoort bij invegen: alleen tonen als Invegen aan staat. */}
@@ -198,47 +226,50 @@ export function StapWerk({
           const actief = m2v > 0 || zakken > 0;
           const bedrag = m2v * arbeidPrijs + zakken * zakPrijs;
           return (
-            <div key={id} className={`${styles.zandRow} ${actief ? "" : styles.dim}`}>
-              <span className={styles.zandNaam}>{naam}</span>
-              <span className={styles.prijsBox} title="Prijs per zak, aanpasbaar">
-                <span className={styles.euro}>€</span>
-                <input
-                  className={styles.prijsInput}
-                  value={zandPrijzen[id]}
-                  onChange={(e) => setZandPrijzen({ ...zandPrijzen, [id]: e.target.value })}
-                  aria-label={`Prijs per zak ${naam.toLowerCase()}`}
-                />
-                <span className={styles.perUnit}>/zak</span>
-              </span>
-              <span className={styles.zakBox} title="Aantal m² dat met dit type wordt ingeveegd">
-                <MiniStep dir="min" onClick={() => zetVoegzandM2(id, Math.max(0, m2v - 5))} />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className={styles.stepInput}
-                  value={m2v}
-                  onChange={(e) => zetVoegzandM2(id, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
-                  aria-label={`m² ${naam.toLowerCase()} voegzand`}
-                />
-                <span className={styles.unit}>m²</span>
-                <MiniStep dir="plus" onClick={() => zetVoegzandM2(id, m2v + 5)} />
-              </span>
-              <span className={styles.zakBox} title="Aantal zakken (auto uit m², handmatig aanpasbaar)">
-                <MiniStep dir="min" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: Math.max(0, zakken - 1) })} />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className={styles.stepInput}
-                  value={zakken}
-                  onChange={(e) =>
-                    setVoegzandZakken({ ...voegzandZakken, [id]: parseInt(e.target.value.replace(/\D/g, ""), 10) || 0 })
-                  }
-                  aria-label={`Aantal zakken ${naam.toLowerCase()}`}
-                />
-                <span className={styles.unit}>zak</span>
-                <MiniStep dir="plus" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: zakken + 1 })} />
-              </span>
-              <span className={styles.zandBedrag}>{actief ? fmtEuro(bedrag) : "—"}</span>
+            <div key={id}>
+              <div className={`${styles.zandRow} ${actief ? "" : styles.dim}`}>
+                <span className={styles.zandNaam}>{naam}</span>
+                <span className={styles.prijsBox} title="Prijs per zak, aanpasbaar">
+                  <span className={styles.euro}>€</span>
+                  <input
+                    className={styles.prijsInput}
+                    value={zandPrijzen[id]}
+                    onChange={(e) => setZandPrijzen({ ...zandPrijzen, [id]: e.target.value })}
+                    aria-label={`Prijs per zak ${naam.toLowerCase()}`}
+                  />
+                  <span className={styles.perUnit}>/zak</span>
+                </span>
+                <span className={styles.zakBox} title="Aantal m² dat met dit type wordt ingeveegd">
+                  <MiniStep dir="min" onClick={() => zetVoegzandM2(id, Math.max(0, m2v - 5))} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={styles.stepInput}
+                    value={m2v}
+                    onChange={(e) => zetVoegzandM2(id, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
+                    aria-label={`m² ${naam.toLowerCase()} voegzand`}
+                  />
+                  <span className={styles.unit}>m²</span>
+                  <MiniStep dir="plus" onClick={() => zetVoegzandM2(id, m2v + 5)} />
+                </span>
+                <span className={styles.zakBox} title="Aantal zakken (auto uit m², handmatig aanpasbaar)">
+                  <MiniStep dir="min" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: Math.max(0, zakken - 1) })} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className={styles.stepInput}
+                    value={zakken}
+                    onChange={(e) =>
+                      setVoegzandZakken({ ...voegzandZakken, [id]: parseInt(e.target.value.replace(/\D/g, ""), 10) || 0 })
+                    }
+                    aria-label={`Aantal zakken ${naam.toLowerCase()}`}
+                  />
+                  <span className={styles.unit}>zak</span>
+                  <MiniStep dir="plus" onClick={() => setVoegzandZakken({ ...voegzandZakken, [id]: zakken + 1 })} />
+                </span>
+                <span className={styles.zandBedrag}>{actief ? fmtEuro(bedrag) : "—"}</span>
+              </div>
+              {opm(id === "normaal" ? "voegzand_normaal" : "voegzand_onkruidwerend")}
             </div>
           );
         })}
@@ -322,6 +353,10 @@ export function StapWerk({
             {qty.rollen > 0 ? fmtEuro(qty.rollen * parsePrijs(rolPrijs)) : "—"}
           </span>
         </div>
+        {opm("planten")}
+        {/* Reiskosten zijn auto uit het adres; opmerking alleen tonen zodra er
+            een (geocodeerd) adres is, anders is er geen reiskosten-regel. */}
+        {afstandKm != null ? opm("reiskosten") : null}
       </div>
     </div>
   );

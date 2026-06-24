@@ -312,7 +312,9 @@ describe('leadsPerDag', () => {
       })
     )
 
-    const fixedNow = new Date('2026-05-05T23:59:59Z')
+    // Midden op de dag (UTC = NL dezelfde kalenderdag), zodat de NL-dag-buckets
+    // samenvallen met de UTC-datum in deze test.
+    const fixedNow = new Date('2026-05-05T12:00:00Z')
     const result = await leadsPerDag(fixedNow, 30)
 
     expect(result.length).toBe(30)

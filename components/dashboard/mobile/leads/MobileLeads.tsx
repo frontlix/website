@@ -53,6 +53,12 @@ export interface MobileLeadsData {
    * zodat het scherm exact die offertes laat zien (gelijk aan desktop).
    */
   openOffertesFilter?: boolean
+  /**
+   * Start de lijst op de Archief-chip (?filter=archief). Gebruikt bij terugkeer
+   * uit een gearchiveerd dossier, zodat je weer in het archief landt i.p.v. de
+   * actieve lijst. De Archief-chip blijft verder gewoon client-side schakelbaar.
+   */
+  initialArchived?: boolean
 }
 
 interface Props {
@@ -83,7 +89,7 @@ export function MobileLeads({ data }: Props) {
   const [, startTransition] = useTransition()
   const openOffertesFilter = data.openOffertesFilter ?? false
 
-  const [filter,     setFilter]     = useState<string>('all')
+  const [filter,     setFilter]     = useState<string>(data.initialArchived ? 'archief' : 'all')
   const [searchOpen, setSearchOpen] = useState(false)
   const [search,     setSearch]     = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)

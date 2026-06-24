@@ -39,11 +39,14 @@ export function MobileLeadDossier({
   leadTags,
   allTags,
   offerteForm,
+  archived = false,
 }: {
   data: MobileDossierData
   leadTags: Tag[]
   allTags: Tag[]
   offerteForm: MobileOfferteFormProps
+  /** Is deze lead gearchiveerd? Bepaalt waar de terug-knop heen gaat. */
+  archived?: boolean
 }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('info')
@@ -56,7 +59,9 @@ export function MobileLeadDossier({
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
-        <DossierHeader lead={lead} onBack={() => router.push('/leads')} />
+        {/* Terug naar de lijst waar deze lead leeft: gearchiveerd → het archief
+            (?filter=archief, mobiel start-chip), anders de actieve lijst. */}
+        <DossierHeader lead={lead} onBack={() => router.push(archived ? '/leads?filter=archief' : '/leads')} />
         <DossierFactStrip facts={factStrip(lead)} />
         <LeadTagsRow leadId={lead.id} leadTags={leadTags} allTags={allTags} live />
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />

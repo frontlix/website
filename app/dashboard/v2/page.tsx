@@ -169,6 +169,7 @@ export default async function OverzichtPage({
     openOffertes,
     omzetMaandReal,
     omzetMaandPrevReal,
+    leadsMaandPrev,
   ] = await Promise.all([
     countLeads(maand),
     countConverted(maand),
@@ -197,6 +198,7 @@ export default async function OverzichtPage({
     countOpenOffertes(),
     omzetTotaal(maand),
     omzetTotaal(prevMaand),
+    countLeads(prevMaand),
   ]);
 
   // Tenant: chatbot_naam altijd aanwezig, omzet_doel_maand is nieuwe kolom
@@ -214,10 +216,14 @@ export default async function OverzichtPage({
   const omzetMaand = omzetMaandReal;
   const gemTicket = avgWaarde ?? 0;
 
+  // Conversie lead→klant over DEZE MAAND (gewonnen leads / alle leads van de
+  // maand), consistent met de rest van het Overzicht en met Analyses. De
+  // var-namen Last30/Prev30 zijn historisch en dragen nu de maand-waarden; de
+  // keys van buildKpiMetrics blijven daardoor ongemoeid.
   const conversiePctLast30 =
-    leadsLast30d > 0 ? Math.round((convertedLast30d / leadsLast30d) * 100) : 0;
+    leadsMaand > 0 ? Math.round((convertedMaand / leadsMaand) * 100) : 0;
   const conversiePctPrev30 =
-    leadsPrev30d > 0 ? Math.round((convertedPrev30d / leadsPrev30d) * 100) : 0;
+    leadsMaandPrev > 0 ? Math.round((convertedMaandPrev / leadsMaandPrev) * 100) : 0;
   const omzetMaandPrev = omzetMaandPrevReal;
   const reactietijdLast7S =
     reactietijdLast7Ms !== null ? Math.round(reactietijdLast7Ms / 1000) : 0;

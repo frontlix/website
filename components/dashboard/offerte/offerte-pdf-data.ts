@@ -52,6 +52,7 @@ export function toOffertePdfData(args: {
       aantalLabel: `${r.aantal} ${r.eenheid}`.trim(),
       stukprijs: r.prijs,
       totaal: r.totaal,
+      opmerking: r.opmerking || undefined,
     })),
     subtotaal: totals.subtotal,
     toeslagen:

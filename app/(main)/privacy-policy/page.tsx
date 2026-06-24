@@ -440,10 +440,10 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul>
             <li>
-              <strong>Gmail (labels):</strong> wij maken met jouw toestemming een label aan in je
-              Gmail zodat je e-mails met offertes ter goedkeuring kunt groeperen. Je bepaalt zelf
-              met een filter welke e-mails dat label krijgen. Wij lezen de inhoud van je e-mails
-              niet, versturen geen e-mails namens jou en wijzigen geen andere instellingen.
+              <strong>Gmail (labels en filter):</strong> wij maken in jouw Gmail een label aan en
+              een filter dat e-mails met offertes ter goedkeuring automatisch dat label geeft, zodat
+              je ze makkelijk terugvindt. Wij lezen de inhoud van je e-mails niet, versturen geen
+              e-mails namens jou en wijzigen geen andere instellingen.
             </li>
             <li>
               <strong>Google Agenda:</strong> wij lezen je vrije en bezette tijden en plannen
@@ -452,8 +452,9 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p>
             Hiervoor bewaren wij uitsluitend een versleutelde toegangssleutel (zodat de koppeling
-            blijft werken) en de naam en het id van het aangemaakte label. Je kunt de koppeling op
-            elk moment verbreken in je Frontlix-instellingen of in je Google-accountinstellingen.
+            blijft werken) en de namen en verwijzingen van het aangemaakte label en filter. Je kunt
+            de koppeling op elk moment verbreken in je Frontlix-instellingen of in je
+            Google-accountinstellingen.
           </p>
           <p>
             <strong>Beperkt gebruik (Limited Use).</strong> Frontlix&apos; gebruik van informatie

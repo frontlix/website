@@ -34,6 +34,7 @@ import {
   type OfferteKlant,
 } from "./offerte-data";
 import type { ExtractedFields } from "@/lib/dashboard/manual-offerte-ai";
+import type { OpmerkingKey, RegelOpmerking } from "@/lib/dashboard/manual-offerte-types";
 import { parsePrijs, naarKomma, fmtEuro } from "./offerte-utils";
 import type {
   BtwKeuze,
@@ -170,6 +171,13 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   const [korstmosConditie, setKorstmosConditie] = useState(false);
   // Onderhoudsabonnement-interval (weken); getoond zodra de dienst aan staat.
   const [onderhoudWeken, setOnderhoudWeken] = useState(8);
+  // Per-onderdeel opmerkingen (tekst + schakelaar; default aan). Key =
+  // OpmerkingKey. Verschijnen in de offerte onder het bijbehorende onderdeel.
+  const [regelOpmerkingen, setRegelOpmerkingen] = useState<
+    Partial<Record<OpmerkingKey, RegelOpmerking>>
+  >({});
+  const zetOpmerking = (key: OpmerkingKey, next: RegelOpmerking) =>
+    setRegelOpmerkingen((m) => ({ ...m, [key]: next }));
 
   // Stap 3 — offerte (korstmos-toeslag komt uit stap 2)
   const [korstmosToeslag, setKorstmosToeslag] = useState(false);
@@ -485,6 +493,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         kleur,
         korstmosConditie,
         onderhoudWeken,
+        regelOpmerkingen,
         korstmosToeslag,
         kortingType,
         kortingPct,
@@ -525,6 +534,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         om2,
         vrij,
         perMin: pricing.extra_arbeid_per_min,
+        regelOpmerkingen,
       });
       void upsertConcept({ id, data, v2State, label: conceptLabel, totaal }).then((res) => {
         if (res.ok) setSavedAt(Date.now());
@@ -535,7 +545,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   }, [
     stap, zoek, klant, klantType, aiGebruikt, factuurZelfde, factuur, afstandKm,
     m2, qty, rolPrijs, voegzandM2, voegzandZakken, zandPrijzen, prijsOverrides, diensten, bm2,
-    om2, groeneAanslag, kleur, korstmosConditie, onderhoudWeken, korstmosToeslag,
+    om2, groeneAanslag, kleur, korstmosConditie, onderhoudWeken, regelOpmerkingen, korstmosToeslag,
     kortingType, kortingPct, kortingEuro, kortingReden, geldigDagen, btw, vrij,
     volgorde, bericht, kanaal, totaal,
     verzonden, heeftInhoud, conceptLabel, draftId,
@@ -581,6 +591,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     setKleur(s.kleur);
     setKorstmosConditie(s.korstmosConditie);
     setOnderhoudWeken(s.onderhoudWeken);
+    // Oudere concepten zonder opmerkingen → lege map.
+    setRegelOpmerkingen(s.regelOpmerkingen ?? {});
     setKorstmosToeslag(s.korstmosToeslag);
     // Korting-modus + beide waarden; oudere concepten zonder deze velden vallen
     // terug op percentage-modus en de tenant-default-geldigheid.
@@ -629,6 +641,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     setKleur("Naturel");
     setKorstmosConditie(false);
     setOnderhoudWeken(8);
+    setRegelOpmerkingen({});
     setKorstmosToeslag(false);
     setKortingType("procent");
     setKortingPct("");
@@ -848,6 +861,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       om2,
       vrij,
       perMin: pricing.extra_arbeid_per_min,
+      regelOpmerkingen,
     });
     startVerstuur(async () => {
       try {
@@ -1082,6 +1096,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
                     onderhoudWeken={onderhoudWeken}
                     setOnderhoudWeken={setOnderhoudWeken}
                     afstandKm={afstandKm}
+                    regelOpmerkingen={regelOpmerkingen}
+                    zetOpmerking={zetOpmerking}
                   />
                 ) : null}
                 {stap === 2 ? (

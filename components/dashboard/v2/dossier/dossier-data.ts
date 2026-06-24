@@ -22,6 +22,9 @@ export interface InfoRow {
   chip?: string | null;
   /** Optionele sub-regel onder de waarde (bv. "Binnen gratis radius"). */
   sub?: string | null;
+  /** Optionele externe linkjes onder de waarde (bv. Street View / Satelliet
+   *  bij het adres). Openen in een nieuw tabblad. */
+  links?: MapsLink[] | null;
 }
 
 /** Een foto in het dossier: echte Supabase public_url (of null, dan toont de
@@ -65,6 +68,8 @@ import { DEFAULTS } from "@/lib/dashboard/manual-offerte-types";
 import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
 import type { SentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import type { OpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
+import type { MapsLink } from "@/lib/dashboard/maps-links";
+import type { AfspraakInfo } from "@/lib/dashboard/afspraak-info";
 import type { OfferteFormData } from "./OfferteEditor";
 
 export type { OfferteFormData };
@@ -110,6 +115,9 @@ export interface DossierData {
   chat: DossierBericht[];
   /** Voorgebouwd model voor de printbare opdrachtbon (offerte zonder prijzen). */
   opdrachtbon: OpdrachtbonModel;
+  /** Ingeplande afspraak van deze lead (voor de Afspraak-tab). gepland=false
+   *  wanneer er nog geen afspraak staat. */
+  afspraak: AfspraakInfo;
 }
 
 /** De dossier-details. Eén set voor de demo (gekoppeld aan elke lead die je
@@ -239,5 +247,23 @@ export const DOSSIER: DossierData = {
       { label: "Voegzand", waarde: "Onkruidwerend · Antraciet" },
       { label: "Groene aanslag", waarde: "Ja" },
     ],
+  },
+  afspraak: {
+    gepland: true,
+    klantNaam: "Jeroen de Vries",
+    datumLang: "Donderdag 26 juni 2026",
+    datumKort: "26-06-2026",
+    tijd: "10:00",
+    dienst: "Oprit / terras / terrein",
+    subDiensten: "Invegen, Beschermlaag",
+    oppervlakte: "145 m²",
+    adres: "Lindenlaan 14",
+    plaats: "2611 HK Delft",
+    telefoon: "06 24 96 52 70",
+    reisAfstand: "18 km",
+    reisTijd: "~15 min",
+    groeneAanslag: true,
+    plantenAfschermen: true,
+    geboektOp: "20 juni 2026",
   },
 };

@@ -142,7 +142,7 @@ export function mapOmzetData(input: {
       input.omzetMaandPrev > 0 && diff !== 0
         ? `${sign}${formatEuroShort(Math.abs(diff))}`
         : "—",
-    deltaSub: "vs vorige week",
+    deltaSub: "vs vorige maand",
     doel: `€${Math.round(input.omzetDoelMaand).toLocaleString("nl-NL")}`,
     pct,
   };
@@ -225,7 +225,7 @@ export function mapKpiTiles(
   };
   return [
     make(metrics.leads, "Nieuwe leads (week)"),
-    make(metrics.conversie, "Conversie offerte→klant"),
+    make(metrics.conversie, "Conversie lead→klant"),
     make(metrics.reactietijd, "Reactietijd (gem.)"),
     make(extraOffertesOpen, "Offertes open"),
   ];

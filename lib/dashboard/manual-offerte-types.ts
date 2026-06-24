@@ -20,6 +20,63 @@ export type SubDienst =
 // tussen e-mail (met PDF) of handmatige download.
 export type SendKanaal = 'mail' | 'manual'
 
+// ── Per-onderdeel opmerkingen ────────────────────────────────────────────
+// De owner kan bij elk offerte-onderdeel een opmerking zetten (waarom hij voor
+// een keuze ging). Met de schakelaar AAN verschijnt die opmerking in de offerte
+// als fijne subregel direct onder de bijbehorende regel; UIT = alleen intern.
+// We bewaren de tekst altijd (ook bij UIT) zodat de editor 'm onthoudt.
+
+/** Onderdeel-sleutels waaraan een klant-opmerking gekoppeld kan worden. Elke
+ *  sleutel hoort bij één of meer berekende offerte-regels (zie
+ *  regelOpmerkingKey); de opmerking verschijnt onder de LAATSTE regel van dat
+ *  onderdeel. */
+export type OpmerkingKey =
+  | 'reiniging'
+  | 'voegzand_normaal'
+  | 'voegzand_onkruidwerend'
+  | 'preventieve_onkruid'
+  | 'beschermlaag'
+  | 'onderhoud'
+  | 'planten'
+  | 'extra_arbeid'
+  | 'reiskosten'
+
+/** Eén opmerking: vrije tekst + of 'ie in de offerte getoond wordt (default aan). */
+export type RegelOpmerking = { tekst: string; zichtbaar: boolean }
+
+/** Alle opmerking-sleutels in stabiele volgorde (voor UI-iteratie + mapping). */
+export const OPMERKING_KEYS: readonly OpmerkingKey[] = [
+  'reiniging',
+  'voegzand_normaal',
+  'voegzand_onkruidwerend',
+  'preventieve_onkruid',
+  'beschermlaag',
+  'onderhoud',
+  'planten',
+  'extra_arbeid',
+  'reiskosten',
+] as const
+
+/**
+ * Map een berekende regel (op `desc`) naar zijn opmerking-onderdeel, of null
+ * als de regel geen opmerking-onderdeel is. Pure functie zodat zowel de
+ * regels-engine, de persistence-laag als de loaders 'm delen (één bron van
+ * waarheid voor de regel↔onderdeel-koppeling).
+ */
+export function regelOpmerkingKey(desc: string): OpmerkingKey | null {
+  if (desc.startsWith('Reiniging')) return 'reiniging'
+  if (desc.startsWith('Invegen normaal') || desc.startsWith('Voegzand normaal')) return 'voegzand_normaal'
+  if (desc.startsWith('Invegen onkruidwerend') || desc.startsWith('Voegzand onkruidwerend'))
+    return 'voegzand_onkruidwerend'
+  if (desc.startsWith('Preventieve onkruid')) return 'preventieve_onkruid'
+  if (desc.startsWith('Nieuwe beschermlaag')) return 'beschermlaag'
+  if (desc.startsWith('Onderhoudsbeheersing')) return 'onderhoud'
+  if (desc.startsWith('Afdekfolie planten')) return 'planten'
+  if (desc.startsWith('Extra arbeid')) return 'extra_arbeid'
+  if (desc.startsWith('Reiskosten')) return 'reiskosten'
+  return null
+}
+
 export type ManualOfferteData = {
   // koppeling, gevuld als de wizard via "zoek bestaande klant" een
   // bestaande lead heeft geselecteerd. Bij submit gebruikt de action dit
@@ -103,6 +160,12 @@ export type ManualOfferteData = {
   // Geldigheid van deze offerte in dagen. 0 ⇒ val terug op de tenant-instelling
   // (offerte_geldigheid_dagen). > 0 ⇒ override per offerte (gebruikt in de PDF).
   geldigheid_dagen: number
+  // Per-onderdeel klant-opmerkingen (v2). Key = OpmerkingKey. De opmerking
+  // verschijnt in de offerte onder de bijbehorende regel, maar alleen als
+  // zichtbaar === true én tekst niet leeg. Afwezig (oude flows) = geen
+  // opmerkingen. De tekst wordt ook bij zichtbaar=false bewaard zodat de editor
+  // 'm onthoudt.
+  regel_opmerkingen?: Partial<Record<OpmerkingKey, RegelOpmerking>>
   // verzending
   notitie: string
   kanaal: SendKanaal
@@ -138,6 +201,10 @@ export type RegelComputed = {
    *  een editor de prijs per regel bewerkbaar kan maken. Afwezig = niet bewerkbaar
    *  (bv. afgeleide extra-arbeid-regel). */
   overrideKey?: OverrideKey
+  /** Klant-opmerking die als subregel onder deze regel in de offerte verschijnt.
+   *  Alleen gevuld door computeRules als de bijbehorende opmerking zichtbaar is
+   *  én niet leeg; anders afwezig (geen lege witregel in de offerte). */
+  opmerking?: string
 }
 
 export type TotalsComputed = {
@@ -196,6 +263,7 @@ export const DEFAULTS: ManualOfferteData = {
   korting_bedrag: 0,
   korting_omschrijving: '',
   geldigheid_dagen: 0,
+  regel_opmerkingen: {},
   notitie: '',
   kanaal: 'mail',
   lever_pdf_download: false,

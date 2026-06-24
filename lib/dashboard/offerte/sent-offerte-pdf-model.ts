@@ -61,6 +61,9 @@ export function buildSentOffertePdfModel(input: {
       eenheid: r.eenheid ?? '',
       prijs: r.stukprijs,
       totaal: r.totaal,
+      // Bevroren opmerking (indien aanwezig) zodat een verstuurde versie haar
+      // eigen opmerkingen toont, los van latere wijzigingen op de lead.
+      ...(r.opmerking ? { opmerking: r.opmerking } : {}),
     }))
 
   const subtotal = rules.reduce((s, r) => s + r.totaal, 0)

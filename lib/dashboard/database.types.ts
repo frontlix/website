@@ -411,6 +411,7 @@ export type Database = {
           korting_bedrag: number
           korting_omschrijving: string | null
           offerte_prijs_overrides: Json | null
+          offerte_regel_opmerkingen: Json | null
           korting_percentage: number | null
           lat: number | null
           lead_id: string

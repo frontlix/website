@@ -153,7 +153,7 @@ export function buildKpiMetrics(input: {
       // Gebruik het ingestelde doel; zonder instelling de v1-default.
       doel: input.omzetDoelMaand ?? KPI_DOELEN.omzet_maand,
       rangeLabel: 'Lopende maand',
-      compareLabel: 'vs vorige week',
+      compareLabel: 'vs vorige maand',
       iconKind: 'wallet',
     },
     leads: {
@@ -172,13 +172,13 @@ export function buildKpiMetrics(input: {
       // Korter dan "Conversie offerte → klant", past op 1 regel in de
       // mobile mini-card. De "%"-suffix maakt al duidelijk dat 't een rate
       // is, en de tab heet nog steeds "Conversie".
-      label: 'Offerte → klant',
+      label: 'Lead → klant',
       value: input.conversiePctLast30,
       prevValue: input.conversiePctPrev30,
       unit: 'pct',
       doel: KPI_DOELEN.conversie_pct,
-      rangeLabel: 'Laatste 30 dagen',
-      compareLabel: 'vs vorige week',
+      rangeLabel: 'Lopende maand',
+      compareLabel: 'vs vorige maand',
       iconKind: 'trending',
     },
     reactietijd: {

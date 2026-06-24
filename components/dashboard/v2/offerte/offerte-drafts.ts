@@ -15,6 +15,7 @@
 
 import type { OfferteKlant } from "./offerte-data";
 import type { BtwKeuze, Kanaal, Kleur, KlantType, KortingType, VrijeRegel } from "./types";
+import type { OpmerkingKey, RegelOpmerking } from "@/lib/dashboard/manual-offerte-types";
 
 /** Serialiseerbare momentopname van de wizard-state. Bevat alles behalve de
  *  live prijslijst (wordt opnieuw opgehaald) en de transient submit-state. */
@@ -44,6 +45,8 @@ export interface OfferteDraftState {
   kleur: Kleur;
   korstmosConditie: boolean;
   onderhoudWeken: number;
+  /** Per-onderdeel opmerkingen (tekst + schakelaar). Afwezig in oudere concepten. */
+  regelOpmerkingen?: Partial<Record<OpmerkingKey, RegelOpmerking>>;
   korstmosToeslag: boolean;
   kortingType: KortingType;
   kortingPct: string;

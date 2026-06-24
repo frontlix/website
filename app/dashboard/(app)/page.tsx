@@ -104,7 +104,7 @@ export default async function OverzichtPage({
   // `leadsTodayTomorrow` is nieuw voor de mobile-header-subline
   // ("14 leads vandaag · 4 morgen").
   const [
-    ,
+    leadsMaand,
     convertedMaand,
     avgWaarde,
     ,
@@ -131,6 +131,7 @@ export default async function OverzichtPage({
     mobileUnreadCount,
     omzetMaandReal,
     omzetMaandPrevReal,
+    leadsMaandPrev,
   ] = await Promise.all([
     countLeads(maand),
     countConverted(maand),
@@ -164,6 +165,7 @@ export default async function OverzichtPage({
     getUnreadNotificationCount(),
     omzetTotaal(maand),
     omzetTotaal(prevMaand),
+    countLeads(prevMaand),
   ])
 
   // Tenant: chatbot_naam altijd aanwezig, omzet_doel_maand is nieuwe
@@ -182,10 +184,12 @@ export default async function OverzichtPage({
   const omzetMaand = omzetMaandReal
   const gemTicket = avgWaarde ?? 0
 
+  // Conversie lead→klant over DEZE MAAND, consistent met Analyses + desktop.
+  // Var-namen Last30/Prev30 zijn historisch; ze dragen nu de maand-waarden.
   const conversiePctLast30 =
-    leadsLast30d > 0 ? Math.round((convertedLast30d / leadsLast30d) * 100) : 0
+    leadsMaand > 0 ? Math.round((convertedMaand / leadsMaand) * 100) : 0
   const conversiePctPrev30 =
-    leadsPrev30d > 0 ? Math.round((convertedPrev30d / leadsPrev30d) * 100) : 0
+    leadsMaandPrev > 0 ? Math.round((convertedMaandPrev / leadsMaandPrev) * 100) : 0
   const omzetMaandPrev = omzetMaandPrevReal
   const reactietijdLast7S =
     reactietijdLast7Ms !== null ? Math.round(reactietijdLast7Ms / 1000) : 0

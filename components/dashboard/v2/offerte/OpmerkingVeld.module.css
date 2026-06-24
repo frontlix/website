@@ -1,0 +1,76 @@
+/* Opmerking-container per offerte-onderdeel (gedeeld: wizard + lead-editor). */
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border: 1px dashed var(--rb-line);
+  border-radius: var(--rb-r-pill, 999px);
+  background: transparent;
+  color: var(--rb-muted);
+  font-family: var(--rb-font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.addBtn:hover:not(:disabled) {
+  color: var(--rb-blue);
+  border-color: var(--rb-blue);
+  background: var(--rb-blue-soft);
+}
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.veld {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.input {
+  flex: 1;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid var(--rb-line);
+  border-radius: var(--rb-r-field, 10px);
+  background: var(--rb-field);
+  color: var(--rb-ink);
+  font-family: var(--rb-font);
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.input::placeholder {
+  color: var(--rb-muted);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--rb-blue);
+}
+
+/* Uitgeschakelde opmerking: tekst gedempt zodat zichtbaar is dat 'ie niet
+   in de offerte komt. */
+.veld[data-uit] .input {
+  opacity: 0.6;
+}
+
+.toggle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-top: 2px;
+}
+.toggleLabel {
+  font-family: var(--rb-font);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  white-space: nowrap;
+}

@@ -105,7 +105,7 @@ export interface Kpi {
 
 export const KPIS: Kpi[] = [
   { label: "Nieuwe leads (week)", value: "14", unit: "", delta: "+22%", up: true },
-  { label: "Conversie offerte→klant", value: "64", unit: "%", delta: "+8pt", up: true },
+  { label: "Conversie lead→klant", value: "64", unit: "%", delta: "+8pt", up: true },
   { label: "Reactietijd (gem.)", value: "47", unit: "s", delta: "−12s", up: true },
   { label: "Offertes open", value: "7", unit: "", delta: "+2", up: true },
 ];

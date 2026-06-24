@@ -42,6 +42,7 @@ export default async function LeadDetailPage({
       <div className={styles.mobileTree}>
         <MobileLeadDossier
           data={mapLeadDetailToDossier(detail)}
+          archived={lead.dashboard_archived}
           leadTags={leadTags}
           allTags={allTags}
           offerteForm={{

@@ -17,6 +17,32 @@
   overflow: hidden;
 }
 
+/* Locatie-linkjes (Street View / Satelliet) onder de adres-rij, uitgelijnd
+   onder de adreswaarde (rij-padding 14 + icon 16 + gap 11 = 41px). */
+.locLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px 12px 41px;
+}
+
+.locLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.locLink:active {
+  filter: brightness(0.95);
+}
+
 /* ── Dienst-kaart ──────────────────────────────────────────────────────── */
 
 .serviceCard {

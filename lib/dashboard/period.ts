@@ -1,3 +1,11 @@
+import {
+  amsterdamStartOfWeekIso,
+  amsterdamStartOfMonthIso,
+  amsterdamStartOfQuarterIso,
+  amsterdamStartOfYearIso,
+  amsterdamStartOfPrevMonthIso,
+} from './amsterdam-time'
+
 export type PeriodKey =
   | 'deze-week'
   | 'deze-maand'
@@ -43,50 +51,21 @@ export function parsePeriod(source: ParamSource): PeriodKey {
   return 'deze-maand'
 }
 
-function pad(n: number): string {
-  return n.toString().padStart(2, '0')
-}
-
-function toDateString(d: Date): string {
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`
-}
-
 /**
  * Berekent het tijdvenster voor een PeriodKey gegeven een nu-tijdstip.
+ *
+ * Periode-grenzen liggen in Europe/Amsterdam-tijd (DST-correct), zodat "deze
+ * maand" op de 1e om 00:00 NL begint, niet 00:00 UTC. Anders valt een lead van
+ * 00:00-02:00 NL op de 1e in de verkeerde maand. Zie amsterdam-time.ts.
  */
 export function periodToRange(key: PeriodKey, now: Date = new Date()): StatsPeriod {
   const to = now.toISOString()
-
-  if (key === 'all-time') {
-    return { from: null, to }
-  }
-
-  if (key === 'deze-week') {
-    const day = now.getUTCDay()
-    const diffToMonday = day === 0 ? 6 : day - 1
-    const monday = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - diffToMonday
-    ))
-    return { from: toDateString(monday), to }
-  }
-
-  if (key === 'deze-maand') {
-    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-    return { from: toDateString(start), to }
-  }
-
-  if (key === 'dit-kwartaal') {
-    const month = now.getUTCMonth()
-    const quarterStartMonth = Math.floor(month / 3) * 3
-    const start = new Date(Date.UTC(now.getUTCFullYear(), quarterStartMonth, 1))
-    return { from: toDateString(start), to }
-  }
-
+  if (key === 'all-time') return { from: null, to }
+  if (key === 'deze-week') return { from: amsterdamStartOfWeekIso(now), to }
+  if (key === 'deze-maand') return { from: amsterdamStartOfMonthIso(now), to }
+  if (key === 'dit-kwartaal') return { from: amsterdamStartOfQuarterIso(now), to }
   // dit-jaar
-  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 1))
-  return { from: toDateString(start), to }
+  return { from: amsterdamStartOfYearIso(now), to }
 }
 
 const LABELS: Record<PeriodKey, string> = {
@@ -137,17 +116,15 @@ export function thisWeekRolling(now: Date = new Date()): StatsPeriod {
 }
 
 export function prevMonthSamePeriodRange(now: Date = new Date()): StatsPeriod {
-  // Begin van vorige kalendermaand
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
-  // T/m dezelfde dag-van-maand als nu (in vorige maand)
-  const end = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth() - 1,
-    now.getUTCDate(),
-    now.getUTCHours(),
-    now.getUTCMinutes(),
-  ))
-  return { from: start.toISOString(), to: end.toISOString() }
+  // Vorige kalendermaand, even ver erin als nu in de huidige maand (dezelfde
+  // verstreken duur), in Amsterdam-tijd. Zo vergelijken we appels met appels.
+  const thisMonthStart = Date.parse(amsterdamStartOfMonthIso(now))
+  const elapsed = now.getTime() - thisMonthStart
+  const prevStart = Date.parse(amsterdamStartOfPrevMonthIso(now))
+  return {
+    from: new Date(prevStart).toISOString(),
+    to: new Date(prevStart + elapsed).toISOString(),
+  }
 }
 
 export function prev30DaysRange(now: Date = new Date()): StatsPeriod {

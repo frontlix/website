@@ -51,7 +51,7 @@ export type MobileDossierData = {
   leadId: string
   telefoonRaw: string // ruwe cijfers voor tel:
   waTel: string // 31-prefixed voor wa.me
-  contact: { telefoon: string; email: string; adres: string; afstand: number | null }
+  contact: { telefoon: string; email: string; adres: string; afstand: number | null; lat: number | null; lng: number | null }
   dienst: { hoofd: string; sub: string[] }
   bijzonderheden: DossBijzonder[]
   vragen: DossVraag[]
@@ -362,6 +362,8 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
       email: l.email ?? '—',
       adres: buildAdres(l),
       afstand: l.afstand_km ?? null,
+      lat: l.lat ?? null,
+      lng: l.lng ?? null,
     },
     dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),

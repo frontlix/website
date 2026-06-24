@@ -32,13 +32,14 @@ describe('gmail-connection-queries', () => {
     })
   })
 
-  it('saveGmailConnection schrijft een upsert met token, labelnaam en label-id', async () => {
+  it('saveGmailConnection schrijft een upsert met token, labelnaam en ids', async () => {
     await saveGmailConnection({
       tenantId: 't1',
       googleEmail: 'a@b.nl',
       refreshTokenEncrypted: 'ENC',
       labelName: 'Mijn label',
       labelId: 'Label_1',
+      filterId: 'Filter_1',
     })
     expect(upsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -46,6 +47,7 @@ describe('gmail-connection-queries', () => {
         refresh_token_encrypted: 'ENC',
         label_name: 'Mijn label',
         label_id: 'Label_1',
+        filter_id: 'Filter_1',
       }),
       expect.objectContaining({ onConflict: 'tenant_id' }),
     )

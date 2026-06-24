@@ -7,6 +7,7 @@ import {
   fetchGewonnenOmzetRows,
 } from './stats-queries'
 import type { StatsPeriod } from './period'
+import { amsterdamStartOfDayIso } from './amsterdam-time'
 
 /**
  * "Dagrapport", server-side data ophalen voor de slide-out drawer die
@@ -59,13 +60,12 @@ export interface BronStat {
 }
 
 function dayWindow(date: Date): StatsPeriod {
-  // Begin van dag in UTC (gebruikt door de queries die op aangemaakt /
-  // offerte_verstuurd_op / akkoord_op filteren, die staan in UTC).
-  const y = date.getUTCFullYear()
-  const m = date.getUTCMonth()
-  const d = date.getUTCDate()
-  const from = new Date(Date.UTC(y, m, d)).toISOString()
-  const to = new Date(Date.UTC(y, m, d + 1)).toISOString()
+  // Dag-grenzen in Europe/Amsterdam-tijd (NL-dag), niet UTC, zodat "vandaag"
+  // klopt voor een NL-ondernemer. Zie amsterdam-time.ts.
+  const from = amsterdamStartOfDayIso(date)
+  // +25u landt altijd in de volgende NL-dag (een dag is 23-25u); de start
+  // daarvan = begin volgende NL-dag.
+  const to = amsterdamStartOfDayIso(new Date(Date.parse(from) + 25 * 3600_000))
   return { from, to }
 }
 

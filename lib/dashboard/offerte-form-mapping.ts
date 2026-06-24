@@ -11,7 +11,13 @@
  * nieuwe formulier exact dezelfde lead-kolommen schrijven.
  */
 
-import { DEFAULTS, type ManualOfferteData } from './manual-offerte-types'
+import {
+  DEFAULTS,
+  OPMERKING_KEYS,
+  type ManualOfferteData,
+  type OpmerkingKey,
+  type RegelOpmerking,
+} from './manual-offerte-types'
 import {
   mapBotSubDiensten,
   mapBotHoofdcategorie,
@@ -63,6 +69,44 @@ function readPrijsOverrides(json: unknown): Partial<ManualOfferteData> {
   for (const k of PRIJS_OVERRIDE_KEYS) {
     const v = src[k]
     if (typeof v === 'number' && Number.isFinite(v)) out[k] = v
+  }
+  return out
+}
+
+/** Form-data → JSON voor leads.offerte_regel_opmerkingen. Slaat alleen
+ *  onderdelen met een niet-lege tekst op (ook als zichtbaar=false, zodat een
+ *  uitgeschakelde opmerking na heropenen onthouden blijft). null als er geen
+ *  enkele opmerking is, zodat de kolom leeg blijft. */
+function writeRegelOpmerkingen(
+  data: ManualOfferteData,
+): Record<string, RegelOpmerking> | null {
+  const src = data.regel_opmerkingen
+  if (!src) return null
+  const out: Record<string, RegelOpmerking> = {}
+  for (const k of OPMERKING_KEYS) {
+    const o = src[k]
+    const tekst = o?.tekst?.trim()
+    if (tekst) out[k] = { tekst, zichtbaar: o!.zichtbaar !== false }
+  }
+  return Object.keys(out).length > 0 ? out : null
+}
+
+/** leads.offerte_regel_opmerkingen (JSON) → de regel_opmerkingen-map voor de
+ *  form-data (alleen bekende keys + niet-lege tekst), zodat opmerkingen +
+ *  schakelaar-stand na heropenen blijven staan. */
+export function readRegelOpmerkingen(
+  json: unknown,
+): Partial<Record<OpmerkingKey, RegelOpmerking>> {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return {}
+  const src = json as Record<string, unknown>
+  const out: Partial<Record<OpmerkingKey, RegelOpmerking>> = {}
+  for (const k of OPMERKING_KEYS) {
+    const v = src[k]
+    if (!v || typeof v !== 'object') continue
+    const rec = v as Record<string, unknown>
+    const tekst = typeof rec.tekst === 'string' ? rec.tekst : ''
+    if (!tekst.trim()) continue
+    out[k] = { tekst, zichtbaar: rec.zichtbaar !== false }
   }
   return out
 }
@@ -154,6 +198,8 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     korting_omschrijving: lead.korting_omschrijving ?? '',
     // Per-offerte prijs-overrides terug op de form-data (blijven staan na heropenen).
     ...readPrijsOverrides(lead.offerte_prijs_overrides),
+    // Per-onderdeel opmerkingen terug op de form-data (tekst + schakelaar-stand).
+    regel_opmerkingen: readRegelOpmerkingen(lead.offerte_regel_opmerkingen),
     // notitie/kanaal blijven op DEFAULTS (geen lead-kolom).
   }
 }
@@ -265,5 +311,6 @@ export function buildLeadFieldsFromForm(
     korting_bedrag: Number(data.korting_bedrag) || 0,
     korting_omschrijving: trimOrNull(data.korting_omschrijving),
     offerte_prijs_overrides: writePrijsOverrides(data),
+    offerte_regel_opmerkingen: writeRegelOpmerkingen(data),
   }
 }

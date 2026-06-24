@@ -12,7 +12,12 @@
 // ─────────────────────────────────────────────────────────────────────
 
 import type { ExistingClientMatch } from "@/lib/dashboard/manual-offerte-search";
-import { DEFAULTS, type ManualOfferteData } from "@/lib/dashboard/manual-offerte-types";
+import {
+  DEFAULTS,
+  type ManualOfferteData,
+  type OpmerkingKey,
+  type RegelOpmerking,
+} from "@/lib/dashboard/manual-offerte-types";
 import { naarKomma, parsePrijs } from "./offerte-utils";
 import type { OfferteKlant } from "./offerte-data";
 import type { OfferteDraftState } from "./offerte-drafts";
@@ -128,6 +133,8 @@ export interface WizardSubmitState {
     personen: number;
     omschrijving: string;
   };
+  /** Per-onderdeel opmerkingen (tekst + schakelaar). Afwezig = geen. */
+  regelOpmerkingen?: Partial<Record<OpmerkingKey, RegelOpmerking>>;
 }
 
 /**
@@ -275,6 +282,9 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     extra_arbeid_minuten: Math.max(0, Math.round(s.extraArbeid.minuten)),
     extra_arbeid_personen: Math.max(0, Math.round(s.extraArbeid.personen)),
     extra_arbeid_omschrijving: s.extraArbeid.omschrijving.trim(),
+    // Per-onderdeel opmerkingen (tekst + schakelaar). computeRules hangt ze aan
+    // de juiste regel; de offerte toont ze alleen bij zichtbaar + niet-lege tekst.
+    regel_opmerkingen: s.regelOpmerkingen ?? {},
     // verzending
     notitie: s.bericht.trim(),
     kanaal: kanaalToSend(s.kanaal),
@@ -395,6 +405,9 @@ export function mapManualOfferteToWizard(
     volgorde: [],
     bericht: data.notitie,
     kanaal: sendToKanaal(data.kanaal),
+    // Per-onderdeel opmerkingen terug; legacy-concepten hebben dit veld niet
+    // (dan een lege map), v2-concepten herstellen normaliter uit v2State.
+    regelOpmerkingen: data.regel_opmerkingen,
   };
 }
 

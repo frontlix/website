@@ -21,6 +21,8 @@ export type SnapshotRegel = {
   totaal: number
   bron?: 'auto_lead' | 'manual'
   volgorde: number
+  /** Bevroren zichtbare klant-opmerking onder deze regel (optioneel). */
+  opmerking?: string | null
 }
 
 /** Object dat we in offertes.regels_snapshot (jsonb) wegschrijven. */
@@ -86,6 +88,7 @@ type SnapshotRuleInput = {
   eenheid: string | null
   prijs: number
   totaal: number
+  opmerking?: string | null
 }
 
 /**
@@ -114,6 +117,7 @@ export function buildOfferteSnapshot(args: {
       totaal: Math.round(r.totaal * 100) / 100,
       bron: 'auto_lead' as const,
       volgorde: idx + 1,
+      ...(r.opmerking ? { opmerking: r.opmerking } : {}),
     })),
   }
 }

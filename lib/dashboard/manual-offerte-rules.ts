@@ -1,6 +1,8 @@
 import {
   ONDERHOUD_PRIJZEN,
+  regelOpmerkingKey,
   type ManualOfferteData,
+  type OpmerkingKey,
   type RegelComputed,
   type TotalsComputed,
 } from './manual-offerte-types'
@@ -235,7 +237,46 @@ export function computeRules(
     })
   }
 
+  // Per-onderdeel opmerkingen aan de LAATSTE regel van elk onderdeel hangen,
+  // zodat de opmerking in de offerte direct onder dat onderdeel verschijnt
+  // (bv. onder de voegzand-productregel, na de invegen-arbeidsregel). Alleen
+  // zichtbare, niet-lege opmerkingen worden meegegeven; anders blijft het veld
+  // afwezig en komt er geen lege witregel in de offerte.
+  const opm = data.regel_opmerkingen
+  if (opm) {
+    const gehad = new Set<OpmerkingKey>()
+    for (let i = r.length - 1; i >= 0; i--) {
+      const key = regelOpmerkingKey(r[i].desc)
+      if (!key || gehad.has(key)) continue
+      gehad.add(key)
+      const o = opm[key]
+      if (o && o.zichtbaar !== false && o.tekst && o.tekst.trim()) {
+        r[i].opmerking = o.tekst.trim()
+      }
+    }
+  }
+
   return r
+}
+
+/**
+ * Geef per opmerking-onderdeel de index van de LAATSTE regel in `rules`.
+ * Editors (lead-editor + mobiel) tonen het opmerking-veld alleen op die regel,
+ * zodat een onderdeel met meerdere regels (bv. voegzand: arbeid + product) één
+ * opmerking-veld heeft, op dezelfde plek als waar de offerte 'm rendert.
+ */
+export function laatsteOnderdeelRegelIndices(
+  rules: RegelComputed[],
+): Map<number, OpmerkingKey> {
+  const out = new Map<number, OpmerkingKey>()
+  const gehad = new Set<OpmerkingKey>()
+  for (let i = rules.length - 1; i >= 0; i--) {
+    const key = regelOpmerkingKey(rules[i].desc)
+    if (!key || gehad.has(key)) continue
+    gehad.add(key)
+    out.set(i, key)
+  }
+  return out
 }
 
 export function computeTotals(
