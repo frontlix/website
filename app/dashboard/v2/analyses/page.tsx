@@ -21,6 +21,7 @@ import {
   avgReactietijdMs,
   leadsPerDag,
   omzetTotaal,
+  countGewonnenInPeriode,
   omzetPerCategorie,
   omzetTrendVoorPeriode,
   statusVerdeling,
@@ -184,6 +185,7 @@ export default async function AnalysesPage({
     categorieRows,
     tagRows,
     radiusKm,
+    gewonnenInPeriode,
   ] = await Promise.all([
     countLeads(range),
     countConverted(range),
@@ -200,6 +202,7 @@ export default async function AnalysesPage({
     categorieVerdeling(range),
     topTags(range, 10),
     fetchRadiusKm(),
+    countGewonnenInPeriode(range),
   ]);
 
   const kpis = mapKpis({ total, converted, avgOfferte, avgReactieMs });
@@ -220,9 +223,10 @@ export default async function AnalysesPage({
   const statusVerdelingRows = mapStatusVerdeling(statusRows);
   const categorieVerdelingRows = mapCategorieVerdeling(categorieRows);
 
-  // Gem. kluswaarde = totale omzet / aantal gewonnen leads (converted).
+  // Gem. kluswaarde = omzet / gewonnen-in-periode (op WIN-datum, dezelfde set
+  // als de omzet). Niet delen door `converted` (op aangemaakt) = andere set.
   const gemKluswaarde =
-    converted > 0 ? euroCompact(omzet / converted) : "—";
+    gewonnenInPeriode > 0 ? euroCompact(omzet / gewonnenInPeriode) : "—";
 
   // Echte inzichten uit de data van de gekozen periode (reactietijd, leads
   // buiten radius, conversie, drukste dag). Kop-meta toont de periode-cijfers.

@@ -1,6 +1,7 @@
 import { getDashboardSupabase } from './supabase-server'
 import type { StatsPeriod, PeriodKey } from './period'
 import { omzetBuckets, type OmzetRow } from './omzet-buckets'
+import { buildOmzetRows } from './omzet-source'
 
 /**
  * Aantal leads in de periode (alle, ongeacht dashboard_archived).
@@ -345,39 +346,47 @@ export async function topTags(
 /**
  * Een lead telt mee voor de omzet zodra hij "gewonnen" is: akkoord gegaan
  * (akkoord_op) OF een afspraak geboekt (afspraak_geboekt_op). De omzet-datum
- * is akkoord_op, anders afspraak_geboekt_op. Sluit aan op de funnel-definitie
- * van "akkoord" (countConverted) zodat omzet en conversie consistent zijn.
+ * is akkoord_op, anders afspraak_geboekt_op.
+ *
+ * Het bedrag komt uit de VERZONDEN offerte-snapshot (offertes.totaal_incl,
+ * onveranderlijk per versie, hoogste versie), met terugval op leads.totaal_prijs
+ * als er geen verzonden offerte is. Zie lib/dashboard/omzet-source.ts. Zo
+ * verandert historische omzet niet meer als iemand een oude offerte aanpast.
  */
-type GewonnenLeadRow = {
-  akkoord_op: string | null
-  afspraak_geboekt_op: string | null
-  totaal_prijs: number | null
-  hoofdcategorie: string | null
-}
-
-async function fetchGewonnenOmzetRows(): Promise<
+export async function fetchGewonnenOmzetRows(): Promise<
   Array<{ wonDate: string; prijs: number; categorie: string }>
 > {
   const supabase = await getDashboardSupabase()
-  const { data, error } = await supabase
-    .from('leads')
-    .select('akkoord_op, afspraak_geboekt_op, totaal_prijs, hoofdcategorie')
-    .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null')
-  if (error) {
-    console.error('[omzet] fetchGewonnenOmzetRows failed:', error)
+  const [leadsRes, offRes] = await Promise.all([
+    supabase
+      .from('leads')
+      .select('lead_id, akkoord_op, afspraak_geboekt_op, totaal_prijs, hoofdcategorie')
+      .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null'),
+    supabase
+      .from('offertes')
+      .select('lead_id, versie, totaal_incl')
+      .eq('is_concept', false),
+  ])
+  if (leadsRes.error) {
+    console.error('[omzet] leads failed:', leadsRes.error)
     return []
   }
-  const out: Array<{ wonDate: string; prijs: number; categorie: string }> = []
-  for (const r of (data as GewonnenLeadRow[] | null) ?? []) {
-    const wonDate = r.akkoord_op ?? r.afspraak_geboekt_op
-    if (!wonDate) continue
-    out.push({
-      wonDate,
-      prijs: r.totaal_prijs ?? 0,
-      categorie: r.hoofdcategorie ?? 'Onbekend',
-    })
+  if (offRes.error) {
+    console.error('[omzet] offertes failed:', offRes.error)
+    return []
   }
-  return out
+  type LeadRow = {
+    lead_id: string
+    akkoord_op: string | null
+    afspraak_geboekt_op: string | null
+    totaal_prijs: number | null
+    hoofdcategorie: string | null
+  }
+  type OffRow = { lead_id: string; versie: number; totaal_incl: number }
+  return buildOmzetRows(
+    (leadsRes.data as LeadRow[] | null) ?? [],
+    (offRes.data as OffRow[] | null) ?? [],
+  )
 }
 
 /** True als een ISO-datum binnen [from, to) valt (from optioneel = all-time). */
@@ -398,6 +407,16 @@ export async function omzetTotaal(period: StatsPeriod): Promise<number> {
   return rows
     .filter((r) => inRange(r.wonDate, period))
     .reduce((sum, r) => sum + r.prijs, 0)
+}
+
+/**
+ * Aantal gewonnen leads met WIN-datum in de periode. Telt dezelfde set leads
+ * als omzetTotaal (op wonDate), zodat gem. kluswaarde = omzet / dit aantal
+ * intern consistent is (i.t.t. countConverted dat op aangemaakt filtert).
+ */
+export async function countGewonnenInPeriode(period: StatsPeriod): Promise<number> {
+  const rows = await fetchGewonnenOmzetRows()
+  return rows.filter((r) => inRange(r.wonDate, period)).length
 }
 
 /**

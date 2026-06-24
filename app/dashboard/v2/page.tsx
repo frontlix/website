@@ -32,6 +32,7 @@ import {
   avgOfferteWaarde,
   avgReactietijdMs,
   leadsPerDag,
+  omzetTotaal,
 } from "@/lib/dashboard/stats-queries";
 import { getAppointmentsForMonth } from "@/lib/dashboard/agenda-queries";
 import { getLeadsList } from "@/lib/dashboard/lead-queries";
@@ -166,6 +167,8 @@ export default async function OverzichtPage({
     reactietijdLast7Ms,
     reactietijdPrev7Ms,
     openOffertes,
+    omzetMaandReal,
+    omzetMaandPrevReal,
   ] = await Promise.all([
     countLeads(maand),
     countConverted(maand),
@@ -192,6 +195,8 @@ export default async function OverzichtPage({
     avgReactietijdMs(week7d),
     avgReactietijdMs(prevWeek7d),
     countOpenOffertes(),
+    omzetTotaal(maand),
+    omzetTotaal(prevMaand),
   ]);
 
   // Tenant: chatbot_naam altijd aanwezig, omzet_doel_maand is nieuwe kolom
@@ -204,14 +209,16 @@ export default async function OverzichtPage({
     (tenant?.omzet_doel_maand as number | null | undefined) ?? null;
 
   // ── Afgeleide cijfers (identiek aan de (app)-Overzicht) ─────────────
-  const omzetMaand = avgWaarde !== null ? convertedMaand * avgWaarde : 0;
+  // Echte omzet = som van gewonnen offertes (snapshot) in de maand, niet de
+  // oude schatting converted x avg (die liep fors uiteen met Analyses).
+  const omzetMaand = omzetMaandReal;
   const gemTicket = avgWaarde ?? 0;
 
   const conversiePctLast30 =
     leadsLast30d > 0 ? Math.round((convertedLast30d / leadsLast30d) * 100) : 0;
   const conversiePctPrev30 =
     leadsPrev30d > 0 ? Math.round((convertedPrev30d / leadsPrev30d) * 100) : 0;
-  const omzetMaandPrev = (avgWaardePrev ?? 0) * convertedMaandPrev;
+  const omzetMaandPrev = omzetMaandPrevReal;
   const reactietijdLast7S =
     reactietijdLast7Ms !== null ? Math.round(reactietijdLast7Ms / 1000) : 0;
   const reactietijdPrev7S =

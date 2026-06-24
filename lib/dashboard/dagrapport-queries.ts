@@ -4,6 +4,7 @@ import {
   countOffertesVerstuurd,
   countAkkoordIn,
   avgReactietijdMs,
+  fetchGewonnenOmzetRows,
 } from './stats-queries'
 import type { StatsPeriod } from './period'
 
@@ -69,27 +70,21 @@ function dayWindow(date: Date): StatsPeriod {
 }
 
 /**
- * Som van totaal_prijs voor leads die in periode akkoord gaven.
- * Geen aparte query in stats-queries.ts, daar wordt alleen gemiddelde
- * berekend. Voor dagrapport hebben we de absolute som nodig.
+ * Som van de gewonnen omzet (offerte-snapshot) met WIN-datum in de periode.
+ * Win-datum = akkoord_op, anders afspraak_geboekt_op. Gebruikt dezelfde bron
+ * als Analyses/Overzicht (fetchGewonnenOmzetRows), zodat alle schermen hetzelfde
+ * omzetbedrag tonen en de waarde niet meer op het muteerbare totaal_prijs leunt.
  */
-async function sumOmzetAkkoord(period: StatsPeriod): Promise<number> {
-  const supabase = await getDashboardSupabase()
-  let query = supabase
-    .from('leads')
-    .select('totaal_prijs')
-    .not('akkoord_op', 'is', null)
-    .not('totaal_prijs', 'is', null)
-  if (period.from) query = query.gte('akkoord_op', period.from)
-  if (period.to) query = query.lt('akkoord_op', period.to)
-
-  const { data, error } = await query
-  if (error) {
-    console.error('[sumOmzetAkkoord] failed:', error)
-    return 0
-  }
-  const rows = (data as { totaal_prijs: number | null }[] | null) ?? []
-  return rows.reduce((sum, r) => sum + (r.totaal_prijs ?? 0), 0)
+async function sumOmzetGewonnen(period: StatsPeriod): Promise<number> {
+  const rows = await fetchGewonnenOmzetRows()
+  const from = period.from ? Date.parse(period.from) : -Infinity
+  const to = period.to ? Date.parse(period.to) : Infinity
+  return rows
+    .filter((r) => {
+      const t = Date.parse(r.wonDate)
+      return !Number.isNaN(t) && t >= from && t < to
+    })
+    .reduce((sum, r) => sum + r.prijs, 0)
 }
 
 /**
@@ -200,6 +195,10 @@ async function getSparklines(
   const akkoordenRows =
     (akkoordenRes.data as { akkoord_op: string | null; totaal_prijs: number | null }[] | null) ?? []
 
+  // Omzet-bucket op dezelfde snapshot-bron als Analyses/Overzicht (win-datum +
+  // verzonden offertebedrag), i.p.v. akkoord_op + muteerbaar totaal_prijs.
+  const omzetRows = await fetchGewonnenOmzetRows()
+
   return {
     leads: bucketDays(leadsTimestamps, now),
     offertes: bucketDays(offertesTimestamps, now),
@@ -208,9 +207,7 @@ async function getSparklines(
       now,
     ),
     omzet: bucketDaysSum(
-      akkoordenRows
-        .filter((r) => r.akkoord_op && r.totaal_prijs !== null)
-        .map((r) => ({ timestamp: r.akkoord_op!, value: r.totaal_prijs! })),
+      omzetRows.map((r) => ({ timestamp: r.wonDate, value: r.prijs })),
       now,
     ),
   }
@@ -339,12 +336,12 @@ export async function getDagrapport(now: Date = new Date()): Promise<DagrapportD
     countLeads(vandaagPeriod),
     countOffertesVerstuurd(vandaagPeriod),
     countAkkoordIn(vandaagPeriod),
-    sumOmzetAkkoord(vandaagPeriod),
+    sumOmzetGewonnen(vandaagPeriod),
     leadsPerBron(vandaagPeriod),
     countLeads(gisterenPeriod),
     countOffertesVerstuurd(gisterenPeriod),
     countAkkoordIn(gisterenPeriod),
-    sumOmzetAkkoord(gisterenPeriod),
+    sumOmzetGewonnen(gisterenPeriod),
     getSparklines(now),
     getUurStrip(vandaagPeriod),
     getSurfaceActivity(vandaagPeriod),
