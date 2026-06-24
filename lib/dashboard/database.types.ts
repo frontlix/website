@@ -380,6 +380,7 @@ export type Database = {
           bron: string | null
           coords_geocoded_op: string | null
           dashboard_archived: boolean
+          uitgesloten_van_stats: boolean
           dashboard_status: string | null
           eigenaar_overgenomen: boolean
           email: string
@@ -483,6 +484,7 @@ export type Database = {
           bron?: string | null
           coords_geocoded_op?: string | null
           dashboard_archived?: boolean
+          uitgesloten_van_stats?: boolean
           dashboard_status?: string | null
           eigenaar_overgenomen?: boolean
           email: string
@@ -585,6 +587,7 @@ export type Database = {
           bron?: string | null
           coords_geocoded_op?: string | null
           dashboard_archived?: boolean
+          uitgesloten_van_stats?: boolean
           dashboard_status?: string | null
           eigenaar_overgenomen?: boolean
           email?: string

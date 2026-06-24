@@ -93,7 +93,7 @@ async function sumOmzetGewonnen(period: StatsPeriod): Promise<number> {
  */
 async function leadsPerBron(period: StatsPeriod): Promise<BronStat[]> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('bron')
+  let query = supabase.from('leads').select('bron').eq('uitgesloten_van_stats', false)
   if (period.from) query = query.gte('aangemaakt', period.from)
   if (period.to) query = query.lt('aangemaakt', period.to)
 
@@ -171,15 +171,18 @@ async function getSparklines(
     supabase
       .from('leads')
       .select('aangemaakt')
+      .eq('uitgesloten_van_stats', false)
       .gte('aangemaakt', sevenDaysAgo),
     supabase
       .from('leads')
       .select('offerte_verstuurd_op')
+      .eq('uitgesloten_van_stats', false)
       .not('offerte_verstuurd_op', 'is', null)
       .gte('offerte_verstuurd_op', sevenDaysAgo),
     supabase
       .from('leads')
       .select('akkoord_op, totaal_prijs')
+      .eq('uitgesloten_van_stats', false)
       .not('akkoord_op', 'is', null)
       .gte('akkoord_op', sevenDaysAgo),
   ])
@@ -226,17 +229,20 @@ async function getUurStrip(period: StatsPeriod): Promise<number[]> {
     supabase
       .from('leads')
       .select('aangemaakt')
+      .eq('uitgesloten_van_stats', false)
       .gte('aangemaakt', period.from)
       .lt('aangemaakt', period.to),
     supabase
       .from('leads')
       .select('offerte_verstuurd_op')
+      .eq('uitgesloten_van_stats', false)
       .not('offerte_verstuurd_op', 'is', null)
       .gte('offerte_verstuurd_op', period.from)
       .lt('offerte_verstuurd_op', period.to),
     supabase
       .from('leads')
       .select('akkoord_op')
+      .eq('uitgesloten_van_stats', false)
       .not('akkoord_op', 'is', null)
       .gte('akkoord_op', period.from)
       .lt('akkoord_op', period.to),

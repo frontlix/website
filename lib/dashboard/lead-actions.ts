@@ -252,13 +252,37 @@ export async function archiveLead(leadId: string): Promise<ActionResult> {
 }
 
 /**
- * Maakt een gearchiveerde lead weer zichtbaar in de hoofdlijst.
+ * Maakt een gearchiveerde lead weer zichtbaar in de hoofdlijst. Maakt 'm ook
+ * weer een "echte lead" (uitgesloten_van_stats=false), zodat herstellen uit het
+ * archief de markering volledig terugdraait.
  */
 export async function unarchiveLead(leadId: string): Promise<ActionResult> {
   const supabase = await getDashboardSupabase()
   const { error } = await supabase
     .from('leads')
-    .update({ dashboard_archived: false })
+    .update({ dashboard_archived: false, uitgesloten_van_stats: false })
+    .eq('lead_id', leadId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath(`/leads/${leadId}`)
+  revalidatePath('/leads')
+  return { ok: true }
+}
+
+/**
+ * Markeert een lead als "geen echte lead" (spam, test, dubbel, verkeerd nummer).
+ * Zet uitgesloten_van_stats=true zodat hij uit ALLE statistieken valt, en
+ * archiveert hem meteen zodat hij ook uit de hoofdlijst verdwijnt. Herstellen
+ * gaat via unarchiveLead, dat beide vlaggen terugzet.
+ */
+export async function markeerGeenEchteLead(leadId: string): Promise<ActionResult> {
+  const supabase = await getDashboardSupabase()
+  const { error } = await supabase
+    .from('leads')
+    .update({ uitgesloten_van_stats: true, dashboard_archived: true })
     .eq('lead_id', leadId)
 
   if (error) {

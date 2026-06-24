@@ -157,6 +157,7 @@ describe('avgReactietijdMs', () => {
   it('berekent gemiddelde tijd tussen lead.aangemaakt en eerste uitgaande bericht', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
+      eq: vi.fn(() => leadsBuilder),
       gte: vi.fn(() => leadsBuilder),
       lt: vi.fn(() =>
         Promise.resolve({
@@ -195,6 +196,7 @@ describe('avgReactietijdMs', () => {
   it('negeert leads zonder uitgaande bericht', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
+      eq: vi.fn(() => leadsBuilder),
       gte: vi.fn(() => leadsBuilder),
       lt: vi.fn(() =>
         Promise.resolve({
@@ -231,6 +233,7 @@ describe('avgReactietijdMs', () => {
   it('returnt null als geen leads matchen', async () => {
     const leadsBuilder: any = {
       select: vi.fn(() => leadsBuilder),
+      eq: vi.fn(() => leadsBuilder),
       gte: vi.fn(() => leadsBuilder),
       lt: vi.fn(() => Promise.resolve({ data: [], error: null })),
     }

@@ -14,6 +14,7 @@ export async function countLeads(period: StatsPeriod): Promise<number> {
   let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
+    .eq('uitgesloten_van_stats', false)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -37,6 +38,7 @@ export async function countOffertesVerstuurd(period: StatsPeriod): Promise<numbe
   let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
+    .eq('uitgesloten_van_stats', false)
     .not('offerte_verstuurd_op', 'is', null)
   if (period.from) {
     query = query.gte('offerte_verstuurd_op', period.from)
@@ -62,6 +64,7 @@ export async function countOpenOffertes(): Promise<number> {
   const { count, error } = await supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
+    .eq('uitgesloten_van_stats', false)
     .not('offerte_verstuurd_op', 'is', null)
     .is('akkoord_op', null)
     .eq('dashboard_archived', false)
@@ -83,6 +86,7 @@ export async function countAkkoordIn(period: StatsPeriod): Promise<number> {
   let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
+    .eq('uitgesloten_van_stats', false)
     .not('akkoord_op', 'is', null)
   if (period.from) {
     query = query.gte('akkoord_op', period.from)
@@ -107,6 +111,7 @@ export async function countConverted(period: StatsPeriod): Promise<number> {
   let query = supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
+    .eq('uitgesloten_van_stats', false)
     .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null')
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
@@ -127,7 +132,7 @@ export async function countConverted(period: StatsPeriod): Promise<number> {
  */
 export async function avgOfferteWaarde(period: StatsPeriod): Promise<number | null> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('totaal_prijs')
+  let query = supabase.from('leads').select('totaal_prijs').eq('uitgesloten_van_stats', false)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -156,7 +161,7 @@ export async function avgReactietijdMs(period: StatsPeriod): Promise<number | nu
   const supabase = await getDashboardSupabase()
 
   // 1) Haal leads in periode
-  let leadsQuery = supabase.from('leads').select('lead_id, aangemaakt')
+  let leadsQuery = supabase.from('leads').select('lead_id, aangemaakt').eq('uitgesloten_van_stats', false)
   if (period.from) {
     leadsQuery = leadsQuery.gte('aangemaakt', period.from)
   }
@@ -217,7 +222,7 @@ export async function statusVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ status: string | null; count: number }>> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('dashboard_status')
+  let query = supabase.from('leads').select('dashboard_status').eq('uitgesloten_van_stats', false)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -243,7 +248,7 @@ export async function categorieVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ categorie: string; count: number }>> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('hoofdcategorie')
+  let query = supabase.from('leads').select('hoofdcategorie').eq('uitgesloten_van_stats', false)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -283,6 +288,7 @@ export async function leadsPerDag(
   const query = supabase
     .from('leads')
     .select('aangemaakt')
+    .eq('uitgesloten_van_stats', false)
     .gte('aangemaakt', startISO)
 
   const { data, error } = await query
@@ -322,6 +328,7 @@ export async function topTags(
   let query = supabase
     .from('lead_tags')
     .select('tags!inner(naam), leads!inner(aangemaakt)')
+    .eq('leads.uitgesloten_van_stats', false)
   if (period.from) {
     query = query.gte('leads.aangemaakt', period.from)
   }
@@ -361,6 +368,7 @@ export async function fetchGewonnenOmzetRows(): Promise<
     supabase
       .from('leads')
       .select('lead_id, akkoord_op, afspraak_geboekt_op, totaal_prijs, hoofdcategorie')
+      .eq('uitgesloten_van_stats', false)
       .or('akkoord_op.not.is.null,afspraak_geboekt_op.not.is.null'),
     supabase
       .from('offertes')

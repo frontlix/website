@@ -4,7 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { type InboxLeadContext } from '@/lib/dashboard/inbox-queries'
-import { archiveLead } from '@/lib/dashboard/lead-actions'
+import { archiveLead, markeerGeenEchteLead } from '@/lib/dashboard/lead-actions'
 import { useBotAction } from '@/components/dashboard/bot-actions/use-bot-action'
 import styles from './MobileLeadInfoSheet.module.css'
 
@@ -65,6 +65,18 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
     if (!window.confirm(`Lead archiveren? Hij verdwijnt dan uit de pipeline. Je kunt 'm later met "Herstel" terughalen.`)) return
     startArchive(async () => {
       await archiveLead(lead.lead_id)
+      onClose()
+      router.push('/inbox')
+    })
+  }
+
+  function handleGeenEcht() {
+    // Geen echte lead (spam/test/dubbel/verkeerd nummer): uit je lijst en uit
+    // ALLE statistieken. Bevestiging i.v.m. mis-taps op touch; terughalen via
+    // "Herstel" in het archief.
+    if (!window.confirm(`Markeren als "geen echte lead"? Hij verdwijnt uit je lijst en uit alle statistieken. Terughalen kan met "Herstel" in het archief.`)) return
+    startArchive(async () => {
+      await markeerGeenEchteLead(lead.lead_id)
       onClose()
       router.push('/inbox')
     })
@@ -206,6 +218,21 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
                 <line x1="10" y1="12" x2="14" y2="12"/>
               </svg>
               Archiveer
+            </button>
+
+            {/* Geen echte lead */}
+            <button
+              type="button"
+              className={styles.actionBtn}
+              onClick={handleGeenEcht}
+              disabled={archivePending}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              Geen echte lead
             </button>
           </div>
 

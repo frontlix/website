@@ -4,10 +4,10 @@ import { useRef, useState, useTransition } from "react";
 import type { OfferteEditorApi } from "./OfferteEditor";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, StickyNote, Archive, RotateCcw } from "lucide-react";
+import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
-import { archiveLead, unarchiveLead } from "@/lib/dashboard/lead-actions";
+import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
 import { addNote } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
@@ -164,6 +164,19 @@ export function DossierView({
     setArchived((a) => !a);
   };
 
+  // "Geen echte lead": spam/test/dubbel/verkeerd nummer. Haalt de lead uit ALLE
+  // statistieken (uitgesloten_van_stats) en archiveert hem meteen. Geen
+  // bevestiging: omkeerbaar via Herstel in het archief (dat zet beide vlaggen terug).
+  const markeerGeenEcht = () => {
+    if (!live || !leadId) return;
+    setArchived(true); // markeren archiveert ook; optimistisch
+    startTransition(async () => {
+      const res = await markeerGeenEchteLead(leadId);
+      if (res.ok) router.refresh();
+      else setArchived(false);
+    });
+  };
+
   const naarNotities = () => {
     setTab("Notities");
     // Re-trigger de autofocus ook als de tab al actief was.
@@ -285,6 +298,18 @@ export function DossierView({
               </>
             )}
           </button>
+          {!archived ? (
+            <button
+              type="button"
+              className={styles.actieBtn}
+              onClick={markeerGeenEcht}
+              disabled={pending}
+              title="Spam, test, dubbel of verkeerd nummer: uit je lijst en uit alle statistieken"
+            >
+              <Ban size={15} strokeWidth={2.1} />
+              Geen echte lead
+            </button>
+          ) : null}
           {/* Offerte versturen naar de klant via de bot (WhatsApp). Alleen de
               eerste verzending; bij een reeds verstuurde offerte toont de knop
               "Al verstuurd" en is 'ie uitgeschakeld. */}

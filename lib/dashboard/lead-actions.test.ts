@@ -94,9 +94,12 @@ describe('unarchiveLead', () => {
     mockRevalidatePath.mockReset()
   })
 
-  it('zet dashboard_archived=false', async () => {
+  it('zet dashboard_archived=false en maakt de lead weer echt', async () => {
     await unarchiveLead('LEAD-1')
 
-    expect(mockUpdate).toHaveBeenCalledWith({ dashboard_archived: false })
+    expect(mockUpdate).toHaveBeenCalledWith({
+      dashboard_archived: false,
+      uitgesloten_van_stats: false,
+    })
   })
 })
