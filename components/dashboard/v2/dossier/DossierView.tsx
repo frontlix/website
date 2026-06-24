@@ -359,7 +359,7 @@ export function DossierView({
               <OffertesTab data={data} leadId={leadId} offerteApiRef={offerteApiRef} />
             ) : null}
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
-            {tab === "Afspraak" ? <AfspraakTab data={data} leadId={leadId} /> : null}
+            {tab === "Afspraak" ? <AfspraakTab data={data} /> : null}
             {tab === "Notities" ? (
               <NotitiesTab notities={notities} onAdd={voegNotitieToe} autoFocus={notesFocus} />
             ) : null}
