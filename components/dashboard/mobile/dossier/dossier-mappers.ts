@@ -305,6 +305,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     prijs,
     stage: handover ? 'Zelf overnemen' : STAGE_LABEL[stage],
     binnen: l.aangemaakt ? shortTimeAgo(l.aangemaakt) : '—',
+    handover,
   }
 
   // Opdrachtbon-model (gedeeld met desktop): de laatst verstuurde offerte
@@ -375,7 +376,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),
     vragen: buildVragen(l, fotoCount),
-    surface: { fase: handover ? 'Zelf overnemen' : STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
+    surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
     offerte: buildOfferte(detail),
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
     activity: buildActivity(detail, now),

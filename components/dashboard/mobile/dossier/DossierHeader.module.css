@@ -83,6 +83,28 @@
   background: var(--color-primary);
 }
 
+/* Hand-over variant: rode pill (spiegel van LeadCard.module.css .handoverBadge). */
+.stagePillHandover {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--rb-status-hot-bg, #FF3B3014);
+  color: var(--rb-status-hot-ink, #FF3B30);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stageDotHandover {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rb-status-hot-ink, #FF3B30);
+}
+
 .sub {
   font-size: 12px;
   color: var(--color-text-muted);

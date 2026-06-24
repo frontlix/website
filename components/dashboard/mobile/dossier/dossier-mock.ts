@@ -1,7 +1,7 @@
 /** MOCK, v1 toont deze lead ongeacht [lead_id]. Wiren aan getLeadDetail in de eind-pass. */
 const DC2 = { blue: '#1A56FF', green: '#16A34A', amber: '#F59E0B', red: '#DC2626', wa: '#25D366', neutral: '#9CA3AF' }
 
-export type DossierLead = { id: string; naam: string; plaats: string; m2: number; fotos: number; prijs: number | null; stage: string; binnen: string }
+export type DossierLead = { id: string; naam: string; plaats: string; m2: number; fotos: number; prijs: number | null; stage: string; binnen: string; handover?: boolean }
 export const DOSS_LEAD: DossierLead = { id: 'L-2087', naam: 'Jeroen de Vries', plaats: 'Delft', m2: 145, fotos: 4, prijs: 1872, stage: 'gesprek', binnen: '8 min' }
 
 export type DossBijzonder = { l: string; v: string; tone: string }

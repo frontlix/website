@@ -30,8 +30,8 @@ export function DossierHeader({ lead, onBack }: DossierHeaderProps) {
         <div className={styles.meta}>
           <div className={styles.name}>{lead.naam}</div>
           <div className={styles.metaRow}>
-            <span className={styles.stagePill}>
-              <span className={styles.stageDot} aria-hidden="true" />
+            <span className={lead.handover ? styles.stagePillHandover : styles.stagePill}>
+              <span className={lead.handover ? styles.stageDotHandover : styles.stageDot} aria-hidden="true" />
               {lead.stage}
             </span>
             <span className={styles.sub}>{lead.plaats}</span>
