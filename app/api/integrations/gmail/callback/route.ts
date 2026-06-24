@@ -1,7 +1,7 @@
 // app/api/integrations/gmail/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
-import { exchangeGmailCode, ensureLabel, ensureApprovalFilter } from '@/lib/gmail-oauth'
+import { exchangeGmailCode, ensureLabel } from '@/lib/gmail-oauth'
 import { fetchGoogleEmail } from '@/lib/google-oauth'
 import { encryptToken } from '@/lib/crypto/calendar-token'
 import { getTenantId, saveGmailConnection } from '@/lib/dashboard/gmail-connection-queries'
@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
     const { refreshToken, accessToken } = await exchangeGmailCode(code)
     const email = await fetchGoogleEmail(accessToken)
     const labelId = await ensureLabel(accessToken, labelName)
-    const filterId = await ensureApprovalFilter(accessToken, labelId)
     const tenantId = await getTenantId()
     await saveGmailConnection({
       tenantId,
@@ -40,7 +39,6 @@ export async function GET(request: NextRequest) {
       refreshTokenEncrypted: encryptToken(refreshToken),
       labelName,
       labelId,
-      filterId,
     })
     const res = NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=ok`, SITE_BASE))
     res.cookies.delete('gmail_oauth_state')

@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, AlertTriangle, ExternalLink } from "lucide-react";
 import { StatusPill } from "@/components/dashboard/v2/ui";
 import type { GmailConnectionState } from "../instellingen-data";
 import integStyles from "./IntegratiesPanel.module.css";
@@ -21,7 +21,6 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
   const searchParams = useSearchParams();
   const [labelName, setLabelName] = useState(gmail.labelName ?? DEFAULT_LABEL);
   const [busy, setBusy] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
   const [ontkoppelFout, setOntkoppelFout] = useState(false);
 
   const result = searchParams.get("gmail"); // ok | error | state_error | forbidden | null
@@ -47,13 +46,15 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
     return null; // demo-fallback: geen acties
   }
 
+  const effectiveLabelName = gmail.labelName ?? DEFAULT_LABEL;
+
   return (
     <div style={{ marginTop: 16 }}>
       {/* OAuth-terugmelding */}
       {result === "ok" && (
         <span className={`${integStyles.status} ${integStyles.statusOk}`}>
           <Check size={13} strokeWidth={2.5} />
-          Gmail gekoppeld. Nieuwe goedkeuringsmails krijgen automatisch het label.
+          Label aangemaakt in je Gmail. Stel hieronder zelf het filter in.
         </span>
       )}
       {result && result !== "ok" && (
@@ -64,7 +65,7 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
       )}
 
       {gmail.connected ? (
-        /* ── Gekoppeld: account + label weergeven, ontkoppelknop ── */
+        /* ── Gekoppeld: label weergeven + filter-instructie + ontkoppelknop ── */
         <div style={{ marginTop: result ? 12 : 0 }}>
           <div className={integStyles.accountRow}>
             <span className={integStyles.accountLabel}>Gekoppeld account</span>
@@ -99,8 +100,62 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
                 color: "var(--rb-ink)",
               }}
             >
-              {gmail.labelName ?? DEFAULT_LABEL}
+              {effectiveLabelName}
             </span>
+          </div>
+
+          {/* Filter-instructie */}
+          <div
+            style={{
+              marginTop: 14,
+              padding: "12px 16px",
+              background: "var(--rb-field)",
+              border: "1px solid var(--rb-line)",
+              borderRadius: "var(--rb-r-card-sm)",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12.5,
+                fontWeight: 700,
+                color: "var(--rb-ink)",
+                lineHeight: 1.55,
+              }}
+            >
+              Label &lsquo;{effectiveLabelName}&rsquo; staat klaar in je Gmail.
+            </p>
+            <p
+              style={{
+                margin: "6px 0 0",
+                fontSize: 12.5,
+                color: "var(--rb-ink)",
+                lineHeight: 1.6,
+              }}
+            >
+              Nog één keer instellen, dan komen je goedkeuringsmails er automatisch in: open Gmail,
+              zoek op de mails met onderwerp &ldquo;Offerte ter goedkeuring&rdquo;, klik op
+              &ldquo;Filter maken&rdquo; en kies het label &ldquo;{effectiveLabelName}&rdquo;.
+            </p>
+            <div style={{ marginTop: 10 }}>
+              <a
+                href="https://mail.google.com/mail/u/0/#search/subject%3A%22Offerte+ter+goedkeuring%22"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: "var(--rb-blue)",
+                  textDecoration: "none",
+                }}
+              >
+                Open de zoekopdracht in Gmail
+                <ExternalLink size={13} strokeWidth={2.5} />
+              </a>
+            </div>
           </div>
 
           <div className={integStyles.actions}>
@@ -146,96 +201,11 @@ export default function GmailLabelKoppeling({ gmail, live }: Props) {
               className={`${integStyles.btnLink} ${integStyles.btnPrimary}`}
               onClick={koppel}
             >
-              Maak automatisch een mapje in mijn mail
+              Maak dit label aan in mijn Gmail
             </button>
           </div>
         </div>
       )}
-
-      {/* ── Geen Gmail? Uitklap-hulp ── */}
-      <div style={{ marginTop: 14 }}>
-        <button
-          type="button"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            fontFamily: "var(--rb-font)",
-            fontSize: 12.5,
-            fontWeight: 700,
-            color: "var(--rb-blue)",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-          }}
-          onClick={() => setShowHelp((v) => !v)}
-        >
-          {showHelp ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          Geen Gmail? Zo stel je het zelf in
-        </button>
-
-        {showHelp && (
-          <div
-            style={{
-              marginTop: 10,
-              padding: "12px 16px",
-              background: "var(--rb-field)",
-              border: "1px solid var(--rb-line)",
-              borderRadius: "var(--rb-r-card-sm)",
-            }}
-          >
-            <p
-              style={{
-                margin: 0,
-                fontSize: 12.5,
-                color: "var(--rb-ink)",
-                lineHeight: 1.55,
-              }}
-            >
-              Maak in je mailprogramma een filter of regel aan met deze voorwaarde:
-            </p>
-            <ul
-              style={{
-                margin: "8px 0 0",
-                paddingLeft: 18,
-                fontSize: 12.5,
-                color: "var(--rb-ink)",
-                lineHeight: 1.6,
-              }}
-            >
-              <li>
-                Onderwerp bevat:{" "}
-                <code
-                  style={{
-                    fontFamily: "var(--rb-font)",
-                    fontWeight: 700,
-                    background: "var(--rb-field-2, var(--rb-card))",
-                    border: "1px solid var(--rb-line)",
-                    borderRadius: 5,
-                    padding: "1px 6px",
-                    fontSize: 12,
-                    color: "var(--rb-ink)",
-                  }}
-                >
-                  Offerte ter goedkeuring
-                </code>
-              </li>
-            </ul>
-            <p
-              style={{
-                margin: "8px 0 0",
-                fontSize: 12.5,
-                color: "var(--rb-muted)",
-                lineHeight: 1.55,
-              }}
-            >
-              Laat de mail in je inbox staan en koppel er een label of map aan, bijvoorbeeld{" "}
-              <strong style={{ color: "var(--rb-ink)" }}>{DEFAULT_LABEL}</strong>.
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

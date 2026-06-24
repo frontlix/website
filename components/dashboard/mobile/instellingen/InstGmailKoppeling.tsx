@@ -1,13 +1,13 @@
 'use client'
 
 // Gmail-label-koppeling op mobiel: koppel je Gmail-account via Google OAuth
-// zodat "Offerte ter goedkeuring"-mails automatisch een label krijgen.
+// zodat je zelf een filter kunt instellen voor "Offerte ter goedkeuring"-mails.
 // Logica is identiek aan de desktop GmailLabelKoppeling; stijl volgt de
 // mobiele atoms (InstGroupCard, InstPrimaryBtn, InstGhostBtn, module-CSS).
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Check, AlertTriangle, ChevronDown, ChevronUp, Mail } from 'lucide-react'
+import { Check, AlertTriangle, ExternalLink, Mail } from 'lucide-react'
 import type { GmailConnectionState } from '@/components/dashboard/v2/instellingen/instellingen-data'
 import { InstGroupCard, InstPrimaryBtn, InstGhostBtn } from './InstAtoms'
 import styles from './InstGmailKoppeling.module.css'
@@ -24,7 +24,6 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
   const searchParams = useSearchParams()
   const [labelName, setLabelName] = useState(gmail.labelName ?? DEFAULT_LABEL)
   const [busy, setBusy] = useState(false)
-  const [showHelp, setShowHelp] = useState(false)
   const [ontkoppelFout, setOntkoppelFout] = useState(false)
 
   const result = searchParams.get('gmail') // ok | error | state_error | forbidden | null
@@ -48,6 +47,8 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
 
   if (!live) return null
 
+  const effectiveLabelName = gmail.labelName ?? DEFAULT_LABEL
+
   return (
     <div className={styles.wrapper}>
       {/* Sectiekop met mail-icoon */}
@@ -58,7 +59,7 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
         <div>
           <div className={styles.kopTitel}>Gmail-label koppelen</div>
           <div className={styles.kopSub}>
-            Goedkeuringsmails krijgen automatisch een label in je inbox
+            Maak een label in je Gmail voor offertes ter goedkeuring
           </div>
         </div>
       </div>
@@ -67,7 +68,7 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
       {result === 'ok' && (
         <div className={`${styles.banner} ${styles.bannerOk}`}>
           <Check size={13} aria-hidden="true" />
-          <span>Gmail gekoppeld. Nieuwe goedkeuringsmails krijgen automatisch het label.</span>
+          <span>Label aangemaakt in je Gmail. Stel hieronder zelf het filter in.</span>
         </div>
       )}
       {result && result !== 'ok' && (
@@ -78,7 +79,7 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
       )}
 
       {gmail.connected ? (
-        /* ── Gekoppeld: account + label tonen, ontkoppelknop ── */
+        /* ── Gekoppeld: account + label tonen, filter-instructie, ontkoppelknop ── */
         <InstGroupCard>
           <div className={styles.velden}>
             <div className={styles.statusRij}>
@@ -94,9 +95,31 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
             <div className={styles.accountRij}>
               <span className={styles.accountKey}>Label</span>
               <span className={styles.accountVal}>
-                {gmail.labelName ?? DEFAULT_LABEL}
+                {effectiveLabelName}
               </span>
             </div>
+          </div>
+
+          {/* Filter-instructie */}
+          <div className={styles.helpContent} style={{ marginTop: 12 }}>
+            <p className={styles.helpTekst} style={{ fontWeight: 700 }}>
+              Label &lsquo;{effectiveLabelName}&rsquo; staat klaar in je Gmail.
+            </p>
+            <p className={styles.helpTekst} style={{ marginTop: 6 }}>
+              Nog één keer instellen, dan komen je goedkeuringsmails er automatisch in: open Gmail,
+              zoek op de mails met onderwerp &ldquo;Offerte ter goedkeuring&rdquo;, klik op
+              &ldquo;Filter maken&rdquo; en kies het label &ldquo;{effectiveLabelName}&rdquo;.
+            </p>
+            <a
+              href="https://mail.google.com/mail/u/0/#search/subject%3A%22Offerte+ter+goedkeuring%22"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.helpLink}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8 }}
+            >
+              Open de zoekopdracht in Gmail
+              <ExternalLink size={13} strokeWidth={2.5} aria-hidden="true" />
+            </a>
           </div>
         </InstGroupCard>
       ) : (
@@ -117,7 +140,7 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
                 maxLength={100}
               />
               <span className={styles.veldHint}>
-                Dit label wordt aangemaakt in jouw Gmail en op elke goedkeuringsmail gezet.
+                Dit label wordt aangemaakt in jouw Gmail. Je stelt daarna zelf in welke mails het krijgen.
               </span>
             </label>
           </div>
@@ -137,38 +160,8 @@ export function InstGmailKoppeling({ gmail, live }: Props) {
         </InstGhostBtn>
       ) : (
         <InstPrimaryBtn onClick={koppel}>
-          Maak automatisch een mapje in mijn mail
+          Maak dit label aan in mijn Gmail
         </InstPrimaryBtn>
-      )}
-
-      {/* Geen Gmail? Uitklap-hulp */}
-      <button
-        type="button"
-        className={styles.helpToggle}
-        onClick={() => setShowHelp((v) => !v)}
-      >
-        {showHelp ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
-        Geen Gmail? Zo stel je het zelf in
-      </button>
-
-      {showHelp && (
-        <InstGroupCard>
-          <div className={styles.helpContent}>
-            <p className={styles.helpTekst}>
-              Maak in je mailprogramma een filter of regel aan met deze voorwaarde:
-            </p>
-            <ul className={styles.helpLijst}>
-              <li>
-                Onderwerp bevat:{' '}
-                <code className={styles.code}>Offerte ter goedkeuring</code>
-              </li>
-            </ul>
-            <p className={styles.helpMuted}>
-              Laat de mail in je inbox staan en koppel er een label of map aan, bijvoorbeeld{' '}
-              <strong>{DEFAULT_LABEL}</strong>.
-            </p>
-          </div>
-        </InstGroupCard>
       )}
     </div>
   )
