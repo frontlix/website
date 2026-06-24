@@ -47,6 +47,12 @@ export interface MobileLeadsData {
   }
   chatbotNaam: string
   allTags: Tag[]
+  /**
+   * Deeplink "wachtende offertes" (overzicht-CTA): de lijst is server-side al
+   * gefilterd. We verbergen dan de stage-chips en tonen een wisbare strip,
+   * zodat het scherm exact die offertes laat zien (gelijk aan desktop).
+   */
+  openOffertesFilter?: boolean
 }
 
 interface Props {
@@ -75,6 +81,7 @@ const DEFAULT_ADV_FILTER: AdvFilter = {
 export function MobileLeads({ data }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const openOffertesFilter = data.openOffertesFilter ?? false
 
   const [filter,     setFilter]     = useState<string>('all')
   const [searchOpen, setSearchOpen] = useState(false)
@@ -245,8 +252,14 @@ export function MobileLeads({ data }: Props) {
               <p className={styles.subtitle}>
                 <LiveDot />
                 <span>
-                  {visible.length} van{' '}
-                  {filter === 'archief' ? data.counts.archief : data.counts.all} zichtbaar
+                  {openOffertesFilter ? (
+                    `${visible.length} wachtende offerte${visible.length === 1 ? '' : 's'}`
+                  ) : (
+                    <>
+                      {visible.length} van{' '}
+                      {filter === 'archief' ? data.counts.archief : data.counts.all} zichtbaar
+                    </>
+                  )}
                 </span>
               </p>
             </div>
@@ -295,13 +308,30 @@ export function MobileLeads({ data }: Props) {
       </header>
 
       {/* ── Sticky segmented chips ─────────────────────────────────────────── */}
-      <div className={styles.chipsWrap}>
-        <LeadsSegmentedChips
-          active={filter}
-          chips={chips}
-          onSelect={handleFilter}
-        />
-      </div>
+      {openOffertesFilter ? (
+        /* Wachtende-offertes-deeplink: geen stage-chips maar een wisbare strip,
+           zodat duidelijk is waaróp gefilterd wordt en je in één tik terug bent
+           op alle leads (gelijk aan het desktop-chip). */
+        <div className={styles.filterStripWrap}>
+          <div className={styles.filterStrip}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            <span className={styles.filterStripText}>Wachtende offertes</span>
+            <Link href="/leads" className={styles.filterStripWis}>
+              Toon alle leads
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.chipsWrap}>
+          <LeadsSegmentedChips
+            active={filter}
+            chips={chips}
+            onSelect={handleFilter}
+          />
+        </div>
+      )}
 
       {/* ── Actieve-filter strip (conditioneel) ───────────────────────────── */}
       {advCount > 0 && (

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { X } from "lucide-react";
 import { LeadsSearch } from "./LeadsSearch";
 import { LeadsFilter } from "./LeadsFilter";
 import { ArchiveSwitch } from "./ArchiveSwitch";
@@ -20,21 +22,29 @@ import styles from "@/app/dashboard/v2/leads/page.module.css";
  *
  *  In archief-modus (`archived`) tonen we het archief: het segment staat op
  *  "Archief", de pipeline/lijst-toggle verdwijnt (archief is altijd een lijst)
- *  en we renderen de ArchivedLeadsList met Herstel-knoppen. */
+ *  en we renderen de ArchivedLeadsList met Herstel-knoppen.
+ *
+ *  `initialView` bepaalt de begin-weergave (default pipeline); bij een
+ *  deeplink-filter zoals "wachtende offertes" openen we de lijst. Is
+ *  `openOffertesFilter` aan, dan tonen we een wisbaar filter-chip in de kop. */
 export function LeadsView({
   leads,
   pipeline,
   archived = false,
   archivedCount = 0,
   allTags,
+  initialView = "pipeline",
+  openOffertesFilter = false,
 }: {
   leads: Lead[];
   pipeline: PipelineCol[];
   archived?: boolean;
   archivedCount?: number;
   allTags: Tag[];
+  initialView?: LeadsViewMode;
+  openOffertesFilter?: boolean;
 }) {
-  const [view, setView] = useState<LeadsViewMode>("pipeline");
+  const [view, setView] = useState<LeadsViewMode>(initialView);
 
   return (
     <div className={styles.page}>
@@ -47,6 +57,16 @@ export function LeadsView({
           {!archived ? <ViewSwitcher value={view} onChange={setView} /> : null}
         </div>
       </div>
+
+      {openOffertesFilter ? (
+        <div className={styles.activeFilter}>
+          <span className={styles.activeFilterPill}>Wachtende offertes</span>
+          <Link href="/leads" className={styles.clearFilter}>
+            <X size={13} strokeWidth={2.5} />
+            Toon alle leads
+          </Link>
+        </div>
+      ) : null}
 
       {archived ? (
         <ArchivedLeadsList leads={leads} />

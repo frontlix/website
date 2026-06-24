@@ -223,9 +223,11 @@ export default async function OverzichtPage({
         omzetMaand: Math.round(omzetMaand),
         gemTicket: Math.round(gemTicket),
       }),
+      // Label + bestemming gelijk aan desktop: navigeert naar de gefilterde
+      // leadslijst met precies deze wachtende offertes (zie MobileOverzicht).
       ctaLabel:
         openOffertes > 0
-          ? `Open de ${openOffertes} wachtenden`
+          ? `Open de ${openOffertes} ${openOffertes === 1 ? "wachtende offerte" : "wachtende offertes"}`
           : undefined,
     },
     omzet: Math.round(omzetMaand),

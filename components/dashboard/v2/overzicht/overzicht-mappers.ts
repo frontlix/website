@@ -30,6 +30,13 @@ export interface BriefData {
   body: string;
   /** CTA-label; navigeert naar Leads. */
   cta: string;
+  /**
+   * Bestemming van de CTA. Bij open offertes deeplinkt 'ie naar de
+   * gefilterde lijst (`/leads?offertes=open`) zodat de belofte in het label
+   * ("Open de N wachtende offertes") klopt met wat de gebruiker te zien krijgt;
+   * anders gewoon de volledige leadslijst.
+   */
+  ctaHref: string;
 }
 
 /**
@@ -51,16 +58,21 @@ export function mapBriefData(input: {
     `${input.actieveGesprekken} ${input.actieveGesprekken === 1 ? "actief gesprek" : "actieve gesprekken"}`,
     `${input.komendeAfspraken} ${input.komendeAfspraken === 1 ? "komende afspraak" : "komende afspraken"}`,
   ];
-  const cta =
-    input.openOffertes > 0
-      ? `Open de ${input.openOffertes} ${input.openOffertes === 1 ? "wachtende offerte" : "wachtende offertes"}`
-      : "Bekijk je leads";
+  const heeftOpenOffertes = input.openOffertes > 0;
+  const cta = heeftOpenOffertes
+    ? `Open de ${input.openOffertes} ${input.openOffertes === 1 ? "wachtende offerte" : "wachtende offertes"}`
+    : "Bekijk je leads";
+  // Deeplink naar de gefilterde lijst (offertes=open spiegelt countOpenOffertes:
+  // verstuurd + nog geen akkoord), zodat het aantal in het label gelijk is aan
+  // wat de lijst toont. Zonder open offertes: de volledige leadslijst.
+  const ctaHref = heeftOpenOffertes ? "/leads?offertes=open" : "/leads";
   return {
     statusLine,
     greeting: input.greeting,
     voornaam: input.voornaam,
     body: input.summary,
     cta,
+    ctaHref,
   };
 }
 

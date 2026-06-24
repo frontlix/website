@@ -129,7 +129,10 @@ export function MobileOverzicht({ data }: Props) {
           title={data.aiBrief.title}
           summary={data.aiBrief.summary}
           primaryCtaLabel={data.aiBrief.ctaLabel}
-          onPrimaryCta={data.aiBrief.ctaLabel ? () => openDrilldown('watnu') : undefined}
+          // Net als desktop: navigeer naar de gefilterde leadslijst met de
+          // wachtende offertes (het label telt diezelfde set). De "Wat nu"-
+          // drilldown blijft bereikbaar via het urgent-blok hieronder.
+          onPrimaryCta={data.aiBrief.ctaLabel ? () => router.push('/leads?offertes=open') : undefined}
         />
 
         <HeroKpiCard

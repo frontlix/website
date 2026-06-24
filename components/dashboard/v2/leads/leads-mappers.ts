@@ -168,6 +168,12 @@ export interface LeadsFilterParams {
   bron?: string;
   urgent?: string;
   sort?: string;
+  /**
+   * "open" toont alleen de wachtende offertes (verstuurd, nog geen akkoord),
+   * exact dezelfde voorwaarde als countOpenOffertes() op het overzicht. Zo
+   * landt de overzicht-CTA op precies de leads die hij belooft.
+   */
+  offertes?: string;
 }
 
 const STAGE_ORDER: Record<MobileLeadStage, number> = {
@@ -216,6 +222,14 @@ export function applyLeadsFilters(
 
   if (params.urgent === "1") {
     out = out.filter((l) => isLeadUrgent(l));
+  }
+
+  // Wachtende offertes: verstuurd maar nog geen akkoord. Spiegelt
+  // countOpenOffertes() (gearchiveerde leads zitten al niet in de actieve set).
+  if (params.offertes === "open") {
+    out = out.filter(
+      (l) => l.offerte_verstuurd_op != null && l.akkoord_op == null,
+    );
   }
 
   const sortKey = params.sort;

@@ -64,6 +64,7 @@ export default async function LeadsPage({
     bron?: string
     urgent?: string
     sort?: string
+    offertes?: string
   }>
 }) {
   const sp = await searchParams
@@ -75,6 +76,11 @@ export default async function LeadsPage({
       ? sp.filter
       : 'all'
   ) as FilterKey
+
+  // Deeplink vanuit de overzicht-CTA ("Open de N wachtende offertes"): alleen de
+  // wachtende offertes (verstuurd, nog geen akkoord), exact dezelfde voorwaarde
+  // als countOpenOffertes() en als de v2-deeplink. Niet in archief-modus.
+  const isOpenOffertes = sp.offertes === 'open' && activeFilter !== 'archief'
 
   const search = (sp.q ?? '').trim().toLowerCase()
   const kanaalFilter = sp.kanaal === 'web' ? 'web' : null
@@ -133,6 +139,13 @@ export default async function LeadsPage({
 
   if (sp.urgent === '1') {
     displayed = displayed.filter((l) => isLeadUrgent(l))
+  }
+
+  // Wachtende offertes: verstuurd maar nog geen akkoord (spiegelt countOpenOffertes).
+  if (isOpenOffertes) {
+    displayed = displayed.filter(
+      (l) => l.offerte_verstuurd_op != null && l.akkoord_op == null,
+    )
   }
 
   // Sortering, 'binnen' (default) behoudt de server-volgorde (aangemaakt DESC).
@@ -196,6 +209,9 @@ export default async function LeadsPage({
           },
           chatbotNaam,
           allTags,
+          // Wachtende-offertes-deeplink: MobileLeads verbergt dan de stage-chips
+          // en toont een wisbare strip (de lijst is al server-side gefilterd).
+          openOffertesFilter: isOpenOffertes,
         }}
       />
     </div>

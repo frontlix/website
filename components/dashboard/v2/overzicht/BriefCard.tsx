@@ -1,7 +1,8 @@
 "use client";
 
+import Link, { useLinkStatus } from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BarChart3 } from "lucide-react";
+import { ArrowRight, BarChart3, Loader2 } from "lucide-react";
 import { Card } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { BRIEF, STATUS_LINE, TENANT } from "@/components/dashboard/v2/demo-data";
@@ -15,7 +16,28 @@ const DEMO_BRIEF: BriefData = {
   voornaam: TENANT.user,
   body: BRIEF.body,
   cta: BRIEF.cta,
+  ctaHref: "/leads?offertes=open",
 };
+
+/**
+ * Inhoud van de CTA-link: label + pijl, met een laad-indicator zodra de
+ * navigatie loopt (useLinkStatus geeft `pending` van de omhullende <Link>).
+ * Zo krijgt de gebruiker feedback bij een trage server-render i.p.v. een dode
+ * knop. Moet een kind van <Link> zijn, daarom een apart component.
+ */
+function CtaContent({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      {label}
+      {pending ? (
+        <Loader2 size={16} strokeWidth={2.5} className={styles.ctaSpin} aria-hidden="true" />
+      ) : (
+        <ArrowRight size={16} strokeWidth={2.5} aria-hidden="true" />
+      )}
+    </>
+  );
+}
 
 /** Surface-samenvatting bovenaan Overzicht: statusregel + begroeting + de
  *  briefing-body en een CTA die naar Leads navigeert (de wachtende offertes). */
@@ -35,14 +57,12 @@ export function BriefCard({ brief = DEMO_BRIEF }: { brief?: BriefData }) {
         </h1>
         <p className={styles.text}>{brief.body}</p>
         <div className={styles.ctaRow}>
-          <button
-            type="button"
-            className={styles.cta}
-            onClick={() => router.push(`${V2_BASE}/leads`)}
-          >
-            {brief.cta}
-            <ArrowRight size={16} strokeWidth={2.5} />
-          </button>
+          {/* Echte navigatie -> <Link> (rechtsklik / open in nieuw tabblad). */}
+          <Link href={brief.ctaHref} className={styles.cta}>
+            <CtaContent label={brief.cta} />
+          </Link>
+          {/* Paneel-toggle op dezelfde pagina -> blijft een knop (geen
+              paginanavigatie, dus semantisch geen link). */}
           <button
             type="button"
             className={styles.dagBtn}

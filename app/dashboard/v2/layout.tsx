@@ -57,6 +57,13 @@ export default async function V2Layout({ children }: { children: React.ReactNode
         {/* Offerte-wizard-modal: luistert centraal op "rb:new-offerte". */}
         <NewOfferteMount />
       </Shell>
+      {/* Portal-target voor de Dagrapport-drawer. Buiten <Shell> (dus buiten een
+          eventuele scroll-container) zodat de position:fixed drawer op iOS niet
+          desynct tijdens scrollen. De drawer wikkelt zichzelf in .rbRoot, dus
+          dark mode (html.dark .rbRoot) blijft kloppen ongeacht de plek. Zonder
+          deze div valt de drawer terug op document.body (werkt, maar minder
+          expliciet); zie DagrapportDrawer.tsx. */}
+      <div id="dagrapport-portal-root" />
     </>
   );
 }

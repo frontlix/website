@@ -202,6 +202,8 @@
   font-weight: 700;
   padding: 2px;
   cursor: pointer;
+  /* Ook gebruikt als <Link> (=<a>): geen onderstreping. */
+  text-decoration: none;
 }
 
 /* ── Lead-lijst ─────────────────────────────────────────────────────────────── */

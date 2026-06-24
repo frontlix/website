@@ -38,6 +38,7 @@ export default async function LeadsPage({
     sort?: string;
     archief?: string;
     tags?: string;
+    offertes?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -45,6 +46,10 @@ export default async function LeadsPage({
   const tagFilter = tagIds && tagIds.length > 0 ? { tags: tagIds } : undefined;
   const session = await v2Session();
   const isArchief = sp.archief === "1";
+  // Deeplink vanuit de overzicht-CTA: alleen de wachtende offertes. Dan openen
+  // we meteen de lijstweergave (de pipeline-kolommen zijn dan grotendeels leeg)
+  // en tonen een wisbaar filter-chip in de kop.
+  const isOpenOffertes = !isArchief && sp.offertes === "open";
 
   // Geen sessie (dev-preview): val terug op de bestaande demo-data zodat de
   // v2-look zonder login blijft renderen. Verdwijnt bij de definitieve omzet.
@@ -97,6 +102,8 @@ export default async function LeadsPage({
       pipeline={buildPipelineFromLeads(filtered)}
       archivedCount={archivedLeads.length}
       allTags={allTags}
+      initialView={isOpenOffertes ? "list" : "pipeline"}
+      openOffertesFilter={isOpenOffertes}
     />
   );
 }
