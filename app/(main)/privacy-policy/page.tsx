@@ -432,7 +432,47 @@ export default function PrivacyPolicyPage() {
             je contact opnemen via <a href="mailto:info@frontlix.com">info@frontlix.com</a>.
           </p>
 
-          <h2>16. Wijzigingen</h2>
+          <h2>16. Koppeling met je Google-account (Gmail en Google Agenda)</h2>
+          <p>
+            Klanten van Frontlix kunnen er in het dashboard voor kiezen om hun Google-account te
+            koppelen. Wij vragen dan uitsluitend de rechten die strikt nodig zijn voor de gekozen
+            functie:
+          </p>
+          <ul>
+            <li>
+              <strong>Gmail (labels en filter):</strong> wij maken in jouw Gmail een label aan en
+              een filter dat e-mails met offertes ter goedkeuring automatisch dat label geeft, zodat
+              je ze makkelijk terugvindt. Wij lezen de inhoud van je e-mails niet, versturen geen
+              e-mails namens jou en wijzigen geen andere instellingen.
+            </li>
+            <li>
+              <strong>Google Agenda:</strong> wij lezen je vrije en bezette tijden en plannen
+              afspraken in die via de Frontlix-assistent tot stand komen.
+            </li>
+          </ul>
+          <p>
+            Hiervoor bewaren wij uitsluitend een versleutelde toegangssleutel (zodat de koppeling
+            blijft werken) en de namen en verwijzingen van het aangemaakte label en filter. Je kunt
+            de koppeling op elk moment verbreken in je Frontlix-instellingen of in je
+            Google-accountinstellingen.
+          </p>
+          <p>
+            <strong>Beperkt gebruik (Limited Use).</strong> Frontlix&apos; gebruik van informatie
+            die is verkregen via Google API&apos;s voldoet aan het{' '}
+            <a
+              href="https://developers.google.com/terms/api-services-user-data-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google API Services User Data Policy
+            </a>
+            , inclusief de Limited Use-vereisten. Wij gebruiken deze gegevens uitsluitend om de
+            hierboven beschreven functies te leveren, delen of verkopen ze niet aan derden, gebruiken
+            ze niet voor advertenties en gebruiken ze niet om algemene AI- of machine-learning-modellen
+            te trainen.
+          </p>
+
+          <h2>17. Wijzigingen</h2>
           <p>
             Wij behouden ons het recht voor om deze privacy policy te wijzigen. Wijzigingen worden
             op deze pagina gepubliceerd. We raden je aan om deze pagina regelmatig te raadplegen
@@ -440,7 +480,7 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <p className={styles.lastUpdated}>
-            Laatst bijgewerkt: mei 2026
+            Laatst bijgewerkt: juni 2026
           </p>
         </div>
       </section>
