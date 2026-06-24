@@ -6,15 +6,14 @@ import {
   DossRow,
   DossCheckPill,
   DossDotRow,
-  DossCheckbox,
 } from './DossAtoms'
 import { streetViewHref, satelliteHref } from '@/lib/dashboard/maps-links'
-import type { DossierLead, DossBijzonder, DossVraag } from './dossier-mock'
+import type { DossierLead, DossBijzonder } from './dossier-mock'
 import styles from './DossInfo.module.css'
 
 // ── DossInfo ──
-// Info-tab: Contact, Dienst, Bijzonderheden en Surface-uitvraag, nu gevoed
-// met echte lead-data (props) i.p.v. de DOSS-mock.
+// Info-tab: Contact, Dienst en Bijzonderheden, gevoed met echte lead-data
+// (props) i.p.v. de DOSS-mock.
 type DossInfoProps = {
   lead: Pick<DossierLead, 'm2' | 'id'>
   contact: { telefoon: string; email: string; adres: string; afstand: number | null; lat: number | null; lng: number | null }
@@ -22,10 +21,9 @@ type DossInfoProps = {
   waTel: string
   dienst: { hoofd: string; sub: string[] }
   bijzonderheden: DossBijzonder[]
-  vragen: DossVraag[]
 }
 
-export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen }: DossInfoProps) {
+export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden }: DossInfoProps) {
   // Echte maps-link op het adres (alleen als er een adres is; mapper geeft '—').
   const heeftAdres = contact.adres !== '—' && contact.adres.trim() !== ''
   const mapsHref = heeftAdres
@@ -107,21 +105,6 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, vragen 
           </div>
         </section>
       )}
-
-      {/* Surface-uitvraag: checkbox-vragen (afgevinkt = lichter gewicht). */}
-      <section>
-        <DossLabel>Surface-uitvraag</DossLabel>
-        <div className={styles.questionCard}>
-          {vragen.map((q) => (
-            <div key={q.q} className={styles.questionRow}>
-              <DossCheckbox done={q.done} />
-              <span className={styles.questionText} data-done={q.done || undefined}>
-                {q.q}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   )
 }

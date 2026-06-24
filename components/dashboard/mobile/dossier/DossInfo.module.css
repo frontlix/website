@@ -73,32 +73,3 @@
   font-size: 12px;
   font-weight: 600;
 }
-
-/* ── Surface-uitvraag ──────────────────────────────────────────────────── */
-
-.questionCard {
-  background: var(--color-surface);
-  border-radius: 14px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-}
-
-.questionRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Afgevinkt → zachte tekst, normaal gewicht; openstaand → fg, gewicht 600. */
-.questionText {
-  font-size: 13.5px;
-  color: var(--color-text);
-  font-weight: 600;
-}
-
-.questionText[data-done] {
-  color: var(--color-text-soft);
-  font-weight: 400;
-}

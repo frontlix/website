@@ -102,7 +102,6 @@ export function MobileLeadDossier({
               waTel={data.waTel}
               dienst={data.dienst}
               bijzonderheden={data.bijzonderheden}
-              vragen={data.vragen}
             />
           )}
           {/* Offerte-tab: mobiele accordion-editor. Zelfde datamodel + rekenwerk

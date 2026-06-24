@@ -12,7 +12,6 @@ import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/l
 import type {
   DossierLead,
   DossBijzonder,
-  DossVraag,
   DossRegel,
   DossActity,
 } from './dossier-mock'
@@ -55,7 +54,6 @@ export type MobileDossierData = {
   contact: { telefoon: string; email: string; adres: string; afstand: number | null; lat: number | null; lng: number | null }
   dienst: { hoofd: string; sub: string[] }
   bijzonderheden: DossBijzonder[]
-  vragen: DossVraag[]
   surface: { fase: string; message: string }
   offerte: {
     status: string
@@ -117,16 +115,6 @@ function buildBijzonderheden(l: LeadDetail['lead']): DossBijzonder[] {
     })
   }
   return rows
-}
-
-/** Surface-uitvraag, done-status afgeleid uit lead-velden. */
-function buildVragen(l: LeadDetail['lead'], fotoCount: number): DossVraag[] {
-  return [
-    { q: "Foto's ontvangen", done: fotoCount > 0 },
-    { q: 'Voegkleur gekozen', done: Boolean(l.zand_kleur || l.voegzand_type) },
-    { q: 'Planten afgestemd', done: !l.planten || Boolean(l.planten_afschermen) },
-    { q: 'Oppervlakte bevestigd', done: l.m2_bevestigd === true },
-  ]
 }
 
 /** Korte surface-statusregel op basis van de lead-stand. */
@@ -372,7 +360,6 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     },
     dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),
-    vragen: buildVragen(l, fotoCount),
     surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
     offerte: buildOfferte(detail),
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
