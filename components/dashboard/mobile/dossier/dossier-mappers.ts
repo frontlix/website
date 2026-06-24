@@ -304,25 +304,31 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
 
   // Opdrachtbon-model (gedeeld met desktop): de laatst verstuurde offerte
   // levert de werkzaamheden + het bonnummer, anders vallen we terug op de
-  // lead-werkvelden. Zelfde buildSentOffertePdfModel-afleiding als v2 zodat het
-  // bonnummer desktop/mobiel identiek is.
+  // lead-werkvelden. Spiegelt v2 exact (eerste niet-concept offerte MET een
+  // bruikbare snapshot, leadId = l.id) zodat het bonnummer desktop/mobiel
+  // identiek is.
   const baseData = mapLeadToFormData(l)
-  const latestSent = detail.offertes.find((o) => !o.is_concept)
-  const sentModel = latestSent
-    ? buildSentOffertePdfModel({
-        offerte: {
-          regels_snapshot: latestSent.regels_snapshot,
-          totaal_incl: latestSent.totaal_incl,
-          korting_pct: latestSent.korting_pct,
-          versie: latestSent.versie,
-          aangemaakt_op: latestSent.aangemaakt_op,
-          offertenummer: (latestSent as { offertenummer?: string | null }).offertenummer ?? null,
-        },
-        baseData,
-        leadId: l.lead_id,
-        geldigheidFallback: l.offerte_geldigheid_dagen ?? 14,
-      })
-    : null
+  let sentModel = null
+  for (const o of detail.offertes) {
+    if (o.is_concept) continue
+    const m = buildSentOffertePdfModel({
+      offerte: {
+        regels_snapshot: o.regels_snapshot,
+        totaal_incl: o.totaal_incl,
+        korting_pct: o.korting_pct,
+        versie: o.versie,
+        aangemaakt_op: o.aangemaakt_op,
+        offertenummer: (o as { offertenummer?: string | null }).offertenummer ?? null,
+      },
+      baseData,
+      leadId: l.id,
+      geldigheidFallback: l.offerte_geldigheid_dagen ?? 14,
+    })
+    if (m) {
+      sentModel = m
+      break
+    }
+  }
   const opdrachtbon = buildOpdrachtbonModel({
     leadId: l.lead_id,
     klantNaam: l.naam,
