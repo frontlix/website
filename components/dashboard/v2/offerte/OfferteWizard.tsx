@@ -5,17 +5,21 @@ import { Pencil, TriangleAlert, FileStack, Trash2, Plus } from "lucide-react";
 import { Modal } from "@/components/dashboard/v2/ui";
 import {
   listDrafts,
-  upsertDraft,
-  removeDraft,
   makeDraftId,
   formatLaatstBewerkt,
-  type OfferteDraft,
+  type OfferteDraftState,
 } from "./offerte-drafts";
+import {
+  listConcepten,
+  upsertConcept,
+  removeConcept,
+  type Concept,
+} from "@/lib/dashboard/offerte-concept-actions";
 import { createManualLeadEnOfferte } from "@/lib/dashboard/manual-offerte-actions";
 import { getPricingForOffertePreview, getOffertePreviewMeta } from "@/lib/dashboard/pricing-actions";
 import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import { isValidEmail } from "@/components/dashboard/offerte/StepKlant";
-import { mapWizardToManualOfferte } from "./offerte-mappers";
+import { buildManualOfferteFromWizard, mapManualOfferteToWizard } from "./offerte-mappers";
 import { StapKlant } from "./StapKlant";
 import { StapWerk } from "./StapWerk";
 import { StapOfferte } from "./StapOfferte";
@@ -88,7 +92,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   const [draftId, setDraftId] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [conceptenOpen, setConceptenOpen] = useState(false);
-  const [drafts, setDrafts] = useState<OfferteDraft[]>([]);
+  const [drafts, setDrafts] = useState<Concept[]>([]);
 
   // Live pricing-snapshot (zelfde bron als ManualOfferteModal). Nodig om de
   // vrije meerwerk-regels betrouwbaar naar de extra_arbeid-velden te vertalen:
@@ -453,52 +457,79 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     if (verzonden || !heeftInhoud) return;
     const id = draftId ?? makeDraftId();
     if (!draftId) setDraftId(id);
-    // Debounce: schrijf 500ms na de laatste wijziging, zodat snel typen niet
-    // bij elke toetsaanslag naar localStorage gaat.
+    // Debounce: schrijf 1200ms na de laatste wijziging, zodat snel typen niet
+    // bij elke toetsaanslag een server-action (DB-upsert) afvuurt. De volledige
+    // wizard-state gaat als v2State mee; de canonieke ManualOfferteData (data)
+    // maakt het concept cross-wizard leesbaar voor de mobiele modal.
     const t = setTimeout(() => {
-      upsertDraft({
-        id,
-        updatedAt: Date.now(),
-        label: conceptLabel,
-        totaal,
-        state: {
-          stap,
-          zoek,
-          klant,
-          klantType,
-          aiGebruikt,
-          factuurZelfde,
-          factuur,
-          afstandKm,
-          m2,
-          qty,
-          rolPrijs,
-          voegzandM2,
-          voegzandZakken,
-          zandPrijzen,
-          prijsOverrides,
-          diensten,
-          bm2,
-          om2,
-          groeneAanslag,
-          kleur,
-          korstmosConditie,
-          onderhoudWeken,
-          korstmosToeslag,
-          kortingType,
-          kortingPct,
-          kortingEuro,
-          kortingReden,
-          geldigDagen,
-          btw,
-          vrij,
-          volgorde,
-          bericht,
-          kanaal,
-        },
+      const v2State: OfferteDraftState = {
+        stap,
+        zoek,
+        klant,
+        klantType,
+        aiGebruikt,
+        factuurZelfde,
+        factuur,
+        afstandKm,
+        m2,
+        qty,
+        rolPrijs,
+        voegzandM2,
+        voegzandZakken,
+        zandPrijzen,
+        prijsOverrides,
+        diensten,
+        bm2,
+        om2,
+        groeneAanslag,
+        kleur,
+        korstmosConditie,
+        onderhoudWeken,
+        korstmosToeslag,
+        kortingType,
+        kortingPct,
+        kortingEuro,
+        kortingReden,
+        geldigDagen,
+        btw,
+        vrij,
+        volgorde,
+        bericht,
+        kanaal,
+      };
+      const data = buildManualOfferteFromWizard({
+        klant,
+        factuurZelfde,
+        factuur,
+        m2,
+        qty,
+        rolPrijs,
+        voegzandM2,
+        voegzandZakken,
+        voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
+        zandPrijzen,
+        prijsOverrides,
+        diensten,
+        groeneAanslag,
+        kleur,
+        korstmosConditie,
+        kortingType,
+        kortingPct,
+        kortingEuro,
+        kortingReden,
+        geldigheidDagen: geldigDagen,
+        bericht,
+        kanaal,
+        afstandKm,
+        bm2,
+        om2,
+        vrij,
+        perMin: pricing.extra_arbeid_per_min,
       });
-      setSavedAt(Date.now());
-    }, 500);
+      void upsertConcept({ id, data, v2State, label: conceptLabel, totaal }).then((res) => {
+        if (res.ok) setSavedAt(Date.now());
+      });
+    }, 1200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -510,15 +541,23 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     verzonden, heeftInhoud, conceptLabel, draftId,
   ]);
 
-  // Concepten-lijst verversen telkens als het paneel opent (en bij mount).
+  // Concepten-lijst (gedeeld per account) verversen telkens als het paneel opent.
   useEffect(() => {
-    if (conceptenOpen) setDrafts(listDrafts());
+    if (!conceptenOpen) return;
+    void listConcepten().then((res) => {
+      if (res.ok && res.data) setDrafts(res.data);
+    });
   }, [conceptenOpen]);
 
   // Laad een bestaand concept terug in de wizard. setM2kaal i.p.v. setM2 zodat
   // de exacte opgeslagen voegzand-verdeling blijft staan (setM2 herrekent die).
-  const laadConcept = (d: OfferteDraft) => {
-    const s = d.state;
+  const laadConcept = (c: Concept) => {
+    // v2-concepten dragen de volledige wizard-state in v2State; concepten die in
+    // de mobiele modal zijn gemaakt hebben die niet, dus reconstrueren we de
+    // state uit de canonieke ManualOfferteData via de fallback-mapper.
+    const s =
+      (c.v2State as OfferteDraftState | null) ??
+      mapManualOfferteToWizard(c.data, pricing.extra_arbeid_per_min);
     setStap(s.stap);
     setZoek(s.zoek);
     setKlant(s.klant);
@@ -555,8 +594,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     setVolgorde(s.volgorde);
     setBericht(s.bericht);
     setKanaal(s.kanaal);
-    setDraftId(d.id);
-    setSavedAt(d.updatedAt);
+    setDraftId(c.id);
+    setSavedAt(c.bijgewerktOp);
     setVerzonden(false);
     setFout(null);
     setServerTotaal(null);
@@ -610,10 +649,67 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
 
   // Verwijder een concept uit de lijst (en uit de wizard als het de actieve was).
   const verwijderConcept = (id: string) => {
-    removeDraft(id);
-    setDrafts(listDrafts());
+    void removeConcept(id).then(() => {
+      void listConcepten().then((res) => {
+        if (res.ok && res.data) setDrafts(res.data);
+      });
+    });
     if (id === draftId) nieuwLeegConcept();
   };
+
+  // Eenmalige migratie: bestaande lokale (per-browser) concepten naar de
+  // gedeelde database uploaden en daarna de localStorage-sleutel wissen, zodat
+  // ze nog maar één keer worden gemigreerd. Draait één keer bij mount.
+  useEffect(() => {
+    const lokale = listDrafts(); // leest 'frontlix:v2:offerte-concepten'
+    if (lokale.length === 0) return;
+    void (async () => {
+      let allesOk = true;
+      for (const d of lokale) {
+        const data = buildManualOfferteFromWizard({
+          klant: d.state.klant,
+          factuurZelfde: d.state.factuurZelfde,
+          factuur: d.state.factuur,
+          m2: d.state.m2,
+          qty: d.state.qty,
+          rolPrijs: d.state.rolPrijs,
+          voegzandM2: d.state.voegzandM2,
+          voegzandZakken: d.state.voegzandZakken,
+          voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
+          zandPrijzen: d.state.zandPrijzen,
+          prijsOverrides: d.state.prijsOverrides ?? {},
+          diensten: d.state.diensten,
+          groeneAanslag: d.state.groeneAanslag,
+          kleur: d.state.kleur,
+          korstmosConditie: d.state.korstmosConditie,
+          kortingType: d.state.kortingType,
+          kortingPct: d.state.kortingPct,
+          kortingEuro: d.state.kortingEuro,
+          kortingReden: d.state.kortingReden,
+          geldigheidDagen: d.state.geldigDagen,
+          bericht: d.state.bericht,
+          kanaal: d.state.kanaal,
+          afstandKm: d.state.afstandKm,
+          bm2: d.state.bm2,
+          om2: d.state.om2,
+          vrij: d.state.vrij,
+          perMin: pricing.extra_arbeid_per_min,
+        });
+        const res = await upsertConcept({
+          id: d.id,
+          data,
+          v2State: d.state,
+          label: d.label,
+          totaal: d.totaal,
+        });
+        if (!res.ok) allesOk = false;
+      }
+      if (allesOk && typeof window !== "undefined") {
+        window.localStorage.removeItem("frontlix:v2:offerte-concepten");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const klantOk = !!(klant && klant.naam && klant.naam.trim());
   const naarStap = (i: number) => {
@@ -721,24 +817,10 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       return;
     }
 
-    // Vrije meerwerk-regels → extra_arbeid. De server kent geen vaste-euro
-    // regel, alleen arbeid per minuut, dus reken het euro-totaal met het live
-    // tarief terug naar (whole) minuten bij 1 persoon. Whole-minute-afronding
-    // kan een paar cent schelen (gedocumenteerde follow-up); het meerwerk
-    // verdwijnt zo niet meer stilzwijgend uit het opgeslagen totaal.
-    const vrijSom = vrij.reduce((s, v) => s + parsePrijs(v.bedrag), 0);
-    const perMin = pricing.extra_arbeid_per_min > 0 ? pricing.extra_arbeid_per_min : 1;
-    const extraMinuten = vrijSom > 0 ? Math.round(vrijSom / perMin) : 0;
-    const vrijOmschrijving = vrij
-      .map((v) => v.naam.trim())
-      .filter(Boolean)
-      .join("; ");
-    const extraArbeid =
-      extraMinuten > 0
-        ? { minuten: extraMinuten, personen: 1, omschrijving: vrijOmschrijving || "Meerwerk" }
-        : { minuten: 0, personen: 0, omschrijving: "" };
-
-    const payload = mapWizardToManualOfferte({
+    // Vrije meerwerk-regels → extra_arbeid + alle wizard-velden → payload via de
+    // gedeelde helper, zodat verzenden en auto-save exact dezelfde
+    // ManualOfferteData produceren (de euro→minuten-omzetting zit in de helper).
+    const payload = buildManualOfferteFromWizard({
       klant,
       factuurZelfde,
       factuur,
@@ -762,9 +844,10 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       bericht,
       kanaal,
       afstandKm,
-      extraArbeid,
       bm2,
       om2,
+      vrij,
+      perMin: pricing.extra_arbeid_per_min,
     });
     startVerstuur(async () => {
       try {
@@ -786,7 +869,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           }
           // Verstuurd/gedownload → het is nu een echte offerte, geen concept meer.
           if (draftId) {
-            removeDraft(draftId);
+            void removeConcept(draftId);
             setDraftId(null);
           }
           setVerzonden(true);
@@ -876,7 +959,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
                               <span className={styles.conceptNaam}>{d.label}</span>
                               <span className={styles.conceptMeta}>
                                 {d.totaal > 0 ? `${fmtEuro(d.totaal)} · ` : ""}
-                                {formatLaatstBewerkt(d.updatedAt)}
+                                {formatLaatstBewerkt(d.bijgewerktOp)}
                                 {d.id === draftId ? " · nu open" : ""}
                               </span>
                             </button>
