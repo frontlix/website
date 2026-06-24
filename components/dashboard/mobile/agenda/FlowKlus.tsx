@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type AgendaEvent } from './agenda-mock'
 import { eventTone, durStr } from './agenda-mobile-helpers'
+import { AfspraakPrintButton } from '@/components/dashboard/v2/dossier/AfspraakPrintButton'
 import styles from './FlowKlus.module.css'
 
 type FlowKlusProps = {
@@ -152,6 +153,16 @@ export function FlowKlus({ ev, onHerplan, onAfronden, onAnnuleer }: FlowKlusProp
         <FKV k="Type" v={ev.dienst ?? '—'} last={ev.m2 == null} />
         {ev.m2 != null && <FKV k="Oppervlakte" v={`${ev.m2} m²`} last />}
       </FDetailCard>
+
+      {/* Afspraak uitprinten: zelfde A4-PDF + printdialoog als desktop. Alleen
+          bij een echte lead-afspraak (ev.afspraak), niet bij externe events. */}
+      {ev.afspraak && (
+        <AfspraakPrintButton
+          info={ev.afspraak}
+          triggerClassName={styles.printBtn}
+          label="Afspraak uitprinten"
+        />
+      )}
 
       {/* Footer-acties (sticky onderaan) */}
       <div className={styles.footer}>

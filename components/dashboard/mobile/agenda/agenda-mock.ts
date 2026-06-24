@@ -1,5 +1,7 @@
 // MOCK v1, vervang door getAppointmentsForRange in de functionele pass
 
+import type { AfspraakInfo } from '@/lib/dashboard/afspraak-info'
+
 export type AgendaEventKind = 'plaatsbezoek' | 'klus' | 'bel' | 'eigen'
 
 export interface AgendaEvent {
@@ -20,6 +22,8 @@ export interface AgendaEvent {
   materialen?: string[]
   current?: boolean    // live / bezig event
   done?: boolean       // afgehandeld (dashboard_status === 'afgehandeld')
+  /** Presentatie-klare afspraak-gegevens voor de uitprint-knop (echte leads). */
+  afspraak?: AfspraakInfo
 }
 
 // ── Kind mapping: handoff tone-field → typed kind ─────────────────────────

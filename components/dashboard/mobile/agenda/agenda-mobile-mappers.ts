@@ -4,6 +4,7 @@
 import type { Appointment } from '@/lib/dashboard/agenda-queries'
 import type { ExternalEvent } from '@/lib/dashboard/external-events-queries'
 import { durationUntilWorkdayEndMin } from '@/lib/dashboard/agenda-event'
+import { buildAfspraakInfo } from '@/lib/dashboard/afspraak-info'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 
 /** 'HH:MM' (Europe/Amsterdam) uit een ISO/UTC-timestamp. */
@@ -88,6 +89,9 @@ export function mapAppointmentsToAgendaEvents(
         afstandKm: a.afstand_km ?? null,
         done: a.dashboard_status === 'afgehandeld',
         current: startMs <= nowMs && nowMs < startMs + durationMin * 60_000,
+        // Presentatie-klare afspraak-gegevens voor de uitprint-knop (zelfde
+        // PDF als desktop). De Appointment-rij draagt alle benodigde velden.
+        afspraak: buildAfspraakInfo(a),
       }
     })
     .sort((x, y) => `${x.date} ${x.start}`.localeCompare(`${y.date} ${y.start}`))

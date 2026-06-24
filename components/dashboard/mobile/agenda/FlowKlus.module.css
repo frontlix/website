@@ -228,6 +228,30 @@
   cursor: pointer;
 }
 
+/* Afspraak uitprinten: volle breedte, rustige ghost-stijl, uitgelijnd met de
+   detail-kaarten (zelfde content-padding). */
+.printBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 2 * var(--mobile-content-pad));
+  margin: 4px var(--mobile-content-pad) 0;
+  padding: 12px 14px;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.printBtn:active {
+  background: var(--color-chip-bg);
+}
+
 .btnPrimary {
   flex: 1;
   display: inline-flex;
