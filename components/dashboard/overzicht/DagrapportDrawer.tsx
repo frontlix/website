@@ -229,11 +229,15 @@ function Sparkline({ points }: { points: number[] }) {
   const w = 100
   const h = 22
   const pad = 2
+  // Lege reeks: niets tekenen (voorkomt NaN-coördinaten en een lege/kapotte SVG).
+  if (points.length === 0) return null
   const max = Math.max(...points, 1)
+  // Deler nooit 0 (bij 1 datapunt zou (length-1)=0 → NaN geven).
+  const denom = Math.max(1, points.length - 1)
 
   // Bouw x,y-coördinaten, gelijk verdeeld over breedte
   const coords = points.map((v, i) => {
-    const x = pad + (i / (points.length - 1)) * (w - pad * 2)
+    const x = pad + (i / denom) * (w - pad * 2)
     const y = h - pad - (v / max) * (h - pad * 2)
     return { x, y }
   })

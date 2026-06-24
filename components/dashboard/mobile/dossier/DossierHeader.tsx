@@ -34,9 +34,7 @@ export function DossierHeader({ lead, onBack }: DossierHeaderProps) {
               <span className={styles.stageDot} aria-hidden="true" />
               {lead.stage}
             </span>
-            <span className={styles.sub}>
-              {lead.plaats} · {lead.id}
-            </span>
+            <span className={styles.sub}>{lead.plaats}</span>
           </div>
         </div>
       </div>

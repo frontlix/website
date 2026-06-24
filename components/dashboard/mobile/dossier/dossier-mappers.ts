@@ -16,6 +16,7 @@ import type {
   DossRegel,
   DossActity,
 } from './dossier-mock'
+import type { DossNote } from './DossNotities'
 // Editor-types hergebruiken (niet dupliceren) zodat de seed-functie van de
 // offerte-editor direct op deze velden matcht.
 import type { EditorKlant, SeedRegel } from './offerte/offerte-edit-seed'
@@ -78,6 +79,8 @@ export type MobileDossierData = {
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
+  /** Team-notities (nieuwste eerst), bewerk/verwijderbaar via de Notities-tab. */
+  notes: DossNote[]
   /** Voorgebouwd model voor de printbare opdrachtbon (offerte zonder prijzen). */
   opdrachtbon: OpdrachtbonModel
 }
@@ -374,6 +377,19 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     offerte: buildOfferte(detail),
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
     activity: buildActivity(detail, now),
+    // Team-notities (getLeadDetail sorteert al nieuwste-eerst), zelfde vorm als desktop.
+    notes: detail.notes.map((n) => ({
+      id: n.id,
+      wie: n.auteur ? 'Teamlid' : 'Surface',
+      tijd: noteRelTime(n.aangemaakt_op),
+      tekst: n.tekst,
+    })),
     opdrachtbon,
   }
+}
+
+/** Relatieve, korte tijd voor notitie-meta ("zojuist" / "12m geleden"). */
+function noteRelTime(iso: string | null | undefined): string {
+  const s = shortTimeAgo(iso)
+  return s === 'nu' ? 'zojuist' : s === '—' ? '' : `${s} geleden`
 }

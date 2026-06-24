@@ -19,6 +19,12 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+/* Tag-rij uitlijnen met de rest van de mobiele schil (header/factstrip/tabs
+   hebben hun eigen 16px-marge; LeadTagsRow zelf niet). */
+.tagsRow {
+  padding: 6px 16px 0;
+}
+
 .tabBody {
   padding: 0 16px 24px;
 }
