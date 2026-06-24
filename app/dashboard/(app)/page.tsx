@@ -5,8 +5,6 @@ import {
   thisWeekRolling,
   prevWeekRange,
   prevMonthSamePeriodRange,
-  last30DaysRange,
-  prev30DaysRange,
 } from '@/lib/dashboard/period'
 import {
   countLeads,
@@ -83,8 +81,6 @@ export default async function OverzichtPage({
   const week7d = thisWeekRolling(now)
   const prevWeek7d = prevWeekRange(now)
   const prevMaand = prevMonthSamePeriodRange(now)
-  const last30 = last30DaysRange(now)
-  const prev30 = prev30DaysRange(now)
   // "Vandaag" = sinds middernacht Europe/Amsterdam, handmatig omdat
   // periodToRange geen 'vandaag' kent.
   const vandaagStart = (() => {
@@ -118,11 +114,6 @@ export default async function OverzichtPage({
     leadsLast7d,
     leadsPrev7d,
     convertedMaandPrev,
-    avgWaardePrev,
-    leadsLast30d,
-    convertedLast30d,
-    leadsPrev30d,
-    convertedPrev30d,
     reactietijdLast7Ms,
     reactietijdPrev7Ms,
     openOffertes,
@@ -151,11 +142,6 @@ export default async function OverzichtPage({
     countLeads(week7d),
     countLeads(prevWeek7d),
     countConverted(prevMaand),
-    avgOfferteWaarde(prevMaand),
-    countLeads(last30),
-    countConverted(last30),
-    countLeads(prev30),
-    countConverted(prev30),
     avgReactietijdMs(week7d),
     avgReactietijdMs(prevWeek7d),
     countOpenOffertes(),
