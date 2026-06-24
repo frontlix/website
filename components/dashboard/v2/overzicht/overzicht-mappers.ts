@@ -225,7 +225,7 @@ export function mapKpiTiles(
   };
   return [
     make(metrics.leads, "Nieuwe leads (week)"),
-    make(metrics.conversie, "Conversie offerte→klant"),
+    make(metrics.conversie, "Conversie lead→klant"),
     make(metrics.reactietijd, "Reactietijd (gem.)"),
     make(extraOffertesOpen, "Offertes open"),
   ];

@@ -93,7 +93,7 @@ export function mapKpis(bron: KpiBron): Kpi[] {
       up: true,
     },
     {
-      label: "Conversie offerte→klant",
+      label: "Conversie lead→klant",
       value: bron.total > 0 ? String(conversiePct) : "—",
       unit: bron.total > 0 ? "%" : "",
       delta: bron.total > 0 ? `${bron.converted}/${bron.total}` : "",
