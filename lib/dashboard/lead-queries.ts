@@ -1,4 +1,5 @@
 import { getDashboardSupabase } from './supabase-server'
+import { geocodeAddress } from './geocoding'
 import type {
   Lead,
   Bericht,
@@ -351,8 +352,36 @@ export async function getLeadDetail(leadId: string): Promise<LeadDetail | null> 
 
   if (!leadRes.data) return null
 
+  const lead = leadRes.data as unknown as Lead
+
+  // Lazy-geocode: de bot maakt leads aan zonder coordinaten; we vullen ze hier
+  // alsnog eenmalig (postcode + huisnummer -> lat/lng via postcode.tech) en
+  // schrijven ze terug, zodat de Street View / Satelliet-links in het dossier
+  // werken. Best-effort: faalt 'ie (geen key, onbekend adres), dan blijft lat
+  // null en valt de UI terug op een gewone Maps-zoeklink. Draait alleen zolang
+  // de lead nog geen coords heeft, dus max 1 lookup per lead.
+  if (lead.lat == null && lead.postcode && lead.huisnummer) {
+    try {
+      const geo = await geocodeAddress(lead.postcode, lead.huisnummer)
+      if (geo) {
+        lead.lat = geo.lat
+        lead.lng = geo.lng
+        await supabase
+          .from('leads')
+          .update({
+            lat: geo.lat,
+            lng: geo.lng,
+            coords_geocoded_op: new Date().toISOString(),
+          })
+          .eq('lead_id', leadId)
+      }
+    } catch (e) {
+      console.error('[getLeadDetail] lazy-geocode faalde:', e)
+    }
+  }
+
   return {
-    lead: leadRes.data as unknown as Lead,
+    lead,
     berichten: (berichtenRes.data as unknown as Bericht[] | null) ?? [],
     fotos: (fotosRes.data as unknown as Foto[] | null) ?? [],
     offertes: (offertesRes.data as unknown as Offerte[] | null) ?? [],
