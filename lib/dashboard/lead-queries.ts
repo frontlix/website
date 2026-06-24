@@ -48,6 +48,7 @@ export type LeadListItem = Pick<
   | 'offerte_verstuurd'
   | 'offerte_verstuurd_op'
   | 'akkoord_op'
+  | 'eigenaar_overgenomen'
 >
 
 const LIST_COLUMNS = [
@@ -80,6 +81,7 @@ const LIST_COLUMNS = [
   'offerte_verstuurd',
   'offerte_verstuurd_op',
   'akkoord_op',
+  'eigenaar_overgenomen',
 ].join(', ')
 
 /**

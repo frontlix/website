@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import { leadStatusMeta, headerStatusMeta } from './lead-status-meta'
+import { describe, test, it, expect } from 'vitest'
+import { leadStatusMeta, headerStatusMeta, isHandover } from './lead-status-meta'
 
 describe('leadStatusMeta — pijplijn-status (leads.status)', () => {
   test('info_compleet → "Klaar voor offerte" (amber)', () => {
@@ -42,5 +42,26 @@ describe('headerStatusMeta — detailkop-badge (Bug A)', () => {
       label: 'Nieuw',
       tone: 'blue',
     })
+  })
+})
+
+describe('isHandover', () => {
+  it('is true bij eigenaar_overgenomen=true', () => {
+    expect(isHandover({ eigenaar_overgenomen: true, status: 'info_compleet' })).toBe(true)
+  })
+  it('is true bij status=handoff', () => {
+    expect(isHandover({ eigenaar_overgenomen: false, status: 'handoff' })).toBe(true)
+  })
+  it('is false bij een gewone lead', () => {
+    expect(isHandover({ eigenaar_overgenomen: false, status: 'in_gesprek' })).toBe(false)
+  })
+  it('is false bij ontbrekende velden', () => {
+    expect(isHandover({})).toBe(false)
+  })
+})
+
+describe('leadStatusMeta handoff-label', () => {
+  it('toont "Zelf overnemen" voor status handoff', () => {
+    expect(leadStatusMeta('handoff')).toEqual({ label: 'Zelf overnemen', tone: 'red' })
   })
 })

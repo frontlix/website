@@ -26,7 +26,7 @@ export const LEAD_STATUS_META: Record<string, StatusMeta> = {
   offerte_verstuurd: { label: 'Offerte verstuurd',  tone: 'amber' },
   goedgekeurd:       { label: 'Goedgekeurd',        tone: 'green' },
   afgewezen:         { label: 'Afgewezen',          tone: 'red'   },
-  handoff:           { label: 'Handover',           tone: 'red'   },
+  handoff:           { label: 'Zelf overnemen',     tone: 'red'   },
 }
 
 /** Label + tone voor een pijplijn-status (met nette fallbacks). */
@@ -49,6 +49,19 @@ const DASHBOARD_STATUS_META: Record<string, StatusMeta> = {
 export function dashboardStatusMeta(status: string | null): StatusMeta {
   if (!status) return DASHBOARD_STATUS_META.open
   return DASHBOARD_STATUS_META[status] ?? DASHBOARD_STATUS_META.open
+}
+
+/**
+ * Of een lead een overdracht ("Zelf overnemen") is: de bot heeft de lead niet
+ * verder in behandeling genomen (buiten werkgebied + onder min-m², of dienst
+ * uit) en de eigenaar moet het zelf oppakken. De bot zet `eigenaar_overgenomen`
+ * zodra hij overneemt; na goedkeuring wordt `status = 'handoff'`. Beide tellen.
+ */
+export function isHandover(lead: {
+  eigenaar_overgenomen?: boolean | null
+  status?: string | null
+}): boolean {
+  return lead.eigenaar_overgenomen === true || lead.status === 'handoff'
 }
 
 /**
