@@ -1,0 +1,123 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inputRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input,
+.editInput {
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:focus,
+.editInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.addBtn {
+  align-self: flex-end;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 99px;
+  padding: 9px 18px;
+}
+
+.addBtn:disabled {
+  opacity: 0.45;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 4px 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Gele team-notitie-kaart, mobiel. */
+.note {
+  background: color-mix(in srgb, #f5c518 14%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, #f5c518 30%, transparent);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.noteText {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.noteFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.noteMeta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.noteActions {
+  display: flex;
+  gap: 4px;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-soft);
+  border-radius: 8px;
+}
+
+.iconBtn:active {
+  background: var(--color-surface-2);
+}
+
+.editRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
