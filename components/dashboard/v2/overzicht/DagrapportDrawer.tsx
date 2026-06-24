@@ -189,9 +189,13 @@ function Sparkline({ points }: { points: number[] }) {
   const w = 100;
   const h = 22;
   const pad = 2;
+  // Veilig bij lege of 1-punts reeks: geen deling door 0 en geen toegang tot
+  // coords[-1]. Lege reeks => niets renderen i.p.v. crashen.
+  if (!points || points.length === 0) return null;
   const max = Math.max(...points, 1);
+  const denom = points.length > 1 ? points.length - 1 : 1;
   const coords = points.map((v, i) => {
-    const x = pad + (i / (points.length - 1)) * (w - pad * 2);
+    const x = pad + (i / denom) * (w - pad * 2);
     const y = h - pad - (v / max) * (h - pad * 2);
     return { x, y };
   });
