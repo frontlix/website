@@ -1,50 +1,29 @@
 "use client";
 
-import { CalendarClock, Printer } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 import type { DossierData } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
+import { AfspraakPrintButton } from "./AfspraakPrintButton";
 import styles from "./AfspraakTab.module.css";
 
 interface AfspraakTabProps {
   /** Echte dossier-data; zonder = demo-fallback (DOSSIER). */
   data?: DossierData;
-  /** Echte lead_id, nodig voor de uitprint-link. Zonder (demo) is de knop uit. */
-  leadId?: string;
 }
 
 /** Afspraak-tab: toont de ingeplande afspraak van deze lead (zelfde info als de
- *  agenda-modal, maar lead-specifiek) + een uitprint-knop die de printbare
- *  prikbord-kaart in een nieuw tabblad opent. */
-export function AfspraakTab({ data = DOSSIER, leadId }: AfspraakTabProps) {
+ *  agenda-modal, maar lead-specifiek) + een uitprint-knop die direct een nette
+ *  afspraak-PDF maakt en de printdialoog opent (geen nieuw tabblad). */
+export function AfspraakTab({ data = DOSSIER }: AfspraakTabProps) {
   const a = data.afspraak;
-  const kanPrinten = Boolean(leadId && a.gepland);
 
   return (
     <div className={styles.root}>
       <div className={styles.head}>
         <span className="rb-section-label">Ingeplande afspraak</span>
-        {kanPrinten ? (
-          <a
-            href={`/dashboard/afspraak-preview/${leadId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.printBtn}
-          >
-            <Printer size={13} strokeWidth={2.2} />
-            Uitprinten
-          </a>
-        ) : (
-          <button
-            type="button"
-            className={styles.printBtn}
-            disabled
-            title={a.gepland ? "Alleen beschikbaar met een echte lead" : "Nog geen afspraak"}
-            style={{ opacity: 0.5, cursor: "not-allowed" }}
-          >
-            <Printer size={13} strokeWidth={2.2} />
-            Uitprinten
-          </button>
-        )}
+        {a.gepland ? (
+          <AfspraakPrintButton info={a} triggerClassName={styles.printBtn} label="Uitprinten" />
+        ) : null}
       </div>
 
       {!a.gepland ? (

@@ -5,6 +5,7 @@
 
 import type { AgendaDag, AgendaItem } from "./agenda-data";
 import { EMPTY_DUUR } from "./agenda-data";
+import type { AfspraakInfo } from "@/lib/dashboard/afspraak-info";
 
 /**
  * Stabiele unieke sleutel van een item voor React-keys en selectie-/afvink-
@@ -208,3 +209,58 @@ export function klantTelefoon(item: AgendaItem): string {
 }
 
 export const KLANT_TELEFOON = "06 - 98 76 54 32";
+
+/**
+ * Bouw een AfspraakInfo (voor de print-PDF) uit een agenda-item. Gebruikt de
+ * echte lead-context die de mapper op het item zet; de datum komt uit de
+ * UTC-instant (item.iso), weergegeven in Amsterdamse tijd. Het volledige adres
+ * staat in item.adres (plaats blijft dus leeg, anders dubbel). Geen demo-
+ * fallbacks: ontbrekende velden worden leeg gelaten i.p.v. verzonnen.
+ */
+export function afspraakInfoFromItem(item: AgendaItem): AfspraakInfo {
+  const reis = reisLabel(item.afstandKm);
+  const k = item.klusInfo;
+
+  let datumLang = "";
+  let datumKort = "";
+  if (item.iso) {
+    const d = new Date(item.iso);
+    if (Number.isFinite(d.getTime())) {
+      const lang = new Intl.DateTimeFormat("nl-NL", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Europe/Amsterdam",
+      }).format(d);
+      datumLang = lang.charAt(0).toUpperCase() + lang.slice(1);
+      datumKort = new Intl.DateTimeFormat("nl-NL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "Europe/Amsterdam",
+      })
+        .format(d)
+        .replace(/\//g, "-");
+    }
+  }
+
+  return {
+    gepland: Boolean(item.iso || item.adres || k),
+    klantNaam: klantNaam(item),
+    datumLang,
+    datumKort,
+    tijd: item.tijd ?? "",
+    dienst: k?.categorie ? categorieLabel(k.categorie) : "",
+    subDiensten: (k?.subDiensten ?? []).filter(Boolean).map(subDienstLabel).join(", "),
+    oppervlakte: k?.m2 != null ? `${k.m2} m²` : "",
+    adres: item.adres?.trim() ?? "",
+    plaats: "",
+    telefoon: item.telefoon?.trim() ?? "",
+    reisAfstand: reis?.afstand ?? "",
+    reisTijd: reis?.tijd ?? "",
+    groeneAanslag: Boolean(k?.groeneAanslag),
+    plantenAfschermen: Boolean(k?.plantenAfschermen),
+    geboektOp: "",
+  };
+}
