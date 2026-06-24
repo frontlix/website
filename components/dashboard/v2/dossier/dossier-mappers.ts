@@ -24,6 +24,7 @@ import { mapLeadToFormData } from "@/lib/dashboard/offerte-form-mapping";
 import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
 import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
+import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type {
   DossierData,
@@ -385,6 +386,37 @@ export function mapLeadDetailToDossierData(
   // modellen per verstuurde offerte als voor de inline editor (via buildOfferteForm).
   const baseData = mapLeadToFormData(detail.lead);
 
+  // Offertes eenmalig bouwen (gebruikt door de Offertes-tab en het
+  // opdrachtbon-model hieronder).
+  const offertes = buildOffertes(detail, baseData);
+
+  // Opdrachtbon-model: bij voorkeur uit de laatst verstuurde offerte (eerste
+  // niet-concept met bruikbare snapshot), anders uit de lead-werkvelden.
+  const sentModel =
+    offertes.find((o) => !o.concept && o.pdfModel)?.pdfModel ?? null;
+  const opdrachtbon = buildOpdrachtbonModel({
+    leadId: l.lead_id,
+    klantNaam: l.naam,
+    bedrijf: l.bedrijfsnaam,
+    straat: l.straat,
+    huisnummer: l.huisnummer,
+    postcode: l.postcode,
+    plaats: l.plaats,
+    telefoon: l.telefoon,
+    afspraakDatum: l.afspraak_datum,
+    afspraakStarttijd: l.afspraak_starttijd,
+    sentOfferteNummer: sentModel?.offerteNummer ?? null,
+    sentRules: sentModel
+      ? sentModel.rules.map((r) => ({ desc: r.desc, aantal: r.aantal, eenheid: r.eenheid }))
+      : null,
+    hoofdcategorie: l.hoofdcategorie,
+    subDiensten: l.sub_diensten,
+    m2: l.m2,
+    voegzandType: l.voegzand_type,
+    zandKleur: l.zand_kleur,
+    groeneAanslag: l.groene_aanslag,
+  });
+
   return {
     tel: l.telefoon ?? "Geen nummer",
     afstand: l.afstand_km != null ? `${l.afstand_km} km` : "onbekend",
@@ -393,11 +425,12 @@ export function mapLeadDetailToDossierData(
     werk: buildWerk(l),
     fotos: buildFotos(detail),
     surface: buildSurface(l),
-    offertes: buildOffertes(detail, baseData),
+    offertes,
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
     offerteForm: buildOfferteForm(detail, pricing),
     notities: buildNotities(detail),
     chat: buildChat(detail, now),
+    opdrachtbon,
   };
 }

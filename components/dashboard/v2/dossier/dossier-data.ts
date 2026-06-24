@@ -64,6 +64,7 @@ export interface OfferteRegel {
 import { DEFAULTS } from "@/lib/dashboard/manual-offerte-types";
 import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
 import type { SentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
+import type { OpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
 import type { OfferteFormData } from "./OfferteEditor";
 
 export type { OfferteFormData };
@@ -107,6 +108,8 @@ export interface DossierData {
   offerteForm: OfferteFormData;
   notities: DossierNotitie[];
   chat: DossierBericht[];
+  /** Voorgebouwd model voor de printbare opdrachtbon (offerte zonder prijzen). */
+  opdrachtbon: OpdrachtbonModel;
 }
 
 /** De dossier-details. Eén set voor de demo (gekoppeld aan elke lead die je
@@ -219,4 +222,22 @@ export const DOSSIER: DossierData = {
       fotos: true,
     },
   ],
+  opdrachtbon: {
+    bonnummer: "OB-2026-051",
+    bedrijfsnaam: "Schoon Straatje",
+    klantNaam: "Jeroen de Vries",
+    bedrijf: "De Vries Tuinen",
+    werkadres: ["Lindenlaan 14", "2611 AB Delft"],
+    telefoon: "06 24 96 52 70",
+    afspraak: "woensdag 1 juli 2026, 09:00",
+    werkzaamheden: [
+      { omschrijving: "Reiniging oprit", aantal: "145 m²" },
+      { omschrijving: "Voegen invegen", aantal: "145 m²" },
+      { omschrijving: "Nieuwe beschermlaag", aantal: "145 m²" },
+    ],
+    detailregels: [
+      { label: "Voegzand", waarde: "Onkruidwerend · Antraciet" },
+      { label: "Groene aanslag", waarde: "Ja" },
+    ],
+  },
 };

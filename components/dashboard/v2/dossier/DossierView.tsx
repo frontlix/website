@@ -15,6 +15,7 @@ import { DOSSIER } from "./dossier-data";
 import type { DossierData, DossierNotitie, DossierBericht } from "./dossier-data";
 import { InfoTab } from "./InfoTab";
 import { OffertesTab } from "./OffertesTab";
+import { OpdrachtbonActions } from "./OpdrachtbonActions";
 import { FotosTab } from "./FotosTab";
 import { NotitiesTab } from "./NotitiesTab";
 import { ChatPanel } from "./ChatPanel";
@@ -313,6 +314,11 @@ export function DossierView({
           {/* Offerte versturen naar de klant via de bot (WhatsApp). Alleen de
               eerste verzending; bij een reeds verstuurde offerte toont de knop
               "Al verstuurd" en is 'ie uitgeschakeld. */}
+          <OpdrachtbonActions
+            model={data.opdrachtbon}
+            klantNaam={lead.naam}
+            triggerClassName={styles.actieBtn}
+          />
           <button
             type="button"
             className={styles.primaryBtn}
