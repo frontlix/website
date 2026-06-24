@@ -59,6 +59,8 @@ export type OffertePdfData = {
     aantalLabel: string      // bv. "80 m²" of "2 rol"; lege string bij geen aantal
     stukprijs: number
     totaal: number
+    /** Klant-opmerking als subregel onder de omschrijving (optioneel). */
+    opmerking?: string
   }[]
   subtotaal: number          // sub0 (som van actieve regels)
   toeslagen: { label: string; bedrag: number }[]
@@ -328,7 +330,22 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                 {data.regels.length > 0 ? (
                   data.regels.map((r, i) => (
                     <tr key={i} className={i % 2 === 1 ? styles.rowAlt : undefined}>
-                      <td className={styles.cellDesc}>{r.omschrijving}</td>
+                      <td className={styles.cellDesc}>
+                        {r.omschrijving}
+                        {r.opmerking ? (
+                          <span
+                            style={{
+                              display: "block",
+                              marginTop: 3,
+                              fontSize: "0.85em",
+                              color: "#6b7280",
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            ↳ {r.opmerking}
+                          </span>
+                        ) : null}
+                      </td>
                       <td className={styles.cellNum}>{r.aantalLabel}</td>
                       <td className={styles.cellNum}>{eurPdf(r.stukprijs)}</td>
                       <td className={`${styles.cellNum} ${styles.cellTotal}`}>{eurPdf(r.totaal)}</td>

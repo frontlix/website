@@ -8,13 +8,13 @@
 // + var(--rb-*) tokens, lucide). Secties + volgorde, identiek aan het oude
 // form (BEHALVE "Klantgegevens op offerte" — die velden staan al in de
 // v2 Info-tab):
-//   1. Werk & oppervlakte        (+ toelichting voor klant)
-//   2. Extra diensten            (+ toelichting voor klant)
+//   1. Werk & oppervlakte
+//   2. Extra diensten
 //   3. Extra arbeid
-//   4. Voegzand (alleen invegen) (+ toelichting voor klant)
-//   5. Actiekorting              (+ toelichting voor klant)
+//   4. Voegzand (alleen invegen)
+//   5. Actiekorting
 //   6. Geldigheid offerte
-//   7. Live prijsoverzicht
+//   7. Live prijsoverzicht (per regel een opmerking-veld + schakelaar)
 //
 // Alle getallen zijn handmatig invoerbaar via NlNumberInput (accepteert
 // komma, commit op blur); de +/- steppers blijven als extra ernaast.
@@ -32,9 +32,11 @@
 // reset naar idle na 2s. In demo-modus (geen leadId) is de editor INERT:
 // alle controls zijn uitgeschakeld en er wordt nooit opgeslagen.
 //
-// De "Toelichting voor klant"-velden zijn (net als in het oude form)
-// display-only lokale state (NotesState); het schema heeft er geen kolom
-// voor, dus ze worden NIET gepersisteerd.
+// Per offerte-regel (in het live prijsoverzicht) staat een opmerking-veld met
+// een schakelaar (default AAN). Aan + niet-lege tekst → de opmerking verschijnt
+// in de offerte onder die regel. De opmerkingen worden via
+// data.regel_opmerkingen gepersisteerd (leads.offerte_regel_opmerkingen) en
+// door computeRules onder de juiste regel gehangen.
 //
 // Streep-vrij conform de Frontlix-huisstijl (komma i.p.v. liggend streepje;
 // geen klemtoonaccenten in zichtbare tekst).
@@ -58,8 +60,18 @@ import {
   Ruler,
   User,
 } from "lucide-react";
-import type { ManualOfferteData, SubDienst } from "@/lib/dashboard/manual-offerte-types";
-import { computeRules, computeTotals } from "@/lib/dashboard/manual-offerte-rules";
+import type {
+  ManualOfferteData,
+  OpmerkingKey,
+  RegelOpmerking,
+  SubDienst,
+} from "@/lib/dashboard/manual-offerte-types";
+import {
+  computeRules,
+  computeTotals,
+  laatsteOnderdeelRegelIndices,
+} from "@/lib/dashboard/manual-offerte-rules";
+import { OpmerkingVeld } from "@/components/dashboard/v2/offerte/OpmerkingVeld";
 import type { ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
 import { formatEuro } from "@/lib/dashboard/format";
@@ -107,17 +119,6 @@ interface OfferteEditorProps {
 
 type SaveState = "idle" | "saving" | "saved";
 type JaNee = "ja" | "nee";
-
-/**
- * Display-only toelichtingen, gekeyed op sectie. Niet gepersisteerd
- * (exact zoals het oude form: het schema heeft er geen kolom voor).
- */
-type NotesState = {
-  werk: string;
-  diensten: string;
-  voegzand: string;
-  korting: string;
-};
 
 /** Nederlandse maand-namen voor de "geldig t/m"-datumweergave. */
 const MAANDEN_NL = [
@@ -201,13 +202,17 @@ export function OfferteEditor({
 
   // ─── Lokale display-only state (niet in het model/schema) ──
   // "Planten in de buurt" heeft geen eigen veld; alleen UI-pariteit met het
-  // oude form. Per-sectie toelichtingen worden (nog) nergens opgeslagen.
+  // oude form.
   const [plantenBuurt, setPlantenBuurt] = useState<JaNee>("nee");
-  const [notes, setNotes] = useState<NotesState>({
-    werk: "", diensten: "", voegzand: "", korting: "",
-  });
-  const setNote = useCallback((k: keyof NotesState, v: string) => {
-    setNotes((s) => ({ ...s, [k]: v }));
+
+  // Per-onderdeel opmerking bijwerken (tekst + schakelaar). Wordt via
+  // data.regel_opmerkingen gepersisteerd (offerte_regel_opmerkingen-kolom) en
+  // door computeRules onder de juiste regel in de offerte gezet.
+  const zetOpmerking = useCallback((key: OpmerkingKey, next: RegelOpmerking) => {
+    setData((s) => ({
+      ...s,
+      regel_opmerkingen: { ...(s.regel_opmerkingen ?? {}), [key]: next },
+    }));
   }, []);
 
   // ─── Accordion open/dicht-state (spiegelt de mobiele editor) ──
@@ -393,6 +398,9 @@ export function OfferteEditor({
   const pricing = form.pricing ?? FALLBACK_PRICING;
   const rules = useMemo(() => computeRules(data, pricing), [data, pricing]);
   const totals = useMemo(() => computeTotals(rules, data), [rules, data]);
+  // Welke regel-index per onderdeel het opmerking-veld krijgt (laatste regel van
+  // elk onderdeel), zodat een onderdeel met meerdere regels één veld heeft.
+  const opmIndices = useMemo(() => laatsteOnderdeelRegelIndices(rules), [rules]);
 
   // Reiskosten apart tonen: die zijn niet kortbaar, dus los van het
   // diensten-subtotaal in het live prijsoverzicht.
@@ -805,12 +813,6 @@ export function OfferteEditor({
             />
           </label>
         </div>
-        <NoteField
-          value={notes.werk}
-          onChange={(v) => setNote("werk", v)}
-          placeholder="Bijvoorbeeld, extra uitleg over het werk."
-          disabled={!live}
-        />
 
         {/* Sub-blok: Extra diensten */}
         <div className={styles.subLabel}>Extra diensten</div>
@@ -834,12 +836,6 @@ export function OfferteEditor({
             );
           })}
         </div>
-        <NoteField
-          value={notes.diensten}
-          onChange={(v) => setNote("diensten", v)}
-          placeholder="Bijvoorbeeld, wat de extra diensten inhouden."
-          disabled={!live}
-        />
 
         {/* Sub-blok: Extra arbeid */}
         <div className={styles.subLabel}>Extra arbeid</div>
@@ -977,12 +973,6 @@ export function OfferteEditor({
               </button>
             </div>
 
-            <NoteField
-              value={notes.voegzand}
-              onChange={(v) => setNote("voegzand", v)}
-              placeholder="Bijvoorbeeld, keuze van voegzand toelichten."
-              disabled={!live}
-            />
           </>
         ) : null}
       </AccordionSection>
@@ -1065,12 +1055,6 @@ export function OfferteEditor({
             {formatEuro(totals.kortingBedrag)}.
           </div>
         ) : null}
-        <NoteField
-          value={notes.korting}
-          onChange={(v) => setNote("korting", v)}
-          placeholder="Bijvoorbeeld, reden van de actiekorting."
-          disabled={!live}
-        />
       </AccordionSection>
 
       {/* ── Geldigheid offerte ── */}
@@ -1128,43 +1112,57 @@ export function OfferteEditor({
           {rules.length === 0 ? (
             <div className={styles.lineEmpty}>Nog geen diensten geselecteerd.</div>
           ) : (
-            rules.map((r, i) => (
-              <div className={styles.lineRow} key={`${r.desc}-${i}`}>
-                <span className={styles.lineLabel}>{r.desc}</span>
-                <span className={styles.lineRight}>
-                  <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} &#215;{" "}
-                    {r.overrideKey && live ? (
-                      <span className={styles.linePrijs}>
-                        <span className={styles.linePrijsEuro}>&#8364;</span>
-                        <NlNumberInput
-                          value={r.prijs}
-                          onChange={(v) => setField(r.overrideKey!, v)}
-                          min={0}
-                          className={styles.linePrijsInput}
-                          ariaLabel={`Prijs ${r.desc}`}
-                        />
-                        {r.overrideKey.endsWith("_override") &&
-                        data[r.overrideKey] != null ? (
-                          <button
-                            type="button"
-                            className={styles.linePrijsReset}
-                            onClick={() => setField(r.overrideKey!, undefined)}
-                            title="Terug naar de prijslijst"
-                            aria-label="Prijs terug naar de prijslijst"
-                          >
-                            <RotateCcw size={11} strokeWidth={2.5} />
-                          </button>
-                        ) : null}
+            rules.map((r, i) => {
+              const opmKey = opmIndices.get(i);
+              return (
+                <div key={`${r.desc}-${i}`}>
+                  <div className={styles.lineRow}>
+                    <span className={styles.lineLabel}>{r.desc}</span>
+                    <span className={styles.lineRight}>
+                      <span className={styles.lineMeta}>
+                        {r.aantal} {r.eenheid} &#215;{" "}
+                        {r.overrideKey && live ? (
+                          <span className={styles.linePrijs}>
+                            <span className={styles.linePrijsEuro}>&#8364;</span>
+                            <NlNumberInput
+                              value={r.prijs}
+                              onChange={(v) => setField(r.overrideKey!, v)}
+                              min={0}
+                              className={styles.linePrijsInput}
+                              ariaLabel={`Prijs ${r.desc}`}
+                            />
+                            {r.overrideKey.endsWith("_override") &&
+                            data[r.overrideKey] != null ? (
+                              <button
+                                type="button"
+                                className={styles.linePrijsReset}
+                                onClick={() => setField(r.overrideKey!, undefined)}
+                                title="Terug naar de prijslijst"
+                                aria-label="Prijs terug naar de prijslijst"
+                              >
+                                <RotateCcw size={11} strokeWidth={2.5} />
+                              </button>
+                            ) : null}
+                          </span>
+                        ) : (
+                          formatEuro(r.prijs)
+                        )}
                       </span>
-                    ) : (
-                      formatEuro(r.prijs)
-                    )}
-                  </span>
-                  <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
-                </span>
-              </div>
-            ))
+                      <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
+                    </span>
+                  </div>
+                  {/* Opmerking voor de offerte, onder de laatste regel van dit
+                      onderdeel (verschijnt onder dezelfde regel in de offerte). */}
+                  {opmKey ? (
+                    <OpmerkingVeld
+                      waarde={data.regel_opmerkingen?.[opmKey]}
+                      zet={(next) => zetOpmerking(opmKey, next)}
+                      disabled={!live}
+                    />
+                  ) : null}
+                </div>
+              );
+            })
           )}
         </div>
 
@@ -1449,66 +1447,6 @@ function NumberField({
       >
         <Plus size={13} strokeWidth={2.5} />
       </button>
-    </div>
-  );
-}
-
-/**
- * "Toelichting voor klant (optioneel)" textarea, display-only (NotesState).
- * Niet gepersisteerd, exact zoals in het oude form. Standaard ingeklapt tot
- * een knop, zodat de editor schoner oogt; klik toont het veld (en het blijft
- * open zolang er tekst in staat).
- */
-function NoteField({
-  value,
-  onChange,
-  placeholder,
-  disabled,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  disabled?: boolean;
-}) {
-  const [open, setOpen] = useState(() => value.trim() !== "");
-  const areaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const openen = () => {
-    setOpen(true);
-    requestAnimationFrame(() => areaRef.current?.focus());
-  };
-
-  // Sluit weer in zodra het veld leeg is en de focus weggaat.
-  const onBlur = () => {
-    if (value.trim() === "") setOpen(false);
-  };
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        className={styles.noteAddBtn}
-        onClick={openen}
-        disabled={disabled}
-      >
-        <Plus size={13} strokeWidth={2.4} />
-        Toelichting voor klant toevoegen
-      </button>
-    );
-  }
-
-  return (
-    <div className={styles.note}>
-      <span className={styles.noteLabel}>Toelichting voor klant (optioneel)</span>
-      <textarea
-        ref={areaRef}
-        className={styles.noteArea}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        disabled={disabled}
-      />
     </div>
   );
 }

@@ -33,9 +33,18 @@ import {
   Clock,
   Download,
   RotateCcw,
+  Plus,
 } from 'lucide-react'
-import type { ManualOfferteData } from '@/lib/dashboard/manual-offerte-types'
-import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
+import type {
+  ManualOfferteData,
+  OpmerkingKey,
+  RegelOpmerking,
+} from '@/lib/dashboard/manual-offerte-types'
+import {
+  computeRules,
+  computeTotals,
+  laatsteOnderdeelRegelIndices,
+} from '@/lib/dashboard/manual-offerte-rules'
 import { formatEuro } from '@/lib/dashboard/format'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
@@ -121,6 +130,55 @@ function AccordionSection({
   )
 }
 
+// ── MobileOpmerking ─────────────────────────────────────────────────────────
+// Opmerking-container per offerte-onderdeel (mobiel): tekstveld + schakelaar
+// (default AAN). Aan + niet-lege tekst → de opmerking komt in de offerte onder
+// dit onderdeel; uit = alleen intern. Ingeklapt tot een knop zolang er geen
+// tekst is, zodat de editor rustig blijft.
+function MobileOpmerking({
+  waarde,
+  zet,
+}: {
+  waarde?: RegelOpmerking
+  zet: (next: RegelOpmerking) => void
+}) {
+  const tekst = waarde?.tekst ?? ''
+  const zichtbaar = waarde?.zichtbaar !== false
+  const [open, setOpen] = useState(() => tekst.trim() !== '')
+
+  if (!open) {
+    return (
+      <button type="button" className={styles.opmAdd} onClick={() => setOpen(true)}>
+        <Plus size={13} strokeWidth={2.4} aria-hidden="true" /> Opmerking voor de offerte
+      </button>
+    )
+  }
+
+  return (
+    <div className={styles.opmRij} data-uit={!zichtbaar || undefined}>
+      <textarea
+        className={styles.opmInput}
+        value={tekst}
+        rows={2}
+        placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
+        onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
+        onBlur={() => {
+          if (tekst.trim() === '') setOpen(false)
+        }}
+      />
+      <span className={styles.opmToggle}>
+        <OSwitch
+          on={zichtbaar}
+          accent={TONE_PRIMARY}
+          label="Opmerking in de offerte tonen"
+          onChange={(v) => zet({ tekst, zichtbaar: v })}
+        />
+        <span className={styles.opmToggleLabel}>{zichtbaar ? 'In offerte' : 'Verborgen'}</span>
+      </span>
+    </div>
+  )
+}
+
 export function MobileOfferteEditor({
   leadId,
   lead,
@@ -194,6 +252,16 @@ export function MobileOfferteEditor({
   // Display-only toelichting voor voegzand (geen schema-kolom).
   const [voegzandNote, setVoegzandNote] = useState('')
 
+  // Per-onderdeel opmerking bijwerken (tekst + schakelaar). Gepersisteerd via
+  // data.regel_opmerkingen (offerte_regel_opmerkingen) en door computeRules
+  // onder de juiste regel in de offerte gezet.
+  const zetOpmerking = useCallback((key: OpmerkingKey, next: RegelOpmerking) => {
+    setData((s) => ({
+      ...s,
+      regel_opmerkingen: { ...(s.regel_opmerkingen ?? {}), [key]: next },
+    }))
+  }, [])
+
   // ─── Save-state + debounce (1:1 LeadOfferteForm) ───
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const isFirstRenderRef = useRef(true)
@@ -256,6 +324,8 @@ export function MobileOfferteEditor({
   // ─── Live afleiding (identiek aan desktop) ───
   const rules = useMemo(() => computeRules(data, pricing), [data, pricing])
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
+  // Regel-index per onderdeel die het opmerking-veld krijgt (laatste regel).
+  const opmIndices = useMemo(() => laatsteOnderdeelRegelIndices(rules), [rules])
 
   const reiskostenTotaal = useMemo(
     () => rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
@@ -893,42 +963,53 @@ export function MobileOfferteEditor({
           {rules.length === 0 ? (
             <div className={styles.lineEmpty}>Nog geen diensten geselecteerd.</div>
           ) : (
-            rules.map((r, i) => (
-              <div className={styles.lineRow} key={`${r.desc}-${i}`}>
-                <span className={styles.lineLabel}>{r.desc}</span>
-                <span className={styles.lineRight}>
-                  <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} ×{' '}
-                    {r.overrideKey && live ? (
-                      <span className={styles.linePrijs}>
-                        <ONumField
-                          value={r.prijs}
-                          onChange={(v) => setField(r.overrideKey!, v)}
-                          prefix="€"
-                          dec
-                          align="right"
-                        />
-                        {r.overrideKey.endsWith('_override') &&
-                        data[r.overrideKey] != null ? (
-                          <button
-                            type="button"
-                            className={styles.linePrijsReset}
-                            onClick={() => setField(r.overrideKey!, undefined)}
-                            title="Terug naar de prijslijst"
-                            aria-label="Prijs terug naar de prijslijst"
-                          >
-                            <RotateCcw size={12} strokeWidth={2.5} />
-                          </button>
-                        ) : null}
+            rules.map((r, i) => {
+              const opmKey = opmIndices.get(i)
+              return (
+                <div key={`${r.desc}-${i}`}>
+                  <div className={styles.lineRow}>
+                    <span className={styles.lineLabel}>{r.desc}</span>
+                    <span className={styles.lineRight}>
+                      <span className={styles.lineMeta}>
+                        {r.aantal} {r.eenheid} ×{' '}
+                        {r.overrideKey && live ? (
+                          <span className={styles.linePrijs}>
+                            <ONumField
+                              value={r.prijs}
+                              onChange={(v) => setField(r.overrideKey!, v)}
+                              prefix="€"
+                              dec
+                              align="right"
+                            />
+                            {r.overrideKey.endsWith('_override') &&
+                            data[r.overrideKey] != null ? (
+                              <button
+                                type="button"
+                                className={styles.linePrijsReset}
+                                onClick={() => setField(r.overrideKey!, undefined)}
+                                title="Terug naar de prijslijst"
+                                aria-label="Prijs terug naar de prijslijst"
+                              >
+                                <RotateCcw size={12} strokeWidth={2.5} />
+                              </button>
+                            ) : null}
+                          </span>
+                        ) : (
+                          formatEuro(r.prijs)
+                        )}
                       </span>
-                    ) : (
-                      formatEuro(r.prijs)
-                    )}
-                  </span>
-                  <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
-                </span>
-              </div>
-            ))
+                      <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
+                    </span>
+                  </div>
+                  {opmKey ? (
+                    <MobileOpmerking
+                      waarde={data.regel_opmerkingen?.[opmKey]}
+                      zet={(next) => zetOpmerking(opmKey, next)}
+                    />
+                  ) : null}
+                </div>
+              )
+            })
           )}
         </div>
 

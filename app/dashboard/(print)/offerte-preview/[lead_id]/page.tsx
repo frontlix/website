@@ -5,6 +5,8 @@ import { getDashboardAdmin } from '@/lib/dashboard/supabase-admin'
 import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { berekenTotalen, isReiskostenRegel } from '@/lib/dashboard/btw-calc'
 import { formatEuro } from '@/lib/dashboard/format'
+import { readRegelOpmerkingen } from '@/lib/dashboard/offerte-form-mapping'
+import { regelOpmerkingKey, type OpmerkingKey } from '@/lib/dashboard/manual-offerte-types'
 import styles from './page.module.css'
 
 /**
@@ -129,6 +131,16 @@ export default async function OffertePreviewPage({
     .reduce((s, r) => s + Number(r.totaal ?? 0), 0)
   const totalen = berekenTotalen(regelTotalen, kortingPct, reiskostenTotaal, btwTarief)
 
+  // Per-onderdeel opmerkingen (uit de lead-kolom). Toon elke opmerking onder de
+  // LAATSTE prijsregel van haar onderdeel, zodat ze precies onder dat onderdeel
+  // staat (bv. onder de voegzand-productregel, na de arbeidsregel).
+  const opmerkingen = readRegelOpmerkingen(lead.offerte_regel_opmerkingen)
+  const laatsteOpmRegel = new Map<OpmerkingKey, number>()
+  prijsregels.forEach((r, i) => {
+    const key = regelOpmerkingKey(r.omschrijving ?? '')
+    if (key) laatsteOpmRegel.set(key, i)
+  })
+
   return (
     <main className={styles.page}>
       {/* ─── HEADER ─────────────────────────────────────────────── */}
@@ -242,15 +254,35 @@ export default async function OffertePreviewPage({
                 </td>
               </tr>
             ) : (
-              prijsregels.map((r) => {
+              prijsregels.map((r, i) => {
                 const aantal = r.aantal !== null ? Number(r.aantal) : null
                 const aantalText =
                   aantal !== null
                     ? `${Number.isInteger(aantal) ? aantal : aantal.toFixed(2).replace('.', ',')}${r.eenheid ? ` ${r.eenheid}` : ''}`
                     : ''
+                const opmKey = regelOpmerkingKey(r.omschrijving ?? '')
+                const opm =
+                  opmKey && laatsteOpmRegel.get(opmKey) === i ? opmerkingen[opmKey] : undefined
+                const opmTekst =
+                  opm && opm.zichtbaar !== false && opm.tekst.trim() ? opm.tekst.trim() : null
                 return (
                   <tr key={r.id}>
-                    <td className={styles.cellDesc}>{r.omschrijving}</td>
+                    <td className={styles.cellDesc}>
+                      {r.omschrijving}
+                      {opmTekst ? (
+                        <span
+                          style={{
+                            display: 'block',
+                            marginTop: 4,
+                            fontSize: '0.85em',
+                            color: '#6b7280',
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          ↳ {opmTekst}
+                        </span>
+                      ) : null}
+                    </td>
                     <td className={styles.cellNum}>{aantalText}</td>
                     <td className={styles.cellNum}>{formatEuro(Number(r.stukprijs))}</td>
                     <td className={`${styles.cellNum} ${styles.cellTotal}`}>

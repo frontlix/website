@@ -55,6 +55,9 @@ export type OffertePDFData = {
     eenheid: string | null
     stukprijs: number
     totaal: number
+    /** Klant-opmerking als subregel onder deze regel (alleen gevuld als
+     *  zichtbaar + niet leeg). */
+    opmerking?: string | null
   }>
   // Totalen
   subtotaalExcl: number
@@ -124,9 +127,14 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
   const regelsRows = d.regels
     .map((r) => {
       const aantalText = r.aantal !== null ? `${formatNumber(r.aantal)}${r.eenheid ? ' ' + r.eenheid : ''}` : ''
+      // Opmerking als subregel binnen de omschrijving-cel (alleen indien aanwezig;
+      // geen lege regel als er niets is).
+      const opmerkingBlock = r.opmerking
+        ? `<div class="cell-opmerking">↳ ${escapeHtml(r.opmerking)}</div>`
+        : ''
       return `
         <tr>
-          <td class="cell-desc">${escapeHtml(r.omschrijving)}</td>
+          <td class="cell-desc">${escapeHtml(r.omschrijving)}${opmerkingBlock}</td>
           <td class="cell-num">${aantalText}</td>
           <td class="cell-num">${formatCurrency(r.stukprijs)}</td>
           <td class="cell-num cell-total">${formatCurrency(r.totaal)}</td>
@@ -187,6 +195,8 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
   .cell-desc { width: 50%; }
   .cell-num { text-align: right; white-space: nowrap; }
   .cell-total { font-weight: 700; color: #002D63; }
+  /* Klant-opmerking onder de regel-omschrijving: kleiner + gedempt. */
+  .cell-opmerking { font-size: 10px; color: #6b7280; margin-top: 4px; line-height: 1.45; }
 
   .totals-wrap { display: flex; justify-content: flex-end; margin-top: 20px; }
   table.totals { width: 60%; border-collapse: collapse; table-layout: fixed; }
@@ -425,6 +435,7 @@ export function buildOffertePDFData(input: {
       eenheid: r.eenheid,
       stukprijs: r.prijs,
       totaal: r.totaal,
+      opmerking: r.opmerking ?? null,
     })),
     subtotaalExcl,
     kortingPercentage: Number(data.korting_percentage) || 0,

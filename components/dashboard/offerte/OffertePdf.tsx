@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tableRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderBottomWidth: 0.5,
@@ -200,6 +200,17 @@ const styles = StyleSheet.create({
   },
   tableRowAlt: {
     backgroundColor: COLORS.rowAlt,
+  },
+  // Cellen-rij binnen een regel (de regel-View is een kolom zodat een
+  // opmerking er als subregel onder kan).
+  cellRow: { flexDirection: 'row' },
+  // Klant-opmerking onder de regel: kleiner, gedempt, lichte inspring.
+  cellOpmerking: {
+    flex: 1,
+    fontSize: 9,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    paddingRight: 12,
   },
   cellDesc: { flex: 5, fontSize: 10, color: COLORS.text },
   cellAantal: { flex: 1.5, fontSize: 10, color: COLORS.text, textAlign: 'right' },
@@ -537,13 +548,21 @@ export function OffertePdfDocument({
               <View
                 key={i}
                 style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}
+                wrap={false}
               >
-                <Text style={styles.cellDesc}>{r.desc}</Text>
-                <Text style={styles.cellAantal}>
-                  {r.aantal} {r.eenheid}
-                </Text>
-                <Text style={styles.cellPrijs}>{formatEuro(r.prijs)}</Text>
-                <Text style={styles.cellTotaal}>{formatEuro(r.totaal)}</Text>
+                <View style={styles.cellRow}>
+                  <Text style={styles.cellDesc}>{r.desc}</Text>
+                  <Text style={styles.cellAantal}>
+                    {r.aantal} {r.eenheid}
+                  </Text>
+                  <Text style={styles.cellPrijs}>{formatEuro(r.prijs)}</Text>
+                  <Text style={styles.cellTotaal}>{formatEuro(r.totaal)}</Text>
+                </View>
+                {/* Klant-opmerking als subregel onder de regel (alleen als
+                    aanwezig: computeRules levert 'm enkel bij zichtbaar + tekst). */}
+                {r.opmerking ? (
+                  <Text style={styles.cellOpmerking}>↳ {r.opmerking}</Text>
+                ) : null}
               </View>
             ))
           )}
