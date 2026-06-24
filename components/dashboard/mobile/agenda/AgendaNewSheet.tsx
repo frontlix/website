@@ -1,66 +1,71 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
-import {
-  Calendar,
-  Clock,
-  Sparkles,
-  Zap,
-  ChevronRight,
-} from 'lucide-react'
+import { useMemo, useState, type ReactNode } from 'react'
+import { Calendar, Clock, Search, Check, X } from 'lucide-react'
 import { useModalSheet } from '@/hooks/useModalSheet'
+import type { KlantOptie } from '@/components/dashboard/v2/agenda/KlantSelect'
 import styles from './AgendaNewSheet.module.css'
+
+/** Wat de sheet teruggeeft om een afspraak te boeken (bot bepaalt zelf de duur). */
+export type NieuweAfspraakInput = {
+  leadId: string
+  datum: string // 'YYYY-MM-DD'
+  tijd: string // 'HH:MM'
+  notifyWhatsapp: boolean
+  notifyEmail: boolean
+}
 
 interface AgendaNewSheetProps {
   open: boolean
   onClose: () => void
-  /** Sla de nieuwe afspraak op. v1: no-op (functionele pass koppelt server-action). */
-  onSave: () => void
+  /** Bestaande leads om aan te koppelen (afspraak boeken vereist een lead). */
+  klanten: KlantOptie[]
+  /** True terwijl de boeking loopt (knop toont "Bezig…", inputs vergrendeld). */
+  busy?: boolean
+  /** Boek de afspraak (echte server-action in de parent). */
+  onSave: (a: NieuweAfspraakInput) => void
 }
-
-// ── Type-chips, kind → tone-token volgens de Translation Contract ────────────
-// plaatsbezoek → warning, klus → primary, bel → whatsapp, eigen → text-muted.
-type Kind = 'Plaatsbezoek' | 'Klus' | 'Bel' | 'Eigen'
-const KIND_TONE: Record<Kind, string> = {
-  Plaatsbezoek: 'var(--color-warning)',
-  Klus: 'var(--primary)',
-  Bel: 'var(--whatsapp)',
-  Eigen: 'var(--color-text-muted)',
-}
-const KINDS: Kind[] = ['Plaatsbezoek', 'Klus', 'Bel', 'Eigen']
 
 /**
- * AgendaNewSheet, bottom-sheet (max-height 88%, scrollbaar) om een nieuwe
- * afspraak te plannen. Port van src/agenda-b/ABNew.jsx.
- *
- * Secties (FieldGroup / FieldRow): Klant, Wanneer (datum/tijd+duur/reminder),
- * Type (kind-chips, geselecteerd krijgt eventTone-achtergrond via --tone),
- * Adres + Dienst, Notitie (textarea).
- *
- * v1: alle waarden in lokale state met demo-defaults; geen persistente write
- * (zie onSave).
+ * AgendaNewSheet, bottom-sheet om een nieuwe afspraak te plannen. Functioneel:
+ * kies een bestaande lead (zoeken), datum + tijd, en of de klant per WhatsApp
+ * en/of e-mail geïnformeerd wordt. De bot maakt het Google-event + bevestiging
+ * (zelfde flow als desktop). Duur/reminder laat de bot zelf bepalen, dus die
+ * vragen we niet meer (waren statische demo-velden).
  */
-export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
-  // Demo-defaults, in de functionele pass komen deze uit de geselecteerde lead.
-  const [kind, setKind] = useState<Kind>('Klus')
-  const [note, setNote] = useState('')
+export function AgendaNewSheet({ open, onClose, klanten, busy = false, onSave }: AgendaNewSheetProps) {
+  const [gekozen, setGekozen] = useState<KlantOptie | null>(null)
+  const [zoek, setZoek] = useState('')
+  const [datum, setDatum] = useState('')
+  const [tijd, setTijd] = useState('')
+  const [notifyWa, setNotifyWa] = useState(true)
+  const [notifyMail, setNotifyMail] = useState(false)
 
-  // Scroll-lock + Escape + focus-move/-restore (vóór de early return, zodat de
-  // hook-volgorde stabiel blijft). Ref komt op de role="dialog"-div.
   const dialogRef = useModalSheet<HTMLDivElement>(open, onClose)
+
+  // Gefilterde klantenlijst (naam/plaats), alleen leads met een leadId.
+  const matches = useMemo(() => {
+    const q = zoek.trim().toLowerCase()
+    const koppelbaar = klanten.filter((k) => k.leadId)
+    if (!q) return koppelbaar.slice(0, 8)
+    return koppelbaar
+      .filter((k) => `${k.naam} ${k.plaats ?? ''}`.toLowerCase().includes(q))
+      .slice(0, 8)
+  }, [klanten, zoek])
 
   if (!open) return null
 
-  // Hardcoded geselecteerde waarden (statisch ontwerp; later koppelen).
-  const klant = 'Bouwbedrijf Korstmos'
-  const leadId = 'L-2086'
+  const kanOpslaan = !!gekozen?.leadId && !!datum && !!tijd && !busy
+
+  const opslaan = () => {
+    if (!gekozen?.leadId || !datum || !tijd) return
+    onSave({ leadId: gekozen.leadId, datum, tijd, notifyWhatsapp: notifyWa, notifyEmail: notifyMail })
+  }
 
   return (
     <div className={styles.overlay}>
-      {/* Backdrop, klik = sluit */}
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
 
-      {/* Sheet */}
       <div
         ref={dialogRef}
         tabIndex={-1}
@@ -69,123 +74,111 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
         aria-label="Nieuwe afspraak"
         className={styles.sheet}
       >
-        {/* Grabber */}
         <div className={styles.handle} aria-hidden="true" />
 
-        {/* Header, Annuleren / titel / Opslaan */}
         <div className={styles.header}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>
             Annuleren
           </button>
           <span className={styles.headerTitle}>Nieuwe afspraak</span>
-          <button
-            type="button"
-            className={styles.saveBtn}
-            onClick={() => {
-              // TODO: functional pass, create-appointment server action
-              onSave()
-            }}
-          >
-            Opslaan
+          <button type="button" className={styles.saveBtn} onClick={opslaan} disabled={!kanOpslaan}>
+            {busy ? 'Bezig…' : 'Opslaan'}
           </button>
         </div>
 
-        {/* ── Klant ─────────────────────────────────────────────────────────── */}
+        {/* ── Klant ── */}
         <FieldGroup label="Klant">
-          <FieldRow last>
-            <div className={styles.klantInfo}>
-              <span className={styles.avatar} aria-hidden="true">
-                {initials(klant)}
-              </span>
-              <div className={styles.klantText}>
-                <div className={styles.klantName}>{klant}</div>
-                <div className={styles.klantMeta}>Lead {leadId} · €4.180 offerte</div>
+          {gekozen ? (
+            <FieldRow last>
+              <div className={styles.klantInfo}>
+                <span className={styles.avatar} aria-hidden="true">
+                  {initials(gekozen.naam)}
+                </span>
+                <div className={styles.klantText}>
+                  <div className={styles.klantName}>{gekozen.naam}</div>
+                  <div className={styles.klantMeta}>
+                    {[gekozen.plaats, gekozen.afstandKm != null ? `${gekozen.afstandKm} km` : null]
+                      .filter(Boolean)
+                      .join(' · ') || 'Bestaande lead'}
+                  </div>
+                </div>
               </div>
-            </div>
-            <ChevronRight size={14} className={styles.chev} aria-hidden="true" />
-          </FieldRow>
+              <button type="button" className={styles.wijzigBtn} onClick={() => setGekozen(null)}>
+                Wijzig
+              </button>
+            </FieldRow>
+          ) : (
+            <>
+              <div className={styles.searchRow}>
+                <Search size={15} className={styles.searchIcon} aria-hidden="true" />
+                <input
+                  className={styles.search}
+                  value={zoek}
+                  onChange={(e) => setZoek(e.target.value)}
+                  placeholder="Zoek een lead op naam of plaats…"
+                  autoFocus
+                />
+              </div>
+              <div className={styles.klantList}>
+                {matches.length === 0 ? (
+                  <div className={styles.leeg}>Geen leads gevonden.</div>
+                ) : (
+                  matches.map((k) => (
+                    <button
+                      key={k.leadId}
+                      type="button"
+                      className={styles.klantItem}
+                      onClick={() => {
+                        setGekozen(k)
+                        setZoek('')
+                      }}
+                    >
+                      <span className={styles.avatarSm} aria-hidden="true">
+                        {initials(k.naam)}
+                      </span>
+                      <span className={styles.klantItemText}>
+                        <span className={styles.klantItemNaam}>{k.naam}</span>
+                        {k.plaats && <span className={styles.klantItemPlaats}>{k.plaats}</span>}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          )}
         </FieldGroup>
 
-        {/* ── Wanneer ───────────────────────────────────────────────────────── */}
+        {/* ── Wanneer ── */}
         <FieldGroup label="Wanneer">
           <FieldRow>
             <FieldLabel icon={<Calendar size={14} />}>Datum</FieldLabel>
-            <div className={styles.valueRow}>
-              <span className={styles.valueChip}>Do 14 mei</span>
-              <ChevronRight size={13} className={styles.chev} aria-hidden="true" />
-            </div>
-          </FieldRow>
-          <FieldRow>
-            <FieldLabel icon={<Clock size={14} />}>Tijd</FieldLabel>
-            <div className={styles.valueRow}>
-              <span className={styles.valueChip} data-num="true">
-                13:00
-              </span>
-              <span className={styles.plus}>+</span>
-              <span className={styles.valueChip}>3u</span>
-              <ChevronRight size={13} className={styles.chev} aria-hidden="true" />
-            </div>
-          </FieldRow>
-          <FieldRow last>
-            <FieldLabel icon={<Sparkles size={14} />}>Reminder</FieldLabel>
-            <div className={styles.valueRow}>
-              <span className={styles.valueText}>1 dag van tevoren</span>
-              <ChevronRight size={13} className={styles.chev} aria-hidden="true" />
-            </div>
-          </FieldRow>
-        </FieldGroup>
-
-        {/* ── Type ──────────────────────────────────────────────────────────── */}
-        <FieldGroup label="Type">
-          <div className={styles.typeChips}>
-            {KINDS.map((k) => {
-              const on = k === kind
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  className={styles.typeChip}
-                  data-on={on ? 'true' : undefined}
-                  style={{ ['--tone' as string]: KIND_TONE[k] }}
-                  onClick={() => setKind(k)}
-                >
-                  {k}
-                </button>
-              )
-            })}
-          </div>
-        </FieldGroup>
-
-        {/* ── Adres + Dienst ────────────────────────────────────────────────── */}
-        <FieldGroup label="Adres">
-          <FieldRow>
-            <div className={styles.adresText}>
-              <div className={styles.adresMain}>Industrieweg 88 · Rotterdam</div>
-              <div className={styles.adresSub}>34 km · 28 min vanaf vorige stop</div>
-            </div>
-            <ChevronRight size={14} className={styles.chev} aria-hidden="true" />
-          </FieldRow>
-          <FieldRow last>
-            <FieldLabel icon={<Zap size={14} />}>Dienst</FieldLabel>
-            <div className={styles.valueRow} data-clamp="true">
-              <span className={styles.dienstValue}>Onkruidbeheersing + voeg-herstel</span>
-              <ChevronRight size={13} className={styles.chev} aria-hidden="true" />
-            </div>
-          </FieldRow>
-        </FieldGroup>
-
-        {/* ── Notitie ───────────────────────────────────────────────────────── */}
-        <FieldGroup label="Notitie">
-          <div className={styles.notaWrap}>
-            <textarea
-              className={styles.nota}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Voor de bot: vermeld dat klant betaling per factuur wil…"
-              rows={3}
+            <input
+              type="date"
+              className={styles.dtInput}
+              value={datum}
+              onChange={(e) => setDatum(e.target.value)}
             />
-          </div>
+          </FieldRow>
+          <FieldRow last>
+            <FieldLabel icon={<Clock size={14} />}>Tijd</FieldLabel>
+            <input
+              type="time"
+              className={styles.dtInput}
+              value={tijd}
+              onChange={(e) => setTijd(e.target.value)}
+            />
+          </FieldRow>
         </FieldGroup>
+
+        {/* ── Klant informeren ── */}
+        <FieldGroup label="Klant informeren">
+          <ToggleRow label="Via WhatsApp" on={notifyWa} onToggle={() => setNotifyWa((v) => !v)} />
+          <ToggleRow label="Via e-mail" on={notifyMail} onToggle={() => setNotifyMail((v) => !v)} last />
+        </FieldGroup>
+
+        <p className={styles.hint}>
+          De bot plant de afspraak in de agenda en stuurt de gekozen bevestiging. De duur bepaalt de bot zelf.
+        </p>
 
         <div className={styles.bottomSpacer} />
       </div>
@@ -193,7 +186,7 @@ export function AgendaNewSheet({ open, onClose, onSave }: AgendaNewSheetProps) {
   )
 }
 
-// ── Helper-componenten (lokaal, geport uit ABNew FieldGroup/FieldRow/FieldLabel)
+// ── Helper-componenten ──
 
 function FieldGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -223,7 +216,36 @@ function FieldLabel({ icon, children }: { icon: ReactNode; children: ReactNode }
   )
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+function ToggleRow({
+  label,
+  on,
+  onToggle,
+  last,
+}: {
+  label: string
+  on: boolean
+  onToggle: () => void
+  last?: boolean
+}) {
+  return (
+    <div className={styles.fieldRow} data-last={last ? 'true' : undefined}>
+      <span className={styles.toggleLabel}>{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={label}
+        className={styles.toggle}
+        data-on={on ? 'true' : undefined}
+        onClick={onToggle}
+      >
+        <span className={styles.toggleKnob} aria-hidden="true">
+          {on ? <Check size={11} strokeWidth={3} /> : <X size={11} strokeWidth={3} />}
+        </span>
+      </button>
+    </div>
+  )
+}
 
 /** Initialen uit een naam (max 2 letters) voor de avatar. */
 function initials(name: string): string {

@@ -1,7 +1,9 @@
 import { parseWeekParam, shiftWeekKey, currentMondayKey } from '@/lib/dashboard/agenda-week'
 import { getAppointmentsForRange } from '@/lib/dashboard/agenda-queries'
 import { getExternalEventsForRange } from '@/lib/dashboard/external-events-queries'
+import { getLeadsList } from '@/lib/dashboard/lead-queries'
 import { MobileAgenda, type MobileAgendaData } from '@/components/dashboard/mobile/agenda/MobileAgenda'
+import type { KlantOptie } from '@/components/dashboard/v2/agenda/KlantSelect'
 import {
   mapAppointmentsToAgendaEvents,
   mapExternalEventsToAgendaEvents,
@@ -25,14 +27,27 @@ export default async function AgendaPage({
   // week-lijst toont, ongeacht de gekozen desktop-view (week/maand/routekaart).
   const mobileWeek = parseWeekParam(sp)
   const mobileWeekDays = buildMobileWeekDays(mobileWeek.mondayKey)
-  const [mobileAppointments, mobileExternal] = await Promise.all([
+  const [mobileAppointments, mobileExternal, leadsForPicker] = await Promise.all([
     getAppointmentsForRange(mobileWeek.queryStart, mobileWeek.queryEnd),
     // Externe (lead-loze) Google-afspraken voor de zichtbare week (READ-ONLY).
     getExternalEventsForRange(
       mobileWeekDays[0].date,
       mobileWeekDays[mobileWeekDays.length - 1].date,
     ),
+    // Bestaande leads voor de klant-keuze in "Nieuwe afspraak" (zelfde bron als
+    // de desktop-agenda). Afspraak boeken is altijd aan een bestaande lead.
+    getLeadsList(),
   ])
+
+  // Leads → klant-opties voor de afspraak-sheet (mirror van de v2-agenda).
+  const klanten: KlantOptie[] = leadsForPicker.map((l) => ({
+    leadId: l.lead_id,
+    naam: l.naam,
+    plaats: l.plaats ?? undefined,
+    telefoon: l.telefoon ?? undefined,
+    adres: [l.straat, l.huisnummer].filter(Boolean).join(' ') || undefined,
+    afstandKm: l.afstand_km ?? undefined,
+  }))
   const mobileNow = new Date()
   // De query haalt bewust ±1 dag buffer op (TZ-safe, zie parseWeekParam),
   // maar de mobiele week-lijst mag ALLEEN de 7 dagen van de gekozen week
@@ -56,6 +71,7 @@ export default async function AgendaPage({
     prevWeekKey: shiftWeekKey(mobileWeek.mondayKey, -1),
     nextWeekKey: shiftWeekKey(mobileWeek.mondayKey, 1),
     isCurrentWeek: mobileWeek.mondayKey === currentMondayKey(),
+    klanten,
   }
 
   return (

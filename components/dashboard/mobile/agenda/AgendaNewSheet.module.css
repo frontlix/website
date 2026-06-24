@@ -302,6 +302,183 @@
   outline-offset: 1px;
 }
 
+.saveBtn:disabled {
+  opacity: 0.45;
+}
+
+/* ── Klant zoeken ──────────────────────────────────────────────────────────── */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.searchIcon {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.search {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px; /* >=16 voorkomt iOS-zoom bij focus */
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.search::placeholder {
+  color: var(--fg-muted);
+}
+
+.search:focus {
+  outline: none;
+}
+
+.klantList {
+  max-height: 220px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.leeg {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.klantItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-bottom: 1px solid var(--color-border-soft);
+  cursor: pointer;
+  text-align: left;
+}
+
+.klantItem:last-child {
+  border-bottom: none;
+}
+
+.klantItem:active {
+  background: var(--color-chip-bg);
+}
+
+.avatarSm {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.klantItemText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.klantItemNaam {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.klantItemPlaats {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.wijzigBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Datum/tijd native inputs ──────────────────────────────────────────────── */
+.dtInput {
+  border: none;
+  background: var(--color-chip-bg);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 16px; /* >=16 voorkomt iOS-zoom */
+  font-weight: 600;
+  color: var(--fg);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.dtInput:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  outline-offset: 1px;
+}
+
+/* ── Informeren-toggles ────────────────────────────────────────────────────── */
+.toggleLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-soft);
+}
+
+.toggle {
+  width: 46px;
+  height: 28px;
+  border-radius: 99px;
+  border: none;
+  background: var(--color-chip-bg);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.toggle[data-on='true'] {
+  background: var(--primary);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  color: var(--fg-muted);
+  transition: transform 0.15s ease;
+}
+
+.toggle[data-on='true'] .toggleKnob {
+  transform: translateX(18px);
+  color: var(--primary);
+}
+
+/* ── Uitleg-regel ──────────────────────────────────────────────────────────── */
+.hint {
+  margin: -4px 20px 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+
 /* Onderste padding zodat de laatste sectie niet aan de rand plakt */
 .bottomSpacer {
   height: 22px;
