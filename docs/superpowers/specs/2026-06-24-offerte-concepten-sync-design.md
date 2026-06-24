@@ -60,17 +60,29 @@ de concepten nooit ziet.
 | kolom | type | doel |
 |-------|------|------|
 | `id` | uuid, primary key, default `gen_random_uuid()` | concept-id, gedeeld door beide wizards |
-| `data` | jsonb, not null | het volledige `ManualOfferteData`-object (de offerte-inhoud) |
+| `data` | jsonb, not null | canonieke `ManualOfferteData` (de offerte-inhoud); gedeelde, cross-wizard vorm |
+| `v2_state` | jsonb, nullable | rijke `OfferteDraftState` van de v2-wizard, alleen gevuld als v2 het laatst schreef; voor volledig v2-herstel |
 | `label` | text, not null, default `''` | klant/bedrijfsnaam voor in de conceptenlijst |
 | `totaal` | numeric, not null, default `0` | totaal incl. btw op moment van opslaan, alleen voor de lijst |
 | `bijgewerkt_op` | timestamptz, not null, default `now()` | sortering nieuwste eerst |
 | `aangemaakt_op` | timestamptz, not null, default `now()` | |
 
+- **Waarom twee payload-kolommen.** `ManualOfferteData` is de gemeenschappelijke
+  taal, maar de v2-wizard bewaart een rijkere `OfferteDraftState` met velden die
+  `ManualOfferteData` niet kent: losse vrije meerwerk-regels (`vrij`, naam + euro
+  per regel; bij verzenden samengeperst tot één `extra_arbeid`-veld), plus
+  `klantType`, `onderhoudWeken`, `korstmosToeslag`, `btw`, `volgorde`. Zou een
+  v2-concept alleen als `ManualOfferteData` worden bewaard, dan zou hervatten
+  (ook desktop-naar-desktop) die losse meerwerk-regels verliezen. Daarom bewaart
+  v2 zijn volledige state in `v2_state` én een canonieke `data` voor de lijst en
+  voor het openen vanaf mobiel. De legacy modal werkt al puur met
+  `ManualOfferteData`, dus die laat `v2_state` op `null`.
 - Gedeeld per account, dus geen `lead_id`, geen `owner`/`user_id`. Consistent met
   de huidige single-tenant opzet (geen `tenant_id` op de bestaande tabellen).
 - Migratie als volgnummer na de hoogste bestaande migratie in
-  `supabase/migrations-frontlix/` (nu t/m 056; dit wordt 057 of hoger, afhankelijk
-  van wat op het moment van implementatie het hoogste nummer is).
+  `supabase/migrations-frontlix/`. Op moment van schrijven is dat 059, dus dit
+  wordt `060_offerte_concepten.sql`. Bij implementatie verifieren dat 060 nog
+  vrij is; zo niet, het eerstvolgende vrije nummer nemen.
 - Geen RLS-policies nodig voor dashboard-users: net als
   `leads`/`offertes`/`prijsregels` wordt er via de service-role geschreven,
   achter een `requireApprovedUser()`-gate (zie server-actions).
@@ -89,18 +101,22 @@ doorgooien.
 type Concept = {
   id: string
   data: ManualOfferteData
+  v2State: OfferteDraftState | null   // rijke v2-state, null bij legacy-concept
   label: string
   totaal: number
-  bijgewerktOp: number   // epoch ms, voor de UI-lijst
+  bijgewerktOp: number                // epoch ms, voor de UI-lijst
 }
 
 // Alle concepten, nieuwste eerst. Gedeeld per account.
 listConcepten(): Promise<Result<Concept[]>>
 
 // Insert of update op id. Trimt daarna tot de 30 nieuwste.
+// v2State expliciet meegeven (de v2-wizard vult 'm, legacy geeft null door zodat
+// een legacy-bewerking een verouderde v2-state wist).
 upsertConcept(input: {
   id: string
   data: ManualOfferteData
+  v2State: OfferteDraftState | null
   label: string
   totaal: number
 }): Promise<Result>
@@ -138,25 +154,42 @@ diensten. De offerte-inhoud blijft volledig behouden.
 `klantNaam` = `Concept.label`.
 
 **Desktop (`OfferteWizard`):**
-- Schrijven: de bestaande `mapWizardToManualOfferte(state)` levert de
-  `ManualOfferteData` voor `upsertConcept`.
+- Schrijven: de auto-save bouwt de canonieke `ManualOfferteData` met de bestaande
+  `mapWizardToManualOfferte`, en geeft tegelijk de volledige `OfferteDraftState`
+  mee als `v2State`. De `vrij` → `extraArbeid`-omzetting en het bouwen van de
+  `WizardSubmitState` (nu inline in `handleVerstuur`, regel ~724-768) worden naar
+  een gedeelde helper `buildManualOfferteFromWizard(...)` getrokken, zodat
+  auto-save en verzenden exact dezelfde `ManualOfferteData` produceren (DRY).
 - Lezen: nieuwe mapper `mapManualOfferteToWizard(data): OfferteDraftState` in
-  `components/dashboard/v2/offerte/offerte-mappers.ts`. Die zet een opgeslagen
-  concept terug in de wizard-state. Alle velden zitten in `ManualOfferteData`;
-  navigatie-velden (`stap`, `zoek`) krijgen zinnige defaults. `laadConcept`
-  gebruikt deze mapper in plaats van de directe `d.state`.
+  `components/dashboard/v2/offerte/offerte-mappers.ts`. `laadConcept` gebruikt
+  `v2State` wanneer aanwezig (volledig herstel, inclusief `vrij`), en valt anders
+  (legacy-concept) terug op `mapManualOfferteToWizard(data)`. Navigatie-velden
+  (`stap`, `zoek`) krijgen zinnige defaults; openen gebeurt op stap 1.
 - De auto-save (nu `useEffect` met 500ms debounce naar `upsertDraft`) schrijft
-  voortaan naar `upsertConcept`. Debounce wordt verhoogd naar circa 1200ms zodat
-  snel typen de database niet overbelast. De save draait via een transition en
-  blokkeert de UI niet.
+  voortaan naar `upsertConcept` (met `data` + `v2State`). Debounce wordt verhoogd
+  naar circa 1200ms zodat snel typen de database niet overbelast. De save draait
+  via een transition en blokkeert de UI niet.
 - Na succesvol versturen: vervang `removeDraft(draftId)` door
   `removeConcept(draftId)`.
 
+De legacy modal geeft bij `upsertConcept` altijd `v2State: null` mee: bewerkt
+iemand op mobiel een concept dat op desktop begon, dan wordt de (nu verouderde)
+`v2_state` gewist en valt v2 bij het volgende openen terug op
+`mapManualOfferteToWizard(data)`. De canonieke `data` blijft kloppen.
+
 ### 5. Mappers en gedeelde helpers
 
-- `mapWizardToManualOfferte` (bestaat): `OfferteDraftState`/wizard-state → `ManualOfferteData`.
+- `mapWizardToManualOfferte` (bestaat): `WizardSubmitState` → `ManualOfferteData`.
+  De wizard bouwt die `WizardSubmitState` nu inline in `handleVerstuur`.
+- `buildManualOfferteFromWizard` (nieuw, refactor): trekt het bouwen van de
+  `WizardSubmitState` (incl. de `vrij` → `extraArbeid`-omzetting en de
+  `voegzandDekking`/`perMin` uit pricing) uit `handleVerstuur` in een herbruikbare
+  helper, zodat verzenden én auto-save dezelfde `ManualOfferteData` produceren.
 - `mapManualOfferteToWizard` (nieuw): `ManualOfferteData` → `OfferteDraftState`.
-  Inverse van bovenstaande voor de inhoudelijke velden; navigatie-velden op default.
+  Inverse voor de inhoudelijke velden, gebruikt als fallback wanneer een concept
+  geen `v2State` heeft (legacy-concept). Navigatie-velden op default; `vrij` wordt
+  uit `extra_arbeid` als één regel teruggezet (legacy heeft geen losse vrije
+  regels, dus geen detailverlies dat er was).
 - Label en totaal voor de lijst: hergebruik de bestaande label-afleiding
   (`conceptLabel` in de v2-wizard, `deriveKlantNaam` in de legacy modal) en het
   reeds berekende totaal incl. btw.
@@ -169,9 +202,10 @@ diensten. De offerte-inhoud blijft volledig behouden.
   `upsertConcept`, en wist daarna de localStorage-sleutel. Zo raakt geen bestaand
   concept kwijt en convergeert alles naar de database. De upload is best-effort
   (lukt het niet, dan blijft de lokale sleutel staan en wordt het de volgende
-  keer opnieuw geprobeerd). Voor de v2-concepten worden de opgeslagen
-  `OfferteDraftState`-velden via `mapWizardToManualOfferte` naar
-  `ManualOfferteData` gebracht voor de upload.
+  keer opnieuw geprobeerd). Voor v2-concepten gaat de opgeslagen
+  `OfferteDraftState` mee als `v2State`, plus een canonieke `data` via
+  `buildManualOfferteFromWizard`; legacy-concepten uploaden hun `ManualOfferteData`
+  als `data` met `v2State: null`.
 - **Offline / opslagfout.** Een mislukte save stopt de wizard niet: je werk
   blijft op het scherm staan en wordt bij de volgende wijziging opnieuw
   weggeschreven. Het bestaande "opgeslagen"-vinkje weerspiegelt of de save echt
@@ -182,24 +216,31 @@ diensten. De offerte-inhoud blijft volledig behouden.
   zichtbaar bijwerken.
 - **Concept onzichtbaar voor de bot.** De tabel heeft geen relatie met `leads`;
   de bot-queries raken haar nooit. Geen halve leads in de pijplijn.
-- **Veldverlies tussen wizards.** Omdat beide wizards via `ManualOfferteData`
-  praten en de mobiele wizard velden die hij niet toont (zoals per-regel
-  overrides) toch in `data` laat staan, gaat openen-op-mobiel niets uit een
-  desktop-concept verloren.
+- **Veldverlies.** Desktop-naar-desktop verliest niets: v2 herstelt uit
+  `v2State` (inclusief losse `vrij`-regels). Desktop-naar-mobiel toont op mobiel
+  de canonieke `data` (de mobiele UI heeft sowieso geen losse meerwerk-regels,
+  dus geen detail dat er was); de DB houdt `v2_state` vast tot iemand op mobiel
+  bewerkt en opslaat, waarna `v2_state` op `null` gaat en de canonieke `data`
+  leidend blijft. Mobiel-naar-desktop herstelt v2 via
+  `mapManualOfferteToWizard(data)`.
 
 ## Testplan
 
 - Unit-test `mapManualOfferteToWizard`: round-trip
-  `state -> mapWizardToManualOfferte -> mapManualOfferteToWizard` behoudt alle
-  inhoudelijke velden (klant, diensten, m2, voegzand, kleur, korting incl.
+  `submitState -> mapWizardToManualOfferte -> mapManualOfferteToWizard` behoudt
+  alle inhoudelijke velden (klant, diensten, m2, voegzand, kleur, korting incl.
   euro-modus en omschrijving, alle `*_override`-velden, geldigheid, kanaal).
-- Unit-test opschoning: na 31 upserts blijven de 30 nieuwste over.
-- Unit-test wipe-veiligheid: `upsertConcept` met lege/default data gedraagt zich
-  voorspelbaar (geen onbedoelde lege concepten; spiegelt de bestaande
-  `isDefaultsData`-guard in de legacy modal en de `heeftInhoud`-guard in v2).
-- Integratie/handmatig: concept op desktop maken, op mobiel openen en afmaken, en
-  andersom; concept verdwijnt uit de lijst na versturen; lijst is gelijk op beide
-  apparaten.
+- Unit-test `buildManualOfferteFromWizard`: de helper produceert exact dezelfde
+  `ManualOfferteData` als de bestaande inline-logica in `handleVerstuur`
+  (incl. `vrij` → `extra_arbeid`-omzetting met het pricing-tarief).
+- Unit-test server-actions met gemockte admin/auth (zelfde patroon als
+  `offerte-draft-actions.test.ts`): `upsertConcept` schrijft `data` + `v2_state`;
+  `listConcepten` sorteert nieuwste eerst; na een upsert worden rijen buiten de
+  30 nieuwste verwijderd; `removeConcept` verwijdert op id.
+- Integratie/handmatig: concept op desktop met een vrije meerwerk-regel maken, op
+  desktop (ander apparaat/incognito) heropenen en controleren dat de vrije regel
+  terugkomt; concept op mobiel openen en afmaken; concept verdwijnt uit de lijst
+  na versturen; lijst is gelijk op beide apparaten.
 
 ## Oplevering en deploy
 
