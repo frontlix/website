@@ -6,6 +6,7 @@ export const GMAIL_SCOPES = [
   'openid',
   'email',
   'https://www.googleapis.com/auth/gmail.labels',
+  'https://www.googleapis.com/auth/gmail.settings.basic',
 ]
 
 function clientId(): string {
@@ -61,7 +62,10 @@ export async function exchangeGmailCode(
   return { refreshToken: json.refresh_token, accessToken: json.access_token }
 }
 
+// append in lib/gmail-oauth.ts
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1/users/me'
+
+export const APPROVAL_FILTER_QUERY = 'subject:"Offerte ter goedkeuring"'
 
 function authHeaders(accessToken: string) {
   return { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
@@ -84,4 +88,43 @@ export async function ensureLabel(accessToken: string, name: string): Promise<st
   const created = (await createRes.json()) as { id?: string }
   if (!created.id) throw new Error('Geen label-id terug van Gmail')
   return created.id
+}
+
+/** Geeft het id van het approval-filter; maakt het aan als het nog niet bestaat. */
+export async function ensureApprovalFilter(accessToken: string, labelId: string): Promise<string> {
+  const listRes = await fetch(`${GMAIL_API}/settings/filters`, { headers: authHeaders(accessToken) })
+  if (!listRes.ok) throw new Error(`Filters ophalen faalde: ${listRes.status} ${await listRes.text()}`)
+  const list = (await listRes.json()) as {
+    filter?: Array<{ id?: string; criteria?: { query?: string }; action?: { addLabelIds?: string[] } }>
+  }
+  // Dedup op de subject-query (ongeacht label): een tweede filter met dezelfde
+  // query zou de mail dubbel labelen. Een exacte match (zelfde query + label)
+  // hergebruiken; verouderde filters met dezelfde query maar een ander label opruimen.
+  const sameQuery = (list.filter ?? []).filter((f) => f.criteria?.query === APPROVAL_FILTER_QUERY)
+  const exact = sameQuery.find((f) => (f.action?.addLabelIds ?? []).includes(labelId))
+  if (exact?.id) return exact.id
+  for (const stale of sameQuery) {
+    if (stale.id) await deleteFilter(accessToken, stale.id)
+  }
+
+  const createRes = await fetch(`${GMAIL_API}/settings/filters`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ criteria: { query: APPROVAL_FILTER_QUERY }, action: { addLabelIds: [labelId] } }),
+  })
+  if (!createRes.ok) throw new Error(`Filter aanmaken faalde: ${createRes.status} ${await createRes.text()}`)
+  const created = (await createRes.json()) as { id?: string }
+  if (!created.id) throw new Error('Geen filter-id terug van Gmail')
+  return created.id
+}
+
+export async function deleteFilter(accessToken: string, filterId: string): Promise<void> {
+  const res = await fetch(`${GMAIL_API}/settings/filters/${filterId}`, {
+    method: 'DELETE',
+    headers: authHeaders(accessToken),
+  })
+  // 404 = al weg; dat is prima.
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Filter verwijderen faalde: ${res.status} ${await res.text()}`)
+  }
 }
