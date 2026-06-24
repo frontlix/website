@@ -22,6 +22,9 @@ export interface InfoRow {
   chip?: string | null;
   /** Optionele sub-regel onder de waarde (bv. "Binnen gratis radius"). */
   sub?: string | null;
+  /** Optionele externe linkjes onder de waarde (bv. Street View / Satelliet
+   *  bij het adres). Openen in een nieuw tabblad. */
+  links?: MapsLink[] | null;
 }
 
 /** Een foto in het dossier: echte Supabase public_url (of null, dan toont de
@@ -65,6 +68,7 @@ import { DEFAULTS } from "@/lib/dashboard/manual-offerte-types";
 import { FALLBACK_PRICING } from "@/lib/dashboard/pricing-types";
 import type { SentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import type { OpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
+import type { MapsLink } from "@/lib/dashboard/maps-links";
 import type { AfspraakInfo } from "@/lib/dashboard/afspraak-info";
 import type { OfferteFormData } from "./OfferteEditor";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, MapPin } from "lucide-react";
 import type { DossierData, InfoRow } from "./dossier-data";
 import { DOSSIER } from "./dossier-data";
 import { PhotoPlaceholder } from "./PhotoPlaceholder";
@@ -36,6 +36,22 @@ function InfoColumn({
               <div className={styles.rowLabel}>{row.label}</div>
               <div className={styles.rowValue}>{row.waarde}</div>
               {row.sub ? <div className={styles.rowSub}>{row.sub}</div> : null}
+              {row.links && row.links.length > 0 ? (
+                <div className={styles.rowLinks}>
+                  {row.links.map((link) => (
+                    <a
+                      key={link.label}
+                      className={styles.rowLink}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MapPin size={12} strokeWidth={2.4} aria-hidden="true" />
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </div>
             {row.chip ? (
               <span className={styles.waChip}>

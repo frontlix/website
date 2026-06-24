@@ -26,6 +26,7 @@ import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pri
 import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
 import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
+import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type {
   DossierData,
@@ -152,6 +153,14 @@ function buildKlant(l: DetailLead): InfoRow[] {
     label: "Adres",
     waarde: adresWaarde,
     sub: l.afstand_km != null && l.afstand_km <= 25 ? "Binnen gratis radius" : null,
+    // Locatie-linkjes: Street View + Satelliet op de geocode-coordinaten
+    // (m2 + terras inschatten); zonder coordinaten een Maps-link op het adres.
+    links: locatieLinks({
+      lat: l.lat,
+      lng: l.lng,
+      adres,
+      heeftAdres: adres !== "Geen adres bekend",
+    }),
   });
   rows.push({ label: "Bron", waarde: humanizeBron(l.bron) });
   return rows;
