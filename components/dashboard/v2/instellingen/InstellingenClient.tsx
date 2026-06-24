@@ -63,8 +63,6 @@ export interface InstellingenClientProps {
   radius: number;
   /** Minimale klusgrootte (m2) buiten de straal (tenant_settings.radius_min_m2_buiten_straal). */
   minM2: number;
-  /** Harde max-afstand (km); null = geen grens (tenant_settings.radius_max_afstand_km). */
-  maxAfstand: number | null;
   diensten: Service[];
   /** Beschikbaarheid (werkdagen + tijden) uit tenant_settings.beschikbaarheid. */
   dagen: DaySlot[];
@@ -131,7 +129,6 @@ export function InstellingenClient(props: InstellingenClientProps) {
   const [profiel, setProfiel] = useState<CompanyProfile>(props.profiel);
   const [radius, setRadius] = useState(props.radius);
   const [minM2, setMinM2] = useState(props.minM2);
-  const [maxAfstand, setMaxAfstand] = useState<number | null>(props.maxAfstand);
 
   // Diensten
   const [diensten, setDiensten] = useState<Service[]>(props.diensten);
@@ -254,7 +251,6 @@ export function InstellingenClient(props: InstellingenClientProps) {
           spoed_telefoon: profiel.spoedTel,
           radius_max_km: radius,
           min_m2_buiten_straal: minM2,
-          max_afstand_km: maxAfstand,
         });
         const doelNum = parseDoel(profiel.doel);
         await saveOmzetDoelMaand(doelNum);
@@ -290,8 +286,6 @@ export function InstellingenClient(props: InstellingenClientProps) {
             onRadius={handleRadius}
             minM2={minM2}
             onMinM2={setMinM2}
-            maxAfstand={maxAfstand}
-            onMaxAfstand={setMaxAfstand}
             basePostcode={props.basePostcode}
             baseHuisnummer={props.baseHuisnummer}
             baseLabel={props.baseLabel}

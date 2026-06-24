@@ -20,9 +20,6 @@ interface BedrijfsprofielPanelProps {
   /** Minimale klusgrootte (m2) waaronder we buiten de straal niets aannemen. */
   minM2: number;
   onMinM2: (next: number) => void;
-  /** Harde max-afstand (km); null = geen grens. */
-  maxAfstand: number | null;
-  onMaxAfstand: (next: number | null) => void;
   /** Huidige logo-URL (tenant_settings.logo_url); null = nog geen logo. */
   logoUrl: string | null;
   /** Echte omzet-stand deze maand ("€X (Y%)"); leeg = toon verwijzing naar Overzicht. */
@@ -52,8 +49,6 @@ export function BedrijfsprofielPanel({
   onRadius,
   minM2,
   onMinM2,
-  maxAfstand,
-  onMaxAfstand,
   logoUrl: propLogoUrl,
   basePostcode,
   baseHuisnummer,
@@ -76,11 +71,8 @@ export function BedrijfsprofielPanel({
   // parent, die hem met de globale "Opslaan"-knop wegschrijft naar
   // tenant_settings.radius_max_km (saveBedrijfsprofiel).
   const [straalInput, setStraalInput] = useState(String(radius));
-  // Min-m2 en max-afstand: zelfde lokale-buffer-aanpak als de Werkstraal.
+  // Min-m2: zelfde lokale-buffer-aanpak als de Werkstraal.
   const [minM2Input, setMinM2Input] = useState(String(minM2));
-  const [maxAfstandInput, setMaxAfstandInput] = useState(
-    maxAfstand != null ? String(maxAfstand) : "",
-  );
 
   // Logo-upload: lokale state zodat een nieuw logo direct zichtbaar is, los van
   // de server-revalidatie. uploadTenantLogo doet de upload naar de storage-
@@ -311,29 +303,6 @@ export function BedrijfsprofielPanel({
           />
           <div className={styles.goalHint}>
             Klussen kleiner dan dit aantal m² buiten je straal pakt Surface niet op, die gaan naar jou.
-          </div>
-        </div>
-
-        <div className={styles.goalGrid}>
-          <Field
-            label="Maximale afstand"
-            value={maxAfstandInput}
-            onChange={(v) => {
-              const cleaned = v.replace(/[^0-9]/g, "");
-              setMaxAfstandInput(cleaned);
-              onMaxAfstand(cleaned === "" ? null : parseInt(cleaned, 10));
-            }}
-            suffix="km"
-            readOnly={!live}
-          />
-          <div className={styles.goalHint}>
-            {maxAfstand != null && maxAfstand < radius ? (
-              <span style={{ color: "var(--rb-danger, #c0392b)" }}>
-                Tip: zet deze minstens gelijk aan je werkstraal ({radius} km), anders heeft hij geen effect.
-              </span>
-            ) : (
-              <>Boven deze afstand neemt Surface nooit klussen aan, ook grote niet. Leeg laten = geen grens.</>
-            )}
           </div>
         </div>
       </div>

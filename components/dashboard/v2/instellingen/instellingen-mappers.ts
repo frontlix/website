@@ -49,7 +49,6 @@ export type TenantSettingsRow = {
   offerte_nummer_prefix: string | null;
   radius_max_km: number | null;
   radius_min_m2_buiten_straal: number | null;
-  radius_max_afstand_km: number | null;
   reminder_dag_1: number | null;
   reminder_dag_2: number | null;
   reminder_dag_3: number | null;
@@ -137,12 +136,6 @@ export function toWorkRadius(t: TenantSettingsRow | null): number {
  *  (tenant_settings.radius_min_m2_buiten_straal); default 200. */
 export function toMinM2BuitenStraal(t: TenantSettingsRow | null): number {
   return t?.radius_min_m2_buiten_straal != null ? Number(t.radius_min_m2_buiten_straal) : 200;
-}
-
-/** Harde maximale afstand (km); boven deze afstand altijd weigeren
- *  (tenant_settings.radius_max_afstand_km). null = geen grens. */
-export function toMaxAfstandKm(t: TenantSettingsRow | null): number | null {
-  return t?.radius_max_afstand_km != null ? Number(t.radius_max_afstand_km) : null;
 }
 
 // ── Diensten ──────────────────────────────────────────────────
