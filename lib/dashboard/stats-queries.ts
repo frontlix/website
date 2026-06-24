@@ -222,7 +222,7 @@ export async function statusVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ status: string | null; count: number }>> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('dashboard_status').eq('uitgesloten_van_stats', false)
+  let query = supabase.from('leads').select('dashboard_status').eq('uitgesloten_van_stats', false).lt('aangemaakt', period.to)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -248,7 +248,7 @@ export async function categorieVerdeling(
   period: StatsPeriod
 ): Promise<Array<{ categorie: string; count: number }>> {
   const supabase = await getDashboardSupabase()
-  let query = supabase.from('leads').select('hoofdcategorie').eq('uitgesloten_van_stats', false)
+  let query = supabase.from('leads').select('hoofdcategorie').eq('uitgesloten_van_stats', false).lt('aangemaakt', period.to)
   if (period.from) {
     query = query.gte('aangemaakt', period.from)
   }
@@ -329,6 +329,7 @@ export async function topTags(
     .from('lead_tags')
     .select('tags!inner(naam), leads!inner(aangemaakt)')
     .eq('leads.uitgesloten_van_stats', false)
+    .lt('leads.aangemaakt', period.to)
   if (period.from) {
     query = query.gte('leads.aangemaakt', period.from)
   }
