@@ -16,7 +16,7 @@ import type { MobileDossierData } from './dossier-mappers'
 import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
 import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
-import { addNote, deleteNote, updateNote } from '@/lib/dashboard/note-actions'
+import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from '@/lib/dashboard/lead-actions'
 import type { Tag } from '@/lib/dashboard/database.types'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
@@ -88,6 +88,16 @@ export function MobileLeadDossier({
       else window.alert(res.error || 'Bewerken mislukt.')
     })
   }
+  const zetNotitieTargets = (
+    id: string,
+    targets: { opAfspraak: boolean; opOpdrachtbon: boolean },
+  ) => {
+    startNote(async () => {
+      const res = await setNoteTargets(id, data.leadId, targets)
+      if (res.ok) router.refresh()
+      else window.alert(res.error || 'Opslaan van de vinkjes mislukt.')
+    })
+  }
 
   // Lead-beheer: zelfde server-actions als desktop, optimistisch met rollback.
   const toggleArchief = () => {
@@ -153,6 +163,7 @@ export function MobileLeadDossier({
               onAdd={voegNotitieToe}
               onDelete={verwijderNotitie}
               onUpdate={bewerkNotitie}
+              onSetTargets={zetNotitieTargets}
             />
           )}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}

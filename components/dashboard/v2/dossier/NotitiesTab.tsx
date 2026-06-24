@@ -13,6 +13,8 @@ interface NotitiesTabProps {
   onDelete: (id: string) => void;
   /** Werkt de tekst van een bestaande notitie bij. */
   onUpdate: (id: string, tekst: string) => void;
+  /** Zet de vinkjes (afspraak-print / opdrachtbon) van een notitie. */
+  onSetTargets: (id: string, targets: { opAfspraak: boolean; opOpdrachtbon: boolean }) => void;
   /** True wanneer de tab net is geopend (focus op het invoerveld). */
   autoFocus?: boolean;
 }
@@ -25,6 +27,7 @@ export function NotitiesTab({
   onAdd,
   onDelete,
   onUpdate,
+  onSetTargets,
   autoFocus,
 }: NotitiesTabProps) {
   const [tekst, setTekst] = useState("");
@@ -68,6 +71,11 @@ export function NotitiesTab({
     if (window.confirm("Deze notitie verwijderen?")) onDelete(id);
   };
 
+  const zetAfspraak = (n: DossierNotitie, value: boolean) =>
+    onSetTargets(n.id, { opAfspraak: value, opOpdrachtbon: n.opOpdrachtbon });
+  const zetOpdrachtbon = (n: DossierNotitie, value: boolean) =>
+    onSetTargets(n.id, { opAfspraak: n.opAfspraak, opOpdrachtbon: value });
+
   return (
     <div className={styles.root}>
       <div className={styles.inputRow}>
@@ -78,7 +86,7 @@ export function NotitiesTab({
           onKeyDown={(e) => {
             if (e.key === "Enter") voegToe();
           }}
-          placeholder="Typ een notitie, verschijnt ook op de opdrachtbon…"
+          placeholder="Typ een notitie, komt standaard op de afspraak en opdrachtbon…"
           className={styles.input}
         />
         <button type="button" className={styles.addBtn} onClick={voegToe}>
@@ -147,6 +155,25 @@ export function NotitiesTab({
                 </div>
                 <div className={styles.noteMeta}>
                   {n.wie} · {n.tijd}
+                </div>
+                <div className={styles.targets}>
+                  <span className={styles.targetsLabel}>Tonen op:</span>
+                  <label className={styles.targetBox}>
+                    <input
+                      type="checkbox"
+                      checked={n.opAfspraak}
+                      onChange={(e) => zetAfspraak(n, e.target.checked)}
+                    />
+                    Afspraak
+                  </label>
+                  <label className={styles.targetBox}>
+                    <input
+                      type="checkbox"
+                      checked={n.opOpdrachtbon}
+                      onChange={(e) => zetOpdrachtbon(n, e.target.checked)}
+                    />
+                    Opdrachtbon
+                  </label>
                 </div>
               </>
             )}

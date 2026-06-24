@@ -262,5 +262,8 @@ export function afspraakInfoFromItem(item: AgendaItem): AfspraakInfo {
     groeneAanslag: Boolean(k?.groeneAanslag),
     plantenAfschermen: Boolean(k?.plantenAfschermen),
     geboektOp: "",
+    // Agenda-items dragen geen lead-notities; die komen alleen via het
+    // leaddossier (Afspraak-tab) op de print.
+    notities: [],
   };
 }

@@ -341,8 +341,8 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     voegzandType: l.voegzand_type,
     zandKleur: l.zand_kleur,
     groeneAanslag: l.groene_aanslag,
-    // Team-notities van de lead op de bon (nieuwste eerst, zoals desktop).
-    notities: detail.notes.map((n) => n.tekst),
+    // Team-notities met "Opdrachtbon"-vinkje aan (default aan, zie migratie 062).
+    notities: detail.notes.filter((n) => n.op_opdrachtbon !== false).map((n) => n.tekst),
   })
 
   return {
@@ -370,6 +370,9 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
       wie: n.auteur ? 'Teamlid' : 'Surface',
       tijd: noteRelTime(n.aangemaakt_op),
       tekst: n.tekst,
+      // Default true: ontbreekt de kolom (code vóór migratie 062), dan beide aan.
+      opAfspraak: n.op_afspraak !== false,
+      opOpdrachtbon: n.op_opdrachtbon !== false,
     })),
     opdrachtbon,
   }
