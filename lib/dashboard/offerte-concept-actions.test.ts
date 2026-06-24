@@ -24,9 +24,11 @@ const {
     }),
   )
   // upsertConcept: upsert()
-  const mockUpsert = vi.fn(() => Promise.resolve({ error: null }))
+  const mockUpsert = vi.fn((_row: Record<string, unknown>) => Promise.resolve({ error: null }))
   // opschoning: select().order().range()
-  const mockSelectOverflow = vi.fn(() => Promise.resolve({ data: [], error: null }))
+  const mockSelectOverflow = vi.fn(() =>
+    Promise.resolve({ data: [] as { id: string }[], error: null as { message: string } | null }),
+  )
   // delete().in() (opschoning) en delete().eq() (removeConcept)
   const mockDeleteIn = vi.fn(() => Promise.resolve({ error: null }))
   const mockDeleteEq = vi.fn(() => Promise.resolve({ error: null }))
