@@ -21,6 +21,7 @@ import {
   prevWeekRange,
   prevMonthSamePeriodRange,
 } from "@/lib/dashboard/period";
+import { amsterdamStartOfDayIso } from "@/lib/dashboard/amsterdam-time";
 import {
   countLeads,
   countConverted,
@@ -133,12 +134,9 @@ export default async function OverzichtPage({
   const week7d = thisWeekRolling(now);
   const prevWeek7d = prevWeekRange(now);
   const prevMaand = prevMonthSamePeriodRange(now);
-  // "Vandaag" = sinds middernacht (UTC-dagstart, exact zoals de (app)-pagina).
-  const vandaagStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(now.getUTCDate()).padStart(2, "0")}`;
-  const vandaag = { from: vandaagStart, to: now.toISOString() };
+  // "Vandaag" = sinds middernacht Nederlandse tijd (NL-dag), consistent met de
+  // rest van het dashboard. Zie amsterdam-time.ts.
+  const vandaag = { from: amsterdamStartOfDayIso(now), to: now.toISOString() };
 
   // ── Parallel-fetch (hergebruikt exact de bestaande queries/helpers) ──
   const [

@@ -6,6 +6,7 @@ import {
   prevWeekRange,
   prevMonthSamePeriodRange,
 } from '@/lib/dashboard/period'
+import { amsterdamStartOfDayIso } from '@/lib/dashboard/amsterdam-time'
 import {
   countLeads,
   countConverted,
@@ -83,13 +84,7 @@ export default async function OverzichtPage({
   const prevMaand = prevMonthSamePeriodRange(now)
   // "Vandaag" = sinds middernacht Europe/Amsterdam, handmatig omdat
   // periodToRange geen 'vandaag' kent.
-  const vandaagStart = (() => {
-    const y = now.getUTCFullYear()
-    const m = now.getUTCMonth()
-    const d = now.getUTCDate()
-    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-  })()
-  const vandaag = { from: vandaagStart, to: now.toISOString() }
+  const vandaag = { from: amsterdamStartOfDayIso(now), to: now.toISOString() }
 
   // ── Parallel-fetch: alles wat het overzicht nodig heeft ──
   //
