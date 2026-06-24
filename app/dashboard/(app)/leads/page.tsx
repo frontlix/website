@@ -105,8 +105,11 @@ export default async function LeadsPage({
     archief:     archivedLeads.length,
   }
 
-  // Bron-lijst: voor archief gebruiken we de aparte set, anders de standaard.
-  const sourceLeads = activeFilter === 'archief' ? archivedLeads : allLeads
+  // Bron-lijst voor de ACTIEVE `cards`: altijd de niet-gearchiveerde set. De
+  // mobiele UI schakelt naar gearchiveerd puur client-side via `archivedCards`
+  // (de Archief-chip), dus `cards` moet ook bij ?filter=archief de actieve set
+  // blijven, anders toont "Alles" na terugkeer uit het archief de verkeerde set.
+  const sourceLeads = allLeads
 
   // Eerst tab-filter, dan kanaal-filter, dan search, alle cumulatief.
   let displayed = sourceLeads.filter((l) => matchesFilter(l, activeFilter))
@@ -212,6 +215,9 @@ export default async function LeadsPage({
           // Wachtende-offertes-deeplink: MobileLeads verbergt dan de stage-chips
           // en toont een wisbare strip (de lijst is al server-side gefilterd).
           openOffertesFilter: isOpenOffertes,
+          // Start op de Archief-chip bij ?filter=archief (terugkeer uit een
+          // gearchiveerd dossier), zodat je weer in het archief landt.
+          initialArchived: activeFilter === 'archief',
         }}
       />
     </div>

@@ -248,7 +248,11 @@ export function DossierView({
 
       {/* Kop */}
       <div className={styles.kop}>
-        <Link href={`${V2_BASE}/leads`} className={styles.back}>
+        {/* Terug naar de lijst waar deze lead leeft: gearchiveerd → het archief
+            (?archief=1, spiegelt de ArchiveSwitch), anders de actieve lijst. We
+            kijken naar de live `archived`-state, dus na de-archiveren in het
+            dossier landt 'ie weer in de actieve lijst. */}
+        <Link href={`${V2_BASE}/leads${archived ? "?archief=1" : ""}`} className={styles.back}>
           <ChevronLeft size={16} strokeWidth={2.4} />
           Leads
         </Link>
