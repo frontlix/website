@@ -20,6 +20,7 @@ import type {
 } from "@/lib/dashboard/database.types";
 import { botStatusForFase } from "@/lib/dashboard/fase-labels";
 import { formatEuro, gesprekFaseLabel } from "@/lib/dashboard/format";
+import { isHandover } from "@/lib/dashboard/lead-status-meta";
 import type { Thread, ChatMessage, StatusKind } from "../demo-data";
 import type { InboxConversation, LeadContextTag } from "./inbox-data";
 
@@ -106,6 +107,10 @@ export function toThreads(conversations: ConversationPreview[]): Thread[] {
     unread: isOngelezen(c) ? 1 : 0,
     kanaal: c.laatsteBericht.type === "tekst" ? "WhatsApp" : "WhatsApp",
     initials: initialsFromNaam(c.naam),
+    handover: isHandover({
+      eigenaar_overgenomen: c.eigenaarOvergenomen,
+      status: c.status,
+    }),
   }));
 }
 
@@ -157,12 +162,14 @@ function dienstLabel(ctx: InboxLeadContext): string {
 /**
  * Status-label voor het lead-dossier. Zelfde afleiding als de (app)-inbox:
  * een eindstatus uit dashboard_status, of een menselijker label op basis van
- * de fase wanneer het gesprek nog "open" is.
+ * de fase wanneer het gesprek nog "open" is. Hand-over heeft voorrang.
  */
 function statusLabelVoor(
   status: DashboardStatus | null,
   fase: GesprekFase | null,
+  handover: boolean,
 ): string {
+  if (handover) return "Zelf overnemen";
   if (status === "afgehandeld") return "Afgerond";
   if (status === "geen_interesse") return "Afgewezen";
   if (status === "no_show") return "No-show";
@@ -177,14 +184,16 @@ function statusLabelVoor(
 /**
  * Kleur-kind voor de status-pill (mapt op de rijke v2 StatusKind-tinten,
  * gelijk aan de status-labels uit statusLabelVoor):
- *   afgerond → won, afgewezen → lost, no-show → lost, archief → sent,
- *   opgevolgd → talking, bezoek bevestigd → plan, onderhandelen → review,
- *   offerte verstuurd → sent, anders (in gesprek) → talking.
+ *   handover → hot (rood), afgerond → won, afgewezen → lost, no-show → lost,
+ *   archief → sent, opgevolgd → talking, bezoek bevestigd → plan,
+ *   onderhandelen → review, offerte verstuurd → sent, anders → talking.
  */
 function statusKindVoor(
   status: DashboardStatus | null,
   fase: GesprekFase | null,
+  handover: boolean,
 ): StatusKind {
+  if (handover) return "hot";
   if (status === "afgehandeld") return "won";
   if (status === "geen_interesse") return "lost";
   if (status === "no_show") return "lost";
@@ -232,6 +241,10 @@ export function toLeadContextProps(
     ctx.totaal_prijs != null && ctx.totaal_prijs > 0
       ? formatEuro(ctx.totaal_prijs)
       : null;
+  const handover = isHandover({
+    eigenaar_overgenomen: ctx.eigenaar_overgenomen,
+    status: ctx.status,
+  });
   return {
     initials: initialsFromNaam(ctx.naam),
     sub: `WhatsApp · ${dienst} · ${waarde}`,
@@ -240,8 +253,8 @@ export function toLeadContextProps(
       kanaal: "WhatsApp",
       dienst,
       waarde,
-      statusLabel: statusLabelVoor(ctx.dashboard_status, ctx.gesprek_fase),
-      statusKind: statusKindVoor(ctx.dashboard_status, ctx.gesprek_fase),
+      statusLabel: statusLabelVoor(ctx.dashboard_status, ctx.gesprek_fase, handover),
+      statusKind: statusKindVoor(ctx.dashboard_status, ctx.gesprek_fase, handover),
       faseLabel: ctx.gesprek_fase ? gesprekFaseLabel(ctx.gesprek_fase) : null,
       adres: adresVoor(ctx),
       m2: ctx.m2 ?? null,

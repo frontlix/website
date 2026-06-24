@@ -76,11 +76,15 @@ export function ThreadList({
                     <span className={styles.tijd}>{t.tijd}</span>
                   </span>
                   <span className={styles.bottomLine}>
-                    <span
-                      className={`${styles.preview} ${unread ? styles.previewUnread : ""}`}
-                    >
-                      {t.preview}
-                    </span>
+                    {t.handover ? (
+                      <span className={styles.handoverBadge}>Zelf overnemen</span>
+                    ) : (
+                      <span
+                        className={`${styles.preview} ${unread ? styles.previewUnread : ""}`}
+                      >
+                        {t.preview}
+                      </span>
+                    )}
                     {unread ? (
                       <span className={styles.unread}>{unread}</span>
                     ) : null}

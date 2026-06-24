@@ -7,6 +7,10 @@ export type ConversationPreview = {
   telefoon: string
   dashboardStatus: Lead['dashboard_status']
   gesprekFase: Lead['gesprek_fase']
+  /** Pipeline-status van de lead (bv. "handoff"). */
+  status: Lead['status']
+  /** True als de bot de lead heeft overgedragen aan de eigenaar. */
+  eigenaarOvergenomen: boolean
   totaalPrijs: number | null
   offerteVerstuurd: boolean
   /**
@@ -70,7 +74,7 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
   // Stap 3, enrich met lead-info (alleen niet-gearchiveerd)
   const leadQuery = supabase
     .from('leads')
-    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, totaal_prijs, offerte_verstuurd, inbox_gelezen_op')
+    .select('lead_id, naam, telefoon, dashboard_status, dashboard_archived, gesprek_fase, status, eigenaar_overgenomen, totaal_prijs, offerte_verstuurd, inbox_gelezen_op')
     .in('lead_id', leadIds)
     .eq('dashboard_archived', false)
   const { data: leads, error: leadErr } = await leadQuery
@@ -85,6 +89,8 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
     | 'telefoon'
     | 'dashboard_status'
     | 'gesprek_fase'
+    | 'status'
+    | 'eigenaar_overgenomen'
     | 'totaal_prijs'
     | 'offerte_verstuurd'
   > & { inbox_gelezen_op: string | null }
@@ -108,6 +114,8 @@ export async function getActiveConversations(limit = 50): Promise<ConversationPr
       telefoon: lead.telefoon,
       dashboardStatus: lead.dashboard_status,
       gesprekFase: lead.gesprek_fase,
+      status: lead.status,
+      eigenaarOvergenomen: Boolean(lead.eigenaar_overgenomen),
       totaalPrijs: lead.totaal_prijs,
       offerteVerstuurd: Boolean(lead.offerte_verstuurd),
       needsAction,
@@ -164,6 +172,8 @@ export type InboxLeadContext = Pick<
   | 'offerte_verstuurd_op'
   | 'dashboard_status'
   | 'gesprek_fase'
+  | 'status'
+  | 'eigenaar_overgenomen'
   | 'aangemaakt'
 > & {
   fotosCount: number
@@ -180,7 +190,7 @@ export async function getInboxLeadContext(leadId: string): Promise<InboxLeadCont
   const leadQuery = supabase
     .from('leads')
     .select(
-      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, aangemaakt, bot_gepauzeerd',
+      'lead_id, naam, telefoon, email, postcode, plaats, straat, huisnummer, hoofdcategorie, sub_diensten, m2, totaal_prijs, offerte_verstuurd, offerte_verstuurd_op, dashboard_status, gesprek_fase, status, eigenaar_overgenomen, aangemaakt, bot_gepauzeerd',
     )
     .eq('lead_id', leadId)
     .maybeSingle()

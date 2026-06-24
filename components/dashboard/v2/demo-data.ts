@@ -180,6 +180,8 @@ export interface Thread {
   kanaal: "WhatsApp" | "Telefoon";
   initials: string;
   active?: boolean;
+  /** True als de bot de lead heeft overgedragen (buiten werkgebied / onder min-m2). */
+  handover?: boolean;
 }
 
 export const THREADS: Thread[] = [
