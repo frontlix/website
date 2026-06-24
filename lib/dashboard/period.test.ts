@@ -24,23 +24,25 @@ describe('parsePeriod', () => {
 })
 
 describe('periodToRange', () => {
-  // Vaste referentie-datum: dinsdag 5 mei 2026 14:00 UTC
+  // dinsdag 5 mei 2026 14:00 UTC (= 16:00 Amsterdam, CEST). Periode-grenzen
+  // liggen in NL-tijd, dus 'from' = UTC-instant van NL-middernacht
+  // (zomer/CEST = -2u, winter/CET = -1u t.o.v. de kalenderdatum).
   const NOW = new Date('2026-05-05T14:00:00Z')
 
-  it('deze-week: vanaf maandag 00:00', () => {
-    expect(periodToRange('deze-week', NOW).from).toBe('2026-05-04')
+  it('deze-week: maandag 00:00 NL', () => {
+    expect(periodToRange('deze-week', NOW).from).toBe('2026-05-03T22:00:00.000Z')
   })
 
-  it('deze-maand: vanaf 1e van maand', () => {
-    expect(periodToRange('deze-maand', NOW).from).toBe('2026-05-01')
+  it('deze-maand: 1e van maand 00:00 NL', () => {
+    expect(periodToRange('deze-maand', NOW).from).toBe('2026-04-30T22:00:00.000Z')
   })
 
-  it('dit-kwartaal: vanaf 1 april (Q2)', () => {
-    expect(periodToRange('dit-kwartaal', NOW).from).toBe('2026-04-01')
+  it('dit-kwartaal: 1 april 00:00 NL (Q2)', () => {
+    expect(periodToRange('dit-kwartaal', NOW).from).toBe('2026-03-31T22:00:00.000Z')
   })
 
-  it('dit-jaar: vanaf 1 januari', () => {
-    expect(periodToRange('dit-jaar', NOW).from).toBe('2026-01-01')
+  it('dit-jaar: 1 januari 00:00 NL', () => {
+    expect(periodToRange('dit-jaar', NOW).from).toBe('2025-12-31T23:00:00.000Z')
   })
 
   it('all-time: from is null', () => {
@@ -52,29 +54,29 @@ describe('periodToRange', () => {
     expect(range.to).toBe(NOW.toISOString())
   })
 
-  it('Q1: dit-kwartaal vanaf 1 januari', () => {
+  it('Q1: dit-kwartaal vanaf 1 januari (winter/CET)', () => {
     const feb = new Date('2026-02-15T12:00:00Z')
-    expect(periodToRange('dit-kwartaal', feb).from).toBe('2026-01-01')
+    expect(periodToRange('dit-kwartaal', feb).from).toBe('2025-12-31T23:00:00.000Z')
   })
 
   it('Q3: dit-kwartaal vanaf 1 juli', () => {
     const aug = new Date('2026-08-15T12:00:00Z')
-    expect(periodToRange('dit-kwartaal', aug).from).toBe('2026-07-01')
+    expect(periodToRange('dit-kwartaal', aug).from).toBe('2026-06-30T22:00:00.000Z')
   })
 
   it('Q4: dit-kwartaal vanaf 1 oktober', () => {
     const dec = new Date('2026-12-15T12:00:00Z')
-    expect(periodToRange('dit-kwartaal', dec).from).toBe('2026-10-01')
+    expect(periodToRange('dit-kwartaal', dec).from).toBe('2026-09-30T22:00:00.000Z')
   })
 
   it('zondag: deze-week pakt vorige maandag', () => {
     const sun = new Date('2026-05-10T12:00:00Z')
-    expect(periodToRange('deze-week', sun).from).toBe('2026-05-04')
+    expect(periodToRange('deze-week', sun).from).toBe('2026-05-03T22:00:00.000Z')
   })
 
   it('maandag: deze-week pakt diezelfde maandag', () => {
     const mon = new Date('2026-05-04T12:00:00Z')
-    expect(periodToRange('deze-week', mon).from).toBe('2026-05-04')
+    expect(periodToRange('deze-week', mon).from).toBe('2026-05-03T22:00:00.000Z')
   })
 })
 

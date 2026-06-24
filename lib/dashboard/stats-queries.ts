@@ -2,6 +2,7 @@ import { getDashboardSupabase } from './supabase-server'
 import type { StatsPeriod, PeriodKey } from './period'
 import { omzetBuckets, type OmzetRow } from './omzet-buckets'
 import { buildOmzetRows } from './omzet-source'
+import { amsterdamStartOfDayIso, amsterdamDayKey } from './amsterdam-time'
 
 /**
  * Aantal leads in de periode (alle, ongeacht dashboard_archived).
@@ -278,18 +279,15 @@ export async function leadsPerDag(
 ): Promise<Array<{ date: string; count: number }>> {
   const supabase = await getDashboardSupabase()
   const span = Math.max(1, Math.floor(days))
-  const start = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() - (span - 1)
-  ))
-  const startISO = start.toISOString().slice(0, 10)
+  const dayMs = 86_400_000
+  // Begin van de NL-dag van (span-1) dagen geleden, als UTC-instant.
+  const startIso = amsterdamStartOfDayIso(new Date(now.getTime() - (span - 1) * dayMs))
 
   const query = supabase
     .from('leads')
     .select('aangemaakt')
     .eq('uitgesloten_van_stats', false)
-    .gte('aangemaakt', startISO)
+    .gte('aangemaakt', startIso)
 
   const { data, error } = await query
   if (error) {
@@ -297,21 +295,18 @@ export async function leadsPerDag(
     return []
   }
 
+  // Bucket per NL-dag (niet UTC-dag), zodat een lead om 00:30 NL op de juiste
+  // dag valt. Zie amsterdam-time.ts.
   type Row = { aangemaakt: string }
   const counts = new Map<string, number>()
   for (const row of (data as Row[] | null) ?? []) {
-    const day = row.aangemaakt.slice(0, 10)
+    const day = amsterdamDayKey(new Date(row.aangemaakt))
     counts.set(day, (counts.get(day) ?? 0) + 1)
   }
 
   const out: Array<{ date: string; count: number }> = []
   for (let i = 0; i < span; i++) {
-    const d = new Date(Date.UTC(
-      start.getUTCFullYear(),
-      start.getUTCMonth(),
-      start.getUTCDate() + i
-    ))
-    const key = d.toISOString().slice(0, 10)
+    const key = amsterdamDayKey(new Date(now.getTime() - (span - 1 - i) * dayMs))
     out.push({ date: key, count: counts.get(key) ?? 0 })
   }
   return out

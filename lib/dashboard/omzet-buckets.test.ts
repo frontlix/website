@@ -53,7 +53,7 @@ describe('omzetBuckets', () => {
 
   it('negeert rijen buiten het venster en ongeldige datums', () => {
     const rows: OmzetRow[] = [
-      { wonDate: '2026-03-31T23:00:00.000Z', prijs: 999 }, // voor Q2 → buiten
+      { wonDate: '2026-03-30T12:00:00.000Z', prijs: 999 }, // 30 mrt NL, vóór Q2 → buiten
       { wonDate: 'onzin', prijs: 999 },                    // ongeldig
       { wonDate: '2026-04-01T01:00:00.000Z', prijs: 10 },  // binnen
     ]
