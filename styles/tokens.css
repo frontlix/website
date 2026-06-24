@@ -199,6 +199,20 @@
   --lek-accent-soft:   #7FE9FF;  /* licht cyaan voor accenten op donker */
 }
 
+/* Het v2-component LeadTagsRow (tag-menu in het dossier) wordt OOK in het
+   mobiele dossier hergebruikt, maar gebruikt --rb-* tokens die alleen in de v2
+   `.rbRoot`-boom bestaan. In de mobiele boom (.dashboard-theme-root) zijn ze
+   ongedefinieerd → witte fallback, ook in dark. Hier mappen we de paar die
+   LeadTagsRow nodig heeft op de mobiele tokens (die via `.dark` meeflippen),
+   alleen op de mobiele boom zodat v2 ongemoeid blijft. */
+.dashboard-theme-root {
+  --rb-surface: var(--surface);
+  --rb-text: var(--fg);
+  --rb-text-muted: var(--fg-muted);
+  --rb-border: var(--border);
+  --rb-hover: var(--surface-2);
+}
+
 /* ─────────────────────────────────────────────────────────
    Dark mode — opt-in via `.dark` class op een wrapper-div
    (wordt door de dashboard-shell op een container gezet, niet
