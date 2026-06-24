@@ -132,9 +132,13 @@ export function LeadCard({ lead }: LeadCardProps) {
         <RightMetric lead={lead} emph={meta.emph} tone={meta.tone} />
       </div>
 
-      {/* Bottom row: stage pill + time */}
+      {/* Bottom row: handover badge (voorrang) of stage pill + time */}
       <div className={styles.bottomRow}>
-        <LAStagePill stage={lead.stage} />
+        {lead.handover ? (
+          <span className={styles.handoverBadge}>Zelf overnemen</span>
+        ) : (
+          <LAStagePill stage={lead.stage} />
+        )}
         <time className={styles.binnen}>
           {lead.binnen}
         </time>

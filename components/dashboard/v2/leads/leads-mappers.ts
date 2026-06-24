@@ -17,6 +17,7 @@ import {
   isLeadUrgent,
   type MobileLeadStage,
 } from "@/components/dashboard/mobile/leads/lead-mappers";
+import { isHandover } from "@/lib/dashboard/lead-status-meta";
 import type { Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import type { PipelineCol } from "./leads-data";
 
@@ -65,6 +66,7 @@ const STAGE_TO_KIND: Record<MobileLeadStage, StatusKind> = {
 };
 
 function statusKindForLead(lead: LeadListItem): StatusKind {
+  if (isHandover(lead)) return "hot"; // overdracht, jij moet dit zelf regelen
   if (isLeadUrgent(lead)) return "hot"; // wacht op jou / urgent -> koraal
   // Onderhandelen valt in de "Offerte uit"-kolom (de offerte is al verstuurd)
   // maar krijgt een eigen amber status: de klant onderhandelt, jouw beurt.
@@ -83,6 +85,7 @@ const STAGE_LABEL: Record<MobileLeadStage, string> = {
 };
 
 function statusLabelForLead(lead: LeadListItem): string {
+  if (isHandover(lead)) return "Zelf overnemen";
   if (isLeadUrgent(lead)) return "Wacht op jou";
   // Onderhandelen: offerte is uit, klant onderhandelt -> eigen label binnen "Offerte uit".
   if (lead.gesprek_fase === "onderhandelen") return "In onderhandeling";

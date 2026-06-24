@@ -186,6 +186,21 @@
 .stagePill[data-tone='green']  { background: #10B98114; color: #10B981; }
 .stagePill[data-tone='gray']   { background: rgba(148, 163, 184, 0.14); color: var(--fg-muted); }
 
+/* Handover badge — rode pill "Zelf overnemen", heeft voorrang op stagePill */
+.handoverBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  background: var(--rb-status-hot-bg, #FF3B3014);
+  color: var(--rb-status-hot-ink, #FF3B30);
+}
+
 /* Stage dot (5×5 cirkel als prefix) */
 .stageDot {
   width: 5px;

@@ -1,6 +1,7 @@
 import type { LeadListItem } from '@/lib/dashboard/lead-queries'
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 import { botStatusForFase } from '@/lib/dashboard/fase-labels'
+import { isHandover } from '@/lib/dashboard/lead-status-meta'
 
 export type RawLead = LeadListItem
 export type MobileLeadStage = 'gesprek' | 'review' | 'uit' | 'gepland' | 'klaar'
@@ -16,6 +17,7 @@ export type MobileLeadCard = {
   datum: string | null
   bron: 'wa' | 'form'
   urgent: boolean
+  handover: boolean
   surfaceContext: string
   tagIds: string[]
 }
@@ -97,6 +99,7 @@ export function mapLeadToCard(
     datum: datumLabel(l),
     bron: l.kanaal === 'web' ? 'form' : 'wa',
     urgent: isLeadUrgent(l),
+    handover: isHandover(l),
     surfaceContext: botStatusForFase(l.gesprek_fase),
     tagIds,
   }
