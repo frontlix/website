@@ -1,4 +1,5 @@
 import type { LeadListItem } from './lead-queries'
+import { isHandover } from './lead-status-meta'
 
 /**
  * "Eerst dit doen", afleiding van openstaande owner-acties uit de leads-lijst.
@@ -10,6 +11,7 @@ import type { LeadListItem } from './lead-queries'
 export type ActionTone = 'hot' | 'warm'
 
 export type ActionKind =
+  | 'handover'            // bot heeft overgedragen (buiten werkgebied + onder min-m2)
   | 'owner_review'        // pending_eigenaar_review is set
   | 'klus_geblokkeerd'    // klus_geblokkeerd = true
   | 'offerte_versturen'   // offerte_pending_sinds set + nog niet verstuurd
@@ -86,6 +88,29 @@ function deriveActionForLead(
   lead: LeadListItem,
   nowMs: number,
 ): DashboardAction | null {
+  // 0. Bot heeft de lead overgedragen: eigenaar moet het gesprek zelf voeren.
+  //    Verdwijnt zodra de lead is afgehandeld/geen interesse/gearchiveerd.
+  if (
+    isHandover(lead) &&
+    lead.dashboard_status !== 'afgehandeld' &&
+    lead.dashboard_status !== 'geen_interesse' &&
+    lead.dashboard_status !== 'archief'
+  ) {
+    const createdMs = lead.aangemaakt ? new Date(lead.aangemaakt).getTime() : nowMs
+    const waitMs = Math.max(0, nowMs - createdMs)
+    return {
+      id: `handover-${lead.lead_id}`,
+      leadId: lead.lead_id,
+      kind: 'handover',
+      tone: 'hot',
+      title: 'Zelf overnemen, buiten werkgebied',
+      subtitle: subtitleForLead(lead),
+      waitLabel: formatWait(waitMs),
+      waitMs,
+      urgency: 95,
+    }
+  }
+
   // 1. Klus geblokkeerd → altijd hot, hoogste urgency
   if (lead.klus_geblokkeerd === true) {
     const updatedMs = lead.bijgewerkt ? new Date(lead.bijgewerkt).getTime() : nowMs
