@@ -12,6 +12,7 @@ import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
 import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
+import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
 import type { Tag } from '@/lib/dashboard/database.types'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
@@ -74,7 +75,10 @@ export function MobileLeadDossier({
               + persistentie als de desktop-vorm, dus identieke totalen. De sticky
               actiebalk levert daarnaast de PDF-CTA. */}
           {tab === 'offerte' && (
-            <MobileOfferteEditor {...offerteForm} pdfApiRef={pdfApiRef} />
+            <>
+              <MobileOfferteEditor {...offerteForm} pdfApiRef={pdfApiRef} />
+              <MobileOpdrachtbonActions model={data.opdrachtbon} klantNaam={lead.naam} />
+            </>
           )}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}

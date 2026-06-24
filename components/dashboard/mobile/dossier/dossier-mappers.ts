@@ -19,6 +19,9 @@ import type {
 // Editor-types hergebruiken (niet dupliceren) zodat de seed-functie van de
 // offerte-editor direct op deze velden matcht.
 import type { EditorKlant, SeedRegel } from './offerte/offerte-edit-seed'
+import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
+import { buildSentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
+import { buildOpdrachtbonModel, type OpdrachtbonModel } from '@/lib/dashboard/offerte/opdrachtbon-model'
 
 const TONE = {
   blue: '#1A56FF',
@@ -75,6 +78,8 @@ export type MobileDossierData = {
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
+  /** Voorgebouwd model voor de printbare opdrachtbon (offerte zonder prijzen). */
+  opdrachtbon: OpdrachtbonModel
 }
 
 /** Adres uit straat/huisnummer + postcode/plaats (alleen aanwezige delen). */
@@ -297,6 +302,50 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     binnen: l.aangemaakt ? shortTimeAgo(l.aangemaakt) : '—',
   }
 
+  // Opdrachtbon-model (gedeeld met desktop): de laatst verstuurde offerte
+  // levert de werkzaamheden + het bonnummer, anders vallen we terug op de
+  // lead-werkvelden. Zelfde buildSentOffertePdfModel-afleiding als v2 zodat het
+  // bonnummer desktop/mobiel identiek is.
+  const baseData = mapLeadToFormData(l)
+  const latestSent = detail.offertes.find((o) => !o.is_concept)
+  const sentModel = latestSent
+    ? buildSentOffertePdfModel({
+        offerte: {
+          regels_snapshot: latestSent.regels_snapshot,
+          totaal_incl: latestSent.totaal_incl,
+          korting_pct: latestSent.korting_pct,
+          versie: latestSent.versie,
+          aangemaakt_op: latestSent.aangemaakt_op,
+          offertenummer: (latestSent as { offertenummer?: string | null }).offertenummer ?? null,
+        },
+        baseData,
+        leadId: l.lead_id,
+        geldigheidFallback: l.offerte_geldigheid_dagen ?? 14,
+      })
+    : null
+  const opdrachtbon = buildOpdrachtbonModel({
+    leadId: l.lead_id,
+    klantNaam: l.naam,
+    bedrijf: l.bedrijfsnaam,
+    straat: l.straat,
+    huisnummer: l.huisnummer,
+    postcode: l.postcode,
+    plaats: l.plaats,
+    telefoon: l.telefoon,
+    afspraakDatum: l.afspraak_datum,
+    afspraakStarttijd: l.afspraak_starttijd,
+    sentOfferteNummer: sentModel?.offerteNummer ?? null,
+    sentRules: sentModel
+      ? sentModel.rules.map((r) => ({ desc: r.desc, aantal: r.aantal, eenheid: r.eenheid }))
+      : null,
+    hoofdcategorie: l.hoofdcategorie,
+    subDiensten: l.sub_diensten,
+    m2: l.m2,
+    voegzandType: l.voegzand_type,
+    zandKleur: l.zand_kleur,
+    groeneAanslag: l.groene_aanslag,
+  })
+
   return {
     lead,
     leadId: l.lead_id,
@@ -315,5 +364,6 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     offerte: buildOfferte(detail),
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
     activity: buildActivity(detail, now),
+    opdrachtbon,
   }
 }
