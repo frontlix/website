@@ -80,6 +80,31 @@
   margin-top: 10px;
 }
 
+/* Uitprint-knop: neutrale outline-look, volle breedte onder de beheer-rij. */
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  font-family: var(--rb-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rb-ink);
+  background: var(--rb-field);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-r-pill);
+  padding: 11px 20px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+}
+
+.printBtn:hover {
+  filter: brightness(0.98);
+}
+
 /* ── Acties ── */
 .actions {
   display: flex;

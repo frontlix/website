@@ -1,6 +1,6 @@
 "use client";
 
-import { Navigation, Phone, MessageCircle, Check, CalendarClock, X } from "lucide-react";
+import { Navigation, Phone, MessageCircle, Check, CalendarClock, X, Printer } from "lucide-react";
 import { Modal, Button } from "@/components/dashboard/v2/ui";
 import type { AgendaItem, RouteBase } from "./agenda-data";
 import { klantNaam, klantAdres, klantTelefoon, mapsHref, normalizeTel, reisLabel } from "./agenda-derive";
@@ -92,6 +92,21 @@ export function RouteContactModal({ item, onClose, onAfronden, onVerzetten, onAn
                 </Button>
               ) : null}
             </div>
+          ) : null}
+
+          {/* Uitprint-knop: opent een printbare A4-kaart met alle afspraakinfo
+              in een nieuw tabblad (voor op het prikbord). Alleen bij een echte
+              lead; externe Google-afspraken (geen leadId) hebben geen detail. */}
+          {item.leadId ? (
+            <a
+              href={`/dashboard/afspraak-preview/${item.leadId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.printBtn}
+            >
+              <Printer size={15} strokeWidth={2.4} />
+              Afspraak uitprinten
+            </a>
           ) : null}
 
           <div className={styles.actions}>

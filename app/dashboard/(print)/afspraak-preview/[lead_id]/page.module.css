@@ -1,0 +1,226 @@
+/* Print-pagina voor een afspraak (prikbord-kaart). Kleuren hardcoded (net als
+   offerte-preview) zodat de pagina los van de dashboard-tokens consistent print.
+   Hoog contrast en grayscale-vriendelijk: drukt ook netjes af in zwart-wit. */
+
+.page {
+  min-height: 100vh;
+  background: #eef0f4;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #14161c;
+}
+
+/* ── Schermknoppen (verborgen in de print) ── */
+.controls {
+  width: 100%;
+  max-width: 190mm;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.printBtn,
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter 0.15s ease;
+}
+
+.printBtn {
+  color: #fff;
+  background: #1a56ff;
+}
+
+.printBtn:hover {
+  filter: brightness(1.06);
+}
+
+.closeBtn {
+  color: #14161c;
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.closeBtn:hover {
+  filter: brightness(0.97);
+}
+
+/* ── Het afdrukbare vel ── */
+.sheet {
+  width: 100%;
+  max-width: 190mm;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  padding: 28px 32px 32px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #14161c;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.naam {
+  margin: 4px 0 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.merk {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.leeg {
+  margin: 28px 0 8px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* ── Datum + tijd banner ── */
+.banner {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+  padding: 18px 22px;
+  background: #14161c;
+  color: #fff;
+  border-radius: 12px;
+}
+
+.banner > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bannerTijd {
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  padding-left: 24px;
+}
+
+.bannerLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.bannerValue {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* ── Info-grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+/* De eerste kaart (Klus) krijgt de volle breedte boven de twee smallere. */
+.card:first-of-type {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1a56ff;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+}
+
+.row + .row {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.rowLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.rowValue {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.voet {
+  margin: 22px 0 0;
+  font-size: 12px;
+  color: #9aa1ad;
+}
+
+/* ── Print ── */
+@media print {
+  .page {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+
+  .noPrint {
+    display: none;
+  }
+
+  .sheet {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .card,
+  .banner {
+    page-break-inside: avoid;
+  }
+}

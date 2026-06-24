@@ -12,6 +12,7 @@
 
 import type { LeadDetail } from "@/lib/dashboard/lead-queries";
 import { aggregateActivityTimeline } from "@/lib/dashboard/lead-queries";
+import { buildAfspraakInfo } from "@/lib/dashboard/afspraak-info";
 import { shortTimeAgo } from "@/lib/dashboard/relative-time";
 import { leadStage } from "@/components/dashboard/mobile/leads/lead-mappers";
 import { formatEuro } from "@/lib/dashboard/format";
@@ -432,5 +433,6 @@ export function mapLeadDetailToDossierData(
     notities: buildNotities(detail),
     chat: buildChat(detail, now),
     opdrachtbon,
+    afspraak: buildAfspraakInfo(detail.lead),
   };
 }

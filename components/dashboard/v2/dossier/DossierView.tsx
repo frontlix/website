@@ -17,13 +17,14 @@ import { InfoTab } from "./InfoTab";
 import { OffertesTab } from "./OffertesTab";
 import { OpdrachtbonActions } from "./OpdrachtbonActions";
 import { FotosTab } from "./FotosTab";
+import { AfspraakTab } from "./AfspraakTab";
 import { NotitiesTab } from "./NotitiesTab";
 import { ChatPanel } from "./ChatPanel";
 import { LeadTagsRow } from "./LeadTagsRow";
 import type { Tag } from "@/lib/dashboard/database.types";
 import styles from "./DossierView.module.css";
 
-type TabKey = "Info" | "Offertes" | "Foto's" | "Notities";
+type TabKey = "Info" | "Offertes" | "Foto's" | "Afspraak" | "Notities";
 
 interface DossierViewProps {
   lead: Lead;
@@ -40,7 +41,7 @@ interface DossierViewProps {
 }
 
 /** Lead-dossier (split view). Kop met terug-link, naam, status + acties;
- *  links een tab-kaart (Info / Offertes / Foto's / Notities), rechts het
+ *  links een tab-kaart (Info / Offertes / Foto's / Afspraak / Notities), rechts het
  *  WhatsApp-gesprek. Met echte data (dossier + leadId) wired naar de
  *  bestaande server-actions/API-routes; zonder valt 'ie terug op demo-state. */
 export function DossierView({
@@ -233,6 +234,7 @@ export function DossierView({
     { value: "Info", label: "Info" },
     { value: "Offertes", label: `Offertes · ${data.offertes.length}` },
     { value: "Foto's", label: `Foto's · ${data.fotos.length}` },
+    { value: "Afspraak", label: "Afspraak" },
     { value: "Notities", label: `Notities · ${notities.length}` },
   ];
 
@@ -357,6 +359,7 @@ export function DossierView({
               <OffertesTab data={data} leadId={leadId} offerteApiRef={offerteApiRef} />
             ) : null}
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
+            {tab === "Afspraak" ? <AfspraakTab data={data} leadId={leadId} /> : null}
             {tab === "Notities" ? (
               <NotitiesTab notities={notities} onAdd={voegNotitieToe} autoFocus={notesFocus} />
             ) : null}
