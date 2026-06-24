@@ -9,6 +9,7 @@ import {
 } from '@/lib/dashboard/lead-queries'
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/leads/lead-mappers'
+import { isHandover } from '@/lib/dashboard/lead-status-meta'
 import type {
   DossierLead,
   DossBijzonder,
@@ -291,6 +292,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
   const l = detail.lead
   const fotoCount = detail.fotos.length
   const stage = leadStage(l)
+  const handover = isHandover(l)
   const prijs = l.totaal_prijs ?? (detail.offertes[0]?.totaal_incl ?? null)
   const telefoonRaw = (l.telefoon ?? '').replace(/\D/g, '')
 
@@ -301,7 +303,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     m2: l.m2 ?? 0,
     fotos: fotoCount,
     prijs,
-    stage: STAGE_LABEL[stage],
+    stage: handover ? 'Zelf overnemen' : STAGE_LABEL[stage],
     binnen: l.aangemaakt ? shortTimeAgo(l.aangemaakt) : '—',
   }
 
@@ -373,7 +375,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
     dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),
     vragen: buildVragen(l, fotoCount),
-    surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
+    surface: { fase: handover ? 'Zelf overnemen' : STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
     offerte: buildOfferte(detail),
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
     activity: buildActivity(detail, now),

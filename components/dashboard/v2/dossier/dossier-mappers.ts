@@ -28,6 +28,7 @@ import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-p
 import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
 import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
+import { isHandover } from "@/lib/dashboard/lead-status-meta";
 import type {
   DossierData,
   InfoRow,
@@ -83,6 +84,7 @@ const STAGE_LABEL: Record<ReturnType<typeof leadStage>, string> = {
 export function mapLeadDetailToV2Lead(detail: LeadDetail): V2Lead {
   const l = detail.lead;
   const stage = leadStage(l);
+  const handover = isHandover(l);
   const prijs = l.totaal_prijs ?? detail.offertes[0]?.totaal_incl ?? null;
   return {
     id: l.lead_id,
@@ -91,8 +93,8 @@ export function mapLeadDetailToV2Lead(detail: LeadDetail): V2Lead {
     dienst: l.hoofdcategorie ?? "Dienst",
     waarde: prijs != null ? formatEuro(prijs) : "Geen bedrag",
     bron: l.bron ?? l.kanaal ?? "onbekend",
-    status: STAGE_LABEL[stage],
-    statusKind: STAGE_KIND[stage],
+    status: handover ? "Zelf overnemen" : STAGE_LABEL[stage],
+    statusKind: handover ? "hot" : STAGE_KIND[stage],
     tijd: l.aangemaakt ? shortTimeAgo(l.aangemaakt) : "Onbekend",
     initials: initialsFromNaam(l.naam),
   };
