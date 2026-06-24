@@ -16,6 +16,7 @@ export type TenantSettings = {
   adres: string | null
   offerte_geldigheid_dagen: number | null
   radius_max_km: number | null
+  radius_min_m2_buiten_straal: number | null
   reminder_dag_1: number | null
   reminder_dag_2: number | null
   reminder_dag_3: number | null

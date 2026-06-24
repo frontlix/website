@@ -7,8 +7,9 @@
 // in"-CTA op het Overzicht een werkende bestemming heeft.
 
 import { useState, useTransition } from 'react'
-import { Check, AlertTriangle, Target } from 'lucide-react'
+import { Check, AlertTriangle, Target, MapPin } from 'lucide-react'
 import { saveOmzetDoelMaand } from '@/lib/dashboard/omzet-doel-actions'
+import { saveWerkgebiedGrenzen } from '@/lib/dashboard/bedrijfsprofiel-actions'
 import type { TenantSettings } from '@/components/dashboard/instellingen/setting-types'
 import type { GmailConnectionState } from '@/components/dashboard/v2/instellingen/instellingen-data'
 import { InstField, InstGroupCard } from './InstAtoms'
@@ -31,6 +32,12 @@ export function InstBedrijf({
     <div className={styles.container}>
       {/* Maanddoel, echt gekoppeld; bovenaan zodat de deeplink-CTA er direct op landt. */}
       <MaanddoelCard initial={omzetDoel} />
+
+      {/* Werkgebied, echt gekoppeld (saveWerkgebiedGrenzen + bot-reload). */}
+      <WerkgebiedCard
+        initialRadius={tenant?.radius_max_km ?? null}
+        initialMinM2={tenant?.radius_min_m2_buiten_straal ?? null}
+      />
 
       {/* Surface card met de echte bedrijfsvelden (read-only). */}
       <InstGroupCard>
@@ -154,6 +161,138 @@ function MaanddoelCard({ initial }: { initial: number | null }) {
           className={styles.goalBtn}
         >
           {pending ? 'Opslaan…' : 'Maanddoel opslaan'}
+        </button>
+      </div>
+    </InstGroupCard>
+  )
+}
+
+/**
+ * WerkgebiedCard, Werkstraal (radius_max_km) + minimale klusgrootte buiten de
+ * straal (radius_min_m2_buiten_straal). Editbaar op mobiel, spiegelt de
+ * desktop-velden in BedrijfsprofielPanel. Opslaan via de gerichte
+ * saveWerkgebiedGrenzen-action (schrijft tenant_settings + laat de bot herladen).
+ */
+function WerkgebiedCard({
+  initialRadius,
+  initialMinM2,
+}: {
+  initialRadius: number | null
+  initialMinM2: number | null
+}) {
+  const [straal, setStraal] = useState<string>(
+    initialRadius === null || initialRadius === undefined ? '' : String(initialRadius),
+  )
+  const [minM2, setMinM2] = useState<string>(
+    initialMinM2 === null || initialMinM2 === undefined ? '' : String(initialMinM2),
+  )
+  const [status, setStatus] = useState<
+    { kind: 'idle' } | { kind: 'success' } | { kind: 'error'; message: string }
+  >({ kind: 'idle' })
+  const [pending, startTransition] = useTransition()
+
+  function submit() {
+    setStatus({ kind: 'idle' })
+    const r = Number(straal.trim())
+    const m = Number(minM2.trim())
+
+    // Client-side guard, de server valideert ook.
+    if (!Number.isFinite(r) || r <= 0) {
+      setStatus({ kind: 'error', message: 'Vul een geldige werkstraal in (km).' })
+      return
+    }
+    if (!Number.isFinite(m) || m < 0) {
+      setStatus({ kind: 'error', message: 'Vul een geldige klusgrootte in (m²).' })
+      return
+    }
+
+    startTransition(async () => {
+      const result = await saveWerkgebiedGrenzen({ radius_max_km: r, min_m2_buiten_straal: m })
+      if (result.ok) setStatus({ kind: 'success' })
+      else setStatus({ kind: 'error', message: result.error })
+    })
+  }
+
+  return (
+    <InstGroupCard>
+      <div className={styles.goalBox}>
+        <div className={styles.goalHead}>
+          <span className={styles.goalIcon} aria-hidden="true">
+            <MapPin size={16} />
+          </span>
+          <div>
+            <div className={styles.goalTitle}>Werkgebied</div>
+            <div className={styles.goalSub}>Tot waar Surface automatisch klussen aanneemt</div>
+          </div>
+        </div>
+
+        <div className={styles.wgField}>
+          <label className={styles.wgLabel} htmlFor="inst-werkstraal">
+            Werkstraal
+          </label>
+          <div className={styles.goalRow}>
+            <input
+              id="inst-werkstraal"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={straal}
+              onChange={(e) => setStraal(e.target.value)}
+              placeholder="bv. 75"
+              className={styles.goalInput}
+              disabled={pending}
+            />
+            <span className={styles.goalPrefix} aria-hidden="true">
+              km
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.wgField}>
+          <label className={styles.wgLabel} htmlFor="inst-minm2">
+            Minimale klusgrootte buiten je straal
+          </label>
+          <div className={styles.goalRow}>
+            <input
+              id="inst-minm2"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={minM2}
+              onChange={(e) => setMinM2(e.target.value)}
+              placeholder="bv. 200"
+              className={styles.goalInput}
+              disabled={pending}
+            />
+            <span className={styles.goalPrefix} aria-hidden="true">
+              m²
+            </span>
+          </div>
+          <p className={styles.goalHelp}>
+            Kleinere klussen buiten je straal pakt Surface niet op, die gaan naar jou.
+          </p>
+        </div>
+
+        {status.kind === 'success' && (
+          <div className={`${styles.goalStatus} ${styles.goalOk}`}>
+            <Check size={14} aria-hidden="true" />
+            <span>Werkgebied opgeslagen.</span>
+          </div>
+        )}
+        {status.kind === 'error' && (
+          <div className={`${styles.goalStatus} ${styles.goalErr}`}>
+            <AlertTriangle size={14} aria-hidden="true" />
+            <span>{status.message}</span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={submit}
+          disabled={pending}
+          className={styles.goalBtn}
+        >
+          {pending ? 'Opslaan…' : 'Werkgebied opslaan'}
         </button>
       </div>
     </InstGroupCard>

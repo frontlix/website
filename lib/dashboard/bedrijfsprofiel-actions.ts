@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
+import { triggerBotConfigReload } from './bot-reload-actions'
 
 /**
  * Server action voor het opslaan van de bewerkbare bedrijfsprofiel-velden op
@@ -119,6 +120,74 @@ export async function updateBedrijfsprofiel(
     console.error('[updateBedrijfsprofiel] failed:', updErr)
     return { ok: false, error: `Opslaan mislukt: ${updErr.message}` }
   }
+
+  revalidatePath('/dashboard/instellingen')
+  revalidatePath('/dashboard/v2/instellingen')
+
+  return { ok: true }
+}
+
+/**
+ * Gerichte server-action voor alleen de werkgebied-grenzen (Werkstraal +
+ * minimale klusgrootte buiten de straal). Bedoeld voor de mobiele Instellingen,
+ * waar de overige bedrijfsvelden read-only zijn en updateBedrijfsprofiel (die
+ * alle velden verwacht) niet past. Schrijft naar tenant_settings en laat de bot
+ * direct herladen, net als de desktop-Opslaan.
+ */
+export interface WerkgebiedInput {
+  /** Werkstraal in km → tenant_settings.radius_max_km. */
+  radius_max_km: number
+  /** Minimale klusgrootte (m2) buiten de straal → tenant_settings.radius_min_m2_buiten_straal. */
+  min_m2_buiten_straal: number
+}
+
+export async function saveWerkgebiedGrenzen(
+  input: WerkgebiedInput,
+): Promise<SaveBedrijfsprofielResult> {
+  await requireApprovedUser()
+
+  const admin = getDashboardAdmin()
+
+  const { data: existing, error: fetchErr } = await admin
+    .from('tenant_settings')
+    .select('id')
+    .limit(1)
+    .maybeSingle()
+
+  if (fetchErr || !existing) {
+    return { ok: false, error: 'Geen tenant_settings rij gevonden om te updaten.' }
+  }
+
+  // Werkstraal: plausibel getal (1–1000 km), anders ongemoeid laten.
+  const radius =
+    Number.isFinite(input.radius_max_km) && input.radius_max_km > 0
+      ? Math.min(Math.round(input.radius_max_km), 1000)
+      : null
+
+  // Min-m2: plausibel getal (0–100000), anders ongemoeid laten.
+  const minM2 =
+    Number.isFinite(input.min_m2_buiten_straal) && input.min_m2_buiten_straal >= 0
+      ? Math.min(Math.round(input.min_m2_buiten_straal), 100000)
+      : null
+
+  const updatePayload = {
+    bijgewerkt_op: new Date().toISOString(),
+    ...(radius != null ? { radius_max_km: radius } : {}),
+    ...(minM2 != null ? { radius_min_m2_buiten_straal: minM2 } : {}),
+  }
+
+  const { error: updErr } = await admin
+    .from('tenant_settings')
+    .update(updatePayload)
+    .eq('id', existing.id)
+
+  if (updErr) {
+    console.error('[saveWerkgebiedGrenzen] failed:', updErr)
+    return { ok: false, error: `Opslaan mislukt: ${updErr.message}` }
+  }
+
+  // Bot direct laten herladen (best-effort; de 60s-refresh is het vangnet).
+  await triggerBotConfigReload()
 
   revalidatePath('/dashboard/instellingen')
   revalidatePath('/dashboard/v2/instellingen')
