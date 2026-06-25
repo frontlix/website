@@ -913,8 +913,6 @@ export function OfferteEditor({
             );
           })}
         </div>
-        {/* Onderhoud heeft geen eigen checkbox (basisdienst onkruidbeheersing). */}
-        {opm("onderhoud", "Onderhoud")}
 
         {/* Sub-blok: Extra arbeid */}
         <div className={styles.subLabel}>Extra arbeid</div>
