@@ -49,6 +49,7 @@ import { formatEuro } from '@/lib/dashboard/format'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
 import { OffertePdfDocument } from '@/components/dashboard/offerte/OffertePdf'
+import { useBotAction } from '@/components/dashboard/bot-actions/use-bot-action'
 import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
 import { toOffertePdfData } from '@/components/dashboard/offerte/offerte-pdf-data'
 import {
@@ -193,6 +194,11 @@ export function MobileOfferteEditor({
   // ─── Enige bron van waarheid (gespiegeld van LeadOfferteForm) ───
   // Echte lead_id ⇒ live opslaan/bewerken (gespiegeld van de desktop-editor).
   const live = Boolean(leadId)
+  // Versturen via de bestaande approve-quote-route (zelfde als desktop + het
+  // mobiele goedkeur-blok).
+  const { run: approveQuote, pending: approving } = useBotAction(
+    `/api/dashboard/lead/${leadId}/approve-quote`,
+  )
   const [data, setData] = useState<ManualOfferteData>(() => mapLeadToFormData(lead))
   const [geldigheidDagen, setGeldigheidDagen] = useState<number>(
     lead.offerte_geldigheid_dagen ?? 14,
@@ -385,10 +391,13 @@ export function MobileOfferteEditor({
   }, [pdfApiRef, flushPending])
 
   const handleSendClick = useCallback(() => {
-    // Stub: verzending wordt later gekoppeld (mirror van LeadOfferteForm).
+    if (!leadId || approving) return
     // eslint-disable-next-line no-alert
-    alert('Versturen via WhatsApp wordt binnenkort gekoppeld.')
-  }, [])
+    if (!window.confirm('Offerte nu naar de klant sturen via WhatsApp?')) return
+    // Schrijf eerst het laatst bewerkte concept weg, dan versturen via de bot.
+    flushPending()
+    approveQuote()
+  }, [leadId, approving, flushPending, approveQuote])
 
   // ─── PDF-data uit de live state (OffertePdfData-contract) ───
   const pdfData: OffertePdfData = toOffertePdfData({
@@ -1083,8 +1092,14 @@ export function MobileOfferteEditor({
           </button>
         </div>
         <div className={styles.actions}>
-          <button type="button" className={styles.btnPrimary} onClick={handleSendClick}>
-            <MessageCircle size={16} aria-hidden="true" /> Direct versturen naar klant
+          <button
+            type="button"
+            className={styles.btnPrimary}
+            onClick={handleSendClick}
+            disabled={approving}
+          >
+            <MessageCircle size={16} aria-hidden="true" />{' '}
+            {approving ? 'Versturen…' : 'Direct versturen naar klant'}
           </button>
         </div>
 

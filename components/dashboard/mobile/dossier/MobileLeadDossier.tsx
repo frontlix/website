@@ -14,6 +14,7 @@ import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
 import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
+import { MobileOfferteGoedkeuring } from './offerte/MobileOfferteGoedkeuring'
 import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
 import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
@@ -128,6 +129,15 @@ export function MobileLeadDossier({
         <div className={styles.tagsRow}>
           <LeadTagsRow leadId={lead.id} leadTags={leadTags} allTags={allTags} live />
         </div>
+        {data.offerte.terGoedkeuring ? (
+          <MobileOfferteGoedkeuring
+            leadId={data.leadId}
+            dienst={data.offerte.terGoedkeuring.dienst}
+            m2={data.offerte.terGoedkeuring.m2}
+            totaal={data.offerte.terGoedkeuring.totaal}
+            onAanpassen={() => setTab('offerte')}
+          />
+        ) : null}
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />
         <div className={styles.tabBody}>
           {tab === 'info' && (
