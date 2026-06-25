@@ -159,6 +159,17 @@ const DIENST_OPTIES: { k: SubDienst; label: string }[] = [
   { k: "beschermlaag", label: "Nieuwe beschermlaag" },
 ];
 
+/** Welke opmerking-onderdelen direct onder welke Extra-dienst-checkbox horen.
+ *  Invegen = voegzand, dus de voegzand-opmerkingen staan onder Invegen. */
+const DIENST_OPM: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }[]>> = {
+  invegen: [
+    { key: "voegzand_normaal", label: "Voegzand normaal" },
+    { key: "voegzand_onkruidwerend", label: "Voegzand onkruidwerend" },
+  ],
+  preventieve_onkruid: [{ key: "preventieve_onkruid", label: "Preventieve onkruidbehandeling" }],
+  beschermlaag: [{ key: "beschermlaag", label: "Nieuwe beschermlaag" }],
+};
+
 /**
  * Inline concept-editor in v2-stijl, met dezelfde secties/volgorde en werking
  * als het oude dashboard-form. Bewerkbaar: oppervlakte (m²), groene aanslag/
@@ -867,31 +878,33 @@ export function OfferteEditor({
         {opm("reiskosten", "Reiskosten")}
         {opmVast("conditie", "Conditie van de bestrating")}
 
-        {/* Sub-blok: Extra diensten */}
+        {/* Sub-blok: Extra diensten — elke checkbox met z'n opmerking er direct onder. */}
         <div className={styles.subLabel}>Extra diensten</div>
         <div className={styles.checks}>
           {DIENST_OPTIES.map((d) => {
             const on = data.sub.includes(d.k);
             return (
-              <button
-                key={d.k}
-                type="button"
-                className={`${styles.check} ${on ? styles.checkOn : ""}`}
-                aria-pressed={on}
-                onClick={() => toggleSub(d.k)}
-                disabled={!live}
-              >
-                <span className={styles.checkBox}>
-                  {on ? <Check size={13} strokeWidth={3} aria-hidden /> : null}
-                </span>
-                <span className={styles.checkL}>{d.label}</span>
-              </button>
+              <div key={d.k}>
+                <button
+                  type="button"
+                  className={`${styles.check} ${on ? styles.checkOn : ""}`}
+                  aria-pressed={on}
+                  onClick={() => toggleSub(d.k)}
+                  disabled={!live}
+                >
+                  <span className={styles.checkBox}>
+                    {on ? <Check size={13} strokeWidth={3} aria-hidden /> : null}
+                  </span>
+                  <span className={styles.checkL}>{d.label}</span>
+                </button>
+                {(DIENST_OPM[d.k] ?? []).map(({ key, label }) => (
+                  <div key={key}>{opm(key, label)}</div>
+                ))}
+              </div>
             );
           })}
         </div>
-        {/* Opmerkingen bij de extra diensten. */}
-        {opm("beschermlaag", "Beschermlaag")}
-        {opm("preventieve_onkruid", "Preventieve onkruidbehandeling")}
+        {/* Onderhoud heeft geen eigen checkbox (basisdienst onkruidbeheersing). */}
         {opm("onderhoud", "Onderhoud")}
 
         {/* Sub-blok: Extra arbeid */}
@@ -967,7 +980,6 @@ export function OfferteEditor({
                 />
               </label>
             </div>
-            {opm("voegzand_normaal", "Voegzand normaal")}
 
             <div className={styles.zandRow}>
               <span className={styles.zandName}>Onkruidwerend</span>
@@ -1007,7 +1019,6 @@ export function OfferteEditor({
                 />
               </label>
             </div>
-            {opm("voegzand_onkruidwerend", "Voegzand onkruidwerend")}
 
             <div className={styles.kleuren}>
               <button
