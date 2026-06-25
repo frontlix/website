@@ -159,15 +159,12 @@ const DIENST_OPTIES: { k: SubDienst; label: string }[] = [
   { k: "beschermlaag", label: "Nieuwe beschermlaag" },
 ];
 
-/** Welke opmerking-onderdelen direct onder welke Extra-dienst-checkbox horen.
- *  Invegen = voegzand, dus de voegzand-opmerkingen staan onder Invegen. */
-const DIENST_OPM: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }[]>> = {
-  invegen: [
-    { key: "voegzand_normaal", label: "Voegzand normaal" },
-    { key: "voegzand_onkruidwerend", label: "Voegzand onkruidwerend" },
-  ],
-  preventieve_onkruid: [{ key: "preventieve_onkruid", label: "Preventieve onkruidbehandeling" }],
-  beschermlaag: [{ key: "beschermlaag", label: "Nieuwe beschermlaag" }],
+/** Eén opmerking-onderdeel direct onder welke Extra-dienst-checkbox. Invegen =
+ *  voegzand, dus daar hangt de voegzand-opmerking onder. */
+const DIENST_OPM: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }>> = {
+  invegen: { key: "voegzand_normaal", label: "Voegzand" },
+  preventieve_onkruid: { key: "preventieve_onkruid", label: "Preventieve onkruidbehandeling" },
+  beschermlaag: { key: "beschermlaag", label: "Nieuwe beschermlaag" },
 };
 
 /**
@@ -824,8 +821,8 @@ export function OfferteEditor({
         open={openWerk}
         onToggle={() => setOpenWerk((o) => !o)}
       >
-        {/* Eén kolom: elke optie met z'n opmerking er direct onder. */}
-        <div className={styles.veldStack}>
+        {/* 2 kolommen zoals voorheen, met onder elke optie z'n eigen opmerking. */}
+        <div className={styles.grid2}>
           <div className={styles.veldBlok}>
             <label className={styles.field}>
               <span className={styles.label}>Oppervlakte m&#178;</span>
@@ -896,6 +893,7 @@ export function OfferteEditor({
         <div className={styles.checks}>
           {DIENST_OPTIES.map((d) => {
             const on = data.sub.includes(d.k);
+            const o = DIENST_OPM[d.k];
             return (
               <div key={d.k}>
                 <button
@@ -910,9 +908,7 @@ export function OfferteEditor({
                   </span>
                   <span className={styles.checkL}>{d.label}</span>
                 </button>
-                {(DIENST_OPM[d.k] ?? []).map(({ key, label }) => (
-                  <div key={key}>{opm(key, label)}</div>
-                ))}
+                {on && o ? opmVast(o.key, o.label) : null}
               </div>
             );
           })}
