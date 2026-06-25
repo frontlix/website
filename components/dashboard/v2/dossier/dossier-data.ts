@@ -22,6 +22,8 @@ export interface InfoRow {
   chip?: string | null;
   /** Optionele sub-regel onder de waarde (bv. "Binnen gratis radius"). */
   sub?: string | null;
+  /** Tint van de sub-regel: 'warn' = rood (bv. hand-over-reden). */
+  tone?: "warn" | null;
   /** Optionele externe linkjes onder de waarde (bv. Street View / Satelliet
    *  bij het adres). Openen in een nieuw tabblad. */
   links?: MapsLink[] | null;

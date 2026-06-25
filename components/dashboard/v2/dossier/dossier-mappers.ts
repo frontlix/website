@@ -29,6 +29,7 @@ import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model
 import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import { isHandover } from "@/lib/dashboard/lead-status-meta";
+import { handoverReason, type HandoverGrenzen, type HandoverReason } from "@/lib/dashboard/handover-reason";
 import type {
   DossierData,
   InfoRow,
@@ -132,7 +133,7 @@ function dienstLabel(key: string): string {
 
 /** Linker Info-kolom "Klant": naam, bedrijf, telefoon, e-mail, adres, bron.
  *  Alleen ingevulde velden, in de stijl van het oude dashboard. */
-function buildKlant(l: DetailLead): InfoRow[] {
+function buildKlant(l: DetailLead, reason: HandoverReason): InfoRow[] {
   const rows: InfoRow[] = [];
   rows.push({ label: "Naam", waarde: l.naam || "Onbekend" });
   if (l.bedrijfsnaam) {
@@ -154,7 +155,8 @@ function buildKlant(l: DetailLead): InfoRow[] {
   rows.push({
     label: "Adres",
     waarde: adresWaarde,
-    sub: l.afstand_km != null && l.afstand_km <= 25 ? "Binnen gratis radius" : null,
+    sub: reason.adresSub ?? (l.afstand_km != null && l.afstand_km <= 25 ? "Binnen gratis radius" : null),
+    tone: reason.adresSub ? "warn" : null,
     // Locatie-linkjes: Street View + Satelliet op de geocode-coordinaten
     // (m2 + terras inschatten); zonder coordinaten een Maps-link op het adres.
     links: locatieLinks({
@@ -170,7 +172,7 @@ function buildKlant(l: DetailLead): InfoRow[] {
 
 /** Rechter Info-kolom "Werk": hoofddienst, diensten, oppervlakte, voegzand,
  *  groene aanslag, korstmos, planten. Alleen ingevulde velden (geen lege rijen). */
-function buildWerk(l: DetailLead): InfoRow[] {
+function buildWerk(l: DetailLead, reason: HandoverReason): InfoRow[] {
   const rows: InfoRow[] = [];
   if (l.hoofdcategorie) {
     rows.push({ label: "Hoofddienst", waarde: humanizeHoofd(l.hoofdcategorie) });
@@ -180,7 +182,12 @@ function buildWerk(l: DetailLead): InfoRow[] {
     rows.push({ label: "Diensten", waarde: sub.map(dienstLabel).join(" + ") });
   }
   if (l.m2 != null) {
-    rows.push({ label: "Oppervlakte", waarde: `${l.m2} m²` });
+    rows.push({
+      label: "Oppervlakte",
+      waarde: `${l.m2} m²`,
+      sub: reason.oppervlakteSub,
+      tone: reason.oppervlakteSub ? "warn" : null,
+    });
   }
   if (l.voegzand_type || l.zand_kleur) {
     rows.push({
@@ -392,12 +399,14 @@ export function mapLeadDetailToDossierData(
   detail: LeadDetail,
   pricing: ManualOffertePricing = FALLBACK_PRICING,
   now: number = Date.now(),
+  grenzen: HandoverGrenzen = { radiusMaxKm: 50, minM2BuitenStraal: 200 },
 ): DossierData {
   const l = detail.lead;
   // aggregateActivityTimeline aanroepen houdt de read-pad consistent met de
   // (app)-pagina (en valideert de detail-vorm); de v2-UI toont (nog) geen
   // aparte activity-timeline, dus we gebruiken alleen het transcript hierboven.
   void aggregateActivityTimeline(detail);
+  const reason = handoverReason(l, grenzen);
 
   // Basis-form-model uit de lead, eenmalig: dient zowel als bron voor de PDF-
   // modellen per verstuurde offerte als voor de inline editor (via buildOfferteForm).
@@ -440,8 +449,8 @@ export function mapLeadDetailToDossierData(
     tel: l.telefoon ?? "Geen nummer",
     afstand: l.afstand_km != null ? `${l.afstand_km} km` : "onbekend",
     binnen: buildBinnen(detail),
-    klant: buildKlant(l),
-    werk: buildWerk(l),
+    klant: buildKlant(l, reason),
+    werk: buildWerk(l, reason),
     fotos: buildFotos(detail),
     surface: buildSurface(l),
     offertes,

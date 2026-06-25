@@ -35,7 +35,11 @@ function InfoColumn({
             <div className={styles.rowMain}>
               <div className={styles.rowLabel}>{row.label}</div>
               <div className={styles.rowValue}>{row.waarde}</div>
-              {row.sub ? <div className={styles.rowSub}>{row.sub}</div> : null}
+              {row.sub ? (
+                <div className={`${styles.rowSub} ${row.tone === "warn" ? styles.rowSubWarn : ""}`}>
+                  {row.sub}
+                </div>
+              ) : null}
               {row.links && row.links.length > 0 ? (
                 <div className={styles.rowLinks}>
                   {row.links.map((link) => (

@@ -17,6 +17,7 @@ import {
   mapLeadDetailToV2Lead,
   mapLeadDetailToDossierData,
 } from "@/components/dashboard/v2/dossier/dossier-mappers";
+import { getWerkgebiedGrenzen } from "@/lib/dashboard/handover-reason";
 
 export const dynamic = "force-dynamic";
 
@@ -38,18 +39,19 @@ export default async function LeadDossierPage({ params }: PageProps) {
   // gebruikt dezelfde gescopete client + condities als de (app)-pagina. De
   // prijslijst komt uit dezelfde helper als de (app)-pagina, zodat de inline
   // offerte-editor exact dezelfde regels/totalen berekent.
-  const [detail, pricing, allTags, leadTags] = await Promise.all([
+  const [detail, pricing, allTags, leadTags, grenzen] = await Promise.all([
     getLeadDetail(lead_id),
     getManualOffertePricing(),
     getAllTags(),
     getTagsForLead(lead_id),
+    getWerkgebiedGrenzen(),
   ]);
   if (!detail) {
     notFound();
   }
 
   const lead = mapLeadDetailToV2Lead(detail);
-  const dossier = mapLeadDetailToDossierData(detail, pricing);
+  const dossier = mapLeadDetailToDossierData(detail, pricing, undefined, grenzen);
 
   return (
     <DossierView

@@ -71,6 +71,10 @@
   margin-top: 2px;
 }
 
+.rowSubWarn {
+  color: var(--rb-status-hot-ink, #FF3B30);
+}
+
 /* Locatie-linkjes onder het adres (Street View / Satelliet / Maps). */
 .rowLinks {
   display: flex;
