@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { MobileDrilldownLayer } from '../drilldowns/MobileDrilldownLayer'
 import { AgendaWeek } from './AgendaWeek'
+import { AgendaMonth } from './AgendaMonth'
 import { FlowKlus } from './FlowKlus'
 import { FlowPlaatsbezoek } from './FlowPlaatsbezoek'
 import { FlowEigen } from './FlowEigen'
@@ -11,8 +12,10 @@ import { FlowAfronden } from './FlowAfronden'
 import { AgendaHerplanSheet } from './AgendaHerplanSheet'
 import { AgendaAnnuleerSheet } from './AgendaAnnuleerSheet'
 import { AgendaNewSheet, type NieuweAfspraakInput } from './AgendaNewSheet'
+import { agendaItemToEvent } from './agenda-month-adapter'
 import { bookAppointment } from '@/lib/dashboard/agenda-actions'
 import type { KlantOptie } from '@/components/dashboard/v2/agenda/KlantSelect'
+import type { AgendaMaandCel, RouteBase } from '@/components/dashboard/v2/agenda/agenda-data'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import styles from './MobileAgenda.module.css'
 
@@ -35,10 +38,25 @@ export type MobileAgendaData = {
   isCurrentWeek: boolean
   /** Bestaande leads voor de klant-keuze in "Nieuwe afspraak". */
   klanten: KlantOptie[]
+  /** Maand-grid-cellen (zelfde mappers als de desktop-maand). */
+  monthCells: AgendaMaandCel[]
+  /** Maand-label, bv. "Juni 2026". */
+  monthLabel: string
+  /** ?month=YYYY-MM-key van de vorige maand. */
+  prevMonthKey: string
+  /** ?month=YYYY-MM-key van de volgende maand. */
+  nextMonthKey: string
+  /** True als de getoonde maand de huidige maand is (→ "Nu" inactief). */
+  isCurrentMonth: boolean
+  /** Werkplaats-basis voor de live routekaart (met DEFAULT_TENANT_BASE-fallback). */
+  base: RouteBase
+  /** Begin-weergave: 'week' (default) of 'maand' (na maand-navigatie). */
+  initialView?: 'week' | 'maand'
 }
 
 export function MobileAgenda({ data }: { data: MobileAgendaData }) {
   const router = useRouter()
+  const [view, setView] = useState<'week' | 'maand'>(data.initialView ?? 'week')
   const [detail, setDetail] = useState<AgendaEvent | null>(null)
   const [herplan, setHerplan] = useState<AgendaEvent | null>(null)
   const [annuleer, setAnnuleer] = useState<AgendaEvent | null>(null)
@@ -73,24 +91,60 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
 
   return (
     <div className={styles.root}>
-      <AgendaWeek
-        events={data.events}
-        todayDate={data.todayDate}
-        nowTime={data.nowTime}
-        weekDays={data.weekDays}
-        weekLabel={data.weekLabel}
-        prevWeekKey={data.prevWeekKey}
-        nextWeekKey={data.nextWeekKey}
-        isCurrentWeek={data.isCurrentWeek}
-        onOpenEvent={(ev) => setDetail(ev)}
-        onNew={() => setNewOpen(true)}
-        onAfrondenLive={(ev) => setAfronden(ev)}
-      />
+      {/* Week|Maand-schakelaar. Week = huidige gedrag (default). */}
+      <div className={styles.viewSwitch} role="tablist" aria-label="Weergave">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'week'}
+          className={styles.viewBtn}
+          data-active={view === 'week' || undefined}
+          onClick={() => setView('week')}
+        >
+          Week
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'maand'}
+          className={styles.viewBtn}
+          data-active={view === 'maand' || undefined}
+          onClick={() => setView('maand')}
+        >
+          Maand
+        </button>
+      </div>
+
+      {view === 'week' ? (
+        <AgendaWeek
+          events={data.events}
+          todayDate={data.todayDate}
+          nowTime={data.nowTime}
+          weekDays={data.weekDays}
+          weekLabel={data.weekLabel}
+          prevWeekKey={data.prevWeekKey}
+          nextWeekKey={data.nextWeekKey}
+          isCurrentWeek={data.isCurrentWeek}
+          onOpenEvent={(ev) => setDetail(ev)}
+          onNew={() => setNewOpen(true)}
+          onAfrondenLive={(ev) => setAfronden(ev)}
+        />
+      ) : (
+        <AgendaMonth
+          cells={data.monthCells}
+          monthLabel={data.monthLabel}
+          prevMonthKey={data.prevMonthKey}
+          nextMonthKey={data.nextMonthKey}
+          isCurrentMonth={data.isCurrentMonth}
+          onOpenItem={(item, dateKey) => setDetail(agendaItemToEvent(item, dateKey))}
+        />
+      )}
 
       <MobileDrilldownLayer open={detail !== null} title={detailTitle} onClose={() => setDetail(null)}>
         {detail && isKlus && (
           <FlowKlus
             ev={detail}
+            base={data.base}
             onHerplan={() => setHerplan(detail)}
             onAnnuleer={() => setAnnuleer(detail)}
             onAfronden={() => setAfronden(detail)}
@@ -100,6 +154,7 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
         {detail && !isKlus && !isEigen && (
           <FlowPlaatsbezoek
             ev={detail}
+            base={data.base}
             onHerplan={() => setHerplan(detail)}
             onAnnuleer={() => setAnnuleer(detail)}
             onStartOfferte={() => { /* TODO functional pass */ }}

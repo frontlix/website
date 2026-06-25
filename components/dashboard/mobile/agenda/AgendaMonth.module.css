@@ -1,0 +1,234 @@
+/* AgendaMonth — compacte mobiele maandweergave. Tokens uit tokens.css
+   (--color-*), spiegelt de stijl van AgendaWeekNav. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 12px;
+  padding-bottom: 24px;
+}
+
+/* ── Maand-navigatie (kopieert AgendaWeekNav) ─────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 18px 8px;
+}
+
+.arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: var(--color-chip-bg);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.today[data-disabled='true'] {
+  opacity: 0.4;
+  pointer-events: none;
+  color: var(--color-text-muted);
+}
+
+/* ── Weekdag-kop ──────────────────────────────────────────────────────────── */
+.weekHead {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 14px 4px;
+}
+
+.weekHeadCell {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ── Maand-grid ───────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  padding: 0 12px;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  aspect-ratio: 1 / 1;
+  padding: 5px 0 0;
+  border: 0.5px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cell[data-out] {
+  cursor: default;
+}
+
+.cell[data-out] .dayNum {
+  color: var(--color-text-muted);
+  opacity: 0.35;
+}
+
+.cell[data-past] .dayNum {
+  opacity: 0.5;
+}
+
+.cell[data-today] {
+  background: color-mix(in srgb, var(--color-primary) 9%, transparent);
+}
+
+.cell[data-today] .dayNum {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.cell[data-sel] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+.dayNum {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 6px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dot, var(--color-primary));
+}
+
+.count {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Dag-lijst (afspraken van de geselecteerde dag) ───────────────────────── */
+.dayList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px 0;
+}
+
+.dayItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0.5px solid var(--color-border-soft);
+  border-left: 3px solid var(--tone, var(--color-primary));
+  border-radius: 12px;
+  background: var(--color-surface, var(--color-white));
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.dayItem[data-klaar] {
+  opacity: 0.65;
+}
+
+.itemTijd {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tone, var(--color-primary));
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+}
+
+.itemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemTitel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.itemCheck {
+  flex-shrink: 0;
+  color: var(--color-success);
+}
+
+.itemSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  margin: 4px 0 0;
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}

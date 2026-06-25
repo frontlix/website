@@ -14,10 +14,11 @@ import {
   FDetailCard,
   FKV,
   FCheckRow,
-  FMiniMap,
 } from './FlowAtoms'
+import { FlowRouteMap } from './FlowRouteMap'
 import { type AgendaEvent } from './agenda-mock'
 import { eventTone } from './agenda-mobile-helpers'
+import type { RouteBase } from '@/components/dashboard/v2/agenda/agenda-data'
 import styles from './FlowPlaatsbezoek.module.css'
 
 type FlowPlaatsbezoekProps = {
@@ -26,6 +27,8 @@ type FlowPlaatsbezoekProps = {
   onStartOfferte: () => void
   /** Afspraak annuleren. Zonder handler blijft de knop verborgen. */
   onAnnuleer?: () => void
+  /** Werkplaats-basis voor de live routekaart (werkplaats → klant). */
+  base?: RouteBase | null
 }
 
 // Initialen voor de klant-avatar (stabiel, geen externe afhankelijkheid).
@@ -44,7 +47,7 @@ const INTAKE_STEPS = [
   'Toegang voor uitvoering afspreken',
 ]
 
-export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte, onAnnuleer }: FlowPlaatsbezoekProps) {
+export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte, onAnnuleer, base }: FlowPlaatsbezoekProps) {
   // Lokale toggle-state per intake-stap. // TODO: functional pass, persist intake
   const [checked, setChecked] = useState<boolean[]>(() => INTAKE_STEPS.map(() => false))
   const toggle = (i: number) =>
@@ -88,10 +91,15 @@ export function FlowPlaatsbezoek({ ev, onHerplan, onStartOfferte, onAnnuleer }: 
         </div>
       </FDetailCard>
 
-      {/* Adres + map */}
+      {/* Adres + map (live route waar mogelijk, anders statisch SVG-kaartje) */}
       <FDetailCard icon="pin" title="Adres">
         <div className={styles.adres}>{ev.adres}</div>
-        <FMiniMap label="6 km · 9 min" />
+        <FlowRouteMap
+          label={ev.afstandKm != null ? `${ev.afstandKm} km` : ''}
+          lat={ev.lat}
+          lng={ev.lng}
+          base={base}
+        />
       </FDetailCard>
 
       {/* Intake-checklist, lokaal afvinkbaar */}
