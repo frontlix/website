@@ -7,6 +7,7 @@ import {
 import { ManualOfferteController } from '@/components/dashboard/offerte/ManualOfferteController'
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard'
 import { DashboardChrome } from '@/components/dashboard/mobile/DashboardChrome'
+import { ThemeInit } from '@/components/dashboard/ui/ThemeInit'
 // Globale dashboard design-system classes, alleen actief in deze layout.
 import '@/styles/dashboard.css'
 
@@ -66,6 +67,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // maakt 'm layout-transparant, identiek gedrag aan het vorige fragment.
   return (
     <div className="dashboard-theme-root">
+      {/* No-flash: past de opgeslagen donker-voorkeur toe op de theme-root
+          tijdens het parsen, vóór de eerste paint, zodat het dashboard
+          meteen in de juiste modus opent. Voorheen ontbrak dit op mobiel
+          (alleen v2 had het) en werd het thema pas toegepast als de
+          "Meer"-sheet opende, waardoor de pagina "uit zichzelf" naar donker
+          klapte. Bewust op .dashboard-theme-root en NIET op <html>, zodat de
+          marketing-site ongemoeid blijft. ThemeInit borgt daarnaast de
+          eindtoestand na hydratie. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "(function(){try{if(localStorage.getItem('frontlix-dashboard-theme')==='dark'){var r=document.currentScript&&document.currentScript.parentElement;if(r)r.classList.add('dark')}}catch(e){}})()",
+        }}
+      />
+      <ThemeInit />
       <DashboardChrome
         bedrijfsnaam={bedrijfsnaam}
         userInitials={userInitials}
