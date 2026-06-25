@@ -438,6 +438,16 @@ export function OfferteEditor({
         disabled={!live}
       />
     ) : null;
+  /** Opmerking-veld voor een niet-regel-onderdeel (conditie / korting): altijd
+   *  tonen, want er is geen prijsregel om de zichtbaarheid aan te koppelen. */
+  const opmVast = (key: OpmerkingKey, label: string) => (
+    <OpmerkingVeld
+      label={label}
+      waarde={data.regel_opmerkingen?.[key]}
+      zet={(next) => zetOpmerking(key, next)}
+      disabled={!live}
+    />
+  );
 
   // Reiskosten apart tonen: die zijn niet kortbaar, dus los van het
   // diensten-subtotaal in het live prijsoverzicht.
@@ -855,6 +865,7 @@ export function OfferteEditor({
         {opm("reiniging", "Reiniging")}
         {opm("planten", "Planten afschermen")}
         {opm("reiskosten", "Reiskosten")}
+        {opmVast("conditie", "Conditie van de bestrating")}
 
         {/* Sub-blok: Extra diensten */}
         <div className={styles.subLabel}>Extra diensten</div>
@@ -1103,6 +1114,7 @@ export function OfferteEditor({
             {formatEuro(totals.kortingBedrag)}.
           </div>
         ) : null}
+        {opmVast("korting", "Actiekorting")}
       </AccordionSection>
 
       {/* ── Geldigheid offerte ── */}

@@ -43,7 +43,7 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
         disabled={disabled}
       >
         <Plus size={13} strokeWidth={2.4} />
-        {label ? `Opmerking bij ${label}` : "Opmerking voor de offerte"}
+        Opmerking
       </button>
     );
   }

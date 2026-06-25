@@ -62,6 +62,9 @@ export type OffertePdfData = {
     /** Klant-opmerking als subregel onder de omschrijving (optioneel). */
     opmerking?: string
   }[]
+  /** Losse opmerkingen (conditie / actiekorting) zonder eigen regel; onder de
+   *  specificatie getoond. */
+  losseOpmerkingen?: { label: string; tekst: string }[]
   subtotaal: number          // sub0 (som van actieve regels)
   toeslagen: { label: string; bedrag: number }[]
   kortingPct: number
@@ -358,6 +361,18 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                     </td>
                   </tr>
                 )}
+                {/* Losse opmerkingen (conditie / actiekorting) onder de specificatie. */}
+                {(data.losseOpmerkingen ?? []).map((o, i) => (
+                  <tr key={`los-${i}`}>
+                    <td
+                      colSpan={4}
+                      className={styles.cellDesc}
+                      style={{ fontSize: "0.85em", color: "#6b7280", lineHeight: 1.4 }}
+                    >
+                      ↳ {o.label}: {o.tekst}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 

@@ -6,7 +6,12 @@ import { requireApprovedUser } from '@/lib/dashboard/require-approved-user'
 import { berekenTotalen, isReiskostenRegel } from '@/lib/dashboard/btw-calc'
 import { formatEuro } from '@/lib/dashboard/format'
 import { readRegelOpmerkingen } from '@/lib/dashboard/offerte-form-mapping'
-import { regelOpmerkingKey, type OpmerkingKey } from '@/lib/dashboard/manual-offerte-types'
+import {
+  regelOpmerkingKey,
+  LOSSE_OPMERKINGEN,
+  zichtbareOpmerking,
+  type OpmerkingKey,
+} from '@/lib/dashboard/manual-offerte-types'
 import styles from './page.module.css'
 
 /**
@@ -292,6 +297,21 @@ export default async function OffertePreviewPage({
                 )
               })
             )}
+            {/* Losse opmerkingen (conditie / actiekorting) onder de specificatie. */}
+            {LOSSE_OPMERKINGEN.map(({ key, label }) => {
+              const t = zichtbareOpmerking(opmerkingen, key)
+              return t ? (
+                <tr key={key}>
+                  <td
+                    colSpan={4}
+                    className={styles.cellDesc}
+                    style={{ fontSize: '0.85em', color: '#6b7280', lineHeight: 1.45 }}
+                  >
+                    ↳ {label}: {t}
+                  </td>
+                </tr>
+              ) : null
+            })}
           </tbody>
         </table>
 

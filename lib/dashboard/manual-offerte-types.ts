@@ -40,6 +40,11 @@ export type OpmerkingKey =
   | 'planten'
   | 'extra_arbeid'
   | 'reiskosten'
+  // Niet-regel-onderdelen (geen eigen prijsregel): conditie van de bestrating
+  // en de actiekorting. Worden in de offerte als losse opmerking-regels onder
+  // de specificatie getoond (zie de PDF-renderers), niet onder een prijsregel.
+  | 'conditie'
+  | 'korting'
 
 /** Eén opmerking: vrije tekst + of 'ie in de offerte getoond wordt (default aan). */
 export type RegelOpmerking = { tekst: string; zichtbaar: boolean }
@@ -55,7 +60,27 @@ export const OPMERKING_KEYS: readonly OpmerkingKey[] = [
   'planten',
   'extra_arbeid',
   'reiskosten',
+  'conditie',
+  'korting',
 ] as const
+
+/** De zichtbare, niet-lege opmerking-tekst voor een sleutel, of null. Gebruikt
+ *  door de PDF-renderers voor de niet-regel-onderdelen (conditie / korting) die
+ *  los onder de specificatie worden getoond (niet onder een prijsregel). */
+export function zichtbareOpmerking(
+  map: Partial<Record<OpmerkingKey, RegelOpmerking>> | null | undefined,
+  key: OpmerkingKey,
+): string | null {
+  const o = map?.[key]
+  return o && o.zichtbaar !== false && o.tekst && o.tekst.trim() ? o.tekst.trim() : null
+}
+
+/** De niet-regel-onderdelen die los onder de specificatie worden getoond, met
+ *  hun klant-label voor in de offerte. */
+export const LOSSE_OPMERKINGEN: ReadonlyArray<{ key: OpmerkingKey; label: string }> = [
+  { key: 'conditie', label: 'Conditie van de bestrating' },
+  { key: 'korting', label: 'Actiekorting' },
+]
 
 /**
  * Map een berekende regel (op `desc`) naar zijn opmerking-onderdeel, of null

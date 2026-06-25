@@ -157,7 +157,7 @@ function MobileOpmerking({
     return (
       <button type="button" className={styles.opmAdd} onClick={() => setOpen(true)}>
         <Plus size={13} strokeWidth={2.4} aria-hidden="true" />{' '}
-        {label ? `Opmerking bij ${label}` : 'Opmerking voor de offerte'}
+        Opmerking
       </button>
     )
   }
@@ -367,6 +367,14 @@ export function MobileOfferteEditor({
         zet={(next) => zetOpmerking(key, next)}
       />
     ) : null
+  /** Opmerking voor een niet-regel-onderdeel (conditie / korting): altijd tonen. */
+  const opmVast = (key: OpmerkingKey, label: string) => (
+    <MobileOpmerking
+      label={label}
+      waarde={data.regel_opmerkingen?.[key]}
+      zet={(next) => zetOpmerking(key, next)}
+    />
+  )
 
   const reiskostenTotaal = useMemo(
     () => rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
@@ -877,6 +885,7 @@ export function MobileOfferteEditor({
               />
             </div>
             {opm('planten', 'Planten afschermen')}
+            {opmVast('conditie', 'Conditie van de bestrating')}
           </div>
         </div>
 
@@ -992,11 +1001,7 @@ export function MobileOfferteEditor({
           <span className={styles.kortingEur}>− {formatEuro(totals.kortingBedrag)}</span>
         </div>
 
-        <OClientNote
-          value={data.korting_omschrijving}
-          onChange={(v) => setField('korting_omschrijving', v)}
-          placeholder="Bijv. vaste klant, voorjaarsactie…"
-        />
+        {opmVast('korting', 'Actiekorting')}
       </AccordionSection>
 
       {/* ── 4. Geldigheid (default DICHT) ── */}

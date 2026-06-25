@@ -11,6 +11,7 @@
  */
 
 import type { ManualOfferteData, RegelComputed, TotalsComputed } from '../manual-offerte-types'
+import { LOSSE_OPMERKINGEN, zichtbareOpmerking } from '../manual-offerte-types'
 
 export type TenantBedrijf = {
   bedrijfsnaam: string
@@ -59,6 +60,9 @@ export type OffertePDFData = {
      *  zichtbaar + niet leeg). */
     opmerking?: string | null
   }>
+  /** Losse opmerkingen zonder eigen prijsregel (conditie / actiekorting),
+   *  getoond onder de specificatie. */
+  losseOpmerkingen?: Array<{ label: string; tekst: string }>
   // Totalen
   subtotaalExcl: number
   kortingPercentage: number
@@ -143,6 +147,18 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
     })
     .join('')
 
+  // Losse opmerkingen (conditie / actiekorting) — geen eigen prijsregel, dus
+  // als aparte regel onder de specificatie.
+  const losseOpmerkingenRows = (d.losseOpmerkingen ?? [])
+    .map(
+      (o) => `
+        <tr>
+          <td colspan="4" class="cell-opmerking-los">↳ ${escapeHtml(o.label)}: ${escapeHtml(o.tekst)}</td>
+        </tr>
+      `,
+    )
+    .join('')
+
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -197,6 +213,8 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
   .cell-total { font-weight: 700; color: #002D63; }
   /* Klant-opmerking onder de regel-omschrijving: kleiner + gedempt. */
   .cell-opmerking { font-size: 10px; color: #6b7280; margin-top: 4px; line-height: 1.45; }
+  /* Losse opmerking-regel (conditie / korting) onder de specificatie. */
+  .cell-opmerking-los { font-size: 10px; color: #6b7280; line-height: 1.45; }
 
   .totals-wrap { display: flex; justify-content: flex-end; margin-top: 20px; }
   table.totals { width: 60%; border-collapse: collapse; table-layout: fixed; }
@@ -287,7 +305,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
           </tr>
         </thead>
         <tbody>
-          ${regelsRows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Geen specificatie beschikbaar</td></tr>'}
+          ${regelsRows || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">Geen specificatie beschikbaar</td></tr>'}${losseOpmerkingenRows}
         </tbody>
       </table>
 
@@ -437,6 +455,10 @@ export function buildOffertePDFData(input: {
       totaal: r.totaal,
       opmerking: r.opmerking ?? null,
     })),
+    losseOpmerkingen: LOSSE_OPMERKINGEN.map(({ key, label }) => ({
+      label,
+      tekst: zichtbareOpmerking(data.regel_opmerkingen, key),
+    })).filter((o): o is { label: string; tekst: string } => o.tekst != null),
     subtotaalExcl,
     kortingPercentage: Number(data.korting_percentage) || 0,
     kortingBedrag,

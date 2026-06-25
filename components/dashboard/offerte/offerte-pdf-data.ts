@@ -9,6 +9,7 @@ import type {
   RegelComputed,
   TotalsComputed,
 } from '@/lib/dashboard/manual-offerte-types'
+import { LOSSE_OPMERKINGEN, zichtbareOpmerking } from '@/lib/dashboard/manual-offerte-types'
 import type { OffertePdfData } from '@/components/dashboard/mobile/dossier/offerte/OffertePdfPreview'
 
 export function toOffertePdfData(args: {
@@ -54,6 +55,10 @@ export function toOffertePdfData(args: {
       totaal: r.totaal,
       opmerking: r.opmerking || undefined,
     })),
+    losseOpmerkingen: LOSSE_OPMERKINGEN.map(({ key, label }) => ({
+      label,
+      tekst: zichtbareOpmerking(data.regel_opmerkingen, key),
+    })).filter((o): o is { label: string; tekst: string } => o.tekst != null),
     subtotaal: totals.subtotal,
     toeslagen:
       totals.korstmosToeslag > 0

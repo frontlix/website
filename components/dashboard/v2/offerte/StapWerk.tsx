@@ -315,6 +315,7 @@ export function StapWerk({
             </div>
           </div>
         </div>
+        {opm("conditie")}
         {korstmosConditie ? (
           <div className={styles.korstmosNote}>
             ↳ Korstmos = ja → de toeslag van +10% staat aan (aanpassen kan in stap 3)

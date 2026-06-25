@@ -16,6 +16,7 @@ import type {
   SubDienst,
   Hoofdcategorie,
 } from '@/lib/dashboard/manual-offerte-types'
+import { LOSSE_OPMERKINGEN, zichtbareOpmerking } from '@/lib/dashboard/manual-offerte-types'
 
 /**
  * PDF-template gemodelleerd naar het Schoon Straatje-design dat de bot
@@ -566,6 +567,17 @@ export function OffertePdfDocument({
               </View>
             ))
           )}
+
+          {/* Losse opmerkingen (conditie van de bestrating, actiekorting) — geen
+              eigen prijsregel, dus onder de specificatie als aparte regel. */}
+          {LOSSE_OPMERKINGEN.map(({ key, label }) => {
+            const t = zichtbareOpmerking(data.regel_opmerkingen, key)
+            return t ? (
+              <View key={key} style={styles.tableRow} wrap={false}>
+                <Text style={styles.cellOpmerking}>↳ {label}: {t}</Text>
+              </View>
+            ) : null
+          })}
 
           {/* Totals */}
           <View style={styles.totalsWrap}>
