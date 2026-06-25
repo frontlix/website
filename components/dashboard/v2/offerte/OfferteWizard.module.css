@@ -285,4 +285,8 @@
 .content {
   padding: 18px 20px;
   overflow: auto;
+  /* Grid-item (1fr) mag krimpen onder z'n inhoud, anders blaast brede inhoud
+     (bv. een opmerking-tekstveld) de kolom op en ontstaat horizontale overflow
+     waardoor de modal bij focus "naar rechts springt". */
+  min-width: 0;
 }

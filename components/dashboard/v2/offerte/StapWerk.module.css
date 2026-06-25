@@ -1,6 +1,9 @@
 .grid {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  /* minmax(0, …) i.p.v. kale fr: zo mogen de kolommen krimpen onder hun
+     inhoud. Zonder dit blaast een breed opmerking-tekstveld in de smalle
+     OPPERVLAKTE-kolom de kolom op (horizontale overflow → "springt naar rechts"). */
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 14px;
 }
 
@@ -9,6 +12,8 @@
   border-radius: var(--rb-r-card-sm);
   border: 1px solid var(--rb-line);
   padding: 15px 20px;
+  /* Kaart mag krimpen binnen z'n grid-kolom (geen overflow door brede inhoud). */
+  min-width: 0;
 }
 
 .full {
