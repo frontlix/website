@@ -80,10 +80,8 @@ export const BRIEF = {
 
 export const OWNER_ACTIONS: OwnerAction[] = [
   { n: 1, title: "Owner-review nodig", sub: "Korstmos-toeslag · €736", meta: "Wacht 4u 12m", hot: true },
-  { n: 2, title: "Buiten radius, beslissen", sub: "86 km · Utrecht · €998", meta: "Wacht 8u", hot: true },
-  { n: 3, title: "Klant vraagt korting", sub: "€395 · Thomas Wilms", meta: "1d open", hot: false },
-  { n: 4, title: "2 reviews wachten", sub: "Anna Smit, Sandra Janssen", meta: "3d", hot: false },
-  { n: 5, title: "Offerte vandaag versturen", sub: "Familie Bakker, wacht op akkoord", meta: "Vandaag", hot: false },
+  { n: 2, title: "Buiten radius, beslissen", sub: "240 km · Maastricht · €998", meta: "Wacht 8u", hot: true },
+  { n: 3, title: "Offerte vandaag versturen", sub: "Familie Bakker, wacht op akkoord", meta: "Vandaag", hot: false },
 ];
 
 export const OMZET = {

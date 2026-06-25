@@ -37,7 +37,10 @@ export interface DashboardAction {
   urgency: number
 }
 
-const KM_RADIUS_LIMIT = 75 // boven 75 km = "buiten radius, beslissen"
+// Fallback-werkstraal als de caller geen radius_max_km meegeeft. De echte
+// waarde komt uit tenant_settings.radius_max_km (getRadiusMaxKm), zodat de
+// "buiten radius"-actie de INGESTELDE werkstraal volgt i.p.v. een vast getal.
+const KM_RADIUS_LIMIT = 200 // boven de werkstraal = "buiten radius, beslissen"
 const STILLE_KLANT_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000 // 3 dagen
 const OFFERTE_PENDING_HOT_MS = 12 * 60 * 60 * 1000 // 12u, daarna wordt het hot
 const NOW_TOLERANCE_MS = 60 * 1000 // < 1 min behandelen we als "Nu"
@@ -87,6 +90,7 @@ function isVandaag(isoDate: string | null): boolean {
 function deriveActionForLead(
   lead: LeadListItem,
   nowMs: number,
+  radiusMaxKm: number = KM_RADIUS_LIMIT,
 ): DashboardAction | null {
   // 0. Bot heeft de lead overgedragen: eigenaar moet het gesprek zelf voeren.
   //    Verdwijnt zodra de lead is afgehandeld/geen interesse/gearchiveerd.
@@ -203,7 +207,7 @@ function deriveActionForLead(
   if (
     lead.afstand_km !== null &&
     lead.afstand_km !== undefined &&
-    lead.afstand_km > KM_RADIUS_LIMIT &&
+    lead.afstand_km > radiusMaxKm &&
     lead.dashboard_status !== 'afgehandeld' &&
     lead.dashboard_status !== 'geen_interesse' &&
     lead.dashboard_status !== 'archief' &&
@@ -270,12 +274,13 @@ function subtitleForLead(lead: LeadListItem): string {
 export function deriveActions(
   leads: LeadListItem[],
   max: number = 5,
+  radiusMaxKm: number = KM_RADIUS_LIMIT,
 ): DashboardAction[] {
   const nowMs = Date.now()
   const actions: DashboardAction[] = []
 
   for (const lead of leads) {
-    const a = deriveActionForLead(lead, nowMs)
+    const a = deriveActionForLead(lead, nowMs, radiusMaxKm)
     if (a) actions.push(a)
   }
 

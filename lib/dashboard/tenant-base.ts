@@ -96,3 +96,24 @@ export const DEFAULT_TENANT_BASE: TenantBase = {
   lng: 3.6515,
   label: 'BASIS',
 }
+
+/** Default werkstraal (km) als er geen radius_max_km in tenant_settings staat. */
+export const DEFAULT_RADIUS_MAX_KM = 200
+
+/**
+ * De ingestelde werkstraal (tenant_settings.radius_max_km, instelbaar via
+ * /instellingen). Bepaalt o.a. wanneer een lead "buiten radius" valt in het
+ * "Eerst dit doen"-blok. Valt terug op DEFAULT_RADIUS_MAX_KM (200) als de
+ * waarde ontbreekt/ongeldig is.
+ */
+export async function getRadiusMaxKm(): Promise<number> {
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('tenant_settings')
+    .select('*')
+    .limit(1)
+    .maybeSingle()
+  if (error || !data) return DEFAULT_RADIUS_MAX_KM
+  const r = (data as Record<string, unknown>).radius_max_km
+  return typeof r === 'number' && r > 0 ? r : DEFAULT_RADIUS_MAX_KM
+}
