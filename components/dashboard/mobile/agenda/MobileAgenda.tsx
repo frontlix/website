@@ -95,30 +95,6 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
 
   return (
     <div className={styles.root}>
-      {/* Week|Maand-schakelaar. Week = huidige gedrag (default). */}
-      <div className={styles.viewSwitch} role="tablist" aria-label="Weergave">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'week'}
-          className={styles.viewBtn}
-          data-active={view === 'week' || undefined}
-          onClick={() => setView('week')}
-        >
-          Week
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'maand'}
-          className={styles.viewBtn}
-          data-active={view === 'maand' || undefined}
-          onClick={() => setView('maand')}
-        >
-          Maand
-        </button>
-      </div>
-
       {view === 'week' ? (
         <AgendaWeek
           events={data.events}
@@ -129,6 +105,8 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
           prevWeekKey={data.prevWeekKey}
           nextWeekKey={data.nextWeekKey}
           isCurrentWeek={data.isCurrentWeek}
+          view={view}
+          onViewChange={setView}
           onOpenEvent={(ev) => setDetail(ev)}
           onNew={() => setNewOpen(true)}
           onAfrondenLive={(ev) => setAfronden(ev)}
@@ -142,6 +120,8 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
           prevMonthKey={data.prevMonthKey}
           nextMonthKey={data.nextMonthKey}
           isCurrentMonth={data.isCurrentMonth}
+          view={view}
+          onViewChange={setView}
           onOpenItem={(item, dateKey) => setDetail(agendaItemToEvent(item, dateKey))}
         />
       )}

@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react'
 import type { AgendaMaandCel, AgendaItem, AgendaType } from '@/components/dashboard/v2/agenda/agenda-data'
 import { MonthPickerSheet } from './MonthPickerSheet'
+import { WeekMaandSwitch } from './WeekMaandSwitch'
 import styles from './AgendaMonth.module.css'
 
 const WEEKDAGEN = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
@@ -45,6 +46,10 @@ interface AgendaMonthProps {
   nextMonthKey: string
   /** True → "Deze maand"-knop inactief (we staan al op de huidige maand). */
   isCurrentMonth: boolean
+  /** Actieve weergave; toont de Week|Maand-switch rechts als meegegeven. */
+  view?: 'week' | 'maand'
+  /** Wissel van weergave (instant client-side). */
+  onViewChange?: (v: 'week' | 'maand') => void
   /** Tik op een afspraak → opent het detail (zelfde drilldown als de week).
    *  `dateKey` is de dag van de afspraak (YYYY-MM-DD). */
   onOpenItem?: (item: AgendaItem, dateKey: string) => void
@@ -58,6 +63,8 @@ export function AgendaMonth({
   prevMonthKey,
   nextMonthKey,
   isCurrentMonth,
+  view,
+  onViewChange,
   onOpenItem,
 }: AgendaMonthProps) {
   // Maand/jaar-kiezer (bottom-sheet): tik op de maandnaam-kop opent 'm.
@@ -111,6 +118,12 @@ export function AgendaMonth({
           <Link href="/agenda?view=maand" className={styles.today}>
             Nu
           </Link>
+        )}
+
+        {view && onViewChange && (
+          <span className={styles.switchSlot}>
+            <WeekMaandSwitch view={view} onChange={onViewChange} />
+          </span>
         )}
       </nav>
 

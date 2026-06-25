@@ -7,31 +7,3 @@
   flex: 1;
   min-height: 0;
 }
-
-/* Week|Maand-schakelaar — vaste kop boven de scrollende week/maand-inhoud. */
-.viewSwitch {
-  flex-shrink: 0;
-  display: flex;
-  gap: 4px;
-  padding: 12px 18px 0;
-}
-
-.viewBtn {
-  flex: 1;
-  padding: 9px 0;
-  border: 0.5px solid var(--color-border-soft);
-  border-radius: 10px;
-  background: var(--color-chip-bg);
-  color: var(--color-text-muted);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.viewBtn[data-active] {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-white);
-}

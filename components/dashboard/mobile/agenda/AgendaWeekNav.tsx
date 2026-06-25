@@ -7,6 +7,7 @@
 
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { WeekMaandSwitch } from './WeekMaandSwitch'
 import styles from './AgendaWeekNav.module.css'
 
 interface AgendaWeekNavProps {
@@ -18,6 +19,10 @@ interface AgendaWeekNavProps {
   nextWeekKey: string
   /** True → "Vandaag" inactief (we staan al op de huidige week). */
   isCurrentWeek: boolean
+  /** Actieve weergave; toont de Week|Maand-switch rechts als meegegeven. */
+  view?: 'week' | 'maand'
+  /** Wissel van weergave (instant client-side). */
+  onViewChange?: (v: 'week' | 'maand') => void
 }
 
 export function AgendaWeekNav({
@@ -25,6 +30,8 @@ export function AgendaWeekNav({
   prevWeekKey,
   nextWeekKey,
   isCurrentWeek,
+  view,
+  onViewChange,
 }: AgendaWeekNavProps) {
   return (
     <nav className={styles.nav} aria-label="Week-navigatie">
@@ -54,6 +61,12 @@ export function AgendaWeekNav({
         <Link href="/agenda" className={styles.today}>
           Vandaag
         </Link>
+      )}
+
+      {view && onViewChange && (
+        <span className={styles.switchSlot}>
+          <WeekMaandSwitch view={view} onChange={onViewChange} />
+        </span>
       )}
     </nav>
   )

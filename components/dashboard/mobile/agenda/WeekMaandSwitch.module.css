@@ -1,0 +1,33 @@
+/* WeekMaandSwitch — klein, subtiel segmented control (Week | Maand).
+   Rustig en compact (~26px hoog), pint rechts op de navigatie-regel. */
+
+.switch {
+  flex-shrink: 0;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 0.5px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-chip-bg);
+}
+
+.seg {
+  padding: 4px 10px;
+  min-height: 22px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.seg[data-active] {
+  background: var(--color-primary);
+  color: var(--color-white);
+}

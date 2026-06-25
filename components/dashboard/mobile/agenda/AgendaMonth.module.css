@@ -84,6 +84,13 @@
   color: var(--color-text-muted);
 }
 
+/* Week|Maand-switch — gepind rechts op de maand-nav-regel. */
+.switchSlot {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+}
+
 /* ── Weekdag-kop ──────────────────────────────────────────────────────────── */
 .weekHead {
   display: grid;

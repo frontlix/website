@@ -48,3 +48,11 @@
   pointer-events: none;
   color: var(--color-text-muted);
 }
+
+/* Week|Maand-switch — gepind rechts, zodat het label inkort i.p.v. de switch
+   weg te duwen op smalle schermen. */
+.switchSlot {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+}

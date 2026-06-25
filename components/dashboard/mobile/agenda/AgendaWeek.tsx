@@ -90,6 +90,10 @@ interface AgendaWeekProps {
   nextWeekKey: string
   /** True → "Vandaag" inactief. */
   isCurrentWeek: boolean
+  /** Actieve weergave (voor de Week|Maand-switch rechts op de navigatie-regel). */
+  view?: 'week' | 'maand'
+  /** Wissel van weergave (instant client-side). */
+  onViewChange?: (v: 'week' | 'maand') => void
   onOpenEvent?: (ev: AgendaEvent) => void
   onNew?: () => void
   onOpenSearch?: () => void
@@ -106,6 +110,8 @@ export function AgendaWeek({
   prevWeekKey,
   nextWeekKey,
   isCurrentWeek,
+  view,
+  onViewChange,
   onOpenEvent,
   onNew,
   onOpenSearch,
@@ -205,6 +211,8 @@ export function AgendaWeek({
         prevWeekKey={prevWeekKey}
         nextWeekKey={nextWeekKey}
         isCurrentWeek={isCurrentWeek}
+        view={view}
+        onViewChange={onViewChange}
       />
 
       {/* Filter-pills */}
