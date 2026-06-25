@@ -55,10 +55,15 @@ export function AgendaNewSheet({ open, onClose, klanten, busy = false, onSave }:
 
   if (!open) return null
 
-  const kanOpslaan = !!gekozen?.leadId && !!datum && !!tijd && !busy
+  // De afspraaktijd MOET op een heel of half uur vallen (DB-constraint op
+  // afspraak_starttijd). Een tijd als 17:36 wordt anders door de bot stil
+  // geweigerd en verschijnt als losse Google-afspraak. We tonen de knop pas
+  // actief bij een geldig slot.
+  const geldigSlot = /^([01][0-9]|2[0-3]):(00|30)$/.test(tijd)
+  const kanOpslaan = !!gekozen?.leadId && !!datum && geldigSlot && !busy
 
   const opslaan = () => {
-    if (!gekozen?.leadId || !datum || !tijd) return
+    if (!gekozen?.leadId || !datum || !geldigSlot) return
     onSave({ leadId: gekozen.leadId, datum, tijd, notifyWhatsapp: notifyWa, notifyEmail: notifyMail })
   }
 
@@ -163,12 +168,16 @@ export function AgendaNewSheet({ open, onClose, klanten, busy = false, onSave }:
             <FieldLabel icon={<Clock size={14} />}>Tijd</FieldLabel>
             <input
               type="time"
+              step={1800}
               className={styles.dtInput}
               value={tijd}
               onChange={(e) => setTijd(e.target.value)}
             />
           </FieldRow>
         </FieldGroup>
+        {tijd && !geldigSlot && (
+          <p className={styles.hint}>Kies een tijd op een heel of half uur (bijv. 09:00 of 09:30).</p>
+        )}
 
         {/* ── Klant informeren ── */}
         <FieldGroup label="Klant informeren">

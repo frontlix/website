@@ -97,10 +97,13 @@ export function NewAppointmentModal({
   const gekoppeld =
     klantOptie && klantOptie.naam === klant.trim() ? klantOptie : null;
 
+  // Starttijd moet op een heel of half uur vallen (DB-constraint op
+  // afspraak_starttijd); zo niet wordt de boeking server-side geweigerd.
+  const geldigSlot = /^([01][0-9]|2[0-3]):(00|30)$/.test(tijd);
   const kanOpslaan =
     titel.trim().length > 0 &&
     /^\d{4}-\d{2}-\d{2}$/.test(datum) &&
-    /^\d{2}:\d{2}$/.test(tijd) &&
+    geldigSlot &&
     Number(uren) > 0 &&
     (!klantVerplicht || !!gekoppeld);
 
@@ -180,6 +183,7 @@ export function NewAppointmentModal({
             <input
               id="na-tijd"
               type="time"
+              step={1800}
               className={styles.input}
               value={tijd}
               onChange={(e) => setTijd(e.target.value)}

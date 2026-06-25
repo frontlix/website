@@ -133,8 +133,14 @@ export async function bookAppointment(
   if (!/^\d{4}-\d{2}-\d{2}$/.test(datum)) {
     return { ok: false, error: 'Ongeldige datum.' }
   }
-  if (!/^\d{2}:\d{2}$/.test(tijd)) {
-    return { ok: false, error: 'Ongeldige tijd.' }
+  // De starttijd MOET op een heel of half uur vallen: de leads-tabel heeft een
+  // CHECK-constraint (afspraak_starttijd ~ '^([01][0-9]|2[0-3]):(00|30)$'). Een
+  // tijd als 17:36 wordt anders pas in de DB geweigerd, en omdat de bot die
+  // schrijffout slikt zou het Google-event wél aangemaakt worden terwijl de
+  // lead-afspraak NIET wordt gezet (afspraak verschijnt dan als losse externe
+  // Google-afspraak). Hier hard afvangen voorkomt dat voor elke caller.
+  if (!/^([01][0-9]|2[0-3]):(00|30)$/.test(tijd)) {
+    return { ok: false, error: 'Kies een tijd op een heel of half uur (bijv. 09:00 of 09:30).' }
   }
 
   // Approved-gate: alleen goedgekeurde tenant-users mogen agenda-acties doen.
