@@ -111,17 +111,19 @@ export function OpdrachtbonActions({
         Opdrachtbon
       </button>
       <Modal open={open} onClose={close} width={900} label="Opdrachtbon">
-        <div className={styles.pdfModalHead}>Opdrachtbon {model.bonnummer}</div>
-        {url ? (
-          <iframe ref={frameRef} src={url} className={styles.pdfFrame} title="Opdrachtbon-PDF" />
-        ) : null}
-        <div className={styles.pdfModalFoot}>
-          <button type="button" className={styles.dlBtn} onClick={print} disabled={busy}>
-            <Printer size={16} strokeWidth={2} /> Printen
-          </button>
-          <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
-            <Download size={16} strokeWidth={2} /> Download PDF
-          </button>
+        <div className={styles.pdfModalBody}>
+          <div className={styles.pdfModalHead}>Opdrachtbon {model.bonnummer}</div>
+          {url ? (
+            <iframe ref={frameRef} src={url} className={styles.pdfFrame} title="Opdrachtbon-PDF" />
+          ) : null}
+          <div className={styles.pdfModalFoot}>
+            <button type="button" className={styles.dlBtn} onClick={print} disabled={busy}>
+              <Printer size={16} strokeWidth={2} /> Printen
+            </button>
+            <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
+              <Download size={16} strokeWidth={2} /> Download PDF
+            </button>
+          </div>
         </div>
       </Modal>
     </>

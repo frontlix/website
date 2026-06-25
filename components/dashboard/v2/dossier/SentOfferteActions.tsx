@@ -83,12 +83,14 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
         </button>
       </div>
       <Modal open={open} onClose={close} width={900} label={`Offerte ${titel}`}>
-        <div className={styles.pdfModalHead}>{titel}</div>
-        {url ? <iframe src={url} className={styles.pdfFrame} title="Offerte-PDF" /> : null}
-        <div className={styles.pdfModalFoot}>
-          <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
-            <Download size={16} strokeWidth={2} /> Download PDF
-          </button>
+        <div className={styles.pdfModalBody}>
+          <div className={styles.pdfModalHead}>{titel}</div>
+          {url ? <iframe src={url} className={styles.pdfFrame} title="Offerte-PDF" /> : null}
+          <div className={styles.pdfModalFoot}>
+            <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
+              <Download size={16} strokeWidth={2} /> Download PDF
+            </button>
+          </div>
         </div>
       </Modal>
     </>
