@@ -30,6 +30,9 @@
   display: flex;
   flex-direction: column;
   margin-top: 8px;
+  /* Mag krimpen binnen z'n container, zodat een breed tekstveld de layout niet
+     opblaast (anders schuift de schakelaar het scherm uit). */
+  min-width: 0;
 }
 
 .veldLabel {
@@ -44,6 +47,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
 }
 
 /* In de losse (gewrapte) variant geen extra top-marge: .wrap regelt de marge. */
@@ -53,6 +57,10 @@
 
 .input {
   flex: 1;
+  /* Cruciaal: laat het tekstveld krimpen i.p.v. de schakelaar weg te duwen.
+     Zonder min-width:0 houdt een flex-tekstveld z'n intrinsieke breedte en
+     schuift de "In offerte"-schakelaar het scherm uit. */
+  min-width: 0;
   min-height: 38px;
   padding: 8px 11px;
   border: 1px solid var(--rb-line);
@@ -84,6 +92,9 @@
   align-items: center;
   gap: 3px;
   padding-top: 2px;
+  /* Vaste plek: de schakelaar krimpt nooit en staat altijd rechts naast het
+     tekstveld. */
+  flex-shrink: 0;
 }
 .toggleLabel {
   font-family: var(--rb-font);
