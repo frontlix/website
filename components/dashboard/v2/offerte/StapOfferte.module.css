@@ -118,7 +118,7 @@
   margin: 8px 0 2px;
   border-radius: var(--rb-r-chip);
   border: 1.5px dashed var(--rb-blue);
-  background: rgba(228, 235, 255, 0.45);
+  background: var(--rb-blue-soft);
 }
 
 .vrijBadge {

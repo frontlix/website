@@ -82,7 +82,7 @@
 .kanaalAan:hover {
   flex: 1.2;
   border: 2px solid var(--rb-blue);
-  background: rgba(228, 235, 255, 0.5);
+  background: var(--rb-blue-soft);
 }
 
 .kanaalTitel {

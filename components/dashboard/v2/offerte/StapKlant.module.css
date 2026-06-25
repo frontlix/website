@@ -437,7 +437,7 @@
 }
 
 .factuurOff {
-  background: rgba(228, 235, 255, 0.45);
+  background: var(--rb-blue-soft);
   border: 1.5px solid var(--rb-blue);
 }
 
