@@ -1,11 +1,13 @@
 /* AgendaDayJumpStrip — mini week-strip (7 kolommen).
  * Port van ABMain `DayJumpStrip` (inline → module + tokens). */
 
+/* Geen eigen buitenmarge: de spacing/positionering wordt geregeld door de
+   .stripNav-rij in AgendaWeek (chevrons links/rechts). */
 .strip {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  padding: 0 16px 12px;
+  padding: 0;
 }
 
 /* ── Dag-cel ──────────────────────────────────────────────────────────────── */

@@ -44,7 +44,8 @@ interface AgendaMonthProps {
   prevMonthKey: string
   /** ?month=YYYY-MM-key van de volgende maand. */
   nextMonthKey: string
-  /** True → "Deze maand"-knop inactief (we staan al op de huidige maand). */
+  /** Geaccepteerd voor API-pariteit met de weekweergave; niet meer gerenderd
+   *  (de "terug naar nu"-actie zit nu in de maand/jaar-kiezer als "Deze maand"). */
   isCurrentMonth: boolean
   /** Actieve weergave; toont de Week|Maand-switch rechts als meegegeven. */
   view?: 'week' | 'maand'
@@ -62,7 +63,6 @@ export function AgendaMonth({
   monthMonth,
   prevMonthKey,
   nextMonthKey,
-  isCurrentMonth,
   view,
   onViewChange,
   onOpenItem,
@@ -81,53 +81,46 @@ export function AgendaMonth({
 
   return (
     <div className={styles.root}>
-      {/* Maand-navigatie */}
-      <nav className={styles.nav} aria-label="Maand-navigatie">
-        <Link
-          href={`/agenda?view=maand&month=${prevMonthKey}`}
-          className={styles.arrow}
-          aria-label="Vorige maand"
-        >
-          <ChevronLeft size={20} aria-hidden="true" />
-        </Link>
-
-        <button
-          type="button"
-          className={styles.label}
-          onClick={() => setPickerOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={pickerOpen}
-        >
-          <span className={styles.labelText}>{monthLabel}</span>
-          <ChevronDown size={15} className={styles.labelChev} aria-hidden="true" />
-        </button>
-
-        <Link
-          href={`/agenda?view=maand&month=${nextMonthKey}`}
-          className={styles.arrow}
-          aria-label="Volgende maand"
-        >
-          <ChevronRight size={20} aria-hidden="true" />
-        </Link>
-
-        {isCurrentMonth ? (
-          <span className={styles.today} data-disabled="true" aria-disabled="true">
-            Nu
-          </span>
-        ) : (
-          <Link href="/agenda?view=maand" className={styles.today}>
-            Nu
+      {/* Periode-regel: ‹ maand/jaar-kiezer › (compacte groep links) +
+          Week|Maand-switch (rechts). */}
+      <div className={styles.nav} aria-label="Periode">
+        <div className={styles.monthGroup}>
+          <Link
+            href={`/agenda?view=maand&month=${prevMonthKey}`}
+            className={styles.arrow}
+            aria-label="Vorige maand"
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
           </Link>
-        )}
+
+          <button
+            type="button"
+            className={styles.label}
+            onClick={() => setPickerOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={pickerOpen}
+          >
+            <span className={styles.labelText}>{monthLabel}</span>
+            <ChevronDown size={15} className={styles.labelChev} aria-hidden="true" />
+          </button>
+
+          <Link
+            href={`/agenda?view=maand&month=${nextMonthKey}`}
+            className={styles.arrow}
+            aria-label="Volgende maand"
+          >
+            <ChevronRight size={20} aria-hidden="true" />
+          </Link>
+        </div>
 
         {view && onViewChange && (
           <span className={styles.switchSlot}>
             <WeekMaandSwitch view={view} onChange={onViewChange} />
           </span>
         )}
-      </nav>
+      </div>
 
-      {/* Weekdag-kop */}
+      {/* Weekdag-kop — lijnt exact uit boven de 7 datumkolommen van het grid */}
       <div className={styles.weekHead}>
         {WEEKDAGEN.map((d) => (
           <span key={d} className={styles.weekHeadCell}>

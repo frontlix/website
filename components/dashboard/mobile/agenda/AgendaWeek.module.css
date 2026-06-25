@@ -71,6 +71,48 @@
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
+/* ── Week-navigatie rond de day-jump strip ────────────────────────────────── */
+/* ‹ (vorige week) · day-strip (flex:1) · › (volgende week) · evt. "Vandaag". */
+.stripNav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 12px;
+}
+
+.stripArrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  background: transparent;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.stripArrow:active {
+  background: var(--color-chip-bg);
+}
+
+.stripWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Klein, rustig terug-naar-vandaag-linkje (alleen als we niet op de huidige
+   week staan). */
+.stripToday {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  border-radius: 8px;
+}
+
 /* Lege staat — geen afspraken in de week. */
 .empty {
   margin: 20px 18px;

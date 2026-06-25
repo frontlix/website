@@ -7,7 +7,8 @@
 // Data: AG_EVENTS/NOW_ID uit ./agenda-mock; eventTone/durStr uit ./agenda-mobile-helpers.
 
 import { useMemo, useState } from 'react'
-import { Plus, Search } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react'
 import type { AgendaEvent, AgendaWeekDay } from './agenda-mock'
 import { minutesBetween } from './agenda-mobile-helpers'
 import { AgendaFilterPills } from './AgendaFilterPills'
@@ -205,21 +206,45 @@ export function AgendaWeek({
         </div>
       </header>
 
-      {/* Week-navigatie */}
-      <AgendaWeekNav
-        weekLabel={weekLabel}
-        prevWeekKey={prevWeekKey}
-        nextWeekKey={nextWeekKey}
-        isCurrentWeek={isCurrentWeek}
-        view={view}
-        onViewChange={onViewChange}
-      />
+      {/* Periode-regel: weeklabel + Week|Maand-switch */}
+      <AgendaWeekNav weekLabel={weekLabel} view={view} onViewChange={onViewChange} />
 
       {/* Filter-pills */}
       <AgendaFilterPills active={filter} onPick={setFilter} items={FILTER_ITEMS} />
 
-      {/* Mini-week day-jump strip */}
-      <AgendaDayJumpStrip days={weekDays} events={events} todayDate={todayDate} onJump={handleJump} />
+      {/* Week vorige/volgende-navigatie rond de mini-week day-jump strip */}
+      <div className={styles.stripNav}>
+        <Link
+          href={`/agenda?week=${prevWeekKey}`}
+          className={styles.stripArrow}
+          aria-label="Vorige week"
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
+        </Link>
+
+        <div className={styles.stripWrap}>
+          <AgendaDayJumpStrip
+            days={weekDays}
+            events={events}
+            todayDate={todayDate}
+            onJump={handleJump}
+          />
+        </div>
+
+        <Link
+          href={`/agenda?week=${nextWeekKey}`}
+          className={styles.stripArrow}
+          aria-label="Volgende week"
+        >
+          <ChevronRight size={20} aria-hidden="true" />
+        </Link>
+
+        {!isCurrentWeek && (
+          <Link href="/agenda" className={styles.stripToday}>
+            Vandaag
+          </Link>
+        )}
+      </div>
 
       {/* Live "bezig"-banner */}
       {nowEvent && (
