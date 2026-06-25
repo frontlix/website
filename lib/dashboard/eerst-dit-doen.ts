@@ -103,7 +103,7 @@ function deriveActionForLead(
       leadId: lead.lead_id,
       kind: 'handover',
       tone: 'hot',
-      title: `Zelf overnemen: ${lead.naam ?? 'onbekend'}, buiten werkgebied`,
+      title: `Zelf overnemen: ${lead.naam ?? 'onbekend'}`,
       subtitle: subtitleForLead(lead),
       waitLabel: formatWait(waitMs),
       waitMs,
