@@ -4,10 +4,12 @@ import { useRef, useState, useTransition } from "react";
 import type { OfferteEditorApi } from "./OfferteEditor";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban } from "lucide-react";
+import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban, CheckCircle2, XCircle } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
+import { completeAppointment } from "@/lib/dashboard/agenda-actions";
+import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from "@/lib/dashboard/klus-status-client";
 import { freezeVerstuurdeOfferteData } from "@/lib/dashboard/offerte-form-actions";
 import { addNote, deleteNote, updateNote, setNoteTargets } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
@@ -38,6 +40,10 @@ interface DossierViewProps {
   botPaused?: boolean;
   /** Echte dashboard_archived-stand uit de lead. */
   archivedInitial?: boolean;
+  /** Afspraak-datum (ISO) van de lead, voor de "Klus afronden"-knoppen. */
+  afspraakDatum?: string | null;
+  /** dashboard_status van de lead ('open' | 'afgehandeld' | ...). */
+  dashboardStatus?: string | null;
   leadTags?: Tag[];
   allTags?: Tag[];
 }
@@ -52,12 +58,15 @@ export function DossierView({
   leadId,
   botPaused,
   archivedInitial,
+  afspraakDatum,
+  dashboardStatus,
   leadTags,
   allTags,
 }: DossierViewProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [sending, startSend] = useTransition();
+  const [klusPending, startKlus] = useTransition();
   // Flush-API van de offerte-editor (gevuld door OffertesTab -> OfferteEditor),
   // zodat we vóór het versturen de laatste wijzigingen kunnen wegschrijven.
   const offerteApiRef = useRef<OfferteEditorApi | null>(null);
@@ -230,6 +239,32 @@ export function DossierView({
     });
   };
 
+  // "Klus afronden"-knoppen: alleen tonen als de lead een afspraak op of vóór
+  // vandaag heeft én nog open staat (zie toonKlusAfrondenKnoppen). Niet bij een
+  // gearchiveerde lead.
+  const toonKlus =
+    live && !archived && toonKlusAfrondenKnoppen(afspraakDatum, dashboardStatus);
+
+  // "Klus afgerond": de afspraak ging door, zet dashboard_status='afgehandeld'.
+  const handleKlusAfgerond = () => {
+    if (!live || !leadId || klusPending) return;
+    startKlus(async () => {
+      const res = await completeAppointment(leadId);
+      if (res.ok) router.refresh();
+      else window.alert(res.error || "Afronden mislukt.");
+    });
+  };
+
+  // "Klus niet doorgegaan": markeer de klus als geblokkeerd via de bot-proxy.
+  const handleKlusNietDoorgegaan = () => {
+    if (!live || !leadId || klusPending) return;
+    startKlus(async () => {
+      const res = await setKlusGeblokkeerd(leadId, true);
+      if (res.ok) router.refresh();
+      else window.alert(res.error || "Markeren mislukt.");
+    });
+  };
+
   const naarNotities = () => {
     setTab("Notities");
     // Re-trigger de autofocus ook als de tab al actief was.
@@ -377,6 +412,32 @@ export function DossierView({
               <Ban size={15} strokeWidth={2.1} />
               Geen echte lead
             </button>
+          ) : null}
+          {/* Klus afronden: de afspraak is voorbij en de lead staat nog open.
+              "Klus afgerond" → afgehandeld; "Klus niet doorgegaan" → geblokkeerd. */}
+          {toonKlus ? (
+            <>
+              <button
+                type="button"
+                className={styles.klusOkBtn}
+                onClick={handleKlusAfgerond}
+                disabled={klusPending}
+                title="De klus is doorgegaan en afgerond"
+              >
+                <CheckCircle2 size={15} strokeWidth={2.2} />
+                Klus afgerond
+              </button>
+              <button
+                type="button"
+                className={styles.dangerBtn}
+                onClick={handleKlusNietDoorgegaan}
+                disabled={klusPending}
+                title="De klus is niet doorgegaan"
+              >
+                <XCircle size={15} strokeWidth={2.2} />
+                Klus niet doorgegaan
+              </button>
+            </>
           ) : null}
           {/* Offerte versturen naar de klant via de bot (WhatsApp). Alleen de
               eerste verzending; bij een reeds verstuurde offerte toont de knop

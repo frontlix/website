@@ -68,6 +68,8 @@ type Props = {
   tags: TagWithCount[]
   /** Notificatie-voorkeuren uit notification_preferences. */
   notifPrefs: NotificationPreferenceRow[]
+  /** Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden)? */
+  klusStatusMelden: boolean
   /** Template-aanvragen (opening + reminders) voor status-historie. */
   templateAanvragen: TemplateAanvraag[]
   /** Google-Agenda-koppelstatus voor het Agenda-detailscherm (null = nog niet opgehaald). */
@@ -96,6 +98,7 @@ export function MobileInstellingen({
   team,
   tags,
   notifPrefs,
+  klusStatusMelden,
   templateAanvragen,
   gcalStatus,
   beschikbaarheid,
@@ -163,6 +166,7 @@ export function MobileInstellingen({
           <InstNotif
             prefs={notifPrefs}
             digestTijd={tenant?.daily_digest_tijd ?? '08:00'}
+            klusStatusMelden={klusStatusMelden}
           />
         )}
         {view === 'tags' && <InstTags tags={tags} />}

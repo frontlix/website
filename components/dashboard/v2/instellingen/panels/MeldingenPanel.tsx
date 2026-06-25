@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Clock } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 import {
   togglePrefAction,
   setDailyDigestTijdAction,
 } from "@/lib/dashboard/notifications/prefs-actions";
+import { setKlusStatusMelden } from "@/lib/dashboard/meldingen-actions";
 import { enablePush, disablePush } from "@/lib/dashboard/notifications/push-client";
 import {
   EVENT_TYPES_ORDERED,
@@ -74,6 +75,8 @@ interface MeldingenPanelProps {
   meldingen?: NotificationSetting[];
   /** HH:MM, daily-digest-tijd (default 08:00). */
   initialDigestTijd?: string;
+  /** Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden)? */
+  initialKlusStatusMelden?: boolean;
   /** false in de demo-fallback: server-actions zijn dan no-op. */
   live?: boolean;
   /** Compat: optionele parent-callback bij een toggle (cosmetisch). */
@@ -84,6 +87,7 @@ export function MeldingenPanel({
   initialPrefs,
   meldingen,
   initialDigestTijd = "08:00",
+  initialKlusStatusMelden = true,
   live = true,
   onToggle,
 }: MeldingenPanelProps) {
@@ -187,7 +191,64 @@ export function MeldingenPanel({
         ))}
       </div>
 
+      <KlusStatusRow initial={initialKlusStatusMelden} live={live} />
       <DigestTijdRow initial={initialDigestTijd} live={live} />
+    </div>
+  );
+}
+
+/**
+ * Aparte toggle (los van de grid): vraag na een afspraak of de klus doorging.
+ * Aan = het Overzicht toont na een voorbije afspraak een herinnering in
+ * "Eerst dit doen" om de klus af te ronden of als geblokkeerd te markeren.
+ * Slaat direct op via setKlusStatusMelden (optimistic + revert).
+ */
+function KlusStatusRow({ initial, live }: { initial: boolean; live: boolean }) {
+  const [aan, setAan] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const [, startTransition] = useTransition();
+
+  function handleToggle() {
+    const next = !aan;
+    setAan(next); // optimistic
+    if (!live) return; // demo-fallback: alleen lokale staat
+    setSaving(true);
+    startTransition(async () => {
+      const result = await setKlusStatusMelden(next);
+      setSaving(false);
+      if (!result.ok) {
+        setAan(!next); // revert
+        alert(result.error);
+      }
+    });
+  }
+
+  return (
+    <div className={styles.digestRow}>
+      <div className={styles.digestIcon}>
+        <CheckCircle2 size={18} strokeWidth={2} />
+      </div>
+      <div className={styles.digestMain}>
+        <div className={styles.digestLabel}>
+          Vraag na een afspraak of de klus doorging
+        </div>
+        <div className={styles.digestSub}>
+          Je krijgt dan een herinnering in &quot;Eerst dit doen&quot; om de klus af te ronden
+        </div>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={aan}
+        aria-label="Vraag na een afspraak of de klus doorging"
+        disabled={saving}
+        onClick={handleToggle}
+        className={`${styles.toggle} ${aan ? styles.toggleOn : ""} ${
+          saving ? styles.toggleSaving : ""
+        }`}
+      >
+        <span className={styles.knob} />
+      </button>
     </div>
   );
 }

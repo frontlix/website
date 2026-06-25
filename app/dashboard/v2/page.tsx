@@ -41,7 +41,7 @@ import {
   pickUpcomingAppointments,
 } from "@/lib/dashboard/overzicht-data";
 import { deriveActions } from "@/lib/dashboard/eerst-dit-doen";
-import { getRadiusMaxKm } from "@/lib/dashboard/tenant-base";
+import { getRadiusMaxKm, getKlusStatusMelden } from "@/lib/dashboard/tenant-base";
 import { buildSurfaceSummary } from "@/lib/dashboard/surface-summary";
 import { getGreeting, getVoornaam } from "@/lib/dashboard/greeting";
 import { KPI_DOELEN } from "@/components/dashboard/overzicht/kpi-doelen";
@@ -229,8 +229,11 @@ export default async function OverzichtPage({
   const extraOffertesOpen = buildOpenOffertesMetric(openOffertes);
 
   const upcomingAppts = pickUpcomingAppointments(appts, 4);
-  const radiusMaxKm = await getRadiusMaxKm();
-  const eerstDitDoenActies = deriveActions(allLeads, 5, radiusMaxKm);
+  const [radiusMaxKm, klusStatusMelden] = await Promise.all([
+    getRadiusMaxKm(),
+    getKlusStatusMelden(),
+  ]);
+  const eerstDitDoenActies = deriveActions(allLeads, 5, radiusMaxKm, klusStatusMelden);
   const actieveGesprekken = allLeads.filter(
     (l) => l.gesprek_fase && ACTIEVE_FASES.has(l.gesprek_fase),
   ).length;

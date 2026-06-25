@@ -19,6 +19,7 @@ import {
   togglePrefAction,
   setDailyDigestTijdAction,
 } from '@/lib/dashboard/notifications/prefs-actions'
+import { setKlusStatusMelden } from '@/lib/dashboard/meldingen-actions'
 import { enablePush, disablePush } from '@/lib/dashboard/notifications/push-client'
 import {
   EVENT_TYPES_ORDERED,
@@ -56,10 +57,12 @@ function isCellLive(evt: NotificationEventType, kn: NotificationKanaal): boolean
 type Props = {
   prefs: NotificationPreferenceRow[]
   digestTijd: string
+  /** Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden)? */
+  klusStatusMelden: boolean
 }
 
 /** Notificatie-matrix: per event-type een kaart met een rij per kanaal. */
-export function InstNotif({ prefs, digestTijd }: Props) {
+export function InstNotif({ prefs, digestTijd, klusStatusMelden }: Props) {
   // Map "event|kanaal" → enabled, geseed uit de echte prefs.
   const [enabled, setEnabled] = useState<Map<string, boolean>>(() => {
     const m = new Map<string, boolean>()
@@ -139,7 +142,51 @@ export function InstNotif({ prefs, digestTijd }: Props) {
         </div>
       )}
 
+      <KlusStatusRow initial={klusStatusMelden} />
       <DigestTijdRow initial={digestTijd} />
+    </div>
+  )
+}
+
+/**
+ * Aparte toggle: vraag na een afspraak of de klus doorging. Aan = het Overzicht
+ * toont na een voorbije afspraak een herinnering in "Eerst dit doen" om de klus
+ * af te ronden of als geblokkeerd te markeren. Optimistic + revert.
+ */
+function KlusStatusRow({ initial }: { initial: boolean }) {
+  const [aan, setAan] = useState(initial)
+  const [saving, setSaving] = useState(false)
+  const [, startTransition] = useTransition()
+
+  function handleToggle() {
+    const next = !aan
+    setAan(next) // optimistic
+    setSaving(true)
+    startTransition(async () => {
+      const res = await setKlusStatusMelden(next)
+      setSaving(false)
+      if (!res.ok) {
+        setAan(!next) // revert
+        window.alert(res.error)
+      }
+    })
+  }
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.title}>Vraag na een afspraak of de klus doorging</div>
+      <div className={styles.row}>
+        <span className={styles.label}>
+          Je krijgt dan een herinnering in &quot;Eerst dit doen&quot; om de klus af te ronden
+        </span>
+        <MobileToggle
+          on={aan}
+          onChange={handleToggle}
+          size={0.85}
+          label="Vraag na een afspraak of de klus doorging"
+          disabled={saving}
+        />
+      </div>
     </div>
   )
 }

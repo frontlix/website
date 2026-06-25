@@ -120,6 +120,62 @@
   filter: brightness(1.05);
 }
 
+/* "Klus afgerond": positief/groen, de afspraak ging door. */
+.klusOkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--rb-success);
+  padding: 10px 16px;
+  border-radius: var(--rb-r-pill);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+}
+
+.klusOkBtn:hover {
+  filter: brightness(1.05);
+}
+
+.klusOkBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* "Klus niet doorgegaan": rustig rood-getint, geen alarmknal. */
+.dangerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rb-danger);
+  background: var(--rb-glass-strong);
+  padding: 10px 16px;
+  border-radius: var(--rb-r-pill);
+  border: 1px solid color-mix(in srgb, var(--rb-danger) 35%, transparent);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.12s ease,
+    filter 0.12s ease;
+}
+
+.dangerBtn:hover {
+  background: var(--rb-danger-soft);
+}
+
+.dangerBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 /* ── Split view ── */
 .split {
   display: grid;

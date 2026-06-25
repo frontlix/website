@@ -19,6 +19,8 @@ import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
 import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from '@/lib/dashboard/lead-actions'
+import { completeAppointment } from '@/lib/dashboard/agenda-actions'
+import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from '@/lib/dashboard/klus-status-client'
 import type { Tag } from '@/lib/dashboard/database.types'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
@@ -61,6 +63,7 @@ export function MobileLeadDossier({
   // badge, waar de terug-knop heen gaat en de Beheer-knoppen.
   const [archived, setArchived] = useState(archivedInitial)
   const [beheerPending, startBeheer] = useTransition()
+  const [klusPending, startKlus] = useTransition()
   // Brug naar de PDF-preview-overlay binnen de editor, zodat de sticky
   // actiebalk-knop "Bekijk PDF" dezelfde nette overlay opent (i.p.v. de
   // route-versie die mobiel slecht oogt).
@@ -119,6 +122,30 @@ export function MobileLeadDossier({
     })
   }
 
+  // "Klus afronden": de afspraak is voorbij en de lead staat nog open. Velden
+  // komen uit de volledige DB-lead (offerteForm.lead). Niet bij een gearchiveerde
+  // lead. Acties spiegelen de desktop (completeAppointment / setKlusGeblokkeerd).
+  const toonKlus =
+    !archived &&
+    toonKlusAfrondenKnoppen(
+      offerteForm.lead.afspraak_datum,
+      offerteForm.lead.dashboard_status,
+    )
+  const klusAfgerond = () => {
+    startKlus(async () => {
+      const res = await completeAppointment(data.leadId)
+      if (res.ok) router.refresh()
+      else window.alert(res.error || 'Afronden mislukt.')
+    })
+  }
+  const klusNietDoorgegaan = () => {
+    startKlus(async () => {
+      const res = await setKlusGeblokkeerd(data.leadId, true)
+      if (res.ok) router.refresh()
+      else window.alert(res.error || 'Markeren mislukt.')
+    })
+  }
+
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
@@ -158,6 +185,10 @@ export function MobileLeadDossier({
                 pending={beheerPending}
                 onToggleArchief={toggleArchief}
                 onGeenEcht={markeerGeenEcht}
+                toonKlus={toonKlus}
+                klusPending={klusPending}
+                onKlusAfgerond={klusAfgerond}
+                onKlusNietDoorgegaan={klusNietDoorgegaan}
               />
             </>
           )}

@@ -42,10 +42,29 @@
   opacity: 0.5;
 }
 
-/* "Geen echte lead": rustig rood-getint, geen alarmknal. */
+/* "Geen echte lead" / "Klus niet doorgegaan": rustig rood-getint, geen alarmknal. */
 .danger {
   color: var(--color-danger, #c0362c);
   border-color: color-mix(in srgb, var(--color-danger, #c0362c) 35%, transparent);
+}
+
+/* "Klus afronden"-blok bovenaan, gescheiden van de Beheer-acties eronder. */
+.klusBlock {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* "Klus afgerond": positief/groen, de afspraak ging door. */
+.klusOk {
+  color: #fff;
+  background: var(--color-success, #2bc48a);
+  border-color: transparent;
+}
+
+.klusOk:active {
+  filter: brightness(0.97);
+  background: var(--color-success, #2bc48a);
 }
 
 .hint {

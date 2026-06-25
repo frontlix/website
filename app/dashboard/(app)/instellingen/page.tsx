@@ -9,6 +9,7 @@ import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
 import { getRecentTemplateAanvragen, type TemplateAanvraag } from '@/lib/dashboard/template-queries'
 import { getAllPrefs } from '@/lib/dashboard/notifications/queries'
+import { getKlusStatusMelden } from '@/lib/dashboard/tenant-base'
 import { MobileInstellingen } from '@/components/dashboard/mobile/instellingen/MobileInstellingen'
 import styles from './page.module.css'
 
@@ -117,6 +118,10 @@ export default async function InstellingenPage({
   // Gmail-label-koppelstatus voor het Gmail-koppelblok in het Bedrijfsprofiel.
   const gmailStatus = await getGmailConnectionStatus()
 
+  // "Klus afronden"-toggle (063): defensieve helper (ontbrekende migratie-kolom
+  // → default true) voor het mobiele Meldingen-scherm.
+  const klusStatusMelden = await getKlusStatusMelden()
+
   // Beschikbaarheid (werkdagen + tijden) voor het mobiele Beschikbaarheid-scherm.
   // Uit tenant_settings.beschikbaarheid; valt terug op een standaard-werkweek als
   // de kolom (nog) leeg is, zodat het scherm altijd 7 dagen toont.
@@ -140,6 +145,7 @@ export default async function InstellingenPage({
           team={team}
           tags={tags}
           notifPrefs={notifPrefs}
+          klusStatusMelden={klusStatusMelden}
           templateAanvragen={templateAanvragen}
           gcalStatus={gcalStatus}
           beschikbaarheid={beschikbaarheid}

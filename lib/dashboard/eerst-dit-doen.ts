@@ -1,5 +1,6 @@
 import type { LeadListItem } from './lead-queries'
 import { isHandover } from './lead-status-meta'
+import { amsterdamDayKey } from './amsterdam-time'
 
 /**
  * "Eerst dit doen", afleiding van openstaande owner-acties uit de leads-lijst.
@@ -16,6 +17,7 @@ export type ActionKind =
   | 'klus_geblokkeerd'    // klus_geblokkeerd = true
   | 'offerte_versturen'   // offerte_pending_sinds set + nog niet verstuurd
   | 'afspraak_vandaag'    // afspraak_datum = vandaag, nog open
+  | 'klus_afronden'       // afspraak voorbij + nog open: ging de klus door?
   | 'onderhandeling'      // gesprek_fase = 'onderhandelen' (en niet al owner_review)
   | 'buiten_radius'       // afstand_km > 75 + nog niet beslist
   | 'stille_klant'        // offerte verstuurd > 3d geleden, geen akkoord
@@ -84,6 +86,19 @@ function isVandaag(isoDate: string | null): boolean {
 }
 
 /**
+ * Ligt `isoDate` (de afspraak-datum) vóór vandaag in Amsterdam-tijd? Vergelijkt
+ * dag-sleutels (YYYY-MM-DD) zodat een afspraak van gisteren of eerder telt en
+ * vandaag NIET (die valt onder de afspraak_vandaag-actie). DST-correct via
+ * amsterdamDayKey.
+ */
+function isVoorVandaag(isoDate: string | null, nowMs: number): boolean {
+  if (!isoDate) return false
+  const d = new Date(isoDate)
+  if (Number.isNaN(d.getTime())) return false
+  return amsterdamDayKey(d) < amsterdamDayKey(new Date(nowMs))
+}
+
+/**
  * Per lead: bepaal de zwaarste actie. Eén lead = max één rij in "Eerst dit doen",
  * anders gaat hetzelfde lead in meerdere rijen onder elkaar staan.
  */
@@ -91,6 +106,7 @@ function deriveActionForLead(
   lead: LeadListItem,
   nowMs: number,
   radiusMaxKm: number = KM_RADIUS_LIMIT,
+  klusStatusMelden: boolean = true,
 ): DashboardAction | null {
   // 0. Bot heeft de lead overgedragen: eigenaar moet het gesprek zelf voeren.
   //    Verdwijnt zodra de lead is afgehandeld/geen interesse/gearchiveerd.
@@ -186,6 +202,32 @@ function deriveActionForLead(
     }
   }
 
+  // 4b. Afspraak voorbij maar lead nog open: ging de klus door? De owner moet
+  //     de klus afronden (afgehandeld) of als niet-doorgegaan markeren. Alleen
+  //     als de toggle (tenant_settings.klus_status_melden) aan staat. Een al
+  //     geblokkeerde klus is hier niet meer relevant: stap 1 (klus_geblokkeerd)
+  //     vangt die lead al af en returnt vóór deze conditie.
+  if (
+    klusStatusMelden &&
+    lead.afspraak_datum &&
+    isVoorVandaag(lead.afspraak_datum, nowMs) &&
+    lead.dashboard_status === 'open'
+  ) {
+    const afspraakMs = new Date(lead.afspraak_datum).getTime()
+    const waitMs = Math.max(0, nowMs - afspraakMs)
+    return {
+      id: `klus-${lead.lead_id}`,
+      leadId: lead.lead_id,
+      kind: 'klus_afronden',
+      tone: 'warm',
+      title: "Klus afronden, ging 'ie door?",
+      subtitle: subtitleForLead(lead),
+      waitLabel: formatWait(waitMs),
+      waitMs,
+      urgency: 70,
+    }
+  }
+
   // 5. Klant in onderhandeling (warm)
   if (lead.gesprek_fase === 'onderhandelen') {
     const updatedMs = lead.bijgewerkt ? new Date(lead.bijgewerkt).getTime() : nowMs
@@ -275,12 +317,13 @@ export function deriveActions(
   leads: LeadListItem[],
   max: number = 5,
   radiusMaxKm: number = KM_RADIUS_LIMIT,
+  klusStatusMelden: boolean = true,
 ): DashboardAction[] {
   const nowMs = Date.now()
   const actions: DashboardAction[] = []
 
   for (const lead of leads) {
-    const a = deriveActionForLead(lead, nowMs, radiusMaxKm)
+    const a = deriveActionForLead(lead, nowMs, radiusMaxKm, klusStatusMelden)
     if (a) actions.push(a)
   }
 

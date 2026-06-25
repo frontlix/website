@@ -28,3 +28,37 @@ describe('eerst-dit-doen hand-over', () => {
     expect(acties.find((a) => a.kind === 'handover')).toBeUndefined()
   })
 })
+
+describe('eerst-dit-doen klus-afronden', () => {
+  it('levert een klus_afronden-actie bij een voorbije afspraak + open lead', () => {
+    const acties = deriveActions([lead({ afspraak_datum: '2020-01-01', dashboard_status: 'open' })])
+    expect(acties[0]?.kind).toBe('klus_afronden')
+    expect(acties[0]?.title).toMatch(/ging 'ie door/i)
+    expect(acties[0]?.tone).toBe('warm')
+    expect(acties[0]?.urgency).toBe(70)
+  })
+  it('geen klus_afronden-actie als de toggle uit staat (klusStatusMelden=false)', () => {
+    const acties = deriveActions(
+      [lead({ afspraak_datum: '2020-01-01', dashboard_status: 'open' })],
+      5,
+      undefined,
+      false,
+    )
+    expect(acties.find((a) => a.kind === 'klus_afronden')).toBeUndefined()
+  })
+  it('geen klus_afronden-actie bij een toekomstige afspraak', () => {
+    const acties = deriveActions([lead({ afspraak_datum: '2999-01-01', dashboard_status: 'open' })])
+    expect(acties.find((a) => a.kind === 'klus_afronden')).toBeUndefined()
+  })
+  it('geen klus_afronden-actie als de lead al is afgehandeld', () => {
+    const acties = deriveActions([lead({ afspraak_datum: '2020-01-01', dashboard_status: 'afgehandeld' })])
+    expect(acties.find((a) => a.kind === 'klus_afronden')).toBeUndefined()
+  })
+  it('geen klus_afronden-actie als de klus al geblokkeerd is (die actie wint)', () => {
+    const acties = deriveActions([
+      lead({ afspraak_datum: '2020-01-01', dashboard_status: 'open', klus_geblokkeerd: true }),
+    ])
+    expect(acties[0]?.kind).toBe('klus_geblokkeerd')
+    expect(acties.find((a) => a.kind === 'klus_afronden')).toBeUndefined()
+  })
+})

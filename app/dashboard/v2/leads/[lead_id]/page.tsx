@@ -60,6 +60,8 @@ export default async function LeadDossierPage({ params }: PageProps) {
       leadId={detail.lead.lead_id}
       botPaused={detail.lead.bot_gepauzeerd}
       archivedInitial={detail.lead.dashboard_archived}
+      afspraakDatum={detail.lead.afspraak_datum}
+      dashboardStatus={detail.lead.dashboard_status}
       leadTags={leadTags}
       allTags={allTags}
     />

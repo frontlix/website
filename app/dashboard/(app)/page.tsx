@@ -35,7 +35,7 @@ import { getDagrapport } from '@/lib/dashboard/dagrapport-queries'
 import { buildSurfaceSummary } from '@/lib/dashboard/surface-summary'
 
 import { deriveActions, type DashboardAction } from '@/lib/dashboard/eerst-dit-doen'
-import { getRadiusMaxKm } from '@/lib/dashboard/tenant-base'
+import { getRadiusMaxKm, getKlusStatusMelden } from '@/lib/dashboard/tenant-base'
 import { DagrapportDrawer } from '@/components/dashboard/overzicht/DagrapportDrawer'
 import { type ActivityItem as LiveActivityItem } from '@/components/dashboard/overzicht/LiveActivityFeed'
 import { LiveActivityFocus } from '@/components/dashboard/overzicht/LiveActivityFocus'
@@ -179,8 +179,11 @@ export default async function OverzichtPage({
     reactietijdPrev7Ms !== null ? Math.round(reactietijdPrev7Ms / 1000) : 0
 
   const upcomingAppts = pickUpcomingAppointments(appts, 4)
-  const radiusMaxKm = await getRadiusMaxKm()
-  const eerstDitDoenActies = deriveActions(allLeads, 5, radiusMaxKm)
+  const [radiusMaxKm, klusStatusMelden] = await Promise.all([
+    getRadiusMaxKm(),
+    getKlusStatusMelden(),
+  ])
+  const eerstDitDoenActies = deriveActions(allLeads, 5, radiusMaxKm, klusStatusMelden)
   const activityItems = buildActivityFeed(allLeads, upcomingAppts, recentMessages)
 
   // Dagrapport-data alleen ophalen als de drawer open is, voorkomt extra

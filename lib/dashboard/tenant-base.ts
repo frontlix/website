@@ -117,3 +117,27 @@ export async function getRadiusMaxKm(): Promise<number> {
   const r = (data as Record<string, unknown>).radius_max_km
   return typeof r === 'number' && r > 0 ? r : DEFAULT_RADIUS_MAX_KM
 }
+
+/**
+ * Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden,
+ * instelbaar via /instellingen > Meldingen)? Bepaalt of het Overzicht na een
+ * voorbije afspraak een herinnering toont om de klus af te ronden of als
+ * geblokkeerd te markeren. Default TRUE als de kolom/waarde ontbreekt (migratie
+ * 063 nog niet toegepast), zodat de actie standaard zichtbaar is.
+ *
+ * `select('*')` voorkomt een failure als migratie 063 nog niet is toegepast,
+ * dan is de kolom er simpelweg niet maar de overige kolommen werken nog wel.
+ */
+export async function getKlusStatusMelden(): Promise<boolean> {
+  const supabase = await getDashboardSupabase()
+  const { data, error } = await supabase
+    .from('tenant_settings')
+    .select('*')
+    .limit(1)
+    .maybeSingle()
+  if (error || !data) return true
+  const v = (data as Record<string, unknown>).klus_status_melden
+  // Alleen een expliciete `false` zet de actie uit; ontbreekt de kolom of is
+  // de waarde null, dan blijft de actie aan.
+  return v === false ? false : true
+}

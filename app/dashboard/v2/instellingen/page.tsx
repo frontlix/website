@@ -7,6 +7,7 @@ import { getWhatsAppConnectionStatus } from "@/lib/dashboard/whatsapp-connection
 import { getGmailConnectionStatus } from "@/lib/dashboard/gmail-connection-queries";
 import { getRecentTemplateAanvragen } from "@/lib/dashboard/template-queries";
 import { getAllPrefs } from "@/lib/dashboard/notifications/queries";
+import { getKlusStatusMelden } from "@/lib/dashboard/tenant-base";
 import { countConverted, avgOfferteWaarde } from "@/lib/dashboard/stats-queries";
 import { periodToRange } from "@/lib/dashboard/period";
 import type { NotificationPreferenceRow } from "@/lib/dashboard/notifications/types";
@@ -86,6 +87,7 @@ export default async function InstellingenPage() {
         userEmail=""
         notifPrefs={[]}
         digestTijd="08:00"
+        klusStatusMelden={true}
         huidigeStand=""
         live={false}
       />
@@ -120,6 +122,7 @@ export default async function InstellingenPage() {
     logoRaw,
     offRaw,
     radiusExtraRaw,
+    klusStatusMelden,
   ] = await Promise.all([
     supabase
       .from("tenant_settings")
@@ -182,6 +185,9 @@ export default async function InstellingenPage() {
       .select("radius_min_m2_buiten_straal")
       .limit(1)
       .maybeSingle(),
+    // "Klus afronden"-toggle (063): defensieve helper (ontbrekende migratie-kolom
+    // → default true), zelfde patroon als getRadiusMaxKm.
+    getKlusStatusMelden(),
   ]);
 
   // Casten zoals de bestaande code (Supabase geeft zonder gegen. types `never`).
@@ -263,6 +269,7 @@ export default async function InstellingenPage() {
       userEmail={s.user.email ?? ""}
       notifPrefs={prefs}
       digestTijd={tenant?.daily_digest_tijd ?? "08:00"}
+      klusStatusMelden={klusStatusMelden}
       huidigeStand={huidigeStand}
       live
     />

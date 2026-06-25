@@ -106,6 +106,8 @@ export interface InstellingenClientProps {
   notifPrefs: NotificationPreferenceRow[];
   /** Daily-digest-tijd (HH:MM) uit tenant_settings.daily_digest_tijd. */
   digestTijd: string;
+  /** Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden)? */
+  klusStatusMelden: boolean;
   /** Echte omzet-stand deze maand ("€X (Y%)") voor het maanddoel-blok; "" in demo. */
   huidigeStand: string;
   /** false in de demo-fallback (geen sessie): acties zijn dan no-op. */
@@ -398,6 +400,7 @@ export function InstellingenClient(props: InstellingenClientProps) {
           <MeldingenPanel
             initialPrefs={props.notifPrefs}
             initialDigestTijd={props.digestTijd}
+            initialKlusStatusMelden={props.klusStatusMelden}
             live={props.live}
             meldingen={meldingen}
           />
