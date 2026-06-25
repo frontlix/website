@@ -20,7 +20,8 @@
 // OClientNote, OAddrInput.
 // ──────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type RefObject } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Check,
   ChevronRight,
@@ -47,7 +48,8 @@ import {
 } from '@/lib/dashboard/manual-offerte-rules'
 import { formatEuro } from '@/lib/dashboard/format'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
-import { saveOfferteForm } from '@/lib/dashboard/offerte-form-actions'
+import { saveOfferteForm, freezeVerstuurdeOfferteData } from '@/lib/dashboard/offerte-form-actions'
+import { revertConcept } from '@/lib/dashboard/offerte-draft-actions'
 import { OffertePdfDocument } from '@/components/dashboard/offerte/OffertePdf'
 import { useBotAction } from '@/components/dashboard/bot-actions/use-bot-action'
 import { deliverPdfBlob } from '@/components/dashboard/offerte/pdf-download'
@@ -217,6 +219,8 @@ export function MobileOfferteEditor({
   const { run: approveQuote, pending: approving } = useBotAction(
     `/api/dashboard/lead/${leadId}/approve-quote`,
   )
+  const router = useRouter()
+  const [reverting, startRevert] = useTransition()
   const [data, setData] = useState<ManualOfferteData>(() => mapLeadToFormData(lead))
   const [geldigheidDagen, setGeldigheidDagen] = useState<number>(
     lead.offerte_geldigheid_dagen ?? 14,
@@ -427,8 +431,40 @@ export function MobileOfferteEditor({
     if (!window.confirm('Offerte nu naar de klant sturen via WhatsApp?')) return
     // Schrijf eerst het laatst bewerkte concept weg, dan versturen via de bot.
     flushPending()
-    approveQuote()
+    // Na een geslaagde verzending: bevries de volledige editor-invoer in de
+    // verstuurde snapshot (de bot schrijft alleen pricing+regels), zodat "Terug
+    // naar verstuurde versie" later de werk-invoer compleet kan terugzetten.
+    approveQuote(undefined, () => {
+      void freezeVerstuurdeOfferteData(leadId).catch(() => {})
+    })
   }, [leadId, approving, flushPending, approveQuote])
+
+  // "Terug naar verstuurde versie": draait het concept terug naar de laatst
+  // verstuurde offerte (prijsregels + werk-invoer). De server geeft de
+  // herstelde editor-state terug zodat we de lokale state direct vervangen (de
+  // UI toont meteen de verstuurde waarden; router.refresh is een soft refresh
+  // die client-state behoudt). Alleen tonen als er een concept te herstellen is.
+  const handleRevert = useCallback(() => {
+    if (!leadId || reverting) return
+    // eslint-disable-next-line no-alert
+    if (!window.confirm('Wijzigingen ongedaan maken en terug naar de laatst verstuurde offerte?')) {
+      return
+    }
+    startRevert(async () => {
+      const res = await revertConcept(leadId)
+      if (!res.ok) {
+        // eslint-disable-next-line no-alert
+        window.alert(res.error)
+        return
+      }
+      if (res.data) {
+        setData(res.data.form)
+        setGeldigheidDagen(res.data.geldigheidDagen)
+        lastFingerprintRef.current = dataFingerprint(res.data.form, res.data.geldigheidDagen)
+      }
+      router.refresh()
+    })
+  }, [leadId, reverting, router])
 
   // ─── PDF-data uit de live state (OffertePdfData-contract) ───
   const pdfData: OffertePdfData = toOffertePdfData({
@@ -1134,6 +1170,18 @@ export function MobileOfferteEditor({
         <button type="button" className={styles.historieLink} onClick={() => setHistOpen(true)}>
           <Clock size={14} aria-hidden="true" /> Historie
         </button>
+
+        {live ? (
+          <button
+            type="button"
+            className={styles.historieLink}
+            onClick={handleRevert}
+            disabled={reverting}
+          >
+            <RotateCcw size={14} aria-hidden="true" />{' '}
+            {reverting ? 'Terugzetten…' : 'Terug naar verstuurde versie'}
+          </button>
+        ) : null}
       </section>
 
       {/* ── Overlays ── */}

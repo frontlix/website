@@ -224,13 +224,16 @@ export async function createManualLeadEnOfferte(
       totaal_incl: totaalIncl,
       korting_pct: Number(data.korting_percentage) || 0,
       offertenummer,
-      // Bevries de gebruikte prijslijst + regels, zodat het concept later exact
-      // deze verzonden prijzen seedt i.p.v. live te herberekenen.
+      // Bevries de gebruikte prijslijst + regels + de volledige editor-invoer,
+      // zodat het concept later exact deze verzonden prijzen seedt i.p.v. live
+      // te herberekenen, en "Terug naar verstuurde versie" ook de werk-invoer
+      // (m2, afstand, diensten, korting) compleet kan terugzetten.
       regels_snapshot: buildOfferteSnapshot({
         pricing,
         rules,
         kortingPct: Number(data.korting_percentage) || 0,
         geldigheidDagen: bedrijf.offerte_geldigheid_dagen,
+        data,
       }),
     })
     .select('id')

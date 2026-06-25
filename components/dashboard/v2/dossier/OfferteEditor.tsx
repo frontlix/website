@@ -196,8 +196,25 @@ export function OfferteEditor({
     }
     startRevert(async () => {
       const res = await revertConcept(leadId);
-      if (res.ok) router.refresh();
-      else window.alert(res.error);
+      if (!res.ok) {
+        window.alert(res.error);
+        return;
+      }
+      // Vervang de lokale editor-state direct door de teruggezette versie. Een
+      // router.refresh() is een SOFT refresh die client-state behoudt; zonder
+      // deze setData bleef het oude concept zichtbaar (en kon de debounced
+      // auto-save het herstel zelfs weer overschrijven). De fingerprint zetten
+      // we meteen gelijk zodat de auto-save de herstelde state niet als
+      // "wijziging" terugschrijft.
+      if (res.data) {
+        setData(res.data.form);
+        setGeldigheidDagen(res.data.geldigheidDagen);
+        lastFingerprintRef.current = dataFingerprint(
+          res.data.form,
+          res.data.geldigheidDagen,
+        );
+      }
+      router.refresh();
     });
   };
 

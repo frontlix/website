@@ -11,6 +11,7 @@
  */
 
 import { FALLBACK_PRICING, type ManualOffertePricing } from './pricing-types'
+import { DEFAULTS, type ManualOfferteData } from './manual-offerte-types'
 
 /** Eén bevroren regel in de snapshot. `bron` ontbreekt bij bot-regels. */
 export type SnapshotRegel = {
@@ -27,11 +28,19 @@ export type SnapshotRegel = {
 
 /** Object dat we in offertes.regels_snapshot (jsonb) wegschrijven. */
 export type OfferteSnapshot = {
-  schemaVersie: 1
+  /** 1 = alleen pricing+regels (legacy/bot). 2 = bevat ook `data` (volledige
+   *  editor-invoer), zodat het concept exact teruggezet kan worden. */
+  schemaVersie: 1 | 2
   pricing: ManualOffertePricing
   regels: SnapshotRegel[]
   kortingPct: number
   geldigheidDagen?: number
+  /** Volledige editor-invoer (ManualOfferteData) op het verzendmoment. Hiermee
+   *  zet "Terug naar verstuurde versie" niet alleen de prijsregels terug maar
+   *  ook de werk-invoer (m2, afstand, diensten, korting, overrides). Afwezig bij
+   *  oude offertes (schemaVersie 1) en bot-snapshots → val terug op de live
+   *  lead-velden / het huidige revert-gedrag. */
+  data?: ManualOfferteData
 }
 
 /** De keys van ManualOffertePricing, afgeleid van de fallback (één bron). */
@@ -102,13 +111,17 @@ export function buildOfferteSnapshot(args: {
   rules: SnapshotRuleInput[]
   kortingPct: number
   geldigheidDagen?: number
+  /** Volledige editor-invoer; meegeven bevriest de werk-invoer voor revert
+   *  (schemaVersie 2). Weglaten = legacy snapshot (schemaVersie 1). */
+  data?: ManualOfferteData
 }): OfferteSnapshot {
-  const { pricing, rules, kortingPct, geldigheidDagen } = args
+  const { pricing, rules, kortingPct, geldigheidDagen, data } = args
   return {
-    schemaVersie: 1,
+    schemaVersie: data ? 2 : 1,
     pricing,
     kortingPct,
     ...(geldigheidDagen != null ? { geldigheidDagen } : {}),
+    ...(data ? { data } : {}),
     regels: rules.map((r, idx) => ({
       omschrijving: r.desc,
       aantal: r.aantal,
@@ -245,4 +258,32 @@ export function readSnapshotRegels(raw: unknown): SnapshotRegel[] | null {
     return (raw as Record<string, unknown>).regels as SnapshotRegel[]
   }
   return null
+}
+
+/**
+ * Leest de bevroren editor-invoer (`snapshot.data`) uit een regels_snapshot-
+ * waarde. Aanwezig vanaf schemaVersie 2 (offertes verstuurd ná deze feature).
+ * Ontbrekende velden vallen terug op DEFAULTS zodat de uitkomst altijd een
+ * volledige ManualOfferteData is. Geeft null als er geen `data`-object in zit
+ * (oude/bot-snapshots) → caller valt terug op de live lead-velden.
+ */
+export function readSnapshotData(raw: unknown): ManualOfferteData | null {
+  if (!isPlainObject(raw)) return null
+  const data = (raw as Record<string, unknown>).data
+  if (!isPlainObject(data)) return null
+  return { ...DEFAULTS, ...(data as Partial<ManualOfferteData>) } as ManualOfferteData
+}
+
+/**
+ * Bepaalt de bevroren editor-invoer waarmee een revert de lead terugzet: de
+ * `data` uit de snapshot van de laatste VERSTUURDE offerte (is_concept===false,
+ * hoogste versie), of null als die offerte geen schemaVersie-2-snapshot heeft.
+ * Spiegel van resolveSeedPricing, maar voor de volledige invoer i.p.v. pricing.
+ */
+export function resolveSeedData(offertes: SeedOfferte[]): ManualOfferteData | null {
+  const verstuurd = offertes
+    .filter((o) => o.is_concept === false)
+    .sort((a, b) => b.versie - a.versie)[0]
+  if (!verstuurd) return null
+  return readSnapshotData(verstuurd.regels_snapshot)
 }

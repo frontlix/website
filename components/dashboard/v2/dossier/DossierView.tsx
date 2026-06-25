@@ -8,6 +8,7 @@ import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
+import { freezeVerstuurdeOfferteData } from "@/lib/dashboard/offerte-form-actions";
 import { addNote, deleteNote, updateNote, setNoteTargets } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
@@ -270,6 +271,12 @@ export function DossierView({
         });
         const body = await res.json().catch(() => ({}));
         if (res.ok && body?.ok !== false) {
+          // Bevries de volledige editor-invoer in de zojuist verstuurde
+          // snapshot (de bot schrijft alleen pricing+regels), zodat "Terug naar
+          // verstuurde versie" later de werk-invoer compleet kan terugzetten.
+          // Best-effort: een fout hier mag het versturen niet doen lijken te
+          // mislukken.
+          await freezeVerstuurdeOfferteData(leadId).catch(() => {});
           router.refresh();
         } else {
           window.alert(

@@ -25,8 +25,9 @@ import { requireApprovedUser } from './require-approved-user'
 import { computeRules } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
 import { saveDraft, type DraftRegelInput } from './offerte-draft-actions'
-import { buildLeadFieldsFromForm } from './offerte-form-mapping'
+import { buildLeadFieldsFromForm, mapLeadToFormData } from './offerte-form-mapping'
 import type { ManualOfferteData } from './manual-offerte-types'
+import type { Lead } from './database.types'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -142,6 +143,80 @@ export async function saveOfferteForm(
     }
     const msg = err instanceof Error ? err.message : 'onbekende fout'
     console.error('[saveOfferteForm] failed:', err)
+    return { ok: false, error: msg }
+  }
+}
+
+/**
+ * Bevriest de volledige editor-invoer (ManualOfferteData) in de snapshot van de
+ * zojuist VERSTUURDE offerte.
+ *
+ * Het dossier-verstuurpad ("Offerte versturen" / "Goedkeuren") laat de externe
+ * bot de offerte-rij + `regels_snapshot` schrijven; die bot-snapshot bevat
+ * (nog) géén `data`-veld. Zonder dat veld kan "Terug naar verstuurde versie"
+ * alleen de prijsregels terugzetten, niet de werk-invoer (m2, afstand,
+ * diensten, korting). Deze action vult dat aan.
+ *
+ * Best-effort, idempotent: leest de lead (die op dit moment exact de verstuurde
+ * invoer bevat — de editor heeft 'm net geflusht vóór approve-quote),
+ * reconstrueert de invoer via mapLeadToFormData en merge't 'm in de bestaande
+ * snapshot van de laatste verstuurde offerte. Doet niets (geen fout) als er nog
+ * geen verstuurde versie is. AANROEPEN ná een geslaagde approve-quote.
+ */
+export async function freezeVerstuurdeOfferteData(leadId: string): Promise<Result> {
+  try {
+    await requireApprovedUser()
+    if (!leadId) return { ok: false, error: 'leadId ontbreekt.' }
+
+    const admin = getDashboardAdmin()
+
+    // ── 1. Lead lezen → editor-invoer reconstrueren ────────────────
+    const { data: lead, error: leadErr } = await admin
+      .from('leads')
+      .select('*')
+      .eq('lead_id', leadId)
+      .maybeSingle()
+    if (leadErr) return { ok: false, error: `Lead lezen mislukt: ${leadErr.message}` }
+    if (!lead) return { ok: true } // niets te bevriezen
+
+    const data = mapLeadToFormData(lead as unknown as Lead)
+
+    // ── 2. Laatste verstuurde offerte ──────────────────────────────
+    const { data: verstuurd, error: vErr } = await admin
+      .from('offertes')
+      .select('id, regels_snapshot')
+      .eq('lead_id', leadId)
+      .eq('is_concept', false)
+      .order('versie', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (vErr) return { ok: false, error: `Verstuurde offerte zoeken mislukt: ${vErr.message}` }
+    if (!verstuurd) return { ok: true } // nog geen verstuurde versie
+
+    // ── 3. `data` in de bestaande snapshot mergen ──────────────────
+    // De bot-snapshot (pricing + regels) blijft intact; we voegen alleen het
+    // `data`-veld toe en bumpen schemaVersie. Als er nog geen snapshot is,
+    // start met een leeg object (revert valt dan terug op het pricing/regels-
+    // gat, maar de `data` is in elk geval bewaard).
+    const bestaand =
+      verstuurd.regels_snapshot &&
+      typeof verstuurd.regels_snapshot === 'object' &&
+      !Array.isArray(verstuurd.regels_snapshot)
+        ? (verstuurd.regels_snapshot as Record<string, unknown>)
+        : {}
+    const merged = { ...bestaand, schemaVersie: 2, data }
+
+    const { error: updErr } = await admin
+      .from('offertes')
+      .update({ regels_snapshot: merged })
+      .eq('id', verstuurd.id)
+    if (updErr) return { ok: false, error: `Snapshot aanvullen mislukt: ${updErr.message}` }
+
+    return { ok: true }
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    const msg = err instanceof Error ? err.message : 'onbekende fout'
+    console.error('[freezeVerstuurdeOfferteData] failed:', err)
     return { ok: false, error: msg }
   }
 }

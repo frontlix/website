@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest'
 import {
   readSnapshotPricing,
   readSnapshotRegels,
+  readSnapshotData,
   buildPricingFromRuleKeys,
   resolveSeedPricing,
+  resolveSeedData,
   buildOfferteSnapshot,
   reconstructSnapshotFromRegels,
 } from './offerte-snapshot'
 import { FALLBACK_PRICING } from './pricing-types'
+import { DEFAULTS } from './manual-offerte-types'
 
 describe('readSnapshotPricing', () => {
   it('geeft pricing terug uit een geldig snapshot-object', () => {
@@ -176,6 +179,73 @@ describe('buildOfferteSnapshot', () => {
   it('produceert een snapshot die readSnapshotPricing accepteert', () => {
     const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules, kortingPct: 0 })
     expect(readSnapshotPricing(snap)).toEqual(FALLBACK_PRICING)
+  })
+
+  it('zonder data → schemaVersie 1 en geen data-veld', () => {
+    const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules, kortingPct: 0 })
+    expect(snap.schemaVersie).toBe(1)
+    expect(snap.data).toBeUndefined()
+  })
+
+  it('met data → schemaVersie 2 en de invoer bevroren', () => {
+    const data = { ...DEFAULTS, m2: 44, afstand_km: 171 }
+    const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules, kortingPct: 0, data })
+    expect(snap.schemaVersie).toBe(2)
+    expect(snap.data?.m2).toBe(44)
+    expect(snap.data?.afstand_km).toBe(171)
+  })
+})
+
+describe('readSnapshotData', () => {
+  it('leest de bevroren invoer en vult ontbrekende velden met DEFAULTS', () => {
+    // Snapshot met een PARTIELE data (alleen m2 + afstand) → de rest valt op DEFAULTS.
+    const snap = { schemaVersie: 2, pricing: FALLBACK_PRICING, regels: [], kortingPct: 0, data: { m2: 44, afstand_km: 171 } }
+    const out = readSnapshotData(snap)
+    expect(out?.m2).toBe(44)
+    expect(out?.afstand_km).toBe(171)
+    // ontbrekend veld → DEFAULTS-waarde
+    expect(out?.onderhoud_weken).toBe(DEFAULTS.onderhoud_weken)
+  })
+
+  it('geeft null bij een snapshot zonder data-veld (schemaVersie 1 / bot)', () => {
+    expect(readSnapshotData({ schemaVersie: 1, pricing: FALLBACK_PRICING, regels: [], kortingPct: 0 })).toBeNull()
+    expect(readSnapshotData(null)).toBeNull()
+    expect(readSnapshotData([])).toBeNull()
+  })
+
+  it('round-trip: buildOfferteSnapshot(data) → readSnapshotData geeft dezelfde invoer', () => {
+    const data = { ...DEFAULTS, m2: 88, afstand_km: 12, korting_percentage: 15 }
+    const snap = buildOfferteSnapshot({ pricing: FALLBACK_PRICING, rules: [], kortingPct: 15, data })
+    const out = readSnapshotData(snap)
+    expect(out).toEqual(data)
+  })
+})
+
+describe('resolveSeedData', () => {
+  function offerte(over: Record<string, unknown>) {
+    return { versie: 1, is_concept: false, regels_snapshot: null, ...over } as any
+  }
+
+  it('geeft de bevroren invoer van de laatste verstuurde offerte', () => {
+    const offertes = [
+      offerte({ versie: 3, is_concept: true, regels_snapshot: { schemaVersie: 2, data: { m2: 999 } } }), // concept negeren
+      offerte({
+        versie: 2,
+        is_concept: false,
+        regels_snapshot: { schemaVersie: 2, pricing: FALLBACK_PRICING, regels: [], kortingPct: 0, data: { m2: 44 } },
+      }),
+    ]
+    expect(resolveSeedData(offertes)?.m2).toBe(44)
+  })
+
+  it('geeft null als de verstuurde offerte geen data-snapshot heeft (oud/bot)', () => {
+    const offertes = [offerte({ versie: 1, is_concept: false, regels_snapshot: { schemaVersie: 1, pricing: FALLBACK_PRICING, regels: [], kortingPct: 0 } })]
+    expect(resolveSeedData(offertes)).toBeNull()
+  })
+
+  it('geeft null zonder verstuurde offerte', () => {
+    expect(resolveSeedData([])).toBeNull()
+    expect(resolveSeedData([offerte({ is_concept: true })])).toBeNull()
   })
 })
 

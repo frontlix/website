@@ -28,9 +28,38 @@ import { revalidatePath } from 'next/cache'
 import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
 import { isReiskostenRegel } from './btw-calc'
-import { readSnapshotRegels } from './offerte-snapshot'
+import { readSnapshotRegels, readSnapshotData } from './offerte-snapshot'
+import { buildLeadFieldsFromForm, mapLeadToFormData } from './offerte-form-mapping'
+import type { ManualOfferteData } from './manual-offerte-types'
+import type { Lead } from './database.types'
 
 const BTW_FACTOR = 1.21
+
+/** Lead-kolommen die "Terug naar verstuurde versie" met RUST laat: de
+ *  klant/contact/adres-velden. Die kunnen sinds het versturen legitiem
+ *  gecorrigeerd zijn; revert herstelt alleen de offerte-INHOUD (werk, prijs,
+ *  korting), niet wie de klant is of waar 'ie woont. */
+const REVERT_KLANT_VELDEN_NIET_RESETTEN = [
+  'naam',
+  'bedrijfsnaam',
+  'email',
+  'telefoon',
+  'postcode',
+  'huisnummer',
+  'straat',
+  'plaats',
+  'factuur_postcode',
+  'factuur_huisnummer',
+  'factuur_straat',
+  'factuur_plaats',
+] as const
+
+/** Wat revertConcept teruggeeft zodat de client zijn lokale editor-state direct
+ *  kan resyncen (zonder op een trage router.refresh te wachten). */
+export type RevertResultData = {
+  form: ManualOfferteData
+  geldigheidDagen: number
+}
 
 /** Input voor één regel in de draft-payload. */
 export type DraftRegelInput = {
@@ -271,20 +300,27 @@ export async function saveDraft(
 }
 
 /**
- * "Terug naar verzonden versie": verwijdert de concept-rij en zet de
- * prijsregels terug naar de snapshot van de laatste verzonden offerte.
+ * "Terug naar verzonden versie": verwijdert de concept-rij en zet zowel de
+ * prijsregels ALS de offerte-werkvelden op de lead terug naar de laatst
+ * verzonden offerte.
  *
  *  1. Auth-check
  *  2. Concept-rij ophalen, geen concept? error.
  *  3. Laatste verzonden versie (is_concept=false) ophalen, geen? error.
- *  4. regels_snapshot uit de verzonden versie lezen.
+ *  4. regels_snapshot uit de verzonden versie lezen (regels + optioneel data).
  *  5. REPLACE prijsregels met snapshot-inhoud.
- *  6. Korting-velden op de lead terugzetten naar de waarden van de
- *     verzonden offerte (uit offertes.korting_pct).
+ *  6. Lead-velden terugzetten:
+ *     - snapshot.data aanwezig (schemaVersie 2) → de hele offerte-INVOER
+ *       (m2, afstand, diensten, voegzand, korting, overrides) terug, MINUS de
+ *       klant/adres-velden (die blijven zoals nu).
+ *     - anders (oude/bot-snapshot) → alleen het kortingspercentage terug
+ *       (legacy-gedrag), want de invoer is niet bewaard.
  *  7. DELETE concept-rij.
- *  8. revalidatePath.
+ *  8. revalidatePath + de herstelde editor-state teruggeven voor client-resync.
  */
-export async function revertConcept(leadId: string): Promise<Result> {
+export async function revertConcept(
+  leadId: string,
+): Promise<Result<RevertResultData>> {
   try {
     await requireApprovedUser()
     if (!leadId) return { ok: false, error: 'leadId ontbreekt.' }
@@ -308,7 +344,7 @@ export async function revertConcept(leadId: string): Promise<Result> {
     // ── 2. Laatste verzonden versie ────────────────────────────────
     const { data: verstuurd, error: vErr } = await admin
       .from('offertes')
-      .select('id, versie, korting_pct, regels_snapshot')
+      .select('id, versie, korting_pct, totaal_incl, regels_snapshot')
       .eq('lead_id', leadId)
       .eq('is_concept', false)
       .order('versie', { ascending: false })
@@ -323,7 +359,8 @@ export async function revertConcept(leadId: string): Promise<Result> {
 
     // Snapshot kan null zijn voor oude verstuurde versies (van vóór deze
     // feature). readSnapshotRegels ondersteunt zowel het object-formaat
-    // ({ regels: [...] }) als het legacy bare-array-formaat.
+    // ({ regels: [...] }) als het legacy bare-array-formaat. readSnapshotData
+    // geeft de volledige bevroren invoer terug (schemaVersie 2) of null.
     const snapshot = readSnapshotRegels(verstuurd.regels_snapshot)
     if (!snapshot) {
       return {
@@ -332,6 +369,7 @@ export async function revertConcept(leadId: string): Promise<Result> {
           'Verzonden versie heeft geen regels-snapshot, terugdraaien niet mogelijk.',
       }
     }
+    const snapshotData = readSnapshotData(verstuurd.regels_snapshot)
 
     // ── 3. REPLACE prijsregels ─────────────────────────────────────
     const { error: delErr } = await admin
@@ -363,18 +401,34 @@ export async function revertConcept(leadId: string): Promise<Result> {
       }
     }
 
-    // ── 4. Korting-velden op lead resetten naar verzonden waarde ──
-    // De omschrijving zit niet in offertes.korting_pct, alleen pct.
-    // We laten de omschrijving zoals 'ie nu op lead staat, want die wordt
-    // ook tijdens "verstuur" naar de lead geschreven. Bij twijfel reset
-    // alleen het percentage; omschrijving raken we niet aan.
-    const verstuurdPct = Number(verstuurd.korting_pct ?? 0)
-    const { error: leadErr } = await admin
-      .from('leads')
-      .update({ korting_percentage: verstuurdPct })
-      .eq('lead_id', leadId)
-    if (leadErr) {
-      return { ok: false, error: `Lead bijwerken mislukt: ${leadErr.message}` }
+    // ── 4. Lead-velden terugzetten ─────────────────────────────────
+    if (snapshotData) {
+      // Volledige invoer-terugzet: bouw de leads-update uit de bevroren
+      // editor-invoer, maar laat de klant/adres-velden ongemoeid (die kunnen
+      // sinds het versturen legitiem zijn bijgewerkt). totaal_prijs op de
+      // verstuurde waarde.
+      const totaalIncl = Number(verstuurd.totaal_incl ?? 0)
+      const leadFields = buildLeadFieldsFromForm(snapshotData, leadId, totaalIncl)
+      for (const k of REVERT_KLANT_VELDEN_NIET_RESETTEN) {
+        delete (leadFields as Record<string, unknown>)[k]
+      }
+      const { error: leadErr } = await admin
+        .from('leads')
+        .update(leadFields)
+        .eq('lead_id', leadId)
+      if (leadErr) {
+        return { ok: false, error: `Lead bijwerken mislukt: ${leadErr.message}` }
+      }
+    } else {
+      // Legacy: alleen het kortingspercentage terug (invoer niet bewaard).
+      const verstuurdPct = Number(verstuurd.korting_pct ?? 0)
+      const { error: leadErr } = await admin
+        .from('leads')
+        .update({ korting_percentage: verstuurdPct })
+        .eq('lead_id', leadId)
+      if (leadErr) {
+        return { ok: false, error: `Lead bijwerken mislukt: ${leadErr.message}` }
+      }
     }
 
     // ── 5. Concept-rij verwijderen ─────────────────────────────────
@@ -389,7 +443,24 @@ export async function revertConcept(leadId: string): Promise<Result> {
     revalidatePath(`/leads/${leadId}`)
     revalidatePath('/leads')
 
-    return { ok: true }
+    // ── 6. Herstelde editor-state teruggeven (client-resync) ───────
+    // Lees de lead zoals 'ie nu in de DB staat en map 'm naar de editor-vorm,
+    // zodat de client zijn lokale state direct kan vervangen (de UI toont
+    // meteen de teruggezette waarden i.p.v. te wachten op router.refresh).
+    const { data: leadNa } = await admin
+      .from('leads')
+      .select('*')
+      .eq('lead_id', leadId)
+      .maybeSingle()
+    const revertData: RevertResultData | undefined = leadNa
+      ? {
+          form: mapLeadToFormData(leadNa as unknown as Lead),
+          geldigheidDagen:
+            Number((leadNa as { offerte_geldigheid_dagen?: number }).offerte_geldigheid_dagen) || 14,
+        }
+      : undefined
+
+    return { ok: true, data: revertData }
   } catch (err) {
     if (err && typeof err === 'object' && 'digest' in err) {
       throw err
