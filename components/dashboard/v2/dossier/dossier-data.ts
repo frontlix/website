@@ -49,6 +49,9 @@ export interface DossierOfferte {
   concept: boolean;
   /** Tag-kleur. Zonder = afgeleid uit `concept` (concept=blauw, anders groen). */
   tone?: OfferteTone;
+  /** True wanneer deze (niet-concept) offerte status wacht_op_goedkeuring heeft.
+   *  Telt dan NIET als "al verstuurd" (zie deriveAlVerstuurd). */
+  wachtOpGoedkeuring?: boolean;
   /** PDF-model van deze verstuurde versie (inzien + download). Alleen aanwezig
    *  voor verstuurde offertes met een bruikbare snapshot; concepten en oude
    *  offertes zonder snapshot hebben dit niet. */
@@ -115,6 +118,10 @@ export interface DossierData {
   fotos: DossierFoto[];
   surface: { fase: string; actie: string };
   offertes: DossierOfferte[];
+  /** De offerte die op goedkeuring wacht (status wacht_op_goedkeuring), met
+   *  dienst-label, m2 en totaal voor het goedkeuringsblok bovenaan het dossier.
+   *  null/afwezig = geen wachtende offerte. */
+  offerteTerGoedkeuring?: { dienst: string; m2: string; totaal: string } | null;
   offerteRegels: OfferteRegel[];
   offerteTotaal: string;
   /** Bewerkbaar concept voor de inline OfferteEditor (echt model + pricing). */
@@ -289,3 +296,13 @@ export const DOSSIER: DossierData = {
     ],
   },
 };
+
+/** Is er al een offerte naar de klant verstuurd? Een niet-concept, niet-archief
+ *  offerte telt als verstuurd, BEHALVE wanneer die nog op goedkeuring wacht.
+ *  Deze uitzondering houdt de "Offerte versturen"/Goedkeuren-knop bruikbaar op
+ *  het moment dat de bot de offerte ter goedkeuring heeft klaargezet. */
+export function deriveAlVerstuurd(
+  offertes: Pick<DossierOfferte, 'concept' | 'tone' | 'wachtOpGoedkeuring'>[],
+): boolean {
+  return offertes.some((o) => !o.concept && o.tone !== 'archief' && !o.wachtOpGoedkeuring)
+}

@@ -291,6 +291,7 @@ function buildOffertes(detail: LeadDetail, baseData: ManualOfferteData): Dossier
       concept,
       tone,
       pdfModel,
+      wachtOpGoedkeuring: !concept && o.status === "wacht_op_goedkeuring",
     };
   });
 }
@@ -445,6 +446,19 @@ export function mapLeadDetailToDossierData(
     notities: detail.notes.filter((n) => n.op_opdrachtbon !== false).map((n) => n.tekst),
   });
 
+  // De wachtende offerte (status wacht_op_goedkeuring): dienst-label, m2 en
+  // totaal voor het goedkeuringsblok bovenaan het dossier.
+  const wachtende = detail.offertes.find(
+    (o) => !o.is_concept && o.status === "wacht_op_goedkeuring",
+  );
+  const offerteTerGoedkeuring = wachtende
+    ? {
+        dienst: humanizeHoofd(l.hoofdcategorie),
+        m2: l.m2 != null ? `${l.m2} m²` : "",
+        totaal: formatEuro(wachtende.totaal_incl),
+      }
+    : null;
+
   return {
     tel: l.telefoon ?? "Geen nummer",
     afstand: l.afstand_km != null ? `${l.afstand_km} km` : "onbekend",
@@ -454,6 +468,7 @@ export function mapLeadDetailToDossierData(
     fotos: buildFotos(detail),
     surface: buildSurface(l),
     offertes,
+    offerteTerGoedkeuring,
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
     offerteForm: buildOfferteForm(detail, pricing),

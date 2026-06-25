@@ -111,3 +111,42 @@ describe('offerte_prijs_overrides — per-offerte prijs blijft bewaard', () => {
     expect(payload.offerte_prijs_overrides).toEqual({ beschermlaag_override: 0 })
   })
 })
+
+describe('losse *_override-kolommen, bot leest deze in calculatePrice', () => {
+  test('reiskosten en onderhoud landen ook op de losse lead-kolommen', () => {
+    const base = mapLeadToFormData(
+      makeLead({ hoofdcategorie: 'onkruidbeheersing_zakelijk', sub_diensten: [], m2: 88 }),
+    )
+    const data = { ...base, reiskosten_per_km_override: 0.3, onderhoud_per_m2_override: 1.4 }
+    const payload = buildLeadFieldsFromForm(data, 'test-1', 500)
+    expect(payload.reiskosten_per_km_override).toBe(0.3)
+    expect(payload.onkruid_per_m2_override).toBe(1.4)
+  })
+
+  test('reiniging_per_m2_override mapt naar reinigen_per_m2_override', () => {
+    const base = mapLeadToFormData(makeLead({ hoofdcategorie: 'oprit_terras_terrein', m2: 100 }))
+    const payload = buildLeadFieldsFromForm({ ...base, reiniging_per_m2_override: 4.25 }, 'test-1', 500)
+    expect(payload.reinigen_per_m2_override).toBe(4.25)
+  })
+
+  test('override van 0 blijft 0 op de losse kolom (gratis), niet null', () => {
+    const base = mapLeadToFormData(makeLead({ sub_diensten: ['invegen'], m2: 100 }))
+    const payload = buildLeadFieldsFromForm({ ...base, beschermlaag_override: 0 }, 'test-1', 500)
+    expect(payload.beschermlaag_per_m2_override).toBe(0)
+  })
+
+  test('geen override, dan staat de losse kolom op null (reset naar prijslijst)', () => {
+    const base = mapLeadToFormData(makeLead({ sub_diensten: ['invegen'], m2: 100 }))
+    const payload = buildLeadFieldsFromForm(base, 'test-1', 500)
+    expect(payload.reinigen_per_m2_override).toBeNull()
+    expect(payload.onkruid_per_m2_override).toBeNull()
+  })
+
+  test('preventieve_onkruid mapt naar onkruid_per_m2_override als onderhoud leeg is', () => {
+    const base = mapLeadToFormData(
+      makeLead({ hoofdcategorie: 'oprit_terras_terrein', sub_diensten: ['preventieve_onkruidbeheersing'], m2: 60 }),
+    )
+    const payload = buildLeadFieldsFromForm({ ...base, preventieve_onkruid_override: 3 }, 'test-1', 500)
+    expect(payload.onkruid_per_m2_override).toBe(3)
+  })
+})

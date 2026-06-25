@@ -33,6 +33,8 @@ interface OffertesTabProps {
   /** Ref voor de editor-flush, doorgegeven aan de "Offerte versturen"-knop in
    *  de dossier-kop (zodat die de laatste wijzigingen kan wegschrijven). */
   offerteApiRef?: RefObject<OfferteEditorApi | null>;
+  /** Optionele Goedkeuren-actie, doorgegeven aan de editor. */
+  onGoedkeuren?: () => void;
 }
 
 /** Opent de losse nieuwe-offerte-wizard via het gedeelde event. Alleen voor
@@ -45,7 +47,7 @@ function openOfferteWizard() {
  *  uitgeklapt onder het concept, de inline OfferteEditor om de regels, korting
  *  en geldigheid te bewerken. De preview-regels blijven herkenbaar dezelfde
  *  layout/plek wanneer de editor dicht is. */
-export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef }: OffertesTabProps) {
+export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef, onGoedkeuren }: OffertesTabProps) {
   // De editor staat ALTIJD onderaan (gelijk aan mobiel): hij laadt de huidige
   // offerte-inhoud en bewerken+opslaan schrijft naar het concept (nieuwe
   // versie), ook als er nu nog geen concept maar alleen een verstuurde offerte
@@ -99,6 +101,7 @@ export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef }: OffertesT
         offertes={data.offertes}
         fotosCount={data.fotos.length}
         apiRef={offerteApiRef}
+        onGoedkeuren={onGoedkeuren}
       />
     </div>
   );

@@ -1,0 +1,85 @@
+.blok {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--rb-mint-ink, #1e8a5e);
+  border-radius: var(--rb-r-card, 16px);
+  background: color-mix(in srgb, var(--rb-mint, #dff5ea) 45%, var(--rb-card, #ffffff));
+  font-family: var(--rb-font);
+}
+
+.icoon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--rb-mint-ink, #1e8a5e);
+  color: #fff;
+}
+
+.tekst {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.tekst strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rb-ink, #212a45);
+}
+.tekst span {
+  font-size: 12.5px;
+  color: var(--rb-muted, #7a83a6);
+}
+
+.acties {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.aanpassen,
+.goedkeuren {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: var(--rb-r-pill, 9999px);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.aanpassen {
+  background: var(--rb-card, #ffffff);
+  color: var(--rb-ink, #212a45);
+  border-color: rgba(33, 42, 69, 0.14);
+}
+.goedkeuren {
+  background: var(--rb-mint-ink, #1e8a5e);
+  color: #fff;
+}
+.aanpassen:disabled,
+.goedkeuren:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .blok {
+    flex-wrap: wrap;
+  }
+  .acties {
+    width: 100%;
+  }
+  .aanpassen,
+  .goedkeuren {
+    flex: 1;
+    justify-content: center;
+  }
+}

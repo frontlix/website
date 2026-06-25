@@ -11,7 +11,8 @@ import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboar
 import { addNote, deleteNote, updateNote, setNoteTargets } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
-import { DOSSIER } from "./dossier-data";
+import { OfferteTerGoedkeuringBlok } from "./OfferteTerGoedkeuringBlok";
+import { DOSSIER, deriveAlVerstuurd } from "./dossier-data";
 import type { DossierData, DossierNotitie, DossierBericht } from "./dossier-data";
 import { InfoTab } from "./InfoTab";
 import { OffertesTab } from "./OffertesTab";
@@ -235,10 +236,14 @@ export function DossierView({
     requestAnimationFrame(() => setNotesFocus(true));
   };
 
+  const naarOffertesTab = () => {
+    setTab("Offertes");
+  };
+
   // Is er al een offerte verstuurd? Dan kan deze knop niet opnieuw versturen
   // (de bot-revisie-flow is een aparte stap). We leiden dit af uit de
   // offertes-lijst: een niet-concept, niet-archief-offerte = verstuurd.
-  const alVerstuurd = data.offertes.some((o) => !o.concept && o.tone !== "archief");
+  const alVerstuurd = deriveAlVerstuurd(data.offertes);
 
   // Offerte versturen naar de klant via de bot (WhatsApp). De editor slaat zijn
   // wijzigingen debounced op (600ms); de bevestigingsdialoog overbrugt die tijd,
@@ -374,22 +379,35 @@ export function DossierView({
             klantNaam={lead.naam}
             triggerClassName={styles.actieBtn}
           />
-          <button
-            type="button"
-            className={styles.primaryBtn}
-            onClick={handleVerstuur}
-            disabled={!live || alVerstuurd || sending}
-            title={
-              alVerstuurd
-                ? "Deze offerte is al verstuurd"
-                : "Offerte versturen naar de klant via WhatsApp"
-            }
-            style={!live || alVerstuurd ? { opacity: 0.55, cursor: "not-allowed" } : undefined}
-          >
-            {sending ? "Versturen…" : alVerstuurd ? "Al verstuurd" : "Offerte versturen"}
-          </button>
+          {!data.offerteTerGoedkeuring ? (
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={handleVerstuur}
+              disabled={!live || alVerstuurd || sending}
+              title={
+                alVerstuurd
+                  ? "Deze offerte is al verstuurd"
+                  : "Offerte versturen naar de klant via WhatsApp"
+              }
+              style={!live || alVerstuurd ? { opacity: 0.55, cursor: "not-allowed" } : undefined}
+            >
+              {sending ? "Versturen…" : alVerstuurd ? "Al verstuurd" : "Offerte versturen"}
+            </button>
+          ) : null}
         </div>
       </div>
+
+      {data.offerteTerGoedkeuring ? (
+        <OfferteTerGoedkeuringBlok
+          dienst={data.offerteTerGoedkeuring.dienst}
+          m2={data.offerteTerGoedkeuring.m2}
+          totaal={data.offerteTerGoedkeuring.totaal}
+          sending={sending}
+          onGoedkeuren={handleVerstuur}
+          onAanpassen={naarOffertesTab}
+        />
+      ) : null}
 
       {/* Split view */}
       <div className={`${styles.split} ${archived ? styles.dimmed : ""}`}>
@@ -405,7 +423,12 @@ export function DossierView({
           <div className={styles.tabBody}>
             {tab === "Info" ? <InfoTab dienst={lead.dienst} data={data} /> : null}
             {tab === "Offertes" ? (
-              <OffertesTab data={data} leadId={leadId} offerteApiRef={offerteApiRef} />
+              <OffertesTab
+                data={data}
+                leadId={leadId}
+                offerteApiRef={offerteApiRef}
+                onGoedkeuren={data.offerteTerGoedkeuring ? handleVerstuur : undefined}
+              />
             ) : null}
             {tab === "Foto's" ? <FotosTab onVraagFotos={vraagFotos} data={data} /> : null}
             {tab === "Afspraak" ? <AfspraakTab data={data} /> : null}

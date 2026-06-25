@@ -24,6 +24,7 @@ import type { EditorKlant, SeedRegel } from './offerte/offerte-edit-seed'
 import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { buildSentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { buildOpdrachtbonModel, type OpdrachtbonModel } from '@/lib/dashboard/offerte/opdrachtbon-model'
+import { formatEuro } from '@/lib/dashboard/format'
 
 const TONE = {
   blue: '#1A56FF',
@@ -76,6 +77,9 @@ export type MobileDossierData = {
     email?: string       // voor klant-blok in PDF
     telefoon?: string    // voor klant-blok in PDF
     dienst: string       // korte dienst-omschrijving (bv. hoofdcategorie)
+    /** De wachtende offerte (status wacht_op_goedkeuring) voor het mobiele
+     *  goedkeur-blok: dienst-label, m2 en geformatteerd totaal. null = geen. */
+    terGoedkeuring?: { dienst: string; m2: string; totaal: string } | null
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
@@ -276,6 +280,16 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     email: l.email ?? undefined,
     telefoon: l.telefoon ?? undefined,
     dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
+    // Wachtende offerte (status wacht_op_goedkeuring): dienst-label, m2 en
+    // totaal voor het mobiele goedkeur-blok bovenaan het dossier.
+    terGoedkeuring:
+      !l.offerte_verstuurd && latest?.status === 'wacht_op_goedkeuring'
+        ? {
+            dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
+            m2: l.m2 != null ? `${l.m2} m²` : '',
+            totaal: formatEuro(totaal),
+          }
+        : null,
   }
 }
 

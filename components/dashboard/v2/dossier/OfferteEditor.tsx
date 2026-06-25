@@ -48,6 +48,7 @@ import { useRouter } from "next/navigation";
 import {
   Calendar,
   Check,
+  CheckCircle2,
   ChevronDown,
   Clock,
   Download,
@@ -115,6 +116,9 @@ interface OfferteEditorProps {
   /** Meldt het live totaal-incl-BTW (geformatteerd) terug, zodat de
    *  concept-rij in de lijst hetzelfde bedrag toont als de editor. */
   onTotaal?: (totaalIncl: string) => void;
+  /** Optionele Goedkeuren-actie (verstuurt de offerte). Wanneer gezet toont de
+   *  actiebalk een Goedkeuren-knop naast Bekijk/Download/Historie. */
+  onGoedkeuren?: () => void;
 }
 
 type SaveState = "idle" | "saving" | "saved";
@@ -171,6 +175,7 @@ export function OfferteEditor({
   fotosCount = 0,
   apiRef,
   onTotaal,
+  onGoedkeuren,
 }: OfferteEditorProps) {
   const live = Boolean(leadId);
   const router = useRouter();
@@ -1241,6 +1246,16 @@ export function OfferteEditor({
       {/* ── Actiebalk: PDF bekijken/downloaden + versie-historie ── */}
       {live ? (
         <div className={styles.actionBar}>
+          {onGoedkeuren ? (
+            <button
+              type="button"
+              className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
+              onClick={onGoedkeuren}
+            >
+              <CheckCircle2 size={15} strokeWidth={2.2} />
+              Goedkeuren
+            </button>
+          ) : null}
           <button
             type="button"
             className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
