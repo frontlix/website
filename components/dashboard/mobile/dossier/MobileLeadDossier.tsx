@@ -138,6 +138,7 @@ export function MobileLeadDossier({
                 waTel={data.waTel}
                 dienst={data.dienst}
                 bijzonderheden={data.bijzonderheden}
+                handoverReden={data.handoverReden}
               />
               <DossBeheer
                 archived={archived}

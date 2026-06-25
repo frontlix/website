@@ -10,6 +10,7 @@ import {
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/leads/lead-mappers'
 import { isHandover } from '@/lib/dashboard/lead-status-meta'
+import { handoverReason, type HandoverGrenzen } from '@/lib/dashboard/handover-reason'
 import type {
   DossierLead,
   DossBijzonder,
@@ -82,6 +83,8 @@ export type MobileDossierData = {
   notes: DossNote[]
   /** Voorgebouwd model voor de printbare opdrachtbon (offerte zonder prijzen). */
   opdrachtbon: OpdrachtbonModel
+  /** Hand-over-reden-regels (rood), leeg als geen hand-over. */
+  handoverReden: { adresSub: string | null; oppervlakteSub: string | null }
 }
 
 /** Adres uit straat/huisnummer + postcode/plaats (alleen aanwezige delen). */
@@ -276,11 +279,16 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
   }
 }
 
-export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.now()): MobileDossierData {
+export function mapLeadDetailToDossier(
+  detail: LeadDetail,
+  now: number = Date.now(),
+  grenzen: HandoverGrenzen = { radiusMaxKm: 50, minM2BuitenStraal: 200 },
+): MobileDossierData {
   const l = detail.lead
   const fotoCount = detail.fotos.length
   const stage = leadStage(l)
   const handover = isHandover(l)
+  const reden = handoverReason(l, grenzen)
   const prijs = l.totaal_prijs ?? (detail.offertes[0]?.totaal_incl ?? null)
   const telefoonRaw = (l.telefoon ?? '').replace(/\D/g, '')
 
@@ -378,6 +386,7 @@ export function mapLeadDetailToDossier(detail: LeadDetail, now: number = Date.no
       opOpdrachtbon: n.op_opdrachtbon !== false,
     })),
     opdrachtbon,
+    handoverReden: { adresSub: reden.adresSub, oppervlakteSub: reden.oppervlakteSub },
   }
 }
 

@@ -6,6 +6,7 @@ import { resolveSeedPricing } from '@/lib/dashboard/offerte-snapshot'
 import { getAllTags, getTagsForLead } from '@/lib/dashboard/tag-queries'
 import { MobileLeadDossier } from '@/components/dashboard/mobile/dossier/MobileLeadDossier'
 import { mapLeadDetailToDossier } from '@/components/dashboard/mobile/dossier/dossier-mappers'
+import { getWerkgebiedGrenzen } from '@/lib/dashboard/handover-reason'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -17,11 +18,12 @@ export default async function LeadDetailPage({
 }) {
   await requireApprovedUser()
   const { lead_id } = await params
-  const [detail, pricing, allTags, leadTags] = await Promise.all([
+  const [detail, pricing, allTags, leadTags, grenzen] = await Promise.all([
     getLeadDetail(lead_id),
     getManualOffertePricing(),
     getAllTags(),
     getTagsForLead(lead_id),
+    getWerkgebiedGrenzen(),
   ])
 
   if (!detail) {
@@ -41,7 +43,7 @@ export default async function LeadDetailPage({
           getLeadDetail-data via de dossier-mapper. */}
       <div className={styles.mobileTree}>
         <MobileLeadDossier
-          data={mapLeadDetailToDossier(detail)}
+          data={mapLeadDetailToDossier(detail, undefined, grenzen)}
           archived={lead.dashboard_archived}
           leadTags={leadTags}
           allTags={allTags}

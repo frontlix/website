@@ -64,6 +64,13 @@
   margin-top: 10px;
 }
 
+.handoverWarn {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rb-status-hot-ink, #FF3B30);
+}
+
 /* Oppervlakte-pill — surface-2 achtergrond, zachte tekst (handoff regel 113). */
 .m2Pill {
   padding: 5px 10px;

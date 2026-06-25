@@ -21,9 +21,11 @@ type DossInfoProps = {
   waTel: string
   dienst: { hoofd: string; sub: string[] }
   bijzonderheden: DossBijzonder[]
+  /** Hand-over-reden-regels (rood), leeg als geen hand-over. */
+  handoverReden: { adresSub: string | null; oppervlakteSub: string | null }
 }
 
-export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden }: DossInfoProps) {
+export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden, handoverReden }: DossInfoProps) {
   // Echte maps-link op het adres (alleen als er een adres is; mapper geeft '—').
   const heeftAdres = contact.adres !== '—' && contact.adres.trim() !== ''
   const mapsHref = heeftAdres
@@ -77,6 +79,9 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden }: DossI
               ))}
             </div>
           )}
+          {handoverReden.adresSub ? (
+            <div className={styles.handoverWarn}>{handoverReden.adresSub}</div>
+          ) : null}
         </div>
       </section>
 
@@ -91,6 +96,9 @@ export function DossInfo({ lead, contact, waTel, dienst, bijzonderheden }: DossI
             ))}
             {lead.m2 > 0 && <span className={styles.m2Pill}>{lead.m2} m²</span>}
           </div>
+          {handoverReden.oppervlakteSub ? (
+            <div className={styles.handoverWarn}>{handoverReden.oppervlakteSub}</div>
+          ) : null}
         </div>
       </section>
 
