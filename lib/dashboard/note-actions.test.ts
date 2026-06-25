@@ -27,7 +27,7 @@ vi.mock('./supabase-server', () => ({
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidatePath }))
 
-import { addNote, deleteNote, updateNote } from './note-actions'
+import { addNote, deleteNote, updateNote, setNoteTargets } from './note-actions'
 
 describe('addNote', () => {
   beforeEach(() => {
@@ -135,6 +135,41 @@ describe('updateNote', () => {
     mockEq.mockResolvedValueOnce({ error: { message: 'rls denied' } } as any)
 
     const result = await updateNote('NOTE-1', 'LEAD-1', 'tekst')
+
+    expect(result.ok).toBe(false)
+    expect((result as any).error).toMatch(/rls denied/)
+  })
+})
+
+describe('setNoteTargets', () => {
+  beforeEach(() => {
+    mockEq.mockReset()
+    mockEq.mockResolvedValue({ error: null })
+    mockUpdate.mockClear()
+    mockFrom.mockClear()
+    mockRevalidatePath.mockReset()
+  })
+
+  it('zet beide vinkjes op id + revalidate', async () => {
+    const result = await setNoteTargets('NOTE-1', 'LEAD-1', {
+      opAfspraak: false,
+      opOpdrachtbon: true,
+    })
+
+    expect(mockFrom).toHaveBeenCalledWith('lead_notes')
+    expect(mockUpdate).toHaveBeenCalledWith({ op_afspraak: false, op_opdrachtbon: true })
+    expect(mockEq).toHaveBeenCalledWith('id', 'NOTE-1')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/leads/LEAD-1')
+    expect(result.ok).toBe(true)
+  })
+
+  it('returnt error bij Supabase-failure', async () => {
+    mockEq.mockResolvedValueOnce({ error: { message: 'rls denied' } } as any)
+
+    const result = await setNoteTargets('NOTE-1', 'LEAD-1', {
+      opAfspraak: true,
+      opOpdrachtbon: false,
+    })
 
     expect(result.ok).toBe(false)
     expect((result as any).error).toMatch(/rls denied/)

@@ -337,6 +337,10 @@ function buildNotities(detail: LeadDetail): DossierNotitie[] {
     wie: n.auteur ? "Teamlid" : "Surface",
     tijd: relTime(n.aangemaakt_op),
     tekst: n.tekst,
+    // Default true: ontbreekt de kolom (code vóór migratie 062), dan tonen we
+    // de notitie op beide prints i.p.v. nergens.
+    opAfspraak: n.op_afspraak !== false,
+    opOpdrachtbon: n.op_opdrachtbon !== false,
   }));
 }
 
@@ -428,8 +432,8 @@ export function mapLeadDetailToDossierData(
     voegzandType: l.voegzand_type,
     zandKleur: l.zand_kleur,
     groeneAanslag: l.groene_aanslag,
-    // Team-notities van de lead op de bon (nieuwste eerst, zoals het tabblad).
-    notities: detail.notes.map((n) => n.tekst),
+    // Team-notities met "Opdrachtbon"-vinkje aan (default aan, zie migratie 062).
+    notities: detail.notes.filter((n) => n.op_opdrachtbon !== false).map((n) => n.tekst),
   });
 
   return {
@@ -447,6 +451,10 @@ export function mapLeadDetailToDossierData(
     notities: buildNotities(detail),
     chat: buildChat(detail, now),
     opdrachtbon,
-    afspraak: buildAfspraakInfo(detail.lead),
+    // Team-notities met "Afspraak"-vinkje aan (default aan, zie migratie 062).
+    afspraak: buildAfspraakInfo(
+      detail.lead,
+      detail.notes.filter((n) => n.op_afspraak !== false).map((n) => n.tekst),
+    ),
   };
 }

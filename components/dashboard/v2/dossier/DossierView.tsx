@@ -8,7 +8,7 @@ import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
-import { addNote, deleteNote, updateNote } from "@/lib/dashboard/note-actions";
+import { addNote, deleteNote, updateNote, setNoteTargets } from "@/lib/dashboard/note-actions";
 import { LeadDetailRealtime } from "@/components/dashboard/leads/LeadDetailRealtime";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
 import { DOSSIER } from "./dossier-data";
@@ -88,7 +88,14 @@ export function DossierView({
       return;
     }
     setNotitiesDemo((prev) => [
-      { id: `demo-${prev.length + 1}-${tekst.length}`, wie: "Christiaan", tijd: "zojuist", tekst },
+      {
+        id: `demo-${prev.length + 1}-${tekst.length}`,
+        wie: "Christiaan",
+        tijd: "zojuist",
+        tekst,
+        opAfspraak: true,
+        opOpdrachtbon: true,
+      },
       ...prev,
     ]);
   };
@@ -115,6 +122,21 @@ export function DossierView({
       return;
     }
     setNotitiesDemo((prev) => prev.map((n) => (n.id === id ? { ...n, tekst } : n)));
+  };
+
+  const zetNotitieTargets = (
+    id: string,
+    targets: { opAfspraak: boolean; opOpdrachtbon: boolean },
+  ) => {
+    if (live && leadId) {
+      startTransition(async () => {
+        const res = await setNoteTargets(id, leadId, targets);
+        if (res.ok) router.refresh();
+        else window.alert(res.error || "Opslaan van de vinkjes mislukt.");
+      });
+      return;
+    }
+    setNotitiesDemo((prev) => prev.map((n) => (n.id === id ? { ...n, ...targets } : n)));
   };
 
   // Zelf een bericht sturen pauzeert Surface (server-side, na 24u-window-check).
@@ -393,6 +415,7 @@ export function DossierView({
                 onAdd={voegNotitieToe}
                 onDelete={verwijderNotitie}
                 onUpdate={bewerkNotitie}
+                onSetTargets={zetNotitieTargets}
                 autoFocus={notesFocus}
               />
             ) : null}

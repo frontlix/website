@@ -9,13 +9,15 @@ import { DossInfo } from './DossInfo'
 import { DossFotos } from './DossFotos'
 import { DossActiviteit } from './DossActiviteit'
 import { DossNotities } from './DossNotities'
+import { DossBeheer } from './DossBeheer'
 import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
 import { MobileOfferteEditor } from './offerte/MobileOfferteEditor'
 import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
-import { addNote, deleteNote, updateNote } from '@/lib/dashboard/note-actions'
+import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
+import { archiveLead, unarchiveLead, markeerGeenEchteLead } from '@/lib/dashboard/lead-actions'
 import type { Tag } from '@/lib/dashboard/database.types'
 import type { Lead, Offerte, Prijsregel } from '@/lib/dashboard/database.types'
 import type { ManualOffertePricing } from '@/lib/dashboard/pricing-types'
@@ -41,19 +43,23 @@ export function MobileLeadDossier({
   leadTags,
   allTags,
   offerteForm,
-  archived = false,
+  archived: archivedInitial = false,
 }: {
   data: MobileDossierData
   leadTags: Tag[]
   allTags: Tag[]
   offerteForm: MobileOfferteFormProps
-  /** Is deze lead gearchiveerd? Bepaalt waar de terug-knop heen gaat. */
+  /** Is deze lead gearchiveerd? Bepaalt de badge + terug-knop + beheeracties. */
   archived?: boolean
 }) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('info')
   const { lead } = data
   const [, startNote] = useTransition()
+  // Live archief-stand (optimistisch); start uit de server-prop. Bepaalt de
+  // badge, waar de terug-knop heen gaat en de Beheer-knoppen.
+  const [archived, setArchived] = useState(archivedInitial)
+  const [beheerPending, startBeheer] = useTransition()
   // Brug naar de PDF-preview-overlay binnen de editor, zodat de sticky
   // actiebalk-knop "Bekijk PDF" dezelfde nette overlay opent (i.p.v. de
   // route-versie die mobiel slecht oogt).
@@ -82,13 +88,42 @@ export function MobileLeadDossier({
       else window.alert(res.error || 'Bewerken mislukt.')
     })
   }
+  const zetNotitieTargets = (
+    id: string,
+    targets: { opAfspraak: boolean; opOpdrachtbon: boolean },
+  ) => {
+    startNote(async () => {
+      const res = await setNoteTargets(id, data.leadId, targets)
+      if (res.ok) router.refresh()
+      else window.alert(res.error || 'Opslaan van de vinkjes mislukt.')
+    })
+  }
+
+  // Lead-beheer: zelfde server-actions als desktop, optimistisch met rollback.
+  const toggleArchief = () => {
+    const next = !archived
+    setArchived(next)
+    startBeheer(async () => {
+      const res = next ? await archiveLead(data.leadId) : await unarchiveLead(data.leadId)
+      if (res.ok) router.refresh()
+      else setArchived(!next)
+    })
+  }
+  const markeerGeenEcht = () => {
+    setArchived(true) // markeren archiveert ook
+    startBeheer(async () => {
+      const res = await markeerGeenEchteLead(data.leadId)
+      if (res.ok) router.refresh()
+      else setArchived(false)
+    })
+  }
 
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
         {/* Terug naar de lijst waar deze lead leeft: gearchiveerd → het archief
             (?filter=archief, mobiel start-chip), anders de actieve lijst. */}
-        <DossierHeader lead={lead} onBack={() => router.push(archived ? '/leads?filter=archief' : '/leads')} />
+        <DossierHeader lead={lead} archived={archived} onBack={() => router.push(archived ? '/leads?filter=archief' : '/leads')} />
         <DossierFactStrip facts={factStrip(lead)} />
         <div className={styles.tagsRow}>
           <LeadTagsRow leadId={lead.id} leadTags={leadTags} allTags={allTags} live />
@@ -96,14 +131,21 @@ export function MobileLeadDossier({
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />
         <div className={styles.tabBody}>
           {tab === 'info' && (
-            <DossInfo
-              lead={lead}
-              contact={data.contact}
-              waTel={data.waTel}
-              dienst={data.dienst}
-              bijzonderheden={data.bijzonderheden}
-              vragen={data.vragen}
-            />
+            <>
+              <DossInfo
+                lead={lead}
+                contact={data.contact}
+                waTel={data.waTel}
+                dienst={data.dienst}
+                bijzonderheden={data.bijzonderheden}
+              />
+              <DossBeheer
+                archived={archived}
+                pending={beheerPending}
+                onToggleArchief={toggleArchief}
+                onGeenEcht={markeerGeenEcht}
+              />
+            </>
           )}
           {/* Offerte-tab: mobiele accordion-editor. Zelfde datamodel + rekenwerk
               + persistentie als de desktop-vorm, dus identieke totalen. De sticky
@@ -121,6 +163,7 @@ export function MobileLeadDossier({
               onAdd={voegNotitieToe}
               onDelete={verwijderNotitie}
               onUpdate={bewerkNotitie}
+              onSetTargets={zetNotitieTargets}
             />
           )}
           {tab === 'activiteit' && <DossActiviteit activity={data.activity} />}

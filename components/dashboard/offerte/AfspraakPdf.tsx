@@ -155,6 +155,15 @@ const styles = StyleSheet.create({
     padding: 12,
     minHeight: 70,
   },
+  notitieRegel: {
+    flexDirection: 'row',
+    fontSize: 10,
+    color: COLORS.text,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
+  notitieBullet: { width: 12, color: COLORS.blueAccent },
+  notitieTekst: { flex: 1 },
 
   footer: {
     marginTop: 24,
@@ -283,9 +292,17 @@ export function AfspraakPdfDocument({
             </View>
           ) : null}
 
-          {/* Bijzonderheden / notities (handmatig in te vullen op locatie) */}
+          {/* Bijzonderheden / notities: de team-notities met "Afspraak"-vinkje
+              aan. Geen notities ⇒ leeg vak om met de hand in te vullen. */}
           <Text style={[styles.sectionTitle, { marginTop: 18 }]}>Bijzonderheden / notities</Text>
-          <View style={styles.notitieBox} />
+          <View style={styles.notitieBox}>
+            {info.notities.map((n, i) => (
+              <View key={i} style={styles.notitieRegel}>
+                <Text style={styles.notitieBullet}>•</Text>
+                <Text style={styles.notitieTekst}>{n}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* Footer */}

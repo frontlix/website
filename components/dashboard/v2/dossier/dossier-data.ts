@@ -81,6 +81,10 @@ export interface DossierNotitie {
   wie: string;
   tijd: string;
   tekst: string;
+  /** Vinkje: toon deze notitie op de afspraak-print. Default true. */
+  opAfspraak: boolean;
+  /** Vinkje: toon deze notitie op de opdrachtbon. Default true. */
+  opOpdrachtbon: boolean;
 }
 
 export type ChatVan = "klant" | "bot" | "mij";
@@ -205,12 +209,16 @@ export const DOSSIER: DossierData = {
       wie: "Christiaan",
       tijd: "gisteren 16:20",
       tekst: "Klant wil starten voor eind juni. Let op: smalle doorgang achterom.",
+      opAfspraak: true,
+      opOpdrachtbon: true,
     },
     {
       id: "demo-note-2",
       wie: "Surface",
       tijd: "vandaag 09:42",
       tekst: "Noemde buurman Jan de Vries als referentie, mogelijk kortingsafspraak.",
+      opAfspraak: true,
+      opOpdrachtbon: true,
     },
   ],
   chat: [
@@ -273,5 +281,9 @@ export const DOSSIER: DossierData = {
     groeneAanslag: true,
     plantenAfschermen: true,
     geboektOp: "20 juni 2026",
+    notities: [
+      "Klant wil starten voor eind juni. Let op: smalle doorgang achterom.",
+      "Noemde buurman Jan de Vries als referentie, mogelijk kortingsafspraak.",
+    ],
   },
 };

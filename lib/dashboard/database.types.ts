@@ -260,6 +260,8 @@ export type Database = {
           auteur: string | null
           id: string
           lead_id: string
+          op_afspraak: boolean
+          op_opdrachtbon: boolean
           tekst: string
         }
         Insert: {
@@ -267,6 +269,8 @@ export type Database = {
           auteur?: string | null
           id?: string
           lead_id: string
+          op_afspraak?: boolean
+          op_opdrachtbon?: boolean
           tekst: string
         }
         Update: {
@@ -274,6 +278,8 @@ export type Database = {
           auteur?: string | null
           id?: string
           lead_id?: string
+          op_afspraak?: boolean
+          op_opdrachtbon?: boolean
           tekst?: string
         }
         Relationships: [

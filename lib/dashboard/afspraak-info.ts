@@ -67,6 +67,9 @@ export interface AfspraakInfo {
   plantenAfschermen: boolean;
   /** "22 juni 2026" wanneer de afspraak geboekt is (lege string zonder). */
   geboektOp: string;
+  /** Team-notities met "Afspraak"-vinkje aan; getoond in het notitie-blok van
+   *  de afspraak-print. Leeg ⇒ leeg vak om met de hand in te vullen. */
+  notities: string[];
 }
 
 // ── Labels (lokale kopie van de agenda-labels, zodat deze lib zelfstandig is) ──
@@ -178,8 +181,12 @@ function formatReistijd(min: number): string {
   return m === 0 ? `~${u}u` : `~${u}u${m}m`;
 }
 
-/** Bouw de presentatie-klare afspraak-info uit een lead-rij. */
-export function buildAfspraakInfo(lead: AfspraakLeadFields): AfspraakInfo {
+/** Bouw de presentatie-klare afspraak-info uit een lead-rij. `notities` zijn de
+ *  team-notities met het "Afspraak"-vinkje aan (getrimd, lege regels eruit). */
+export function buildAfspraakInfo(
+  lead: AfspraakLeadFields,
+  notities: string[] = [],
+): AfspraakInfo {
   const sub = (lead.sub_diensten ?? []).filter(Boolean);
   const adres = [lead.straat, lead.huisnummer].filter(Boolean).join(" ").trim();
   const plaats = [lead.postcode, lead.plaats].filter(Boolean).join(" ").trim();
@@ -208,5 +215,6 @@ export function buildAfspraakInfo(lead: AfspraakLeadFields): AfspraakInfo {
     groeneAanslag: isJaWaarde(lead.groene_aanslag),
     plantenAfschermen: isJaWaarde(lead.planten_afschermen),
     geboektOp: formatGeboektOp(lead.afspraak_geboekt_op),
+    notities: notities.map((t) => (t ?? '').trim()).filter((t) => t.length > 0),
   };
 }

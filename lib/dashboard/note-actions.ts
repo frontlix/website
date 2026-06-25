@@ -87,3 +87,28 @@ export async function updateNote(
   revalidatePath(`/leads/${leadId}`)
   return { ok: true }
 }
+
+/**
+ * Stelt in waar een notitie verschijnt: op de afspraak-print en/of de
+ * opdrachtbon (de twee vinkjes in het Notities-tabblad). Beide default true
+ * (migratie 062). RLS-policy (migratie 061) laat elk goedgekeurd teamlid dit
+ * doen. leadId is voor revalidatePath.
+ */
+export async function setNoteTargets(
+  noteId: string,
+  leadId: string,
+  targets: { opAfspraak: boolean; opOpdrachtbon: boolean }
+): Promise<NoteActionResult> {
+  const supabase = await getDashboardSupabase()
+  const { error } = await supabase
+    .from('lead_notes')
+    .update({ op_afspraak: targets.opAfspraak, op_opdrachtbon: targets.opOpdrachtbon })
+    .eq('id', noteId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath(`/leads/${leadId}`)
+  return { ok: true }
+}

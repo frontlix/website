@@ -7,7 +7,9 @@ export type Appointment = Pick<
   Lead,
   | 'lead_id'
   | 'naam'
+  | 'bedrijfsnaam'
   | 'telefoon'
+  | 'telefoon_offerte'
   | 'afspraak_datum'
   | 'afspraak_starttijd'
   | 'afspraak_geboekt_op'
@@ -30,7 +32,9 @@ export type Appointment = Pick<
 const SELECT_COLUMNS = [
   'lead_id',
   'naam',
+  'bedrijfsnaam',
   'telefoon',
+  'telefoon_offerte',
   'afspraak_datum',
   'afspraak_starttijd',
   'afspraak_geboekt_op',

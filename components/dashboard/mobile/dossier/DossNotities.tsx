@@ -10,6 +10,10 @@ export type DossNote = {
   wie: string
   tijd: string
   tekst: string
+  /** Vinkje: toon op de afspraak-print. Default true. */
+  opAfspraak: boolean
+  /** Vinkje: toon op de opdrachtbon. Default true. */
+  opOpdrachtbon: boolean
 }
 
 interface DossNotitiesProps {
@@ -17,6 +21,8 @@ interface DossNotitiesProps {
   onAdd: (tekst: string) => void
   onDelete: (id: string) => void
   onUpdate: (id: string, tekst: string) => void
+  /** Zet de vinkjes (afspraak-print / opdrachtbon) van een notitie. */
+  onSetTargets: (id: string, targets: { opAfspraak: boolean; opOpdrachtbon: boolean }) => void
 }
 
 /**
@@ -25,7 +31,7 @@ interface DossNotitiesProps {
  * Functioneel gelijk aan de desktop NotitiesTab, maar mobiel gestyled
  * (--color-* tokens, geen muis-hover-afhankelijkheid).
  */
-export function DossNotities({ notities, onAdd, onDelete, onUpdate }: DossNotitiesProps) {
+export function DossNotities({ notities, onAdd, onDelete, onUpdate, onSetTargets }: DossNotitiesProps) {
   const [tekst, setTekst] = useState('')
   const [editId, setEditId] = useState<string | null>(null)
   const [editTekst, setEditTekst] = useState('')
@@ -68,7 +74,7 @@ export function DossNotities({ notities, onAdd, onDelete, onUpdate }: DossNotiti
         <textarea
           value={tekst}
           onChange={(e) => setTekst(e.target.value)}
-          placeholder="Typ een notitie, verschijnt ook op de opdrachtbon…"
+          placeholder="Typ een notitie, komt standaard op de afspraak en opdrachtbon…"
           className={styles.input}
           rows={2}
         />
@@ -116,6 +122,29 @@ export function DossNotities({ notities, onAdd, onDelete, onUpdate }: DossNotiti
                         <Trash2 size={15} strokeWidth={2.2} />
                       </button>
                     </span>
+                  </div>
+                  <div className={styles.targets}>
+                    <span className={styles.targetsLabel}>Tonen op:</span>
+                    <label className={styles.targetBox}>
+                      <input
+                        type="checkbox"
+                        checked={n.opAfspraak}
+                        onChange={(e) =>
+                          onSetTargets(n.id, { opAfspraak: e.target.checked, opOpdrachtbon: n.opOpdrachtbon })
+                        }
+                      />
+                      Afspraak
+                    </label>
+                    <label className={styles.targetBox}>
+                      <input
+                        type="checkbox"
+                        checked={n.opOpdrachtbon}
+                        onChange={(e) =>
+                          onSetTargets(n.id, { opAfspraak: n.opAfspraak, opOpdrachtbon: e.target.checked })
+                        }
+                      />
+                      Opdrachtbon
+                    </label>
                   </div>
                 </>
               )}
