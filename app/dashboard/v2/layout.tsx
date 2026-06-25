@@ -36,14 +36,9 @@ export default async function V2Layout({ children }: { children: React.ReactNode
 
   return (
     <>
-      {/* No-flash: zet de donker-class op <html> vóór de eerste paint zodat
-          de pagina meteen in de juiste modus opent (voorkomt licht-flits). */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html:
-            "(function(){try{if(localStorage.getItem('frontlix-dashboard-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})()",
-        }}
-      />
+      {/* No-flash-thema staat nu in de root-layout (app/layout.tsx), als eerste
+          in de body, zodat het vóór elke paint draait i.p.v. pas als deze async
+          v2-layout streamt (dat gaf soms een licht→donker-flits). */}
       <Shell
         tenant={shell.tenant}
         userInitials={shell.userInitials}

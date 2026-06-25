@@ -151,6 +151,19 @@ export default function RootLayout({
   return (
     <html lang="nl" className={inter.variable} suppressHydrationWarning>
       <body>
+        {/* No-flash thema: zet de donker-class op <html> als ALLEREERSTE in de
+            body, vóór elke paint, zodat dashboard-pagina's (v2-desktop) meteen
+            in de juiste modus openen i.p.v. soms licht→donker te flikkeren bij
+            een volledige load of terugnavigatie. Stond eerst in de async
+            v2-layout, die pas ná de server-await streamt (te laat). Leest de
+            dashboard-themasleutel; op de marketingsite (andere origin, geen
+            sleutel) is dit een no-op. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{if(localStorage.getItem('frontlix-dashboard-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})()",
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

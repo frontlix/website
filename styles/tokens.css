@@ -214,12 +214,21 @@
 }
 
 /* ─────────────────────────────────────────────────────────
-   Dark mode — opt-in via `.dark` class op een wrapper-div
-   (wordt door de dashboard-shell op een container gezet, niet
-   op <body>, zodat de marketing-site lichtmode blijft).
+   Dark mode — opt-in via `.dark` op de `.dashboard-theme-root`-
+   wrapper (gezet door ThemeInit / de mobiele ThemeToggle / het
+   no-flash-script in de (app)-layout), bewust NIET op <body>.
    Brand-kleuren (primary, accent, gradient) blijven gelijk.
+
+   BEWUST GESCOPED op `.dashboard-theme-root.dark` i.p.v. een kale
+   `.dark`: het no-flash-script in de root-layout zet `.dark` op
+   <html> (voor v2-desktop, dat via `html.dark .rbRoot` flipt). Een
+   kale `.dark` zou dán óók op <html> matchen en deze mobiele
+   token-set over de hele app uitstorten — login/wachtkamer werden
+   zo onbedoeld donker. Door op de wrapper te scopen raakt `html.dark`
+   deze tokens niet en blijven niet-dashboard-pagina's licht. v2
+   gebruikt uitsluitend --rb-* (rebrand-tokens), dus die blijft heel.
    ───────────────────────────────────────────────────────── */
-.dark {
+.dashboard-theme-root.dark {
   --color-bg:          #0B0E14;
   --color-surface:     #0F131A;
   --color-surface-2:   #161B25;
