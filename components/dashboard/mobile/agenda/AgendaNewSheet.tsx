@@ -26,6 +26,20 @@ interface AgendaNewSheetProps {
   onSave: (a: NieuweAfspraakInput) => void
 }
 
+// Kiesbare starttijden: alleen hele/halve uren (07:00 t/m 19:00). De DB-
+// constraint op afspraak_starttijd staat enkel :00/:30 toe; door een
+// keuzelijst i.p.v. een vrij tijd-veld kan een ongeldige tijd (bijv. 17:36)
+// niet meer ontstaan.
+const TIJD_SLOTS: string[] = (() => {
+  const out: string[] = []
+  for (let h = 7; h <= 19; h++) {
+    const hh = String(h).padStart(2, '0')
+    out.push(`${hh}:00`)
+    if (h < 19) out.push(`${hh}:30`)
+  }
+  return out
+})()
+
 /**
  * AgendaNewSheet, bottom-sheet om een nieuwe afspraak te plannen. Functioneel:
  * kies een bestaande lead (zoeken), datum + tijd, en of de klant per WhatsApp
@@ -37,7 +51,8 @@ export function AgendaNewSheet({ open, onClose, klanten, busy = false, onSave }:
   const [gekozen, setGekozen] = useState<KlantOptie | null>(null)
   const [zoek, setZoek] = useState('')
   const [datum, setDatum] = useState('')
-  const [tijd, setTijd] = useState('')
+  // Standaard een vol uur (09:00); alleen geldige hele/halve uren kiesbaar.
+  const [tijd, setTijd] = useState('09:00')
   const [notifyWa, setNotifyWa] = useState(true)
   const [notifyMail, setNotifyMail] = useState(false)
 
@@ -166,18 +181,19 @@ export function AgendaNewSheet({ open, onClose, klanten, busy = false, onSave }:
           </FieldRow>
           <FieldRow last>
             <FieldLabel icon={<Clock size={14} />}>Tijd</FieldLabel>
-            <input
-              type="time"
-              step={1800}
+            <select
               className={styles.dtInput}
               value={tijd}
               onChange={(e) => setTijd(e.target.value)}
-            />
+            >
+              {TIJD_SLOTS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </FieldRow>
         </FieldGroup>
-        {tijd && !geldigSlot && (
-          <p className={styles.hint}>Kies een tijd op een heel of half uur (bijv. 09:00 of 09:30).</p>
-        )}
 
         {/* ── Klant informeren ── */}
         <FieldGroup label="Klant informeren">

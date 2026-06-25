@@ -75,6 +75,13 @@ export default async function AgendaPage({
   const grid = getMonthGrid(monthRef.year, monthRef.month);
   const monthLabel = capitalize(grid.monthLabel);
   const weekLabel = `Week ${week.weekNumber} · ${week.rangeLabel}`;
+  // Vorige/volgende-maand-keys (YYYY-MM) voor de maand-navigatie in de kop.
+  const monthKey = (m: { year: number; month: number }) =>
+    `${m.year}-${String(m.month).padStart(2, "0")}`;
+  const monthPrevKey = monthKey(grid.prevMonth);
+  const monthNextKey = monthKey(grid.nextMonth);
+  // Begin-weergave uit ?view= (zodat maandweergave behouden blijft na maand-navigatie).
+  const initialView = sp.view === "maand" ? ("maand" as const) : ("week" as const);
 
   // Geen sessie → demo-preview (dev zonder login). Verwijderen zodra v2 live is.
   // De demo-week volgt het ?week-param zodat de navigatie ook zonder login werkt.
@@ -93,6 +100,9 @@ export default async function AgendaPage({
         weekDateKeys={weekDateKeys}
         month={buildDemoMonthCells(grid.cells)}
         monthLabel={monthLabel}
+        monthPrevKey={monthPrevKey}
+        monthNextKey={monthNextKey}
+        initialView={initialView}
         klanten={demoKlanten}
         base={DEFAULT_TENANT_BASE}
         live={false}
@@ -152,6 +162,9 @@ export default async function AgendaPage({
       weekDateKeys={weekDateKeys}
       month={cells}
       monthLabel={monthLabel}
+      monthPrevKey={monthPrevKey}
+      monthNextKey={monthNextKey}
+      initialView={initialView}
       klanten={klanten}
       base={tenantBase ?? DEFAULT_TENANT_BASE}
       live
