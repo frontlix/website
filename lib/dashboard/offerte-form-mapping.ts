@@ -59,6 +59,29 @@ function writePrijsOverrides(data: ManualOfferteData): Record<string, number> | 
   return Object.keys(out).length > 0 ? out : null
 }
 
+/** Schrijf de per-regel overrides OOK naar de losse lead-kolommen die de bot
+ *  (calculatePrice) leest. De bot leest deze kolommen, NIET de
+ *  offerte_prijs_overrides-JSON. Zonder deze write gaat een aangepaste
+ *  regelprijs verloren bij het versturen. Altijd alle kolommen schrijven (null
+ *  als de override weg is), zodat een teruggezette prijs de oude waarde wist. */
+function writePrijsOverrideColumns(data: ManualOfferteData): Record<string, number | null> {
+  const val = (v: number | undefined): number | null =>
+    typeof v === 'number' && Number.isFinite(v) ? v : null
+  // onkruid_per_m2_override wordt door de bot in twee contexten gelezen
+  // (onderhoud-basisdienst en preventieve sub-dienst). Per lead is normaal maar
+  // een van beide actief; onderhoud heeft voorrang als beide gezet zijn.
+  const onkruid = data.onderhoud_per_m2_override ?? data.preventieve_onkruid_override
+  return {
+    reinigen_dagprijs_onder_100m2_override: val(data.reinigen_dagprijs_override),
+    reinigen_per_m2_override: val(data.reiniging_per_m2_override),
+    invegen_arbeid_normaal_per_m2_override: val(data.arbeid_invegen_normaal_override),
+    invegen_arbeid_onkruidwerend_per_m2_override: val(data.arbeid_invegen_onkruidwerend_override),
+    beschermlaag_per_m2_override: val(data.beschermlaag_override),
+    reiskosten_per_km_override: val(data.reiskosten_per_km_override),
+    onkruid_per_m2_override: val(onkruid),
+  }
+}
+
 /** leads.offerte_prijs_overrides (JSON) → de *_override-velden voor de form-data
  *  (alleen bekende keys + eindige getallen), zodat een aangepaste prijs na
  *  heropenen blijft staan. */
@@ -311,6 +334,7 @@ export function buildLeadFieldsFromForm(
     korting_bedrag: Number(data.korting_bedrag) || 0,
     korting_omschrijving: trimOrNull(data.korting_omschrijving),
     offerte_prijs_overrides: writePrijsOverrides(data),
+    ...writePrijsOverrideColumns(data),
     offerte_regel_opmerkingen: writeRegelOpmerkingen(data),
   }
 }
