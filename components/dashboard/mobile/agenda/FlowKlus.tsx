@@ -13,12 +13,13 @@ import {
   FDetailCard,
   FKV,
   FBigAction,
-  FMiniMap,
 } from './FlowAtoms'
+import { FlowRouteMap } from './FlowRouteMap'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type AgendaEvent } from './agenda-mock'
 import { eventTone, durStr } from './agenda-mobile-helpers'
+import type { RouteBase } from '@/components/dashboard/v2/agenda/agenda-data'
 import { AfspraakPrintButton } from '@/components/dashboard/v2/dossier/AfspraakPrintButton'
 import styles from './FlowKlus.module.css'
 
@@ -28,6 +29,8 @@ type FlowKlusProps = {
   onAfronden: () => void
   /** Afspraak annuleren. Zonder handler blijft de knop verborgen. */
   onAnnuleer?: () => void
+  /** Werkplaats-basis voor de live routekaart (werkplaats → klant). */
+  base?: RouteBase | null
 }
 
 // Stabiele initialen voor de klant-avatar.
@@ -45,7 +48,7 @@ function TrackIcon({ kind }: { kind: 'check' | 'clock' | 'zap' | 'pin' }) {
   return <MapPin size={11} className={styles.trackIcon} />
 }
 
-export function FlowKlus({ ev, onHerplan, onAfronden, onAnnuleer }: FlowKlusProps) {
+export function FlowKlus({ ev, onHerplan, onAfronden, onAnnuleer, base }: FlowKlusProps) {
   const router = useRouter()
   // Live = de afspraak loopt nu (mapper zet ev.current op absolute tijd).
   const isNow = !!ev.current
@@ -145,7 +148,17 @@ export function FlowKlus({ ev, onHerplan, onAfronden, onAnnuleer }: FlowKlusProp
           )}
         </div>
         <div className={styles.adres}>{ev.adres}</div>
-        {ev.afstandKm != null && <FMiniMap label={`${ev.afstandKm} km`} />}
+        {/* Live route (werkplaats → klant) als de coördinaten + config er zijn,
+            anders het statische SVG-kaartje. Alleen tonen bij een adres of
+            afstand, zodat een lege kaart bij een lead-loos event wegblijft. */}
+        {(ev.afstandKm != null || (ev.lat != null && ev.lng != null)) && (
+          <FlowRouteMap
+            label={ev.afstandKm != null ? `${ev.afstandKm} km` : ''}
+            lat={ev.lat}
+            lng={ev.lng}
+            base={base}
+          />
+        )}
       </FDetailCard>
 
       {/* Dienst-details (echte velden; offerte/materialen komen uit het dossier) */}

@@ -1,0 +1,36 @@
+/* FlowRouteMap — mobiele live-route-wrapper. Tokens uit tokens.css.
+   Spiegelt de afmetingen van FMiniMap (mobiel), iets hoger zodat de echte
+   Google-route leesbaar is. */
+
+.map {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 0.5px solid var(--color-border-soft);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+/* De LiveRouteMap-child vult de wrapper (styles.live = width/height 100%). */
+.map > div {
+  width: 100%;
+  height: 100%;
+}
+
+/* Afstand/duur-chip rechtsonder, identiek aan FMiniMap. */
+.label {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-white);
+  background: var(--color-primary);
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}

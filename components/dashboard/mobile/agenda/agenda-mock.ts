@@ -19,6 +19,8 @@ export interface AgendaEvent {
   lead?: string        // leadId
   telefoon?: string    // echt telefoonnummer (Bel/WhatsApp-acties)
   afstandKm?: number | null // afstand_km uit de lead (route-label)
+  lat?: number | null  // klant-coördinaat (lead lat) voor de live routekaart
+  lng?: number | null  // klant-coördinaat (lead lng) voor de live routekaart
   materialen?: string[]
   current?: boolean    // live / bezig event
   done?: boolean       // afgehandeld (dashboard_status === 'afgehandeld')

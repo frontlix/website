@@ -87,6 +87,9 @@ export function mapAppointmentsToAgendaEvents(
         lead: a.lead_id,
         telefoon: a.telefoon ?? undefined,
         afstandKm: a.afstand_km ?? null,
+        // Klant-coördinaten voor de live routekaart (de query levert lat/lng al).
+        lat: a.lat ?? null,
+        lng: a.lng ?? null,
         done: a.dashboard_status === 'afgehandeld',
         current: startMs <= nowMs && nowMs < startMs + durationMin * 60_000,
         // Presentatie-klare afspraak-gegevens voor de uitprint-knop (zelfde
