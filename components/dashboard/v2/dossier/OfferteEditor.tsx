@@ -401,6 +401,21 @@ export function OfferteEditor({
   // Welke regel-index per onderdeel het opmerking-veld krijgt (laatste regel van
   // elk onderdeel), zodat een onderdeel met meerdere regels één veld heeft.
   const opmIndices = useMemo(() => laatsteOnderdeelRegelIndices(rules), [rules]);
+  // Welke onderdelen een regel in de offerte opleveren; alleen die krijgen een
+  // opmerking-veld (anders is er niets om 'm onder te zetten).
+  const actieveOpm = useMemo(() => new Set(opmIndices.values()), [opmIndices]);
+  /** Opmerking-veld voor één onderdeel, onder de bijbehorende optie in de editor.
+   *  Het label maakt duidelijk bij welk onderdeel de opmerking hoort; alleen
+   *  getoond als dat onderdeel ook echt een regel oplevert. */
+  const opm = (key: OpmerkingKey, label: string) =>
+    actieveOpm.has(key) ? (
+      <OpmerkingVeld
+        label={label}
+        waarde={data.regel_opmerkingen?.[key]}
+        zet={(next) => zetOpmerking(key, next)}
+        disabled={!live}
+      />
+    ) : null;
 
   // Reiskosten apart tonen: die zijn niet kortbaar, dus los van het
   // diensten-subtotaal in het live prijsoverzicht.
@@ -814,6 +829,11 @@ export function OfferteEditor({
           </label>
         </div>
 
+        {/* Opmerkingen bij de oppervlakte-gebonden onderdelen (geen eigen rij). */}
+        {opm("reiniging", "Reiniging")}
+        {opm("planten", "Planten afschermen")}
+        {opm("reiskosten", "Reiskosten")}
+
         {/* Sub-blok: Extra diensten */}
         <div className={styles.subLabel}>Extra diensten</div>
         <div className={styles.checks}>
@@ -836,6 +856,10 @@ export function OfferteEditor({
             );
           })}
         </div>
+        {/* Opmerkingen bij de extra diensten. */}
+        {opm("beschermlaag", "Beschermlaag")}
+        {opm("preventieve_onkruid", "Preventieve onkruidbehandeling")}
+        {opm("onderhoud", "Onderhoud")}
 
         {/* Sub-blok: Extra arbeid */}
         <div className={styles.subLabel}>Extra arbeid</div>
@@ -910,6 +934,7 @@ export function OfferteEditor({
                 />
               </label>
             </div>
+            {opm("voegzand_normaal", "Voegzand normaal")}
 
             <div className={styles.zandRow}>
               <span className={styles.zandName}>Onkruidwerend</span>
@@ -949,6 +974,7 @@ export function OfferteEditor({
                 />
               </label>
             </div>
+            {opm("voegzand_onkruidwerend", "Voegzand onkruidwerend")}
 
             <div className={styles.kleuren}>
               <button
@@ -1112,57 +1138,43 @@ export function OfferteEditor({
           {rules.length === 0 ? (
             <div className={styles.lineEmpty}>Nog geen diensten geselecteerd.</div>
           ) : (
-            rules.map((r, i) => {
-              const opmKey = opmIndices.get(i);
-              return (
-                <div key={`${r.desc}-${i}`}>
-                  <div className={styles.lineRow}>
-                    <span className={styles.lineLabel}>{r.desc}</span>
-                    <span className={styles.lineRight}>
-                      <span className={styles.lineMeta}>
-                        {r.aantal} {r.eenheid} &#215;{" "}
-                        {r.overrideKey && live ? (
-                          <span className={styles.linePrijs}>
-                            <span className={styles.linePrijsEuro}>&#8364;</span>
-                            <NlNumberInput
-                              value={r.prijs}
-                              onChange={(v) => setField(r.overrideKey!, v)}
-                              min={0}
-                              className={styles.linePrijsInput}
-                              ariaLabel={`Prijs ${r.desc}`}
-                            />
-                            {r.overrideKey.endsWith("_override") &&
-                            data[r.overrideKey] != null ? (
-                              <button
-                                type="button"
-                                className={styles.linePrijsReset}
-                                onClick={() => setField(r.overrideKey!, undefined)}
-                                title="Terug naar de prijslijst"
-                                aria-label="Prijs terug naar de prijslijst"
-                              >
-                                <RotateCcw size={11} strokeWidth={2.5} />
-                              </button>
-                            ) : null}
-                          </span>
-                        ) : (
-                          formatEuro(r.prijs)
-                        )}
+            rules.map((r, i) => (
+              <div className={styles.lineRow} key={`${r.desc}-${i}`}>
+                <span className={styles.lineLabel}>{r.desc}</span>
+                <span className={styles.lineRight}>
+                  <span className={styles.lineMeta}>
+                    {r.aantal} {r.eenheid} &#215;{" "}
+                    {r.overrideKey && live ? (
+                      <span className={styles.linePrijs}>
+                        <span className={styles.linePrijsEuro}>&#8364;</span>
+                        <NlNumberInput
+                          value={r.prijs}
+                          onChange={(v) => setField(r.overrideKey!, v)}
+                          min={0}
+                          className={styles.linePrijsInput}
+                          ariaLabel={`Prijs ${r.desc}`}
+                        />
+                        {r.overrideKey.endsWith("_override") &&
+                        data[r.overrideKey] != null ? (
+                          <button
+                            type="button"
+                            className={styles.linePrijsReset}
+                            onClick={() => setField(r.overrideKey!, undefined)}
+                            title="Terug naar de prijslijst"
+                            aria-label="Prijs terug naar de prijslijst"
+                          >
+                            <RotateCcw size={11} strokeWidth={2.5} />
+                          </button>
+                        ) : null}
                       </span>
-                      <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
-                    </span>
-                  </div>
-                  {/* Opmerking voor de offerte, onder de laatste regel van dit
-                      onderdeel (verschijnt onder dezelfde regel in de offerte). */}
-                  {opmKey ? (
-                    <OpmerkingVeld
-                      waarde={data.regel_opmerkingen?.[opmKey]}
-                      zet={(next) => zetOpmerking(opmKey, next)}
-                      disabled={!live}
-                    />
-                  ) : null}
-                </div>
-              );
-            })
+                    ) : (
+                      formatEuro(r.prijs)
+                    )}
+                  </span>
+                  <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
+                </span>
+              </div>
+            ))
           )}
         </div>
 

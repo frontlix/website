@@ -354,9 +354,6 @@ export function StapWerk({
           </span>
         </div>
         {opm("planten")}
-        {/* Reiskosten zijn auto uit het adres; opmerking alleen tonen zodra er
-            een (geocodeerd) adres is, anders is er geen reiskosten-regel. */}
-        {afstandKm != null ? opm("reiskosten") : null}
       </div>
     </div>
   );
