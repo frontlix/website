@@ -40,10 +40,14 @@ export type OpmerkingKey =
   | 'planten'
   | 'extra_arbeid'
   | 'reiskosten'
-  // Niet-regel-onderdelen (geen eigen prijsregel): conditie van de bestrating
+  // Niet-regel-onderdelen (geen eigen prijsregel): conditie van de bestrating,
+  // de losse conditie-keuzes (groene aanslag / korstmos / planten in de buurt)
   // en de actiekorting. Worden in de offerte als losse opmerking-regels onder
   // de specificatie getoond (zie de PDF-renderers), niet onder een prijsregel.
   | 'conditie'
+  | 'groene_aanslag'
+  | 'korstmos'
+  | 'planten_buurt'
   | 'korting'
 
 /** Eén opmerking: vrije tekst + of 'ie in de offerte getoond wordt (default aan). */
@@ -61,6 +65,9 @@ export const OPMERKING_KEYS: readonly OpmerkingKey[] = [
   'extra_arbeid',
   'reiskosten',
   'conditie',
+  'groene_aanslag',
+  'korstmos',
+  'planten_buurt',
   'korting',
 ] as const
 
@@ -79,6 +86,9 @@ export function zichtbareOpmerking(
  *  hun klant-label voor in de offerte. */
 export const LOSSE_OPMERKINGEN: ReadonlyArray<{ key: OpmerkingKey; label: string }> = [
   { key: 'conditie', label: 'Conditie van de bestrating' },
+  { key: 'groene_aanslag', label: 'Groene aanslag' },
+  { key: 'korstmos', label: 'Korstmos' },
+  { key: 'planten_buurt', label: 'Planten in de buurt' },
   { key: 'korting', label: 'Actiekorting' },
 ]
 

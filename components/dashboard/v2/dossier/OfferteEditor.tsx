@@ -824,59 +824,72 @@ export function OfferteEditor({
         open={openWerk}
         onToggle={() => setOpenWerk((o) => !o)}
       >
-        <div className={styles.grid2}>
-          <label className={styles.field}>
-            <span className={styles.label}>Oppervlakte m&#178;</span>
-            <NumberField
-              value={data.m2}
-              onChange={(v) => setField("m2", v)}
-              min={0}
-              step={5}
-              affix="m²"
-              disabled={!live}
-              ariaLabel="Oppervlakte in vierkante meter"
-            />
-          </label>
-          <label className={styles.field}>
-            {/* Display-only: het model kent geen los "planten in de buurt"-veld. */}
-            <span className={styles.label}>Planten in de buurt</span>
-            <SegmentedControl<JaNee>
-              options={JANEE_OPTIES}
-              value={plantenBuurt}
-              onChange={(v) => setPlantenBuurt(v)}
-            />
-          </label>
-          <label className={styles.field}>
-            <span className={styles.label}>Groene aanslag</span>
-            <SegmentedControl<JaNee>
-              options={JANEE_OPTIES}
-              value={data.groene_aanslag}
-              onChange={(v) => setField("groene_aanslag", v)}
-            />
-          </label>
-          <label className={styles.field}>
-            <span className={styles.label}>Korstmos (10% toeslag)</span>
-            <SegmentedControl<JaNee>
-              options={JANEE_OPTIES}
-              value={data.korstmos}
-              onChange={(v) => setField("korstmos", v)}
-            />
-          </label>
-          <label className={styles.field}>
-            <span className={styles.label}>Planten afschermen</span>
-            <SegmentedControl<JaNee>
-              options={JANEE_OPTIES}
-              value={data.planten_afschermen_actief ? "ja" : "nee"}
-              onChange={(v) => setField("planten_afschermen_actief", v === "ja")}
-            />
-          </label>
+        {/* Eén kolom: elke optie met z'n opmerking er direct onder. */}
+        <div className={styles.veldStack}>
+          <div className={styles.veldBlok}>
+            <label className={styles.field}>
+              <span className={styles.label}>Oppervlakte m&#178;</span>
+              <NumberField
+                value={data.m2}
+                onChange={(v) => setField("m2", v)}
+                min={0}
+                step={5}
+                affix="m²"
+                disabled={!live}
+                ariaLabel="Oppervlakte in vierkante meter"
+              />
+            </label>
+            {opmVast("reiniging", "Reiniging")}
+          </div>
+          <div className={styles.veldBlok}>
+            <label className={styles.field}>
+              {/* Display-only: het model kent geen los "planten in de buurt"-veld. */}
+              <span className={styles.label}>Planten in de buurt</span>
+              <SegmentedControl<JaNee>
+                options={JANEE_OPTIES}
+                value={plantenBuurt}
+                onChange={(v) => setPlantenBuurt(v)}
+              />
+            </label>
+            {opmVast("planten_buurt", "Planten in de buurt")}
+          </div>
+          <div className={styles.veldBlok}>
+            <label className={styles.field}>
+              <span className={styles.label}>Groene aanslag</span>
+              <SegmentedControl<JaNee>
+                options={JANEE_OPTIES}
+                value={data.groene_aanslag}
+                onChange={(v) => setField("groene_aanslag", v)}
+              />
+            </label>
+            {opmVast("groene_aanslag", "Groene aanslag")}
+          </div>
+          <div className={styles.veldBlok}>
+            <label className={styles.field}>
+              <span className={styles.label}>Korstmos (10% toeslag)</span>
+              <SegmentedControl<JaNee>
+                options={JANEE_OPTIES}
+                value={data.korstmos}
+                onChange={(v) => setField("korstmos", v)}
+              />
+            </label>
+            {opmVast("korstmos", "Korstmos")}
+          </div>
+          <div className={styles.veldBlok}>
+            <label className={styles.field}>
+              <span className={styles.label}>Planten afschermen</span>
+              <SegmentedControl<JaNee>
+                options={JANEE_OPTIES}
+                value={data.planten_afschermen_actief ? "ja" : "nee"}
+                onChange={(v) => setField("planten_afschermen_actief", v === "ja")}
+              />
+            </label>
+            {opmVast("planten", "Planten afschermen")}
+          </div>
         </div>
 
-        {/* Opmerkingen bij de oppervlakte-gebonden onderdelen (geen eigen rij). */}
-        {opm("reiniging", "Reiniging")}
-        {opm("planten", "Planten afschermen")}
+        {/* Reiskosten heeft geen eigen control; alleen tonen als 'ie een regel oplevert. */}
         {opm("reiskosten", "Reiskosten")}
-        {opmVast("conditie", "Conditie van de bestrating")}
 
         {/* Sub-blok: Extra diensten — elke checkbox met z'n opmerking er direct onder. */}
         <div className={styles.subLabel}>Extra diensten</div>

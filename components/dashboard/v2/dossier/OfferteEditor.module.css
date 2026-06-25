@@ -149,6 +149,19 @@
   gap: 12px 16px;
 }
 
+/* Eén kolom: elke optie + z'n opmerking er direct onder. */
+.veldStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.veldBlok {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .field {
   display: flex;
   flex-direction: column;
