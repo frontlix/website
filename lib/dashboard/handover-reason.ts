@@ -1,5 +1,6 @@
 import { isHandover } from './lead-status-meta'
 import { getDashboardSupabase } from './supabase-server'
+import { WORK_RADIUS_DEFAULT } from '@/components/dashboard/v2/instellingen/instellingen-data'
 
 export interface HandoverGrenzen {
   radiusMaxKm: number
@@ -38,8 +39,12 @@ export function handoverReason(
   return { adresSub, oppervlakteSub }
 }
 
-const WERKSTRAAL_DEFAULT = 50
 const MIN_M2_DEFAULT = 200
+
+export const DEFAULT_GRENZEN: HandoverGrenzen = {
+  radiusMaxKm: WORK_RADIUS_DEFAULT,
+  minM2BuitenStraal: MIN_M2_DEFAULT,
+}
 
 /** Haalt de werkgebied-grenzen uit tenant_settings (met defaults). */
 export async function getWerkgebiedGrenzen(): Promise<HandoverGrenzen> {
@@ -51,8 +56,8 @@ export async function getWerkgebiedGrenzen(): Promise<HandoverGrenzen> {
     .maybeSingle()
   const row = data as { radius_max_km?: number | null; radius_min_m2_buiten_straal?: number | null } | null
   return {
-    radiusMaxKm: row?.radius_max_km != null ? Number(row.radius_max_km) : WERKSTRAAL_DEFAULT,
+    radiusMaxKm: row?.radius_max_km != null ? Number(row.radius_max_km) : DEFAULT_GRENZEN.radiusMaxKm,
     minM2BuitenStraal:
-      row?.radius_min_m2_buiten_straal != null ? Number(row.radius_min_m2_buiten_straal) : MIN_M2_DEFAULT,
+      row?.radius_min_m2_buiten_straal != null ? Number(row.radius_min_m2_buiten_straal) : DEFAULT_GRENZEN.minM2BuitenStraal,
   }
 }

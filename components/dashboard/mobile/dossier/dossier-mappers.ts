@@ -10,7 +10,7 @@ import {
 import { shortTimeAgo } from '@/lib/dashboard/relative-time'
 import { leadStage, type MobileLeadStage } from '@/components/dashboard/mobile/leads/lead-mappers'
 import { isHandover } from '@/lib/dashboard/lead-status-meta'
-import { handoverReason, type HandoverGrenzen } from '@/lib/dashboard/handover-reason'
+import { handoverReason, type HandoverGrenzen, DEFAULT_GRENZEN } from '@/lib/dashboard/handover-reason'
 import type {
   DossierLead,
   DossBijzonder,
@@ -282,7 +282,7 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
 export function mapLeadDetailToDossier(
   detail: LeadDetail,
   now: number = Date.now(),
-  grenzen: HandoverGrenzen = { radiusMaxKm: 50, minM2BuitenStraal: 200 },
+  grenzen: HandoverGrenzen = DEFAULT_GRENZEN,
 ): MobileDossierData {
   const l = detail.lead
   const fotoCount = detail.fotos.length

@@ -29,7 +29,7 @@ import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model
 import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
 import { isHandover } from "@/lib/dashboard/lead-status-meta";
-import { handoverReason, type HandoverGrenzen, type HandoverReason } from "@/lib/dashboard/handover-reason";
+import { handoverReason, type HandoverGrenzen, type HandoverReason, DEFAULT_GRENZEN } from "@/lib/dashboard/handover-reason";
 import type {
   DossierData,
   InfoRow,
@@ -399,7 +399,7 @@ export function mapLeadDetailToDossierData(
   detail: LeadDetail,
   pricing: ManualOffertePricing = FALLBACK_PRICING,
   now: number = Date.now(),
-  grenzen: HandoverGrenzen = { radiusMaxKm: 50, minM2BuitenStraal: 200 },
+  grenzen: HandoverGrenzen = DEFAULT_GRENZEN,
 ): DossierData {
   const l = detail.lead;
   // aggregateActivityTimeline aanroepen houdt de read-pad consistent met de
