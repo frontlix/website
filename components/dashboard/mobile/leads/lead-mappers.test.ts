@@ -17,6 +17,7 @@ describe('leadStage', () => {
   })
   it('onderhandelen → uit (offerte is al verstuurd, klant onderhandelt)', () => expect(leadStage({ ...base, gesprek_fase: 'onderhandelen' })).toBe('uit'))
   it('pending_eigenaar_review → review (wacht op jouw goedkeuring vóór verzending)', () => expect(leadStage({ ...base, pending_eigenaar_review: true })).toBe('review'))
+  it('heeft_wachtende_offerte → review (offerte wacht op goedkeuring, ook zonder pending_eigenaar_review)', () => expect(leadStage({ ...base, heeft_wachtende_offerte: true })).toBe('review'))
   it('offerte_besproken → uit', () => expect(leadStage({ ...base, gesprek_fase: 'offerte_besproken' })).toBe('uit'))
   it('afspraak_bevestigd → gepland', () => expect(leadStage({ ...base, gesprek_fase: 'afspraak_bevestigd' })).toBe('gepland'))
   it('info_verzamelen/default → gesprek', () => expect(leadStage(base)).toBe('gesprek'))
@@ -34,6 +35,7 @@ describe('mapLeadToCard', () => {
     // bijgewerkt 'nu', maar geen klant-interactie → toont binnenkomst (2m), niet 'nu'
     expect(mapLeadToCard({ ...base, bijgewerkt: '2026-05-28T12:00:00Z' }, now, null).binnen).toBe('2m'))
   it('urgent als pending_eigenaar_review', () => expect(mapLeadToCard({ ...base, pending_eigenaar_review: true }, now).urgent).toBe(true))
+  it('urgent als heeft_wachtende_offerte', () => expect(mapLeadToCard({ ...base, heeft_wachtende_offerte: true }, now).urgent).toBe(true))
 })
 
 function baseLead(overrides: Partial<LeadListItem>): LeadListItem {

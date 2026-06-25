@@ -49,7 +49,13 @@ export type LeadListItem = Pick<
   | 'offerte_verstuurd_op'
   | 'akkoord_op'
   | 'eigenaar_overgenomen'
->
+> & {
+  /** Afgeleid (niet op de lead-row): er bestaat een niet-concept offerte met
+   *  status 'wacht_op_goedkeuring' voor deze lead. Voedt de 'Offerte review'-fase
+   *  in de pijplijn. De offerte-status zit alleen in de offertes-tabel, dus deze
+   *  vlag wordt door getLeadsList via een lichte 2e query gevuld. */
+  heeft_wachtende_offerte?: boolean
+}
 
 const LIST_COLUMNS = [
   'lead_id',
@@ -183,7 +189,31 @@ export async function getLeadsList(
     console.error('[getLeadsList] query failed:', error)
     return []
   }
-  return (data as unknown as LeadListItem[] | null) ?? []
+  const leads = (data as unknown as LeadListItem[] | null) ?? []
+  if (leads.length === 0) return leads
+
+  // Per lead: wacht er een offerte op goedkeuring? Die status zit alleen in de
+  // offertes-tabel, niet op de lead-row. Een lichte 2e query (zelfde patroon als
+  // de tags-prefetch hierboven) zodat de pijplijn zo'n lead in 'Offerte review'
+  // toont i.p.v. terug te vallen op 'In gesprek'.
+  const leadIds = leads.map((l) => l.lead_id)
+  const { data: wachtRows, error: wachtErr } = await supabase
+    .from('offertes')
+    .select('lead_id')
+    .eq('status', 'wacht_op_goedkeuring')
+    .eq('is_concept', false)
+    .in('lead_id', leadIds)
+
+  if (wachtErr) {
+    // Degradeer netjes: zonder de vlag valt de fase terug op het oude gedrag.
+    console.error('[getLeadsList] wachtende-offerte prefetch failed:', wachtErr)
+    return leads
+  }
+
+  const wachtSet = new Set(
+    ((wachtRows as unknown as { lead_id: string }[] | null) ?? []).map((r) => r.lead_id),
+  )
+  return leads.map((l) => ({ ...l, heeft_wachtende_offerte: wachtSet.has(l.lead_id) }))
 }
 
 /**

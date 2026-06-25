@@ -27,10 +27,12 @@ export function leadStage(l: RawLead): MobileLeadStage {
   // afgehandeld wint van alles, zelfs als de fase 'datum_kiezen' is
   if (l.dashboard_status === 'afgehandeld') return 'klaar'
   // "Offerte review" = een offerte die op een eigenaar-besluit wacht VÓÓR
-  // verzending (pending_eigenaar_review). "Onderhandelen" betekent dat de
-  // offerte al verstuurd is en de klant erover in gesprek is; die hoort dus bij
-  // "Offerte uit" (met een eigen "In onderhandeling"-status op de kaart).
-  if (l.pending_eigenaar_review) return 'review'
+  // verzending: ofwel het meldingsveld pending_eigenaar_review, ofwel een
+  // offerte die op goedkeuring wacht (heeft_wachtende_offerte, afgeleid uit de
+  // offertes-tabel; de bot zet pending_eigenaar_review niet betrouwbaar).
+  // "Onderhandelen" betekent dat de offerte al verstuurd is en de klant erover
+  // in gesprek is; die hoort bij "Offerte uit" (eigen "In onderhandeling"-status).
+  if (l.pending_eigenaar_review || l.heeft_wachtende_offerte) return 'review'
   switch (l.gesprek_fase) {
     case 'onderhandelen':
     case 'offerte_besproken':
@@ -49,7 +51,11 @@ export function leadStage(l: RawLead): MobileLeadStage {
  * "Alleen urgent"-filter zodat beide dezelfde definitie gebruiken.
  */
 export function isLeadUrgent(l: RawLead): boolean {
-  return Boolean(l.pending_eigenaar_review) || Boolean(l.klus_geblokkeerd)
+  return (
+    Boolean(l.pending_eigenaar_review) ||
+    Boolean(l.klus_geblokkeerd) ||
+    Boolean(l.heeft_wachtende_offerte)
+  )
 }
 
 /** Bouw het dienst-label: "Hoofdcategorie · sub1 + sub2" of alleen hoofd. */
