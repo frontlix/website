@@ -45,6 +45,12 @@ interface AgendaViewProps {
   month: AgendaMaandCel[];
   /** Maandlabel (bv. "Juni 2026") voor de kop in de maandweergave. */
   monthLabel: string;
+  /** Maand-key (YYYY-MM) van de vorige maand (navigatieknop in maandweergave). */
+  monthPrevKey: string;
+  /** Maand-key (YYYY-MM) van de volgende maand (navigatieknop in maandweergave). */
+  monthNextKey: string;
+  /** Begin-weergave (uit ?view=); maand blijft zo behouden na maand-navigatie. */
+  initialView?: AgendaViewMode;
   /** Bestaande leads om in "Nieuwe afspraak" aan te koppelen. */
   klanten: KlantOptie[];
   /** True wanneer er een echte sessie is: knoppen roepen dan de
@@ -62,6 +68,9 @@ export function AgendaView({
   weekDateKeys,
   month,
   monthLabel,
+  monthPrevKey,
+  monthNextKey,
+  initialView = "week",
   klanten,
   live,
   base,
@@ -69,7 +78,7 @@ export function AgendaView({
   const router = useRouter();
   const [bezig, startTransition] = useTransition();
 
-  const [viewMode, setViewMode] = useState<AgendaViewMode>("week");
+  const [viewMode, setViewMode] = useState<AgendaViewMode>(initialView);
 
   // Bij demo (geen sessie) muteren we lokaal zodat de preview blijft werken.
   const [demoWeek, setDemoWeek] = useState<AgendaDag[]>(week);
@@ -268,6 +277,8 @@ export function AgendaView({
         label={viewMode === "maand" ? monthLabel : weekLabel}
         weekPrevKey={weekPrevKey}
         weekNextKey={weekNextKey}
+        monthPrevKey={monthPrevKey}
+        monthNextKey={monthNextKey}
         onViewChange={setViewMode}
         onNieuw={openNieuw}
       />
