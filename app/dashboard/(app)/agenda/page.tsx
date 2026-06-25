@@ -120,6 +120,8 @@ export default async function AgendaPage({
     // Maandweergave + navigatie (zelfde mappers als desktop).
     monthCells,
     monthLabel: capitalize(grid.monthLabel),
+    monthYear: monthRef.year,
+    monthMonth: monthRef.month,
     prevMonthKey: monthKey(grid.prevMonth),
     nextMonthKey: monthKey(grid.nextMonth),
     isCurrentMonth: monthKey(monthRef) === nowMonthKey,

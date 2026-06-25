@@ -34,13 +34,37 @@
 .label {
   flex: 1;
   min-width: 0;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.label:active {
+  background: var(--color-chip-bg);
+}
+
+.labelText {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.labelChev {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
 }
 
 .today {

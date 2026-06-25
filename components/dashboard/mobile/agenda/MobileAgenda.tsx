@@ -42,6 +42,10 @@ export type MobileAgendaData = {
   monthCells: AgendaMaandCel[]
   /** Maand-label, bv. "Juni 2026". */
   monthLabel: string
+  /** Jaar van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthYear: number
+  /** Maand (1-12) van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthMonth: number
   /** ?month=YYYY-MM-key van de vorige maand. */
   prevMonthKey: string
   /** ?month=YYYY-MM-key van de volgende maand. */
@@ -133,6 +137,8 @@ export function MobileAgenda({ data }: { data: MobileAgendaData }) {
         <AgendaMonth
           cells={data.monthCells}
           monthLabel={data.monthLabel}
+          monthYear={data.monthYear}
+          monthMonth={data.monthMonth}
           prevMonthKey={data.prevMonthKey}
           nextMonthKey={data.nextMonthKey}
           isCurrentMonth={data.isCurrentMonth}

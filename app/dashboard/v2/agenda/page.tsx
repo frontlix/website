@@ -102,6 +102,8 @@ export default async function AgendaPage({
         monthLabel={monthLabel}
         monthPrevKey={monthPrevKey}
         monthNextKey={monthNextKey}
+        monthYear={monthRef.year}
+        monthMonth={monthRef.month}
         initialView={initialView}
         klanten={demoKlanten}
         base={DEFAULT_TENANT_BASE}
@@ -164,6 +166,8 @@ export default async function AgendaPage({
       monthLabel={monthLabel}
       monthPrevKey={monthPrevKey}
       monthNextKey={monthNextKey}
+      monthYear={monthRef.year}
+      monthMonth={monthRef.month}
       initialView={initialView}
       klanten={klanten}
       base={tenantBase ?? DEFAULT_TENANT_BASE}

@@ -49,6 +49,10 @@ interface AgendaViewProps {
   monthPrevKey: string;
   /** Maand-key (YYYY-MM) van de volgende maand (navigatieknop in maandweergave). */
   monthNextKey: string;
+  /** Jaar van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthYear: number;
+  /** Maand (1-12) van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthMonth: number;
   /** Begin-weergave (uit ?view=); maand blijft zo behouden na maand-navigatie. */
   initialView?: AgendaViewMode;
   /** Bestaande leads om in "Nieuwe afspraak" aan te koppelen. */
@@ -70,6 +74,8 @@ export function AgendaView({
   monthLabel,
   monthPrevKey,
   monthNextKey,
+  monthYear,
+  monthMonth,
   initialView = "week",
   klanten,
   live,
@@ -279,6 +285,8 @@ export function AgendaView({
         weekNextKey={weekNextKey}
         monthPrevKey={monthPrevKey}
         monthNextKey={monthNextKey}
+        monthYear={monthYear}
+        monthMonth={monthMonth}
         onViewChange={setViewMode}
         onNieuw={openNieuw}
       />

@@ -1,0 +1,152 @@
+/* MonthPickerSheet — bottom-sheet maand/jaar-kiezer (mobiel).
+   Hergebruikt het sheet-patroon van AgendaNewSheet (overlay absolute inset-0,
+   backdrop fade, sheet slide van onder, grabber). Tokens: --color-*. */
+
+@keyframes mpsFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes mpsSlide {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── Overlay (backdrop + sheet) ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  animation: mpsFade 0.2s ease-out both;
+}
+
+/* ── Sheet ── */
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-surface);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 8px 0 0;
+  z-index: 60;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+  max-height: 88%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: mpsSlide var(--dur-sheet) var(--ease-ios) both;
+}
+
+.sheet:focus {
+  outline: none;
+}
+
+/* Grabber */
+.handle {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--color-border-soft);
+  margin: 6px auto 10px;
+}
+
+/* ── Jaar-rij ── */
+.yearRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 18px 14px;
+}
+
+.year {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.yearBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.yearBtn:active {
+  background: var(--color-surface-2);
+}
+
+/* ── Maand-grid (3 kolommen, grote tap-targets) ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.monthBtn {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border-radius: 12px;
+  background: var(--color-chip-bg);
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.monthBtn:active {
+  background: var(--color-surface-2);
+}
+
+.monthBtn[data-current] {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ── Deze maand ── */
+.foot {
+  padding: 16px 16px 0;
+  text-align: center;
+}
+
+.todayLink {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.todayLink:active {
+  background: var(--color-chip-bg);
+}
+
+.bottomSpacer {
+  height: 18px;
+}

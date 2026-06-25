@@ -1,0 +1,109 @@
+/* MonthYearPicker — popover-kiezer onder de maandnaam (v2-desktop).
+   Tokens: --rb-* zodat het in licht én donker meeflipt. */
+
+.pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: 268px;
+  background: var(--rb-card);
+  border: 1px solid var(--rb-line);
+  border-radius: 14px;
+  box-shadow: var(--rb-shadow-dropdown);
+  padding: 12px;
+}
+
+/* ── Jaar-rij ── */
+.yearRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.year {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--rb-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.yearBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--rb-line);
+  background: transparent;
+  color: var(--rb-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.yearBtn:hover {
+  background: var(--rb-blue-soft);
+  border-color: transparent;
+  color: var(--rb-blue-ink);
+}
+
+/* ── Maand-grid (4 kolommen) ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.monthBtn {
+  border: 1px solid transparent;
+  background: var(--rb-field);
+  color: var(--rb-ink);
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 0;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  text-transform: capitalize;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.monthBtn:hover {
+  background: var(--rb-blue-soft);
+  color: var(--rb-blue-ink);
+}
+
+.monthBtnCurrent,
+.monthBtnCurrent:hover {
+  background: var(--rb-blue);
+  color: #fff;
+}
+
+/* ── Voet ("Deze maand") ── */
+.foot {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.todayLink {
+  display: inline-block;
+  background: transparent;
+  border: none;
+  color: var(--rb-blue-ink);
+  font-family: var(--rb-font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--rb-r-pill);
+  transition: background 0.12s ease;
+}
+
+.todayLink:hover {
+  background: var(--rb-blue-soft);
+}

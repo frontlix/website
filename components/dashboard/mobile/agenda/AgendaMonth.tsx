@@ -9,8 +9,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react'
 import type { AgendaMaandCel, AgendaItem, AgendaType } from '@/components/dashboard/v2/agenda/agenda-data'
+import { MonthPickerSheet } from './MonthPickerSheet'
 import styles from './AgendaMonth.module.css'
 
 const WEEKDAGEN = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
@@ -34,6 +35,10 @@ interface AgendaMonthProps {
   cells: AgendaMaandCel[]
   /** Maand-label, bv. "Juni 2026". */
   monthLabel: string
+  /** Jaar van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthYear: number
+  /** Maand (1-12) van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthMonth: number
   /** ?month=YYYY-MM-key van de vorige maand. */
   prevMonthKey: string
   /** ?month=YYYY-MM-key van de volgende maand. */
@@ -48,11 +53,15 @@ interface AgendaMonthProps {
 export function AgendaMonth({
   cells,
   monthLabel,
+  monthYear,
+  monthMonth,
   prevMonthKey,
   nextMonthKey,
   isCurrentMonth,
   onOpenItem,
 }: AgendaMonthProps) {
+  // Maand/jaar-kiezer (bottom-sheet): tik op de maandnaam-kop opent 'm.
+  const [pickerOpen, setPickerOpen] = useState(false)
   // Geselecteerde dag (dateKey). Default: vandaag als die in de maand valt,
   // anders de eerste in-maand-dag met afspraken, anders niets.
   const today = cells.find((c) => c.vandaag && c.inMaand)
@@ -75,7 +84,16 @@ export function AgendaMonth({
           <ChevronLeft size={20} aria-hidden="true" />
         </Link>
 
-        <span className={styles.label}>{monthLabel}</span>
+        <button
+          type="button"
+          className={styles.label}
+          onClick={() => setPickerOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={pickerOpen}
+        >
+          <span className={styles.labelText}>{monthLabel}</span>
+          <ChevronDown size={15} className={styles.labelChev} aria-hidden="true" />
+        </button>
 
         <Link
           href={`/agenda?view=maand&month=${nextMonthKey}`}
@@ -173,6 +191,13 @@ export function AgendaMonth({
           </p>
         )}
       </div>
+
+      <MonthPickerSheet
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        currentYear={monthYear}
+        currentMonth={monthMonth}
+      />
     </div>
   )
 }

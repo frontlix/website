@@ -1,7 +1,9 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Plus } from "lucide-react";
+import { MonthYearPicker } from "./MonthYearPicker";
 import styles from "./AgendaHeader.module.css";
 
 export type AgendaView = "week" | "maand";
@@ -19,6 +21,10 @@ interface AgendaHeaderProps {
   monthPrevKey: string;
   /** Maand-key (YYYY-MM) van de volgende maand (navigatieknop in maandweergave). */
   monthNextKey: string;
+  /** Jaar van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthYear: number;
+  /** Maand (1-12) van de getoonde maand (voor de maand/jaar-kiezer). */
+  monthMonth: number;
   /** Schakelt tussen week- en maandweergave. */
   onViewChange: (view: AgendaView) => void;
   /** Klik op "+ Afspraak". */
@@ -34,6 +40,8 @@ export function AgendaHeader({
   weekNextKey,
   monthPrevKey,
   monthNextKey,
+  monthYear,
+  monthMonth,
   onViewChange,
   onNieuw,
 }: AgendaHeaderProps) {
@@ -44,11 +52,40 @@ export function AgendaHeader({
   const prevLabel = view === "maand" ? "Vorige maand" : "Vorige week";
   const nextLabel = view === "maand" ? "Volgende maand" : "Volgende week";
 
+  // Maand/jaar-kiezer (alleen in maandweergave): maandnaam wordt een knop die
+  // de popover opent. In de weekweergave blijft het label gewone tekst.
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const labelBtnRef = useRef<HTMLButtonElement | null>(null);
+
   return (
     <div className={styles.head}>
       <div className={styles.left}>
         <h1 className={styles.title}>Agenda</h1>
-        <span className={styles.weekLabel}>{label}</span>
+        {view === "maand" ? (
+          <span className={styles.labelWrap}>
+            <button
+              ref={labelBtnRef}
+              type="button"
+              className={styles.labelBtn}
+              onClick={() => setPickerOpen((o) => !o)}
+              aria-haspopup="dialog"
+              aria-expanded={pickerOpen}
+            >
+              {label}
+              <ChevronDown size={13} strokeWidth={2.4} className={styles.labelChev} />
+            </button>
+            {pickerOpen && (
+              <MonthYearPicker
+                currentYear={monthYear}
+                currentMonth={monthMonth}
+                anchorRef={labelBtnRef}
+                onClose={() => setPickerOpen(false)}
+              />
+            )}
+          </span>
+        ) : (
+          <span className={styles.weekLabel}>{label}</span>
+        )}
         <span className={styles.nav}>
           <Link href={prevHref} scroll={false} className={styles.navBtn} aria-label={prevLabel}>
             <ChevronLeft size={15} strokeWidth={2.4} />
