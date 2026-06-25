@@ -25,6 +25,7 @@ import { mapLeadToFormData } from "@/lib/dashboard/offerte-form-mapping";
 import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pricing-types";
 import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
 import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
+import { buildOfferteInhoud } from "@/lib/dashboard/offerte/offerte-inhoud";
 import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
 import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
@@ -446,17 +447,32 @@ export function mapLeadDetailToDossierData(
     notities: detail.notes.filter((n) => n.op_opdrachtbon !== false).map((n) => n.tekst),
   });
 
-  // De wachtende offerte (status wacht_op_goedkeuring): dienst-label, m2 en
-  // totaal voor het goedkeuringsblok bovenaan het dossier.
+  // De wachtende offerte (status wacht_op_goedkeuring): de volledige inhoud voor
+  // het goedkeuringsblok bovenaan het dossier (dienst, m2, regels, subtotalen,
+  // totaal en een PDF-model). Regels en subtotalen komen live uit de
+  // offerte-form-data, zodat ze kloppen met wat de bot bij goedkeuren verstuurt.
+  const offerteForm = buildOfferteForm(detail, pricing);
   const wachtende = detail.offertes.find(
     (o) => !o.is_concept && o.status === "wacht_op_goedkeuring",
   );
   const offerteTerGoedkeuring = wachtende
-    ? {
-        dienst: humanizeHoofd(l.hoofdcategorie),
-        m2: l.m2 != null ? `${l.m2} m²` : "",
-        totaal: formatEuro(wachtende.totaal_incl),
-      }
+    ? (() => {
+        const inhoud = buildOfferteInhoud(
+          offerteForm,
+          l.lead_id,
+          new Date(now).getFullYear(),
+        );
+        return {
+          dienst: humanizeHoofd(l.hoofdcategorie),
+          m2: l.m2 != null ? `${l.m2} m²` : "",
+          totaal: inhoud.totaalIncl,
+          regels: inhoud.regels,
+          subtotaal: inhoud.subtotaal,
+          korting: inhoud.korting,
+          btw: inhoud.btw,
+          pdfModel: inhoud.pdfModel,
+        };
+      })()
     : null;
 
   return {
@@ -471,7 +487,7 @@ export function mapLeadDetailToDossierData(
     offerteTerGoedkeuring,
     offerteRegels: buildOfferteRegels(detail),
     offerteTotaal: buildOfferteTotaal(detail),
-    offerteForm: buildOfferteForm(detail, pricing),
+    offerteForm,
     notities: buildNotities(detail),
     chat: buildChat(detail, now),
     opdrachtbon,

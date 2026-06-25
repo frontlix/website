@@ -118,10 +118,22 @@ export interface DossierData {
   fotos: DossierFoto[];
   surface: { fase: string; actie: string };
   offertes: DossierOfferte[];
-  /** De offerte die op goedkeuring wacht (status wacht_op_goedkeuring), met
-   *  dienst-label, m2 en totaal voor het goedkeuringsblok bovenaan het dossier.
-   *  null/afwezig = geen wachtende offerte. */
-  offerteTerGoedkeuring?: { dienst: string; m2: string; totaal: string } | null;
+  /** De offerte die op goedkeuring wacht (status wacht_op_goedkeuring), met de
+   *  inhoud voor het goedkeuringsblok bovenaan het dossier: dienst-label, m2,
+   *  totaal, de regels, de subtotalen en een PDF-model voor "Bekijk volledige
+   *  offerte". null/afwezig = geen wachtende offerte. */
+  offerteTerGoedkeuring?: {
+    dienst: string;
+    m2: string;
+    /** Totaal incl. btw (live herberekend), geformatteerd. */
+    totaal: string;
+    regels: OfferteRegel[];
+    subtotaal: string;
+    /** Kortingbedrag, geformatteerd, of null als er geen korting is. */
+    korting: string | null;
+    btw: string;
+    pdfModel: SentOffertePdfModel;
+  } | null;
   offerteRegels: OfferteRegel[];
   offerteTotaal: string;
   /** Bewerkbaar concept voor de inline OfferteEditor (echt model + pricing). */

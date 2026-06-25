@@ -135,6 +135,9 @@ export function MobileLeadDossier({
             dienst={data.offerte.terGoedkeuring.dienst}
             m2={data.offerte.terGoedkeuring.m2}
             totaal={data.offerte.terGoedkeuring.totaal}
+            regels={data.offerte.terGoedkeuring.regels}
+            korting={data.offerte.terGoedkeuring.korting}
+            pdfModel={data.offerte.terGoedkeuring.pdfModel}
             onAanpassen={() => setTab('offerte')}
           />
         ) : null}

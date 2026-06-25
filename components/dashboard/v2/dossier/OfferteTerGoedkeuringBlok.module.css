@@ -1,14 +1,16 @@
 .blok {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
   border: 1.5px solid var(--rb-mint-ink, #1e8a5e);
   border-radius: var(--rb-r-card, 16px);
   background: color-mix(in srgb, var(--rb-mint, #dff5ea) 45%, var(--rb-card, #ffffff));
+  padding: 15px 17px;
   font-family: var(--rb-font);
 }
 
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .icoon {
   width: 34px;
   height: 34px;
@@ -20,14 +22,13 @@
   background: var(--rb-mint-ink, #1e8a5e);
   color: #fff;
 }
-
 .tekst {
   display: flex;
   flex-direction: column;
   line-height: 1.35;
 }
 .tekst strong {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--rb-ink, #212a45);
 }
@@ -35,51 +36,159 @@
   font-size: 12.5px;
   color: var(--rb-muted, #7a83a6);
 }
-
-.acties {
+/* "Bekijk volledige offerte"-knop rechtsboven in de kop */
+.pdflink {
   margin-left: auto;
-  display: flex;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
-.aanpassen,
-.goedkeuren {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  padding: 9px 16px;
-  border-radius: var(--rb-r-pill, 9999px);
+  color: var(--rb-mint-ink, #1e8a5e);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  flex: 0 0 auto;
+}
+.pdflink:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.body {
+  display: flex;
+  gap: 26px;
+  margin-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--rb-mint-ink, #1e8a5e) 28%, transparent);
+  padding-top: 14px;
+}
+
+.left {
+  width: 236px;
+  flex: 0 0 auto;
+  border-right: 1px solid color-mix(in srgb, var(--rb-mint-ink, #1e8a5e) 28%, transparent);
+  padding-right: 22px;
+}
+.lbl {
+  font-size: 12px;
+  color: var(--rb-muted, #7a83a6);
+}
+.big {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--rb-mint-ink, #1e8a5e);
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.acties {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 16px;
+}
+.goedkeuren,
+.aanpassen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 11px 16px;
+  border-radius: 11px;
   cursor: pointer;
   border: 1px solid transparent;
-}
-.aanpassen {
-  background: var(--rb-card, #ffffff);
-  color: var(--rb-ink, #212a45);
-  border-color: rgba(33, 42, 69, 0.14);
+  font-family: inherit;
 }
 .goedkeuren {
   background: var(--rb-mint-ink, #1e8a5e);
   color: #fff;
 }
-.aanpassen:disabled,
-.goedkeuren:disabled {
+.aanpassen {
+  background: var(--rb-card, #ffffff);
+  color: var(--rb-ink, #212a45);
+  border-color: rgba(33, 42, 69, 0.16);
+}
+.goedkeuren:disabled,
+.aanpassen:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-@media (max-width: 640px) {
-  .blok {
-    flex-wrap: wrap;
+.right {
+  flex: 1;
+  max-width: 520px;
+  min-width: 0;
+}
+.regel {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13.5px;
+  color: var(--rb-ink, #212a45);
+}
+.rNaam {
+  flex: 0 1 auto;
+}
+.rCalc {
+  color: var(--rb-muted, #8a929e);
+  font-size: 12px;
+  margin-left: auto;
+  margin-right: 14px;
+}
+.rBedrag {
+  font-weight: 600;
+  min-width: 78px;
+  text-align: right;
+  margin-left: auto;
+}
+/* zonder calc duwt rBedrag zelf naar rechts via margin-left:auto */
+.rCalc + .rBedrag {
+  margin-left: 0;
+}
+.divider {
+  height: 1px;
+  background: color-mix(in srgb, var(--rb-mint-ink, #1e8a5e) 28%, transparent);
+  margin: 8px 0;
+}
+.sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--rb-muted, #5b6472);
+  padding: 3px 0;
+}
+.subV {
+  min-width: 78px;
+  text-align: right;
+}
+.subGreen {
+  color: var(--rb-mint-ink, #1e8a5e);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .body {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .left {
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--rb-mint-ink, #1e8a5e) 28%, transparent);
+    padding-right: 0;
+    padding-bottom: 14px;
   }
   .acties {
-    width: 100%;
+    flex-direction: row;
   }
-  .aanpassen,
-  .goedkeuren {
+  .goedkeuren,
+  .aanpassen {
     flex: 1;
-    justify-content: center;
+  }
+  .right {
+    max-width: none;
   }
 }

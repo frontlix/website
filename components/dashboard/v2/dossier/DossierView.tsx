@@ -410,6 +410,11 @@ export function DossierView({
           dienst={data.offerteTerGoedkeuring.dienst}
           m2={data.offerteTerGoedkeuring.m2}
           totaal={data.offerteTerGoedkeuring.totaal}
+          regels={data.offerteTerGoedkeuring.regels}
+          subtotaal={data.offerteTerGoedkeuring.subtotaal}
+          korting={data.offerteTerGoedkeuring.korting}
+          btw={data.offerteTerGoedkeuring.btw}
+          pdfModel={data.offerteTerGoedkeuring.pdfModel}
           sending={sending}
           onGoedkeuren={handleVerstuur}
           onAanpassen={naarOffertesTab}

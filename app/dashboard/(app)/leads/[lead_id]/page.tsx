@@ -43,7 +43,7 @@ export default async function LeadDetailPage({
           getLeadDetail-data via de dossier-mapper. */}
       <div className={styles.mobileTree}>
         <MobileLeadDossier
-          data={mapLeadDetailToDossier(detail, undefined, grenzen)}
+          data={mapLeadDetailToDossier(detail, undefined, grenzen, seedPricing)}
           archived={lead.dashboard_archived}
           leadTags={leadTags}
           allTags={allTags}

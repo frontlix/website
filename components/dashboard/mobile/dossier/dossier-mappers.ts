@@ -25,6 +25,9 @@ import { mapLeadToFormData } from '@/lib/dashboard/offerte-form-mapping'
 import { buildSentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { buildOpdrachtbonModel, type OpdrachtbonModel } from '@/lib/dashboard/offerte/opdrachtbon-model'
 import { formatEuro } from '@/lib/dashboard/format'
+import type { SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
+import { buildOfferteInhoud, type OfferteInhoudRegel } from '@/lib/dashboard/offerte/offerte-inhoud'
+import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
 
 const TONE = {
   blue: '#1A56FF',
@@ -79,7 +82,16 @@ export type MobileDossierData = {
     dienst: string       // korte dienst-omschrijving (bv. hoofdcategorie)
     /** De wachtende offerte (status wacht_op_goedkeuring) voor het mobiele
      *  goedkeur-blok: dienst-label, m2 en geformatteerd totaal. null = geen. */
-    terGoedkeuring?: { dienst: string; m2: string; totaal: string } | null
+    terGoedkeuring?: {
+      dienst: string
+      m2: string
+      totaal: string
+      regels: OfferteInhoudRegel[]
+      subtotaal: string
+      korting: string | null
+      btw: string
+      pdfModel: SentOffertePdfModel
+    } | null
   }
   fotos: DossPhotoItem[]
   activity: DossActity[]
@@ -280,16 +292,10 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     email: l.email ?? undefined,
     telefoon: l.telefoon ?? undefined,
     dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
-    // Wachtende offerte (status wacht_op_goedkeuring): dienst-label, m2 en
-    // totaal voor het mobiele goedkeur-blok bovenaan het dossier.
-    terGoedkeuring:
-      !l.offerte_verstuurd && latest?.status === 'wacht_op_goedkeuring'
-        ? {
-            dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
-            m2: l.m2 != null ? `${l.m2} m²` : '',
-            totaal: formatEuro(totaal),
-          }
-        : null,
+    // Wachtende offerte: de inhoud van het goedkeur-blok (regels, subtotalen,
+    // totaal, PDF-model) wordt in mapLeadDetailToDossier verrijkt, waar baseData
+    // en de prijslijst beschikbaar zijn. Hier dus null.
+    terGoedkeuring: null,
   }
 }
 
@@ -297,6 +303,7 @@ export function mapLeadDetailToDossier(
   detail: LeadDetail,
   now: number = Date.now(),
   grenzen: HandoverGrenzen = DEFAULT_GRENZEN,
+  pricing: ManualOffertePricing = FALLBACK_PRICING,
 ): MobileDossierData {
   const l = detail.lead
   const fotoCount = detail.fotos.length
@@ -370,6 +377,29 @@ export function mapLeadDetailToDossier(
     notities: detail.notes.filter((n) => n.op_opdrachtbon !== false).map((n) => n.tekst),
   })
 
+  // Wachtende offerte: verrijk het mobiele goedkeur-blok met de live inhoud
+  // (regels, subtotalen, totaal en PDF-model), uit dezelfde bron als de PDF en
+  // als wat de bot bij goedkeuren verstuurt. Hier beschikbaar: baseData + pricing.
+  const offerte = buildOfferte(detail)
+  const latestOfferte = detail.offertes.find((o) => !o.is_concept) ?? detail.offertes[0]
+  if (!l.offerte_verstuurd && latestOfferte?.status === 'wacht_op_goedkeuring') {
+    const inhoud = buildOfferteInhoud(
+      { data: baseData, pricing, geldigheidDagen: l.offerte_geldigheid_dagen ?? 14 },
+      l.lead_id,
+      new Date(now).getFullYear(),
+    )
+    offerte.terGoedkeuring = {
+      dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
+      m2: l.m2 != null ? `${l.m2} m²` : '',
+      totaal: inhoud.totaalIncl,
+      regels: inhoud.regels,
+      subtotaal: inhoud.subtotaal,
+      korting: inhoud.korting,
+      btw: inhoud.btw,
+      pdfModel: inhoud.pdfModel,
+    }
+  }
+
   return {
     lead,
     leadId: l.lead_id,
@@ -386,7 +416,7 @@ export function mapLeadDetailToDossier(
     dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),
     surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
-    offerte: buildOfferte(detail),
+    offerte,
     fotos: detail.fotos.map((f, i) => ({ url: f.public_url ?? null, tag: `Foto ${i + 1}` })),
     activity: buildActivity(detail, now),
     // Team-notities (getLeadDetail sorteert al nieuwste-eerst), zelfde vorm als desktop.
