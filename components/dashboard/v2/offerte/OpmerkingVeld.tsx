@@ -11,6 +11,9 @@ interface OpmerkingVeldProps {
   waarde: RegelOpmerking | undefined;
   /** Schrijf de nieuwe opmerking terug. */
   zet: (next: RegelOpmerking) => void;
+  /** Optioneel onderdeel-label (bv. "Beschermlaag"); maakt duidelijk bij welk
+   *  onderdeel de opmerking hoort wanneer de positie dat niet doet (lead-editor). */
+  label?: string;
   disabled?: boolean;
 }
 
@@ -23,7 +26,7 @@ interface OpmerkingVeldProps {
  * Gedeeld door de wizard (StapWerk) en de lead-editor (OfferteEditor), zodat
  * het gedrag overal gelijk is.
  */
-export function OpmerkingVeld({ waarde, zet, disabled }: OpmerkingVeldProps) {
+export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldProps) {
   const tekst = waarde?.tekst ?? "";
   // Default AAN: een nieuwe of nog niet-bestaande opmerking staat aan.
   const zichtbaar = waarde?.zichtbaar !== false;
@@ -40,20 +43,34 @@ export function OpmerkingVeld({ waarde, zet, disabled }: OpmerkingVeldProps) {
         disabled={disabled}
       >
         <Plus size={13} strokeWidth={2.4} />
-        Opmerking voor de offerte
+        {label ? `Opmerking bij ${label}` : "Opmerking voor de offerte"}
       </button>
     );
   }
 
   return (
-    <div className={styles.veld} data-uit={!zichtbaar || undefined}>
+    <div className={styles.wrap}>
+      {label ? <span className={styles.veldLabel}>{label}</span> : null}
+      <div
+        className={styles.veld}
+        data-uit={!zichtbaar || undefined}
+        onBlur={(e) => {
+        // Alleen inklappen als de focus de HELE container verlaat én er geen
+        // tekst staat. Op de schakelaar klikken verplaatst de focus binnen de
+        // container (relatedTarget zit in currentTarget) en mag dus NIET
+        // inklappen.
+        if (
+          tekst.trim() === "" &&
+          !e.currentTarget.contains(e.relatedTarget as Node | null)
+        ) {
+          setOpen(false);
+        }
+      }}
+    >
       <textarea
         className={styles.input}
         value={tekst}
         onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
-        onBlur={() => {
-          if (tekst.trim() === "") setOpen(false);
-        }}
         placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
         rows={2}
         disabled={disabled}
@@ -68,6 +85,7 @@ export function OpmerkingVeld({ waarde, zet, disabled }: OpmerkingVeldProps) {
         />
         <span className={styles.toggleLabel}>{zichtbaar ? "In offerte" : "Verborgen"}</span>
       </span>
+      </div>
     </div>
   );
 }

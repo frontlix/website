@@ -138,9 +138,13 @@ function AccordionSection({
 function MobileOpmerking({
   waarde,
   zet,
+  label,
 }: {
   waarde?: RegelOpmerking
   zet: (next: RegelOpmerking) => void
+  /** Onderdeel-label (bv. "Beschermlaag") zodat duidelijk is bij welk onderdeel
+   *  de opmerking hoort. */
+  label?: string
 }) {
   const tekst = waarde?.tekst ?? ''
   const zichtbaar = waarde?.zichtbaar !== false
@@ -149,32 +153,46 @@ function MobileOpmerking({
   if (!open) {
     return (
       <button type="button" className={styles.opmAdd} onClick={() => setOpen(true)}>
-        <Plus size={13} strokeWidth={2.4} aria-hidden="true" /> Opmerking voor de offerte
+        <Plus size={13} strokeWidth={2.4} aria-hidden="true" />{' '}
+        {label ? `Opmerking bij ${label}` : 'Opmerking voor de offerte'}
       </button>
     )
   }
 
   return (
-    <div className={styles.opmRij} data-uit={!zichtbaar || undefined}>
-      <textarea
-        className={styles.opmInput}
-        value={tekst}
-        rows={2}
-        placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
-        onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
-        onBlur={() => {
-          if (tekst.trim() === '') setOpen(false)
+    <div className={styles.opmWrap}>
+      {label ? <span className={styles.opmVeldLabel}>{label}</span> : null}
+      <div
+        className={styles.opmRij}
+        data-uit={!zichtbaar || undefined}
+        onBlur={(e) => {
+          // Niet inklappen bij het klikken op de schakelaar (de focus blijft in
+          // de container); alleen als de focus de container verlaat én leeg is.
+          if (
+            tekst.trim() === '' &&
+            !e.currentTarget.contains(e.relatedTarget as Node | null)
+          ) {
+            setOpen(false)
+          }
         }}
-      />
-      <span className={styles.opmToggle}>
-        <OSwitch
-          on={zichtbaar}
-          accent={TONE_PRIMARY}
-          label="Opmerking in de offerte tonen"
-          onChange={(v) => zet({ tekst, zichtbaar: v })}
+      >
+        <textarea
+          className={styles.opmInput}
+          value={tekst}
+          rows={2}
+          placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
+          onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
         />
-        <span className={styles.opmToggleLabel}>{zichtbaar ? 'In offerte' : 'Verborgen'}</span>
-      </span>
+        <span className={styles.opmToggle}>
+          <OSwitch
+            on={zichtbaar}
+            accent={TONE_PRIMARY}
+            label="Opmerking in de offerte tonen"
+            onChange={(v) => zet({ tekst, zichtbaar: v })}
+          />
+          <span className={styles.opmToggleLabel}>{zichtbaar ? 'In offerte' : 'Verborgen'}</span>
+        </span>
+      </div>
     </div>
   )
 }
@@ -326,6 +344,19 @@ export function MobileOfferteEditor({
   const totals = useMemo(() => computeTotals(rules, data), [rules, data])
   // Regel-index per onderdeel die het opmerking-veld krijgt (laatste regel).
   const opmIndices = useMemo(() => laatsteOnderdeelRegelIndices(rules), [rules])
+  // Welke onderdelen een regel opleveren; alleen die krijgen een opmerking-veld.
+  const actieveOpm = useMemo(() => new Set(opmIndices.values()), [opmIndices])
+  /** Opmerking-veld voor één onderdeel, onder de bijbehorende optie. Het label
+   *  maakt duidelijk bij welk onderdeel het hoort; alleen getoond als dat
+   *  onderdeel ook echt een regel oplevert. */
+  const opm = (key: OpmerkingKey, label: string) =>
+    actieveOpm.has(key) ? (
+      <MobileOpmerking
+        label={label}
+        waarde={data.regel_opmerkingen?.[key]}
+        zet={(next) => zetOpmerking(key, next)}
+      />
+    ) : null
 
   const reiskostenTotaal = useMemo(
     () => rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
@@ -633,6 +664,8 @@ export function MobileOfferteEditor({
           <span className={styles.controlRowLabel}>Oppervlakte</span>
           <OStepper value={data.m2} onChange={(v) => setField('m2', v)} step={5} suffix="m²" />
         </div>
+        {opm('reiniging', 'Reiniging')}
+        {opm('reiskosten', 'Reiskosten')}
 
         {/* Extra arbeid: 3-koloms grid */}
         <div>
@@ -737,6 +770,8 @@ export function MobileOfferteEditor({
               </div>
             </div>
           </div>
+          {opm('voegzand_normaal', 'Voegzand normaal')}
+          {opm('voegzand_onkruidwerend', 'Voegzand onkruidwerend')}
 
           {/* Kleur-pills, beide onafhankelijk selecteerbaar. */}
           <div className={`${styles.kleuren} ${styles.mt10}`}>
@@ -796,6 +831,7 @@ export function MobileOfferteEditor({
                 onChange={(v) => setField('planten_afschermen_actief', v)}
               />
             </div>
+            {opm('planten', 'Planten afschermen')}
           </div>
         </div>
 
@@ -826,6 +862,9 @@ export function MobileOfferteEditor({
               )
             })}
           </div>
+          {opm('beschermlaag', 'Beschermlaag')}
+          {opm('preventieve_onkruid', 'Preventieve onkruidbehandeling')}
+          {opm('onderhoud', 'Onderhoud')}
         </div>
       </AccordionSection>
 
@@ -963,53 +1002,42 @@ export function MobileOfferteEditor({
           {rules.length === 0 ? (
             <div className={styles.lineEmpty}>Nog geen diensten geselecteerd.</div>
           ) : (
-            rules.map((r, i) => {
-              const opmKey = opmIndices.get(i)
-              return (
-                <div key={`${r.desc}-${i}`}>
-                  <div className={styles.lineRow}>
-                    <span className={styles.lineLabel}>{r.desc}</span>
-                    <span className={styles.lineRight}>
-                      <span className={styles.lineMeta}>
-                        {r.aantal} {r.eenheid} ×{' '}
-                        {r.overrideKey && live ? (
-                          <span className={styles.linePrijs}>
-                            <ONumField
-                              value={r.prijs}
-                              onChange={(v) => setField(r.overrideKey!, v)}
-                              prefix="€"
-                              dec
-                              align="right"
-                            />
-                            {r.overrideKey.endsWith('_override') &&
-                            data[r.overrideKey] != null ? (
-                              <button
-                                type="button"
-                                className={styles.linePrijsReset}
-                                onClick={() => setField(r.overrideKey!, undefined)}
-                                title="Terug naar de prijslijst"
-                                aria-label="Prijs terug naar de prijslijst"
-                              >
-                                <RotateCcw size={12} strokeWidth={2.5} />
-                              </button>
-                            ) : null}
-                          </span>
-                        ) : (
-                          formatEuro(r.prijs)
-                        )}
+            rules.map((r, i) => (
+              <div className={styles.lineRow} key={`${r.desc}-${i}`}>
+                <span className={styles.lineLabel}>{r.desc}</span>
+                <span className={styles.lineRight}>
+                  <span className={styles.lineMeta}>
+                    {r.aantal} {r.eenheid} ×{' '}
+                    {r.overrideKey && live ? (
+                      <span className={styles.linePrijs}>
+                        <ONumField
+                          value={r.prijs}
+                          onChange={(v) => setField(r.overrideKey!, v)}
+                          prefix="€"
+                          dec
+                          align="right"
+                        />
+                        {r.overrideKey.endsWith('_override') &&
+                        data[r.overrideKey] != null ? (
+                          <button
+                            type="button"
+                            className={styles.linePrijsReset}
+                            onClick={() => setField(r.overrideKey!, undefined)}
+                            title="Terug naar de prijslijst"
+                            aria-label="Prijs terug naar de prijslijst"
+                          >
+                            <RotateCcw size={12} strokeWidth={2.5} />
+                          </button>
+                        ) : null}
                       </span>
-                      <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
-                    </span>
-                  </div>
-                  {opmKey ? (
-                    <MobileOpmerking
-                      waarde={data.regel_opmerkingen?.[opmKey]}
-                      zet={(next) => zetOpmerking(opmKey, next)}
-                    />
-                  ) : null}
-                </div>
-              )
-            })
+                    ) : (
+                      formatEuro(r.prijs)
+                    )}
+                  </span>
+                  <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>
+                </span>
+              </div>
+            ))
           )}
         </div>
 

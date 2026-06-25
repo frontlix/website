@@ -644,11 +644,25 @@
   font-weight: 600;
   cursor: pointer;
 }
+.opmWrap {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}
+.opmVeldLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
 .opmRij {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   margin-top: 6px;
+}
+.opmWrap .opmRij {
+  margin-top: 0;
 }
 .opmInput {
   flex: 1;
