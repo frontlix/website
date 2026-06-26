@@ -381,8 +381,14 @@ export function mapLeadDetailToDossier(
   // (regels, subtotalen, totaal en PDF-model), uit dezelfde bron als de PDF en
   // als wat de bot bij goedkeuren verstuurt. Hier beschikbaar: baseData + pricing.
   const offerte = buildOfferte(detail)
-  const latestOfferte = detail.offertes.find((o) => !o.is_concept) ?? detail.offertes[0]
-  if (!l.offerte_verstuurd && latestOfferte?.status === 'wacht_op_goedkeuring') {
+  // Zelfde detectie als de desktop-mapper (v2): de SPECIFIEKE offerte die op
+  // goedkeuring wacht, niet de nieuwste versie en zonder een aparte
+  // offerte_verstuurd-check. Zo toont het mobiele blok consistent met de
+  // computer, ook als er al een nieuwere verstuurde offerte naast staat.
+  const wachtende = detail.offertes.find(
+    (o) => !o.is_concept && o.status === 'wacht_op_goedkeuring',
+  )
+  if (wachtende) {
     const inhoud = buildOfferteInhoud(
       { data: baseData, pricing, geldigheidDagen: l.offerte_geldigheid_dagen ?? 14 },
       l.lead_id,
