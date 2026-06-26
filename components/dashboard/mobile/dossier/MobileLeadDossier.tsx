@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { DossierHeader } from './DossierHeader'
 import { DossierFactStrip } from './DossierFactStrip'
@@ -68,6 +68,28 @@ export function MobileLeadDossier({
   // actiebalk-knop "Bekijk PDF" dezelfde nette overlay opent (i.p.v. de
   // route-versie die mobiel slecht oogt).
   const pdfApiRef = useRef<{ openPdf: () => void } | null>(null)
+
+  // "Aanpassen" in het goedkeur-blok wisselt naar de Offerte-tab; deze ref + vlag
+  // scrollen daarna naar het bewerkscherm zodat je meteen kunt wijzigen i.p.v.
+  // bovenaan bij het blok te blijven hangen.
+  const offerteEditorRef = useRef<HTMLDivElement>(null)
+  const [scrollNaarEditor, setScrollNaarEditor] = useState(false)
+
+  useEffect(() => {
+    if (tab !== 'offerte' || !scrollNaarEditor) return
+    // Wacht een frame zodat de Offerte-tab (de editor) gerenderd is.
+    const id = requestAnimationFrame(() => {
+      offerteEditorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setScrollNaarEditor(false)
+    })
+    return () => cancelAnimationFrame(id)
+  }, [tab, scrollNaarEditor])
+
+  /** Open de Offerte-tab én scroll naar het bewerkscherm (vanaf "Aanpassen"). */
+  const naarOfferteAanpassen = () => {
+    setTab('offerte')
+    setScrollNaarEditor(true)
+  }
 
   // Team-notities: zelfde server-actions als desktop (note-actions), met
   // optimistische refresh. revalidatePath('/leads/<id>') raakt ook dit pad.
@@ -165,7 +187,7 @@ export function MobileLeadDossier({
             regels={data.offerte.terGoedkeuring.regels}
             korting={data.offerte.terGoedkeuring.korting}
             pdfModel={data.offerte.terGoedkeuring.pdfModel}
-            onAanpassen={() => setTab('offerte')}
+            onAanpassen={naarOfferteAanpassen}
           />
         ) : null}
         <DossierTabs active={tab} tabs={TABS} onSelect={(k) => setTab(k as Tab)} />
@@ -196,10 +218,10 @@ export function MobileLeadDossier({
               + persistentie als de desktop-vorm, dus identieke totalen. De sticky
               actiebalk levert daarnaast de PDF-CTA. */}
           {tab === 'offerte' && (
-            <>
+            <div ref={offerteEditorRef}>
               <MobileOfferteEditor {...offerteForm} pdfApiRef={pdfApiRef} />
               <MobileOpdrachtbonActions model={data.opdrachtbon} klantNaam={lead.naam} />
-            </>
+            </div>
           )}
           {tab === 'fotos' && <DossFotos fotos={data.fotos} />}
           {tab === 'notities' && (
