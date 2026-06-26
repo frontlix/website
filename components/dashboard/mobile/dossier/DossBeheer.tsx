@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, RotateCcw, Ban, CheckCircle2, XCircle } from 'lucide-react'
+import { Archive, RotateCcw, Trash2, CheckCircle2, XCircle } from 'lucide-react'
 import styles from './DossBeheer.module.css'
 
 interface DossBeheerProps {
@@ -87,15 +87,15 @@ export function DossBeheer({
             onClick={onGeenEcht}
             disabled={pending}
           >
-            <Ban size={16} strokeWidth={2.2} aria-hidden="true" />
-            Geen echte lead
+            <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
+            Verwijderen
           </button>
         )}
       </div>
       <p className={styles.hint}>
         {archived
           ? 'Deze lead staat in het archief. Herstellen zet de lead terug in de lijst en laat hem weer meetellen in de statistieken.'
-          : 'Met "Geen echte lead" (spam of test) verdwijnt de lead uit alle statistieken en gaat hij naar het archief. Omkeerbaar via Herstel.'}
+          : 'Met "Verwijderen" (spam of test) verdwijnt de lead uit alle statistieken en gaat hij naar het archief. Omkeerbaar via Herstel.'}
       </p>
     </section>
   )

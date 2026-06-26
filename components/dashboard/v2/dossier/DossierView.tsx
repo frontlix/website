@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import type { OfferteEditorApi } from "./OfferteEditor";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, StickyNote, Archive, RotateCcw, Ban, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronLeft, StickyNote, Archive, RotateCcw, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
@@ -409,8 +409,8 @@ export function DossierView({
               disabled={pending}
               title="Spam, test, dubbel of verkeerd nummer: uit je lijst en uit alle statistieken"
             >
-              <Ban size={15} strokeWidth={2.1} />
-              Geen echte lead
+              <Trash2 size={15} strokeWidth={2.1} />
+              Verwijderen
             </button>
           ) : null}
           {/* Klus afronden: de afspraak is voorbij en de lead staat nog open.

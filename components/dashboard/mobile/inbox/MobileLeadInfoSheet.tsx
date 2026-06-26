@@ -220,7 +220,7 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
               Archiveer
             </button>
 
-            {/* Geen echte lead */}
+            {/* Verwijderen (voorheen "Geen echte lead"): spam/test/dubbel */}
             <button
               type="button"
               className={styles.actionBtn}
@@ -229,10 +229,13 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
               </svg>
-              Geen echte lead
+              Verwijderen
             </button>
           </div>
 
