@@ -87,7 +87,7 @@ export function MeldingenPanel({
   initialPrefs,
   meldingen,
   initialDigestTijd = "08:00",
-  initialKlusStatusMelden = true,
+  initialKlusStatusMelden = false,
   live = true,
   onToggle,
 }: MeldingenPanelProps) {

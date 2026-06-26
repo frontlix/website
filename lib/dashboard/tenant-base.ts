@@ -122,8 +122,9 @@ export async function getRadiusMaxKm(): Promise<number> {
  * Staat de "Klus afronden"-actie aan (tenant_settings.klus_status_melden,
  * instelbaar via /instellingen > Meldingen)? Bepaalt of het Overzicht na een
  * voorbije afspraak een herinnering toont om de klus af te ronden of als
- * geblokkeerd te markeren. Default TRUE als de kolom/waarde ontbreekt (migratie
- * 063 nog niet toegepast), zodat de actie standaard zichtbaar is.
+ * geblokkeerd te markeren. Default FALSE: we gaan ervan uit dat de klus gewoon
+ * doorging, dus standaard geen herinnering; de owner zet 'm aan in Instellingen
+ * als hij wel een geheugensteun wil.
  *
  * `select('*')` voorkomt een failure als migratie 063 nog niet is toegepast,
  * dan is de kolom er simpelweg niet maar de overige kolommen werken nog wel.
@@ -135,9 +136,9 @@ export async function getKlusStatusMelden(): Promise<boolean> {
     .select('*')
     .limit(1)
     .maybeSingle()
-  if (error || !data) return true
+  if (error || !data) return false
   const v = (data as Record<string, unknown>).klus_status_melden
-  // Alleen een expliciete `false` zet de actie uit; ontbreekt de kolom of is
-  // de waarde null, dan blijft de actie aan.
-  return v === false ? false : true
+  // Alleen een expliciete `true` zet de actie aan; ontbreekt de kolom of is
+  // de waarde null, dan blijft de actie uit.
+  return v === true
 }
