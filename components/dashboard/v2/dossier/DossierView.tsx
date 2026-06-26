@@ -466,7 +466,11 @@ export function DossierView({
         </div>
       </div>
 
-      {data.offerteTerGoedkeuring ? (
+      {/* Het goedkeur-blok verdwijnt zodra je in het Offertes-tabblad (de editor)
+          zit: de pagina heeft een vaste hoogte met een interne kolom-scroll, dus
+          een groot blok zou de editor in een klein vakje persen. In de editor zie
+          je de regels toch al, met een eigen Goedkeuren-knop. */}
+      {data.offerteTerGoedkeuring && tab !== "Offertes" ? (
         <OfferteTerGoedkeuringBlok
           dienst={data.offerteTerGoedkeuring.dienst}
           m2={data.offerteTerGoedkeuring.m2}
