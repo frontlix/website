@@ -1,0 +1,52 @@
+/* "Binnenkort"-placeholder voor de mobiele reviews-pagina. Mirror van de
+   desktop /dashboard/v2/reviews placeholder, maar met de mobiele --color-*
+   tokens (licht + donker) en een min-height zodat 'ie gecentreerd vult
+   binnen de scrollende mobiele content. */
+.soon {
+  min-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 40px 20px;
+}
+
+.soonIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg, 16px);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.soonBadge {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full, 9999px);
+  padding: 3px 12px;
+}
+
+.soonTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.soonText {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  max-width: 42ch;
+}
