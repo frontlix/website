@@ -20,7 +20,7 @@
 // OClientNote, OAddrInput.
 // ──────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type RefObject } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useTransition, type RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Check,
@@ -138,6 +138,14 @@ function AccordionSection({
 // (default AAN). Aan + niet-lege tekst → de opmerking komt in de offerte onder
 // dit onderdeel; uit = alleen intern. Ingeklapt tot een knop zolang er geen
 // tekst is, zodat de editor rustig blijft.
+/** Extra-dienst → opmerking-onderdeel (spiegelt de desktop OfferteEditor).
+ *  Invegen levert het voegzand-werk op, dus daar hangt de voegzand-opmerking. */
+const DIENST_OPM: Partial<Record<string, { key: OpmerkingKey; label: string }>> = {
+  invegen: { key: 'voegzand_normaal', label: 'Voegzand' },
+  preventieve_onkruid: { key: 'preventieve_onkruid', label: 'Preventieve onkruidbehandeling' },
+  beschermlaag: { key: 'beschermlaag', label: 'Nieuwe beschermlaag' },
+}
+
 function MobileOpmerking({
   waarde,
   zet,
@@ -757,6 +765,7 @@ export function MobileOfferteEditor({
               <span className={styles.valueBox}>{formatEuro(arbeidTotaal)}</span>
             </div>
           </div>
+          {opmVast('extra_arbeid', 'Extra arbeid')}
         </div>
 
         {/* Voegzand */}
@@ -823,9 +832,6 @@ export function MobileOfferteEditor({
               </div>
             </div>
           </div>
-          {opm('voegzand_normaal', 'Voegzand normaal')}
-          {opm('voegzand_onkruidwerend', 'Voegzand onkruidwerend')}
-
           {/* Kleur-pills, beide onafhankelijk selecteerbaar. */}
           <div className={`${styles.kleuren} ${styles.mt10}`}>
             <button
@@ -899,25 +905,26 @@ export function MobileOfferteEditor({
               ['beschermlaag', 'Nieuwe beschermlaag'],
             ] as const).map(([k, label]) => {
               const on = data.sub.includes(k)
+              const o = DIENST_OPM[k]
               return (
-                <button
-                  key={k}
-                  type="button"
-                  className={styles.check}
-                  data-on={on || undefined}
-                  aria-pressed={on}
-                  onClick={() => toggleSub(k)}
-                >
-                  <span className={styles.checkBox}>
-                    {on ? <Check size={14} strokeWidth={3} aria-hidden="true" /> : null}
-                  </span>
-                  {label}
-                </button>
+                <Fragment key={k}>
+                  <button
+                    type="button"
+                    className={styles.check}
+                    data-on={on || undefined}
+                    aria-pressed={on}
+                    onClick={() => toggleSub(k)}
+                  >
+                    <span className={styles.checkBox}>
+                      {on ? <Check size={14} strokeWidth={3} aria-hidden="true" /> : null}
+                    </span>
+                    {label}
+                  </button>
+                  {on && o ? opmVast(o.key, o.label) : null}
+                </Fragment>
               )
             })}
           </div>
-          {opm('beschermlaag', 'Beschermlaag')}
-          {opm('preventieve_onkruid', 'Preventieve onkruidbehandeling')}
           {opm('onderhoud', 'Onderhoud')}
         </div>
       </AccordionSection>

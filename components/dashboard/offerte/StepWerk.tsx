@@ -5,9 +5,11 @@ import {
   type ManualOfferteData,
   type SubDienst,
   type Hoofdcategorie,
+  type OpmerkingKey,
   SUB_OPTIES,
   ONDERHOUD_PRIJZEN,
 } from '@/lib/dashboard/manual-offerte-types'
+import { OpmerkingVeld } from '@/components/dashboard/v2/offerte/OpmerkingVeld'
 import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
@@ -45,6 +47,19 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
     if (cleanedSub.length !== data.sub.length) set('sub', cleanedSub)
   }
   const hasInvegen = data.sub.includes('invegen')
+
+  /** Opmerking-veld (tekst + In-offerte-schakelaar, default aan) voor één
+   *  onderdeel. Schrijft naar data.regel_opmerkingen, identiek aan de
+   *  desktop-wizard (StapWerk), zodat de opmerking in de offerte-PDF verschijnt. */
+  const opm = (key: OpmerkingKey, label?: string) => (
+    <div style={{ marginTop: 8 }}>
+      <OpmerkingVeld
+        waarde={data.regel_opmerkingen?.[key]}
+        zet={(next) => set('regel_opmerkingen', { ...(data.regel_opmerkingen ?? {}), [key]: next })}
+        label={label}
+      />
+    </div>
+  )
 
   return (
     <>
@@ -118,6 +133,8 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             )
           })}
         </div>
+        {data.sub.includes('preventieve_onkruid') ? opm('preventieve_onkruid', 'Preventieve onkruidbehandeling') : null}
+        {data.sub.includes('beschermlaag') ? opm('beschermlaag', 'Nieuwe beschermlaag') : null}
       </div>
 
       {/* Onderhoud-weken-selector */}
@@ -151,6 +168,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
               </strong>
             )}
           </div>
+          {opm('onderhoud', 'Onderhoudsplan')}
         </div>
       )}
 
@@ -222,6 +240,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           </div>
         </div>
       </div>
+      {opm('reiniging', 'Reiniging')}
 
       {/* Voegzand */}
       {hasInvegen && (
@@ -246,6 +265,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             onZakken={(v) => set('voegzand_normaal_zakken', v)}
             onPrijs={(v) => set('voegzand_normaal_prijs', v)}
           />
+          {data.voegzand_normaal_actief ? opm('voegzand_normaal', 'Normaal voegzand') : null}
           <div style={{ height: 10 }} />
           <ZandTypeRow
             label="Onkruidwerend voegzand"
@@ -260,6 +280,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             onZakken={(v) => set('voegzand_onkruidwerend_zakken', v)}
             onPrijs={(v) => set('voegzand_onkruidwerend_prijs', v)}
           />
+          {data.voegzand_onkruidwerend_actief ? opm('voegzand_onkruidwerend', 'Onkruidwerend voegzand') : null}
 
           <VoegzandMismatchWarning data={data} />
 
@@ -337,6 +358,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             </div>
           </div>
         )}
+        {data.planten_afschermen_actief ? opm('planten', 'Plantenafscherming') : null}
       </div>
 
       {/* Groene aanslag */}
@@ -357,6 +379,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           </div>
         </div>
       </button>
+      {opm('conditie', 'Conditie van de bestrating')}
     </>
   )
 }
