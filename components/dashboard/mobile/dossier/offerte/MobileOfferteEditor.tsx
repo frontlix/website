@@ -462,10 +462,6 @@ export function MobileOfferteEditor({
   // die client-state behoudt). Alleen tonen als er een concept te herstellen is.
   const handleRevert = useCallback(() => {
     if (!leadId || reverting) return
-    // eslint-disable-next-line no-alert
-    if (!window.confirm('Wijzigingen ongedaan maken en terug naar de laatst verstuurde offerte?')) {
-      return
-    }
     startRevert(async () => {
       const res = await revertConcept(leadId)
       if (!res.ok) {

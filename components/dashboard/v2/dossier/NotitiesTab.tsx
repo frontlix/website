@@ -68,7 +68,7 @@ export function NotitiesTab({
   };
 
   const verwijder = (id: string) => {
-    if (window.confirm("Deze notitie verwijderen?")) onDelete(id);
+    onDelete(id);
   };
 
   const zetAfspraak = (n: DossierNotitie, value: boolean) =>

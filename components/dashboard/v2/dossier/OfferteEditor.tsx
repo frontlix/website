@@ -195,13 +195,6 @@ export function OfferteEditor({
   // heeft (offertes via het nieuwe form); legacy bot-offertes hebben er geen.
   const handleRevert = () => {
     if (!leadId || reverting) return;
-    if (
-      !window.confirm(
-        "Wijzigingen ongedaan maken en terug naar de laatst verstuurde offerte?",
-      )
-    ) {
-      return;
-    }
     startRevert(async () => {
       const res = await revertConcept(leadId);
       if (!res.ok) {

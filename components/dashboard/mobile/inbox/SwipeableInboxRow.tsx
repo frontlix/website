@@ -40,12 +40,7 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
   }
 
   function handleArchive() {
-    // Bevestiging: archiveren haalt de lead uit de pipeline. Een swipe is zo
-    // gemaakt, dus vraag het eerst. Bij annuleren klapt de swipe-lade dicht.
-    if (!window.confirm(`Gesprek met ${convo.naam} archiveren? De lead verdwijnt dan uit de pipeline. Je kunt 'm later met "Herstel" terughalen.`)) {
-      reset()
-      return
-    }
+    // Archiveren haalt de lead uit de pipeline (terug te halen via "Herstel").
     startArchive(async () => {
       await archiveLead(convo.leadId)
       router.refresh()

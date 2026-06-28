@@ -127,14 +127,6 @@ export function TagsPanel({ tags: initialTags, live = true }: TagsPanelProps) {
   };
 
   const onDelete = (tag: TagWithCount) => {
-    if (
-      tag.count > 0 &&
-      !window.confirm(
-        `Tag "${tag.naam}" wordt op ${tag.count} lead${tag.count === 1 ? "" : "s"} gebruikt. Toch verwijderen?`,
-      )
-    ) {
-      return;
-    }
     setError(null);
     const prevTags = tags;
     setTags((curr) => curr.filter((t) => t.id !== tag.id));

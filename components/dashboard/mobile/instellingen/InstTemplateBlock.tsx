@@ -226,9 +226,6 @@ function AanvraagRow({ aanvraag }: { aanvraag: TemplateAanvraag }) {
   const heeftNotitie = aanvraag.notitie && aanvraag.notitie.trim().length > 0
 
   const onCancel = () => {
-    if (!window.confirm('Weet je zeker dat je deze aanvraag wil annuleren?')) {
-      return
-    }
     setCancelError(null)
     startTransition(async () => {
       const res = await cancelTemplateAanvraag(aanvraag.id)
