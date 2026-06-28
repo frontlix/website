@@ -37,6 +37,7 @@ import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
 import { OffertePdfDocument } from './OffertePdf'
+import { OffertePreviewHtml } from './OffertePreviewHtml'
 import { deliverPdfBlob } from './pdf-download'
 import styles from './ManualOfferteModal.module.css'
 
@@ -510,10 +511,10 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // wordt aangemaakt. Voor "echt versturen" gebruikt de owner de
   // submit-knop.
   const [pdfBusy, setPdfBusy] = useState(false)
-  // Live PDF-voorbeeld in een eigen overlay (geen deel-/bewaar-vel): de owner
-  // ziet de offerte in z'n huidige staat zonder dat 'ie 'm hoeft te downloaden.
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const previewUrlRef = useRef<string | null>(null)
+  // Voorbeeld: toont de offerte als responsive HTML in een eigen overlay
+  // (geen iOS deel-/bewaar-vel en geen ingezoomde PDF-iframe). De exacte PDF
+  // blijft beschikbaar via Download.
+  const [showPreview, setShowPreview] = useState(false)
 
   // Genereert de offerte-PDF client-side via @react-pdf/renderer (geen
   // server-roundtrip, geen lead). Gedeeld door download én preview.
@@ -566,38 +567,8 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  // Toont de PDF inline in een overlay i.p.v. 'm te delen/downloaden.
-  const previewPdf = async () => {
-    if (pdfBusy) return
-    setPdfBusy(true)
-    try {
-      const { blob } = await generatePdfBlob()
-      const u = URL.createObjectURL(blob)
-      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-      previewUrlRef.current = u
-      setPreviewUrl(u)
-    } catch (e) {
-      console.error('[ManualOfferteModal] PDF preview failed:', e)
-      setError('PDF genereren mislukt, check console voor details.')
-    } finally {
-      setPdfBusy(false)
-    }
-  }
-
-  const closePreview = () => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-      previewUrlRef.current = null
-    }
-    setPreviewUrl(null)
-  }
-
-  // Object-URL opruimen bij unmount.
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-    }
-  }, [])
+  const openPreview = () => setShowPreview(true)
+  const closePreview = () => setShowPreview(false)
 
   return (
     <>
@@ -840,11 +811,11 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 className={styles.btnPreview}
-                onClick={previewPdf}
-                disabled={pdfBusy || rules.length === 0}
+                onClick={openPreview}
+                disabled={rules.length === 0}
                 aria-label="Preview"
               >
-                <Eye size={14} /> {pdfBusy ? 'Laden…' : 'Preview'}
+                <Eye size={14} /> Preview
               </button>
             </div>
             {!isSendStep && (
@@ -875,10 +846,11 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
 
-    {/* PDF-voorbeeld: toont de offerte inline in een eigen overlay (boven de
-        wizard, z-index 9500) i.p.v. het iOS deel-/bewaar-vel. Klik op de
-        achtergrond of het kruisje sluit 'm; Download PDF blijft als optie. */}
-    {previewUrl && (
+    {/* Voorbeeld: toont de offerte als responsive HTML in een eigen overlay
+        (boven de wizard, z-index 9500). Geen iOS deel-/bewaar-vel en geen
+        ingezoomde PDF-iframe: de hele offerte past op schermbreedte. Klik op de
+        achtergrond of het kruisje sluit 'm; Download PDF levert de exacte PDF. */}
+    {showPreview && (
       <div
         onClick={closePreview}
         style={{
@@ -897,7 +869,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
             background: '#fff',
             borderRadius: isMobile ? 0 : 14,
             width: '100%',
-            maxWidth: 900,
+            maxWidth: 820,
             margin: '0 auto',
             flex: 1,
             minHeight: 0,
@@ -934,11 +906,14 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <X size={22} />
             </button>
           </div>
-          <iframe
-            src={previewUrl}
-            title="Voorbeeld offerte"
-            style={{ flex: 1, width: '100%', border: 'none', minHeight: 0 }}
-          />
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <OffertePreviewHtml
+              data={data}
+              rules={rules}
+              totals={totals}
+              origin={typeof window !== 'undefined' ? window.location.origin : undefined}
+            />
+          </div>
           <div
             style={{
               display: 'flex',
