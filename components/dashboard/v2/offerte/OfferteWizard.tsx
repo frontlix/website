@@ -275,22 +275,24 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     // Reiniging (Schoon Straatje): vaste dagprijs onder 100 m², daarboven m² ×
     // tarief. De prijs komt uit de prijslijst, tenzij per-offerte overschreven.
     if (diensten["Reinigen"] && m2 > 0) {
-      if (m2 < 100) {
+      // Dagprijs dekt de eerste 100 m²; elke m² daarboven komt als losse
+      // meerprijs-regel erbij. Identiek aan computeRules + de bot (geen
+      // prijssprong op de 100 m²-grens).
+      out.push({
+        id: "oprit",
+        naam: "Reiniging oppervlak (dagprijs)",
+        qty: 1,
+        unit: "dag",
+        set: () => {},
+        ...prijsVeld("reinigen_dagprijs", pricing.reinigen_dagprijs_onder_100m2),
+      });
+      if (m2 > 100) {
         out.push({
-          id: "oprit",
-          naam: "Reiniging oppervlak (dagprijs)",
-          qty: 1,
-          unit: "dag",
-          set: () => {},
-          ...prijsVeld("reinigen_dagprijs", pricing.reinigen_dagprijs_onder_100m2),
-        });
-      } else {
-        out.push({
-          id: "oprit",
-          naam: "Reiniging oppervlak",
-          qty: m2,
+          id: "oprit_boven100",
+          naam: "Reiniging oppervlak (boven 100 m²)",
+          qty: m2 - 100,
           unit: "m²",
-          set: (v) => setM2(v),
+          set: (v) => setM2(v + 100),
           ...prijsVeld("reiniging_per_m2", pricing.reiniging_per_m2),
         });
       }
