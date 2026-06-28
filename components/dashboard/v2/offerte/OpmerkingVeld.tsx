@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { Toggle } from "@/components/dashboard/v2/ui";
 import type { RegelOpmerking } from "@/lib/dashboard/manual-offerte-types";
@@ -33,11 +33,24 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
   // Ingeklapt tot een knop zolang er geen tekst is, zodat de editor rustig oogt;
   // klik (of bestaande tekst) toont het veld + de schakelaar.
   const [open, setOpen] = useState(() => tekst.trim() !== "");
-  // Klik op de schakelaar mag het veld NIET sluiten — ook niet als de schakelaar
-  // (op iOS) geen focus vasthoudt en de textarea daardoor leeg blurt. Wordt op
-  // pointerdown van de schakelaar gezet (vóór de blur) en in onBlur geconsumeerd;
-  // textarea-focus wist een eventuele stale vlag.
-  const keepOpenRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Klik buiten de container klapt 'm weer in tot de "+ Opmerking"-knop, zolang
+  // er geen tekst staat (met tekst blijft 'ie open zodat de opmerking zichtbaar
+  // blijft). Bewust een document-listener i.p.v. onBlur: na het tikken op de
+  // schakelaar heeft het tekstveld geen focus meer (iOS geeft een button geen
+  // focus), dus er komt dan géén blur-event meer. Een klik binnen de container
+  // (tekstveld of schakelaar) laat 'm open.
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const el = containerRef.current;
+      if (!el || el.contains(e.target as Node)) return;
+      if (tekst.trim() === "") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open, tekst]);
 
   if (!open) {
     return (
@@ -54,59 +67,27 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} ref={containerRef}>
       {label ? <span className={styles.veldLabel}>{label}</span> : null}
-      <div
-        className={styles.veld}
-        data-uit={!zichtbaar || undefined}
-        onBlur={(e) => {
-        // Schakelaar-klik mag nooit inklappen, ook niet als 'ie geen focus
-        // vasthoudt (iOS: een button krijgt daar geen focus, dus relatedTarget
-        // is null). keepOpenRef is dan al op pointerdown van de schakelaar
-        // gezet en vangt dat geval af.
-        if (keepOpenRef.current) {
-          keepOpenRef.current = false;
-          return;
-        }
-        // Focus bleef binnen de container (bv. naar een ander veld erin) →
-        // open laten staan.
-        const next = e.relatedTarget as Node | null;
-        if (next && e.currentTarget.contains(next)) return;
-        // Focus ging buiten de container (of nergens heen, op iOS bij tikken
-        // naast de container): klap in tot de "+ Opmerking"-knop zolang er
-        // geen tekst is. Met tekst blijft 'ie open zodat de opmerking
-        // zichtbaar blijft staan.
-        if (tekst.trim() === "") {
-          setOpen(false);
-        }
-      }}
-    >
-      <textarea
-        className={styles.input}
-        value={tekst}
-        onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
-        placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
-        rows={2}
-        disabled={disabled}
-        onFocus={() => {
-          keepOpenRef.current = false;
-        }}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
-        autoFocus={tekst.trim() === ""}
-      />
-      <span
-        className={styles.toggle}
-        onPointerDown={() => {
-          keepOpenRef.current = true;
-        }}
-      >
-        <Toggle
-          value={zichtbaar}
-          onChange={(v) => zet({ tekst, zichtbaar: v })}
-          aria-label="Opmerking in de offerte tonen"
+      <div className={styles.veld} data-uit={!zichtbaar || undefined}>
+        <textarea
+          className={styles.input}
+          value={tekst}
+          onChange={(e) => zet({ tekst: e.target.value, zichtbaar })}
+          placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
+          rows={2}
+          disabled={disabled}
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          autoFocus={tekst.trim() === ""}
         />
-        <span className={styles.toggleLabel}>{zichtbaar ? "In offerte" : "Verborgen"}</span>
-      </span>
+        <span className={styles.toggle}>
+          <Toggle
+            value={zichtbaar}
+            onChange={(v) => zet({ tekst, zichtbaar: v })}
+            aria-label="Opmerking in de offerte tonen"
+          />
+          <span className={styles.toggleLabel}>{zichtbaar ? "In offerte" : "Verborgen"}</span>
+        </span>
       </div>
     </div>
   );
