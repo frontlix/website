@@ -44,21 +44,19 @@ export function computeRules(
   const kleurLabel = kleurDelen.join(' + ')
   const kleurSuffix = kleurLabel ? ` ${kleurLabel}` : ''
 
-  // Reiniging en invegen zijn losse keuzes (v2-wizard). De reiniging-regel telt
-  // alleen mee als reinigen_actief (default true voor bestaande flows); het
-  // invegen-werk + voegzand hangt aan de 'invegen'-sub-dienst + voegzand-vlaggen.
   const reinigenActief = data.reinigen_actief !== false
 
-  if (data.sub.includes('invegen')) {
-    // Reiniging-regel, matcht Schoon Straatje:
-    //  m² < 100 → "Reiniging oppervlak (dagprijs)" met aantal=1 dag
-    //  m² ≥ 100 → "Reiniging oppervlak" met aantal=m², eenheid=m²
+  // ── Reiniging: altijd bij oprit/terras/terrein (gelijk aan de bot, die 'm
+  //    puur op hoofdcategorie zet, LOS van invegen). De reinigen_actief-toggle
+  //    is een dashboard-only verfijning; default true reproduceert de bot.
+  //    BUGFIX: stond eerder binnen het invegen-blok, waardoor een lead zonder
+  //    invegen (bv. alleen preventieve onkruid + beschermlaag) de Reiniging-
+  //    regel miste en de app-prijs afweek van de gemailde offerte.
+  if (data.hoofdcategorie.includes('oprit_terras_terrein') && reinigenActief) {
     // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
     const reinPr = data.reiniging_per_m2_override ?? pricing.reiniging_per_m2
-    if (reinigenActief && m2 < 100 && m2 > 0) {
-      // Vaste dagprijs voor kleine oppervlakken (< 100 m²), Schoon Straatje-
-      // conventie: niet m² × tarief maar één vast bedrag.
-      // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    if (m2 < 100) {
+      // Vaste dagprijs voor kleine oppervlakken (< 100 m²), zoals de bot.
       const dagprijs = data.reinigen_dagprijs_override ?? pricing.reinigen_dagprijs_onder_100m2
       r.push({
         desc: 'Reiniging oppervlak (dagprijs)',
@@ -68,7 +66,7 @@ export function computeRules(
         totaal: dagprijs,
         overrideKey: 'reinigen_dagprijs_override',
       })
-    } else if (reinigenActief && m2 > 0) {
+    } else {
       r.push({
         desc: 'Reiniging oppervlak',
         aantal: m2,
@@ -78,7 +76,11 @@ export function computeRules(
         overrideKey: 'reiniging_per_m2_override',
       })
     }
+  }
 
+  // ── Invegen-ARBEID hangt aan de invegen-sub-dienst (het voegzand-PRODUCT
+  //    staat los, zie hieronder — net als bij de bot).
+  if (data.sub.includes('invegen')) {
     // Arbeid invegen, namen exact als SS: "Invegen normaal voegzand excl voegzand"
     if (data.voegzand_normaal_actief) {
       const am2 = Number(data.voegzand_normaal_m2) || 0
@@ -110,33 +112,36 @@ export function computeRules(
         })
       }
     }
+  }
 
-    // Voegzand-product, SS format: "Voegzand normaal naturel (15 kg/zak)".
-    // Eenheid = "zakken" (meervoud), zoals in SS PDF te zien.
-    if (data.voegzand_normaal_actief && Number(data.voegzand_normaal_zakken) > 0) {
-      const zakken = Number(data.voegzand_normaal_zakken)
-      const prijs = Number(data.voegzand_normaal_prijs)
-      r.push({
-        desc: `Voegzand normaal${kleurSuffix} (15 kg/zak)`,
-        aantal: zakken,
-        eenheid: 'zakken',
-        prijs,
-        totaal: zakken * prijs,
-        overrideKey: 'voegzand_normaal_prijs',
-      })
-    }
-    if (data.voegzand_onkruidwerend_actief && Number(data.voegzand_onkruidwerend_zakken) > 0) {
-      const zakken = Number(data.voegzand_onkruidwerend_zakken)
-      const prijs = Number(data.voegzand_onkruidwerend_prijs)
-      r.push({
-        desc: `Voegzand onkruidwerend${kleurSuffix} (15 kg/zak)`,
-        aantal: zakken,
-        eenheid: 'zakken',
-        prijs,
-        totaal: zakken * prijs,
-        overrideKey: 'voegzand_onkruidwerend_prijs',
-      })
-    }
+  // ── Voegzand-PRODUCT staat LOS van invegen (gelijk aan de bot): de eigenaar
+  //    kan losse zakken op de offerte zetten, ook zonder invegen-arbeid.
+  //    BUGFIX: stond eerder binnen het invegen-blok.
+  // Voegzand-product, SS format: "Voegzand normaal naturel (15 kg/zak)".
+  // Eenheid = "zakken" (meervoud), zoals in SS PDF te zien.
+  if (data.voegzand_normaal_actief && Number(data.voegzand_normaal_zakken) > 0) {
+    const zakken = Number(data.voegzand_normaal_zakken)
+    const prijs = Number(data.voegzand_normaal_prijs)
+    r.push({
+      desc: `Voegzand normaal${kleurSuffix} (15 kg/zak)`,
+      aantal: zakken,
+      eenheid: 'zakken',
+      prijs,
+      totaal: zakken * prijs,
+      overrideKey: 'voegzand_normaal_prijs',
+    })
+  }
+  if (data.voegzand_onkruidwerend_actief && Number(data.voegzand_onkruidwerend_zakken) > 0) {
+    const zakken = Number(data.voegzand_onkruidwerend_zakken)
+    const prijs = Number(data.voegzand_onkruidwerend_prijs)
+    r.push({
+      desc: `Voegzand onkruidwerend${kleurSuffix} (15 kg/zak)`,
+      aantal: zakken,
+      eenheid: 'zakken',
+      prijs,
+      totaal: zakken * prijs,
+      overrideKey: 'voegzand_onkruidwerend_prijs',
+    })
   }
 
   if (data.sub.includes('preventieve_onkruid')) {

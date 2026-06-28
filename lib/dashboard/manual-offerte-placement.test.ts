@@ -51,3 +51,30 @@ describe('afdekfolie planten', () => {
     expect(folie?.totaal).toBe(folie!.prijs) // 1 × stukprijs
   })
 })
+
+describe('Reiniging-regel staat los van invegen (gelijk aan de bot)', () => {
+  it('oprit-lead met alleen preventieve onkruid + beschermlaag (GEEN invegen) krijgt toch de Reiniging-regel', () => {
+    const data = makeData({
+      hoofdcategorie: ['oprit_terras_terrein'],
+      sub: ['preventieve_onkruid', 'beschermlaag'],
+      m2: 150,
+    })
+    const rules = computeRules(data)
+    const reiniging = rules.find((r) => r.desc === 'Reiniging oppervlak')
+    expect(reiniging).toBeTruthy()
+    expect(reiniging?.aantal).toBe(150) // m² >= 100 → per-m²-regel, niet dagprijs
+  })
+
+  it('voegzand-product zonder invegen-sub komt toch op de offerte', () => {
+    const data = makeData({
+      hoofdcategorie: ['oprit_terras_terrein'],
+      sub: ['beschermlaag'], // geen invegen
+      m2: 150,
+      voegzand_normaal_actief: true,
+      voegzand_normaal_zakken: 3,
+      voegzand_normaal_prijs: 2.9,
+    })
+    const rules = computeRules(data)
+    expect(rules.find((r) => r.desc.startsWith('Voegzand normaal'))).toBeTruthy()
+  })
+})
