@@ -2,12 +2,13 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  /* Vaste hoogte = het content-vlak van het app-frame. Zo krijgt de split-view
-     een vaste hoogte en scrollen de kolommen INTERN: de tab-kaart links (bv. de
-     lange offerte-editor) en het WhatsApp-gesprek rechts blijven vast staan,
-     i.p.v. dat de hele pagina scrollt en de chat meeschuift. */
-  height: 100%;
-  min-height: 0;
+  /* Minstens het content-vlak van het app-frame, maar de pagina MAG groeien.
+     Zonder extra blokken vult de split-view het frame en scrollen de kolommen
+     intern (tab-kaart links + WhatsApp rechts). Komt er bovenaan een hoog blok
+     bij (bv. het offerte-goedkeur-blok), dan groeit de pagina voorbij het frame
+     en neemt de content-kolom (.content in de Shell) de scroll over, zodat je
+     naar beneden kunt scrollen i.p.v. dat de panelen worden ingeknepen. */
+  min-height: 100%;
 }
 
 /* ── Kop ── */
@@ -183,7 +184,12 @@
   grid-template-columns: 1.7fr 1fr;
   gap: 18px;
   flex: 1;
-  min-height: 0;
+  /* Stabiele bodemhoogte: zonder goedkeur-blok vult flex:1 het frame (zelfde
+     formaat als voorheen, geen paginascroll). Mét een hoog blok erboven mag de
+     split niet verder inkrimpen dan dit, zodat de panelen hun grootte houden en
+     de pagina in plaats daarvan scrollt. De ~250px dekt de Shell-kop + de
+     dossier-kop + paddings, ruim genoeg zodat er zonder blok geen scroll ontstaat. */
+  min-height: calc(100vh - 250px);
   transition: opacity 0.18s ease;
 }
 
