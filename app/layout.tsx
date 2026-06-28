@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Frontlix | Automatische leadopvolging via WhatsApp',
   description:
-    'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
+    'Elke nieuwe lead krijgt automatisch een persoonlijk antwoord via WhatsApp en een kant-en-klare offerte. Van aanvraag tot offerte, ook als jij aan het werk bent.',
   keywords: [
     'leadopvolging',
     'WhatsApp automatisering',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Elke nieuwe lead krijgt automatisch een persoonlijk antwoord via WhatsApp en een kant-en-klare offerte. Van aanvraag tot offerte, ook als jij aan het werk bent.',
     url: 'https://frontlix.com',
     siteName: 'Frontlix',
     locale: 'nl_NL',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Frontlix | Automatische leadopvolging via WhatsApp',
     description:
-      'Binnen 60 seconden wordt elke nieuwe lead automatisch opgevolgd via WhatsApp, persoonlijk, automatisch en met een kant-en-klare offerte.',
+      'Elke nieuwe lead krijgt automatisch een persoonlijk antwoord via WhatsApp en een kant-en-klare offerte. Van aanvraag tot offerte, ook als jij aan het werk bent.',
     images: ['/og-frontlix.png'],
   },
   robots: {
@@ -86,7 +86,7 @@ const structuredData = {
         url: 'https://frontlix.com/logo.png',
       },
       description:
-        'Frontlix automatiseert leadopvolging via WhatsApp. Binnen 60 seconden een persoonlijke reactie en kant-en-klare offerte.',
+        'Frontlix automatiseert leadopvolging via WhatsApp. Elke aanvraag krijgt een persoonlijk antwoord en een kant-en-klare offerte, dag en nacht.',
       foundingDate: '2024',
       founder: [
         { '@type': 'Person', name: 'Christiaan Tromp' },

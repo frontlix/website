@@ -39,7 +39,7 @@ export default function PersonalizedDemoPage({
           <p className={styles.subtext}>
             We hebben een demo klaargezet speciaal voor jou. Ervaar hoe leads
             automatisch worden opgevolgd van aanvraag tot offerte tot afspraak
-            via WhatsApp, binnen 60 seconden.
+            via WhatsApp, ook als jij aan het werk bent.
           </p>
 
           <IndustryIntro branche={branche} />

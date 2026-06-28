@@ -41,7 +41,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className={styles.brandContent}>
           <div className={styles.brandEyebrow}>FRONTLIX</div>
           <h2 className={styles.brandHeadline}>
-            AI-gestuurde leads,
+            Slimme leadopvolging,
             <br />
             <span className={styles.brandAccent}>strakke offertes.</span>
           </h2>

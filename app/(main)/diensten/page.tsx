@@ -30,7 +30,7 @@ const serviceSchema = {
   '@type': 'Service',
   name: 'Automatische leadopvolging via WhatsApp',
   description:
-    'Van formulier tot offerte, volledig geautomatiseerd binnen 60 seconden. Leads worden automatisch opgevangen, uitgevraagd en voorzien van een professionele offerte.',
+    'Van formulier tot offerte, volledig geautomatiseerd. Leads worden automatisch opgevangen, uitgevraagd en voorzien van een professionele offerte, dag en nacht.',
   provider: {
     '@type': 'Organization',
     name: 'Frontlix',
