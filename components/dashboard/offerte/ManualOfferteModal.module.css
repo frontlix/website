@@ -2037,6 +2037,14 @@
   min-width: 0;
 }
 
+/* Alle sub-dienst-kaarten even hoog (uniforme tegels), ongeacht hoeveel tekst
+   ze hebben; de opmerking komt eronder in de cel. min-height dekt de langste
+   kaart (titel van 3 regels + sub-tekst), kortere kaarten vullen op tot dezelfde
+   hoogte. */
+.dienstCell .checkCard {
+  min-height: 128px;
+}
+
 /* (Legacy) opmerking-rij die beide kolommen spande — vervangen door .dienstCell,
    bewaard voor evt. ander gebruik. */
 .dienstenGridFull {

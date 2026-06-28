@@ -26,13 +26,13 @@ const WEEK_OPTIES: ReadonlyArray<{ w: 4 | 8 | 12 | 16; prijs: number }> = [
   { w: 16, prijs: ONDERHOUD_PRIJZEN[16] },
 ]
 
-// Sub-diensten die een eigen inline-opmerking onder hun kaart krijgen. Invegen
-// staat hier bewust NIET in: zijn opmerking-onderdeel (voegzand_normaal) hoort
-// bij het voegzand-blok, zodat elke OpmerkingKey precies één keer in de UI
-// verschijnt. Onderhoudsplan → onderhoud hangt nu onder de kaart zelf (niet meer
-// in de weken-selector) zodat elk sub-dienst-onderdeel z'n opmerking direct
-// onder de bijbehorende kaart heeft.
+// Elke sub-dienst-kaart krijgt z'n eigen inline-opmerking eronder — één per
+// OpmerkingKey, dus geen dubbele velden. Invegen → voegzand_normaal hangt nu
+// onder de Invegen-kaart (niet meer in het voegzand-blok); onkruidwerend
+// voegzand blijft in het voegzand-blok (heeft geen eigen sub-dienst-kaart).
+// Onderhoudsplan → onderhoud onder de kaart i.p.v. in de weken-selector.
 const SUB_OPMERKING: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }>> = {
+  invegen: { key: 'voegzand_normaal', label: 'Voegzand normaal' },
   preventieve_onkruid: { key: 'preventieve_onkruid', label: 'Preventieve onkruidbehandeling' },
   beschermlaag: { key: 'beschermlaag', label: 'Nieuwe beschermlaag' },
   onderhoud: { key: 'onderhoud', label: 'Onderhoudsplan' },
@@ -281,7 +281,6 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             onZakken={(v) => set('voegzand_normaal_zakken', v)}
             onPrijs={(v) => set('voegzand_normaal_prijs', v)}
           />
-          {data.voegzand_normaal_actief ? opm('voegzand_normaal', 'Normaal voegzand') : null}
           <div style={{ height: 10 }} />
           <ZandTypeRow
             label="Onkruidwerend voegzand"
