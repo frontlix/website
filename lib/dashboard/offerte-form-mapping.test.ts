@@ -15,6 +15,39 @@ function makeLead(overrides: Partial<Lead>): Lead {
   } as unknown as Lead
 }
 
+describe('voegzand-split — invegen-arbeid + zakken afgeleid uit m² (sync met de bot)', () => {
+  test('normaal invegen zonder expliciete voegzand → m²=totaal, zakken=ceil(m²/5)', () => {
+    const data = mapLeadToFormData(
+      makeLead({
+        hoofdcategorie: 'oprit_terras_terrein',
+        sub_diensten: ['invegen'],
+        m2: 700,
+        voegzand_type: 'normaal',
+      }),
+      5,
+    )
+    expect(data.voegzand_normaal_m2).toBe(700)
+    expect(data.voegzand_normaal_zakken).toBe(140)
+    // computeRules levert nu BEIDE regels: invegen-arbeid (700 m²) + voegzand (140 zakken)
+    const rules = computeRules(data)
+    expect(rules.find((r) => r.desc.startsWith('Invegen normaal'))?.aantal).toBe(700)
+    expect(rules.find((r) => r.desc.startsWith('Voegzand normaal'))?.aantal).toBe(140)
+  })
+
+  test('expliciet ingevuld aantal zakken wint van de m²-afleiding', () => {
+    const data = mapLeadToFormData(
+      makeLead({
+        sub_diensten: ['invegen'],
+        m2: 700,
+        voegzand_type: 'normaal',
+        voegzand_normaal_zakken: 12,
+      } as Partial<Lead>),
+      5,
+    )
+    expect(data.voegzand_normaal_zakken).toBe(12)
+  })
+})
+
 describe('mapLeadToFormData — onkruid seeding (live editor toont niet langer EUR 0)', () => {
   test('onkruid-lead (plan_4_weken) seedt onderhoud-subdienst + 4 weken + categorie', () => {
     const data = mapLeadToFormData(

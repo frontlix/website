@@ -337,12 +337,13 @@ function buildOfferteForm(
   detail: LeadDetail,
   pricing: ManualOffertePricing,
 ): OfferteFormData {
+  // Seed met de bevroren prijslijst van de laatste verstuurde offerte (uit
+  // de regels_snapshot), anders de live prijslijst. Zo toont een ongewijzigd
+  // concept exact de verzonden prijzen i.p.v. live te herberekenen.
+  const seedPricing = resolveSeedPricing(detail.offertes, pricing);
   return {
-    data: mapLeadToFormData(detail.lead),
-    // Seed met de bevroren prijslijst van de laatste verstuurde offerte (uit
-    // de regels_snapshot), anders de live prijslijst. Zo toont een ongewijzigd
-    // concept exact de verzonden prijzen i.p.v. live te herberekenen.
-    pricing: resolveSeedPricing(detail.offertes, pricing),
+    data: mapLeadToFormData(detail.lead, seedPricing.voegzand_m2_per_zak),
+    pricing: seedPricing,
     geldigheidDagen: detail.lead.offerte_geldigheid_dagen ?? 14,
   };
 }
@@ -420,7 +421,7 @@ export function mapLeadDetailToDossierData(
 
   // Basis-form-model uit de lead, eenmalig: dient zowel als bron voor de PDF-
   // modellen per verstuurde offerte als voor de inline editor (via buildOfferteForm).
-  const baseData = mapLeadToFormData(detail.lead);
+  const baseData = mapLeadToFormData(detail.lead, pricing.voegzand_m2_per_zak);
 
   // Offertes eenmalig bouwen (gebruikt door de Offertes-tab en het
   // opdrachtbon-model hieronder).

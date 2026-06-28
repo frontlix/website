@@ -1,5 +1,6 @@
 import { DEFAULTS, type ManualOfferteData } from './manual-offerte-types'
 import { mapBotSubDiensten, mapBotHoofdcategorie } from './bot-dienst-mapping'
+import { deriveVoegzandSplit } from './offerte-form-mapping'
 import type { Database } from './database.types'
 
 type LeadRow = Database['public']['Tables']['leads']['Row']
@@ -19,7 +20,10 @@ type LeadRow = Database['public']['Tables']['leads']['Row']
  *    in `sub_diensten` worden genegeerd zodat computeRules() niet stuk
  *    gaat op vreemde input.
  */
-export function leadToOfferteData(lead: LeadRow): ManualOfferteData {
+export function leadToOfferteData(
+  lead: LeadRow,
+  voegzandM2PerZak: number = 5,
+): ManualOfferteData {
   const { sub: subMapped, onderhoudWeken: onderhoudWekenDerived } = mapBotSubDiensten(
     lead.sub_diensten,
     lead.hoofdcategorie,
@@ -51,6 +55,10 @@ export function leadToOfferteData(lead: LeadRow): ManualOfferteData {
   // (of het oude 'onderhoud'-veld zonder interval) vallen terug op DEFAULTS.
   const onderhoudWeken: 4 | 8 | 12 | 16 = onderhoudWekenDerived ?? DEFAULTS.onderhoud_weken
 
+  // Voegzand-split (m² + zakken), gedeeld met mapLeadToFormData en 1-op-1 met de
+  // bot, zodat de auto-prijsregels arbeid EN voegzand bevatten.
+  const vz = deriveVoegzandSplit(lead, voegzandM2PerZak)
+
   return {
     ...DEFAULTS,
     existing_lead_id: lead.lead_id,
@@ -71,13 +79,13 @@ export function leadToOfferteData(lead: LeadRow): ManualOfferteData {
 
     // Voegzand
     voegzand_normaal_actief: voegzandNormaalActief,
-    voegzand_normaal_m2: Number(lead.voegzand_normaal_m2) || 0,
-    voegzand_normaal_zakken: Number(lead.voegzand_normaal_zakken) || 0,
+    voegzand_normaal_m2: vz.normaalM2,
+    voegzand_normaal_zakken: vz.normaalZakken,
     voegzand_normaal_prijs:
       Number(lead.voegzand_normaal_prijs_per_zak) || DEFAULTS.voegzand_normaal_prijs,
     voegzand_onkruidwerend_actief: voegzandOnkruidwerendActief,
-    voegzand_onkruidwerend_m2: Number(lead.voegzand_onkruidwerend_m2) || 0,
-    voegzand_onkruidwerend_zakken: Number(lead.voegzand_onkruidwerend_zakken) || 0,
+    voegzand_onkruidwerend_m2: vz.onkruidwerendM2,
+    voegzand_onkruidwerend_zakken: vz.onkruidwerendZakken,
     voegzand_onkruidwerend_prijs:
       Number(lead.voegzand_onkruidwerend_prijs_per_zak) || DEFAULTS.voegzand_onkruidwerend_prijs,
 

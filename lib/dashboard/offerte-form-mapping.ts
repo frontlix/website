@@ -139,7 +139,89 @@ export function readRegelOpmerkingen(
  * mapping: start vanaf DEFAULTS en override met wat de lead aanlevert. Geen
  * string-parsing — adres-velden staan al opgesplitst in losse kolommen.
  */
-export function mapLeadToFormData(lead: Lead): ManualOfferteData {
+/**
+ * Voegzand-verdeling (m² + aantal zakken per type) voor een lead. Dit is de
+ * dashboard-spiegel van de bot-functie `getVoegzandSplit` (pricing.ts) en MOET
+ * daarmee 1-op-1 in sync blijven, zodat het dashboard exact toont wat de klant
+ * in de mail ontvangt. Regels:
+ *  - m²: NULL = afgeleid (één type → totale m², beide → helft); een numerieke
+ *    waarde (incl 0) is expliciet en wint.
+ *  - zakken: expliciet ingevuld (>0, owner-modify/wizard) wint; anders legacy
+ *    `voegzand_zakken` (>0); anders afgeleid uit m² ÷ dekking
+ *    (`voegzand_m2_per_zak`, default 5) via ceil.
+ */
+export function deriveVoegzandSplit(
+  lead: {
+    voegzand_type?: string | null
+    m2?: number | string | null
+    voegzand_zakken?: number | string | null
+    voegzand_normaal_m2?: number | string | null
+    voegzand_normaal_zakken?: number | string | null
+    voegzand_onkruidwerend_m2?: number | string | null
+    voegzand_onkruidwerend_zakken?: number | string | null
+  },
+  voegzandM2PerZak: number = 5,
+): {
+  normaalM2: number
+  normaalZakken: number
+  onkruidwerendM2: number
+  onkruidwerendZakken: number
+} {
+  const vt = lead.voegzand_type
+  const normaalActief = vt === 'normaal' || vt === 'beide'
+  const onkruidwerendActief = vt === 'onkruidwerend' || vt === 'beide'
+  const beide = normaalActief && onkruidwerendActief
+  const m2PerZak = voegzandM2PerZak > 0 ? voegzandM2PerZak : 5
+  const totaalM2 = Number(lead.m2) || 0
+  const legacyZakken = Number(lead.voegzand_zakken) || 0
+
+  const normaalM2 =
+    lead.voegzand_normaal_m2 != null
+      ? Number(lead.voegzand_normaal_m2)
+      : normaalActief
+        ? beide
+          ? totaalM2 / 2
+          : totaalM2
+        : 0
+  const onkruidwerendM2 =
+    lead.voegzand_onkruidwerend_m2 != null
+      ? Number(lead.voegzand_onkruidwerend_m2)
+      : onkruidwerendActief
+        ? beide
+          ? totaalM2 / 2
+          : totaalM2
+        : 0
+
+  const normaalZakken = !normaalActief
+    ? 0
+    : (Number(lead.voegzand_normaal_zakken) || 0) > 0
+      ? Number(lead.voegzand_normaal_zakken)
+      : legacyZakken > 0
+        ? beide
+          ? Math.ceil(legacyZakken / 2)
+          : legacyZakken
+        : normaalM2 > 0
+          ? Math.ceil(normaalM2 / m2PerZak)
+          : 0
+  const onkruidwerendZakken = !onkruidwerendActief
+    ? 0
+    : (Number(lead.voegzand_onkruidwerend_zakken) || 0) > 0
+      ? Number(lead.voegzand_onkruidwerend_zakken)
+      : legacyZakken > 0
+        ? beide
+          ? Math.floor(legacyZakken / 2)
+          : legacyZakken
+        : onkruidwerendM2 > 0
+          ? Math.ceil(onkruidwerendM2 / m2PerZak)
+          : 0
+
+  return { normaalM2, normaalZakken, onkruidwerendM2, onkruidwerendZakken }
+}
+
+export function mapLeadToFormData(
+  lead: Lead,
+  voegzandM2PerZak: number = 5,
+): ManualOfferteData {
   // ── hoofdcategorie + sub_diensten: vertaal de bot-keys naar de dashboard-
   // vorm (plan_X_weken → 'onderhoud' + interval, onkruidbeheersing_zakelijk →
   // 'onkruidbeheersing'). Zonder deze vertaling viel de onkruid-dienst weg en
@@ -159,6 +241,10 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
   const huisnummer = lead.huisnummer ?? ''
   const postcode = lead.postcode ?? ''
   const plaats = lead.plaats ?? ''
+
+  // Voegzand-split: leidt m² + zakken af zoals de bot, zodat de invegen-arbeid
+  // EN de voegzand-zakken consistent met de mail verschijnen.
+  const vz = deriveVoegzandSplit(lead, voegzandM2PerZak)
 
   return {
     ...DEFAULTS,
@@ -188,17 +274,14 @@ export function mapLeadToFormData(lead: Lead): ManualOfferteData {
     m2: Number(lead.m2) || DEFAULTS.m2,
     // voegzand
     voegzand_normaal_actief: voegzandNormaalActief,
-    voegzand_normaal_m2: Number(lead.voegzand_normaal_m2) || 0,
-    voegzand_normaal_zakken:
-      Number(lead.voegzand_normaal_zakken) || DEFAULTS.voegzand_normaal_zakken,
+    voegzand_normaal_m2: vz.normaalM2,
+    voegzand_normaal_zakken: vz.normaalZakken,
     voegzand_normaal_prijs:
       Number(lead.voegzand_normaal_prijs_per_zak) ||
       DEFAULTS.voegzand_normaal_prijs,
     voegzand_onkruidwerend_actief: voegzandOnkruidwerendActief,
-    voegzand_onkruidwerend_m2: Number(lead.voegzand_onkruidwerend_m2) || 0,
-    voegzand_onkruidwerend_zakken:
-      Number(lead.voegzand_onkruidwerend_zakken) ||
-      DEFAULTS.voegzand_onkruidwerend_zakken,
+    voegzand_onkruidwerend_m2: vz.onkruidwerendM2,
+    voegzand_onkruidwerend_zakken: vz.onkruidwerendZakken,
     voegzand_onkruidwerend_prijs:
       Number(lead.voegzand_onkruidwerend_prijs_per_zak) ||
       DEFAULTS.voegzand_onkruidwerend_prijs,

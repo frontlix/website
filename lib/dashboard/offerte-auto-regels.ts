@@ -56,11 +56,12 @@ export async function regenerateAutoRegels(leadId: string): Promise<Result> {
   if (leadErr) return { ok: false, error: `Lead ophalen mislukt: ${leadErr.message}` }
   if (!lead) return { ok: false, error: 'Lead niet gevonden' }
 
-  // 2) Lead → ManualOfferteData
-  const data = leadToOfferteData(lead)
-
-  // 3) Pricing (DB → fallback)
+  // 2) Pricing (DB → fallback) eerst, zodat de voegzand-zakken-afleiding de
+  //    juiste dekkingsfactor (voegzand_m2_per_zak) gebruikt.
   const pricing = await getManualOffertePricing()
+
+  // 3) Lead → ManualOfferteData
+  const data = leadToOfferteData(lead, pricing.voegzand_m2_per_zak)
 
   // 4) Compute regels
   const rules = computeRules(data, pricing)
