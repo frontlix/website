@@ -16,7 +16,8 @@ const DASHBOARD_HOSTS = new Set([
 // zijn vanuit een uitgelogde state.
 const PUBLIC_DASHBOARD_PATHS = new Set([
   '/login',
-  '/signup',
+  // '/signup' bewust NIET publiek: zelf-registratie is dicht (alleen op
+  // uitnodiging). Niet-ingelogde bezoekers van /signup gaan naar /login.
   '/wachtkamer',
   '/wachtwoord-vergeten',
   '/wachtwoord-reset',

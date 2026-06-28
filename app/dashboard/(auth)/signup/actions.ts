@@ -11,6 +11,17 @@ export async function signupAction(
   _prev: SignupState,
   formData: FormData
 ): Promise<SignupState> {
+  // Publieke zelf-registratie is DICHT: nieuwe teamleden komen binnen via een
+  // uitnodiging (invite-mail → /uitnodiging), niet via dit formulier. Dit is
+  // de beveiligingsgrens (de action is direct aanroepbaar, los van de pagina).
+  // Zet SIGNUP_ENABLED=true in de omgeving om open registratie weer aan te zetten.
+  if (process.env.SIGNUP_ENABLED !== 'true') {
+    return {
+      error:
+        'Registratie is alleen op uitnodiging. Neem contact op met Frontlix om toegang te krijgen.',
+    }
+  }
+
   const email = String(formData.get('email') ?? '').trim()
   const wachtwoord = String(formData.get('wachtwoord') ?? '')
   const bedrijfsnaam = String(formData.get('bedrijfsnaam') ?? '').trim()

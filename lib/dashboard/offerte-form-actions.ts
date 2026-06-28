@@ -22,7 +22,7 @@
 
 import { getDashboardAdmin } from './supabase-admin'
 import { requireApprovedUser } from './require-approved-user'
-import { computeRules } from './manual-offerte-rules'
+import { computeRules, berekenKorstmosToeslag } from './manual-offerte-rules'
 import { getManualOffertePricing } from './pricing-queries'
 import { saveDraft, type DraftRegelInput } from './offerte-draft-actions'
 import { buildLeadFieldsFromForm, mapLeadToFormData } from './offerte-form-mapping'
@@ -55,21 +55,20 @@ export async function saveOfferteForm(
     const rules = computeRules(data, pricing)
 
     // ── 4. Korstmos-toeslag als losse regel ────────────────────────
-    // 10% over de diensten-regels (reiskosten — eenheid 'km' — tellen niet
-    // mee, conform de PDF-conventie). We voegen 'm hier als prijsregel toe
-    // zodat saveDraft 'm meeneemt in z'n eigen totaal-berekening.
+    // 10% ALLEEN over de reiniging/onkruid/onderhoud-regels — via de gedeelde
+    // helper berekenKorstmosToeslag(), exact dezelfde grondslag als computeTotals
+    // én de bot. (Stond eerder op ALLE diensten-regels, waardoor leads.totaal_prijs
+    // bij een korstmos-klus met extra diensten te hoog werd t.o.v. de klantprijs.)
+    // We voegen 'm als prijsregel toe zodat saveDraft 'm in z'n eigen totaal meeneemt.
     const regelsVoorDraft = [...rules]
-    if (data.korstmos === 'ja') {
-      const dienstenSub = rules
-        .filter((r) => r.eenheid !== 'km')
-        .reduce((s, r) => s + r.totaal, 0)
-      const toeslag = round2(dienstenSub * 0.1)
+    const korstmosToeslag = berekenKorstmosToeslag(rules, data)
+    if (korstmosToeslag > 0) {
       regelsVoorDraft.push({
         desc: 'Korstmos-toeslag (10%)',
         aantal: 1,
         eenheid: 'post',
-        prijs: toeslag,
-        totaal: toeslag,
+        prijs: korstmosToeslag,
+        totaal: korstmosToeslag,
       })
     }
 
