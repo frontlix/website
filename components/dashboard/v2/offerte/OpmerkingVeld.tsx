@@ -66,12 +66,14 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
           keepOpenRef.current = false;
           return;
         }
-        // Anders: alleen inklappen als de focus de HELE container verlaat én er
-        // geen tekst staat.
-        if (
-          tekst.trim() === "" &&
-          !e.currentTarget.contains(e.relatedTarget as Node | null)
-        ) {
+        // Geen relatedTarget = de focus ging nergens heen — op iOS gebeurt dat
+        // bij het tikken op de schakelaar (of een ander niet-focusbaar element).
+        // Dan NIET inklappen, anders verdwijnt de hele container vóór de
+        // gebruiker tekst kan invoeren. Alleen inklappen als de focus echt naar
+        // een element BUITEN de container gaat én het veld leeg is.
+        const next = e.relatedTarget as Node | null;
+        if (!next) return;
+        if (tekst.trim() === "" && !e.currentTarget.contains(next)) {
           setOpen(false);
         }
       }}
