@@ -2014,6 +2014,13 @@
   gap: 10px;
 }
 
+/* Opmerking-rij binnen de 2-koloms diensten-grid: spant beide kolommen zodat
+   het tekstveld + schakelaar direct onder de bijbehorende kaart op volle
+   breedte verschijnt (i.p.v. opgesloten in één kolom). */
+.dienstenGridFull {
+  grid-column: 1 / -1;
+}
+
 /* m² stepper: default desktop = input zichtbaar, stepper + presets
    verborgen. Mobile draait dat om via media-query onder. */
 .m2InputDesktop {

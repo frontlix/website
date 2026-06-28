@@ -1,5 +1,6 @@
 'use client'
 
+import { Fragment } from 'react'
 import { AlertTriangle, Check } from 'lucide-react'
 import {
   type ManualOfferteData,
@@ -26,6 +27,15 @@ const WEEK_OPTIES: ReadonlyArray<{ w: 4 | 8 | 12 | 16; prijs: number }> = [
   { w: 16, prijs: ONDERHOUD_PRIJZEN[16] },
 ]
 
+// Sub-diensten die een eigen inline-opmerking onder hun kaart krijgen. Invegen
+// en Onderhoudsplan staan hier bewust NIET in: hun opmerking-onderdeel hoort bij
+// het voegzand-blok (voegzand_normaal) resp. de onderhoud-weken-selector, zodat
+// elke OpmerkingKey precies één keer in de UI verschijnt.
+const SUB_OPMERKING: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }>> = {
+  preventieve_onkruid: { key: 'preventieve_onkruid', label: 'Preventieve onkruidbehandeling' },
+  beschermlaag: { key: 'beschermlaag', label: 'Nieuwe beschermlaag' },
+}
+
 export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn }) {
   const toggleSub = (key: SubDienst) => {
     set('sub', data.sub.includes(key) ? data.sub.filter((s) => s !== key) : [...data.sub, key])
@@ -50,15 +60,15 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
 
   /** Opmerking-veld (tekst + In-offerte-schakelaar, default aan) voor één
    *  onderdeel. Schrijft naar data.regel_opmerkingen, identiek aan de
-   *  desktop-wizard (StapWerk), zodat de opmerking in de offerte-PDF verschijnt. */
+   *  desktop-wizard (StapWerk), zodat de opmerking in de offerte-PDF verschijnt.
+   *  Bewust geen extra wrapper-marge: OpmerkingVeld zet zelf z'n top-marge (8px),
+   *  zodat 'ie strak onder z'n onderdeel zit i.p.v. dubbel ingesprongen. */
   const opm = (key: OpmerkingKey, label?: string) => (
-    <div style={{ marginTop: 8 }}>
-      <OpmerkingVeld
-        waarde={data.regel_opmerkingen?.[key]}
-        zet={(next) => set('regel_opmerkingen', { ...(data.regel_opmerkingen ?? {}), [key]: next })}
-        label={label}
-      />
-    </div>
+    <OpmerkingVeld
+      waarde={data.regel_opmerkingen?.[key]}
+      zet={(next) => set('regel_opmerkingen', { ...(data.regel_opmerkingen ?? {}), [key]: next })}
+      label={label}
+    />
   )
 
   return (
@@ -115,26 +125,32 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
               data.hoofdcategorie.includes(d.cat as Hoofdcategorie),
           ).map((d) => {
             const active = data.sub.includes(d.k)
+            const om = SUB_OPMERKING[d.k]
             return (
-              <button
-                key={d.k}
-                type="button"
-                onClick={() => toggleSub(d.k)}
-                className={`${styles.checkCard} ${active ? styles.checkCardActive : ''}`}
-              >
-                <div className={styles.checkCardHead}>
-                  <strong className={`${styles.optLabel} ${active ? styles.optLabelActive : ''}`}>{d.l}</strong>
-                  <div className={`${styles.checkBox} ${active ? styles.checkBoxActive : ''}`}>
-                    {active && <Check size={11} strokeWidth={3} />}
+              <Fragment key={d.k}>
+                <button
+                  type="button"
+                  onClick={() => toggleSub(d.k)}
+                  className={`${styles.checkCard} ${active ? styles.checkCardActive : ''}`}
+                >
+                  <div className={styles.checkCardHead}>
+                    <strong className={`${styles.optLabel} ${active ? styles.optLabelActive : ''}`}>{d.l}</strong>
+                    <div className={`${styles.checkBox} ${active ? styles.checkBoxActive : ''}`}>
+                      {active && <Check size={11} strokeWidth={3} />}
+                    </div>
                   </div>
-                </div>
-                <div className={styles.optSub}>{d.d}</div>
-              </button>
+                  <div className={styles.optSub}>{d.d}</div>
+                </button>
+                {/* Opmerking strak onder de juiste kaart: full-width grid-rij
+                    (grid-column 1/-1) zodat 'ie niet gestapeld na de 2-koloms
+                    grid belandt maar direct onder z'n eigen onderdeel. */}
+                {active && om ? (
+                  <div className={styles.dienstenGridFull}>{opm(om.key, om.label)}</div>
+                ) : null}
+              </Fragment>
             )
           })}
         </div>
-        {data.sub.includes('preventieve_onkruid') ? opm('preventieve_onkruid', 'Preventieve onkruidbehandeling') : null}
-        {data.sub.includes('beschermlaag') ? opm('beschermlaag', 'Nieuwe beschermlaag') : null}
       </div>
 
       {/* Onderhoud-weken-selector */}

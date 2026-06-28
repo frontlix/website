@@ -1,7 +1,14 @@
+/* ⚠️ Fallback-hex op elke var(--rb-*): deze Toggle wordt OOK gebruikt in de
+   mobiele "Handmatige offerte"-wizard (OpmerkingVeld via StepWerk), die BUITEN
+   de `.rbRoot`-boom staat. Daar zijn de --rb-tokens niet gedefinieerd, dus
+   zonder fallback wordt --rb-r-pill leeg (border-radius:0 → vierkant i.p.v.
+   pill) en --rb-card leeg (onzichtbare knob → "leeg wit vierkantje"). De
+   fallbacks spiegelen de light-waarden uit styles/rebrand-tokens.css; binnen
+   .rbRoot (desktop) worden ze nooit gebruikt. */
 .track {
   width: 44px;
   height: 26px;
-  border-radius: var(--rb-r-pill);
+  border-radius: var(--rb-r-pill, 9999px);
   background: rgba(33, 42, 69, 0.15);
   position: relative;
   display: inline-block;
@@ -13,7 +20,7 @@
 }
 
 .on {
-  background: var(--rb-blue);
+  background: var(--rb-blue, #1a56ff);
   box-shadow: 0 3px 10px rgba(26, 86, 255, 0.3);
 }
 
@@ -24,8 +31,8 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--rb-card);
-  box-shadow: var(--rb-shadow-knob);
+  background: var(--rb-card, #ffffff);
+  box-shadow: var(--rb-shadow-knob, 0 1px 4px rgba(33, 42, 69, 0.25));
   transition: left 0.15s ease;
 }
 
@@ -39,7 +46,7 @@
   background: rgba(255, 255, 255, 0.18);
 }
 :global(html.dark) .on {
-  background: var(--rb-blue);
+  background: var(--rb-blue, #1a56ff);
 }
 :global(html.dark) .knob {
   background: #e8ecf3;
