@@ -7,22 +7,47 @@ import type { SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-p
 import { renderOffertePdfBlob, offertePdfFileName } from '@/components/dashboard/offerte/render-offerte-pdf'
 import styles from './OffertesTab.module.css'
 
-/** Inzien (PDF-voorbeeld in een Modal) + download voor een verstuurde versie. */
-export function SentOfferteActions({ model, titel }: { model: SentOffertePdfModel; titel: string }) {
+/**
+ * Inzien (PDF-voorbeeld in een Modal) + download voor een verstuurde versie.
+ *
+ * Bron-PDF: bij voorkeur de ÉCHT opgeslagen PDF (`pdfUrl` = exact het bestand
+ * dat naar de klant gemaild is, publieke storage-URL). Dat garandeert dat de
+ * preview/download identiek is aan de mail (opmerkingen op de juiste plek,
+ * juiste totalen). Alleen als er geen pdfUrl is (oude rij zonder bestand)
+ * vallen we terug op de client-side reconstructie via `model`.
+ */
+export function SentOfferteActions({
+  model,
+  pdfUrl,
+  titel,
+}: {
+  model?: SentOffertePdfModel | null
+  pdfUrl?: string | null
+  titel: string
+}) {
   const [open, setOpen] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const urlRef = useRef<string | null>(null)
-  const fileName = offertePdfFileName(model.data.naam)
+  // Alleen blob-URLs die we zélf maken (de reconstructie) moeten we weer
+  // revoken; een directe pdfUrl niet.
+  const blobRef = useRef<string | null>(null)
+  const fileName = offertePdfFileName(model?.data.naam ?? titel)
 
   const view = useCallback(async () => {
     if (busy) return
+    // Échte opgeslagen PDF: direct in de iframe laden, geen reconstructie nodig.
+    if (pdfUrl) {
+      setUrl(pdfUrl)
+      setOpen(true)
+      return
+    }
+    if (!model) return
     setBusy(true)
     try {
       const blob = await renderOffertePdfBlob(model)
       const u = URL.createObjectURL(blob)
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current)
-      urlRef.current = u
+      if (blobRef.current) URL.revokeObjectURL(blobRef.current)
+      blobRef.current = u
       setUrl(u)
       setOpen(true)
     } catch (e) {
@@ -32,13 +57,13 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
     } finally {
       setBusy(false)
     }
-  }, [busy, model])
+  }, [busy, model, pdfUrl])
 
   const close = useCallback(() => {
     setOpen(false)
-    if (urlRef.current) {
-      URL.revokeObjectURL(urlRef.current)
-      urlRef.current = null
+    if (blobRef.current) {
+      URL.revokeObjectURL(blobRef.current)
+      blobRef.current = null
     }
     setUrl(null)
   }, [])
@@ -47,7 +72,18 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
     if (busy) return
     setBusy(true)
     try {
-      const blob = await renderOffertePdfBlob(model)
+      // Bron-blob: de opgeslagen PDF ophalen (publieke URL) of, als fallback,
+      // de reconstructie renderen.
+      let blob: Blob
+      if (pdfUrl) {
+        const res = await fetch(pdfUrl)
+        if (!res.ok) throw new Error(`PDF ophalen faalde (${res.status})`)
+        blob = await res.blob()
+      } else if (model) {
+        blob = await renderOffertePdfBlob(model)
+      } else {
+        return
+      }
       const u = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = u
@@ -59,16 +95,22 @@ export function SentOfferteActions({ model, titel }: { model: SentOffertePdfMode
       setTimeout(() => URL.revokeObjectURL(u), 5000)
     } catch (e) {
       console.error('[SentOfferteActions] PDF-download mislukt:', e)
-      // eslint-disable-next-line no-alert
-      alert('PDF maken mislukt, probeer het opnieuw.')
+      // Fallback: open de opgeslagen PDF in een nieuw tabblad zodat de gebruiker
+      // 'm daar alsnog kan opslaan (bv. als een cross-origin fetch faalt).
+      if (pdfUrl) {
+        window.open(pdfUrl, '_blank', 'noopener')
+      } else {
+        // eslint-disable-next-line no-alert
+        alert('PDF maken mislukt, probeer het opnieuw.')
+      }
     } finally {
       setBusy(false)
     }
-  }, [busy, model, fileName])
+  }, [busy, model, pdfUrl, fileName])
 
   useEffect(() => {
     return () => {
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current)
+      if (blobRef.current) URL.revokeObjectURL(blobRef.current)
     }
   }, [])
 

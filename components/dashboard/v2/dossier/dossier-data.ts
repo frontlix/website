@@ -56,6 +56,10 @@ export interface DossierOfferte {
    *  voor verstuurde offertes met een bruikbare snapshot; concepten en oude
    *  offertes zonder snapshot hebben dit niet. */
   pdfModel?: SentOffertePdfModel | null;
+  /** Publieke URL van de ÉCHT opgeslagen PDF (exact het bestand dat naar de
+   *  klant gemaild is). Voor inzien/download prefereren we deze boven de
+   *  client-side reconstructie (pdfModel) zodat de preview = de mail. */
+  pdfUrl?: string | null;
 }
 
 /** Een regel in de concept-offerte-preview. */

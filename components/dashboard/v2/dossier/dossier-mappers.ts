@@ -284,6 +284,12 @@ function buildOffertes(detail: LeadDetail, baseData: ManualOfferteData): Dossier
           leadId: l.id,
           geldigheidFallback: detail.lead.offerte_geldigheid_dagen ?? 14,
         });
+    // Échte opgeslagen PDF (publieke URL) van een verstuurde versie: exact het
+    // bestand dat gemaild is. Prefereren we voor inzien/download boven de
+    // client-side reconstructie. Concepten hebben geen bestand (pdf_url leeg).
+    const pdfUrl = concept
+      ? null
+      : (o as { pdf_url?: string | null }).pdf_url?.trim() || null;
     return {
       nr: `Offerte v${o.versie}`,
       label,
@@ -292,6 +298,7 @@ function buildOffertes(detail: LeadDetail, baseData: ManualOfferteData): Dossier
       concept,
       tone,
       pdfModel,
+      pdfUrl,
       wachtOpGoedkeuring: !concept && o.status === "wacht_op_goedkeuring",
     };
   });

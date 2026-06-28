@@ -89,7 +89,9 @@ export function OffertesTab({ data = DOSSIER, leadId, offerteApiRef, onGoedkeure
               <div className={styles.rowSub}>{o.sub}</div>
             </div>
             <span className={styles.totaal}>{o.totaal}</span>
-            {o.pdfModel ? <SentOfferteActions model={o.pdfModel} titel={o.nr} /> : null}
+            {o.pdfModel || o.pdfUrl ? (
+              <SentOfferteActions model={o.pdfModel} pdfUrl={o.pdfUrl} titel={o.nr} />
+            ) : null}
           </div>
         );
       })}
