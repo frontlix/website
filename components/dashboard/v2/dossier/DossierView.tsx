@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, StickyNote, Archive, RotateCcw, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
-import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
+import { archiveLead, unarchiveLead } from "@/lib/dashboard/lead-actions";
 import { ConfirmDeleteLeadDialog } from "@/components/dashboard/ConfirmDeleteLeadDialog";
 import { completeAppointment } from "@/lib/dashboard/agenda-actions";
 import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from "@/lib/dashboard/klus-status-client";
@@ -228,19 +228,6 @@ export function DossierView({
     setArchived((a) => !a);
   };
 
-  // "Geen echte lead": spam/test/dubbel/verkeerd nummer. Haalt de lead uit ALLE
-  // statistieken (uitgesloten_van_stats) en archiveert hem meteen. Geen
-  // bevestiging: omkeerbaar via Herstel in het archief (dat zet beide vlaggen terug).
-  const markeerGeenEcht = () => {
-    if (!live || !leadId) return;
-    setArchived(true); // markeren archiveert ook; optimistisch
-    startTransition(async () => {
-      const res = await markeerGeenEchteLead(leadId);
-      if (res.ok) router.refresh();
-      else setArchived(false);
-    });
-  };
-
   // "Klus afronden"-knoppen: alleen tonen als de lead een afspraak op of vóór
   // vandaag heeft én nog open staat (zie toonKlusAfrondenKnoppen). Niet bij een
   // gearchiveerde lead.
@@ -403,18 +390,6 @@ export function DossierView({
               </>
             )}
           </button>
-          {!archived ? (
-            <button
-              type="button"
-              className={styles.actieBtn}
-              onClick={markeerGeenEcht}
-              disabled={pending}
-              title="Spam, test, dubbel of verkeerd nummer: uit je lijst en uit alle statistieken"
-            >
-              <Trash2 size={15} strokeWidth={2.1} />
-              Verwijderen
-            </button>
-          ) : null}
           {archived && live ? (
             <button
               type="button"

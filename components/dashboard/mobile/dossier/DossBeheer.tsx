@@ -7,7 +7,6 @@ interface DossBeheerProps {
   archived: boolean
   pending: boolean
   onToggleArchief: () => void
-  onGeenEcht: () => void
   /** Toon de "Klus afronden"-knoppen (afspraak voorbij + lead nog open)? */
   toonKlus?: boolean
   /** Loopt er een klus-status-actie? Dan beide knoppen disabled. */
@@ -23,15 +22,14 @@ interface DossBeheerProps {
 /**
  * Mobiele lead-beheeracties (onderaan de Info-tab), parity met de desktop-kop:
  * de "Klus afronden"-knoppen (als de afspraak voorbij is en de lead nog open
- * staat) + archiveren/herstellen + "Geen echte lead". Bewust onderaan en rustig
- * gestyled, want het zijn minder-frequente acties die de lead uit de lijst /
- * statistieken halen. Archiveren is omkeerbaar via Herstel.
+ * staat) + archiveren/herstellen. Bewust onderaan en rustig gestyled, want het
+ * zijn minder-frequente acties. Archiveren is omkeerbaar via Herstel; pas vanuit
+ * het archief kan een lead definitief worden verwijderd.
  */
 export function DossBeheer({
   archived,
   pending,
   onToggleArchief,
-  onGeenEcht,
   toonKlus = false,
   klusPending = false,
   onKlusAfgerond,
@@ -83,17 +81,6 @@ export function DossBeheer({
             </>
           )}
         </button>
-        {!archived && (
-          <button
-            type="button"
-            className={`${styles.btn} ${styles.danger}`}
-            onClick={onGeenEcht}
-            disabled={pending}
-          >
-            <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
-            Verwijderen
-          </button>
-        )}
         {archived && onVerwijderDefinitief && (
           <button
             type="button"
@@ -109,7 +96,7 @@ export function DossBeheer({
       <p className={styles.hint}>
         {archived
           ? 'Deze lead staat in het archief. Herstellen zet de lead terug in de lijst. Met "Definitief verwijderen" gaat de lead en alles wat erbij hoort voorgoed weg, dat kan niet ongedaan worden gemaakt.'
-          : 'Met "Verwijderen" (spam of test) verdwijnt de lead uit alle statistieken en gaat hij naar het archief. Omkeerbaar via Herstel.'}
+          : 'Met "Archiveren" haal je de lead uit je actieve lijst; hij blijft meetellen in je statistieken. Omkeerbaar via Herstel. Definitief verwijderen kan daarna vanuit het archief.'}
       </p>
     </section>
   )

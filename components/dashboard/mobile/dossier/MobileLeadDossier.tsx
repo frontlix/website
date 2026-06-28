@@ -19,7 +19,7 @@ import { MobileOfferteGoedkeuring } from './offerte/MobileOfferteGoedkeuring'
 import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
 import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
-import { archiveLead, unarchiveLead, markeerGeenEchteLead } from '@/lib/dashboard/lead-actions'
+import { archiveLead, unarchiveLead } from '@/lib/dashboard/lead-actions'
 import { completeAppointment } from '@/lib/dashboard/agenda-actions'
 import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from '@/lib/dashboard/klus-status-client'
 import type { Tag } from '@/lib/dashboard/database.types'
@@ -137,15 +137,6 @@ export function MobileLeadDossier({
       else setArchived(!next)
     })
   }
-  const markeerGeenEcht = () => {
-    setArchived(true) // markeren archiveert ook
-    startBeheer(async () => {
-      const res = await markeerGeenEchteLead(data.leadId)
-      if (res.ok) router.refresh()
-      else setArchived(false)
-    })
-  }
-
   // "Klus afronden": de afspraak is voorbij en de lead staat nog open. Velden
   // komen uit de volledige DB-lead (offerteForm.lead). Niet bij een gearchiveerde
   // lead. Acties spiegelen de desktop (completeAppointment / setKlusGeblokkeerd).
@@ -208,7 +199,6 @@ export function MobileLeadDossier({
                 archived={archived}
                 pending={beheerPending}
                 onToggleArchief={toggleArchief}
-                onGeenEcht={markeerGeenEcht}
                 toonKlus={toonKlus}
                 klusPending={klusPending}
                 onKlusAfgerond={klusAfgerond}
