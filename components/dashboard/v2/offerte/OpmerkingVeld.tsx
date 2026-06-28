@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { Toggle } from "@/components/dashboard/v2/ui";
 import type { RegelOpmerking } from "@/lib/dashboard/manual-offerte-types";
@@ -33,6 +33,11 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
   // Ingeklapt tot een knop zolang er geen tekst is, zodat de editor rustig oogt;
   // klik (of bestaande tekst) toont het veld + de schakelaar.
   const [open, setOpen] = useState(() => tekst.trim() !== "");
+  // Klik op de schakelaar mag het veld NIET sluiten — ook niet als de schakelaar
+  // (op iOS) geen focus vasthoudt en de textarea daardoor leeg blurt. Wordt op
+  // pointerdown van de schakelaar gezet (vóór de blur) en in onBlur geconsumeerd;
+  // textarea-focus wist een eventuele stale vlag.
+  const keepOpenRef = useRef(false);
 
   if (!open) {
     return (
@@ -55,10 +60,14 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
         className={styles.veld}
         data-uit={!zichtbaar || undefined}
         onBlur={(e) => {
-        // Alleen inklappen als de focus de HELE container verlaat én er geen
-        // tekst staat. Op de schakelaar klikken verplaatst de focus binnen de
-        // container (relatedTarget zit in currentTarget) en mag dus NIET
-        // inklappen.
+        // Schakelaar-klik mag nooit inklappen, ook niet als 'ie geen focus
+        // vasthoudt (iOS): keepOpenRef is dan al op pointerdown gezet.
+        if (keepOpenRef.current) {
+          keepOpenRef.current = false;
+          return;
+        }
+        // Anders: alleen inklappen als de focus de HELE container verlaat én er
+        // geen tekst staat.
         if (
           tekst.trim() === "" &&
           !e.currentTarget.contains(e.relatedTarget as Node | null)
@@ -74,10 +83,18 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
         placeholder="Waarom deze keuze? Komt onder dit onderdeel in de offerte."
         rows={2}
         disabled={disabled}
+        onFocus={() => {
+          keepOpenRef.current = false;
+        }}
         // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={tekst.trim() === ""}
       />
-      <span className={styles.toggle}>
+      <span
+        className={styles.toggle}
+        onPointerDown={() => {
+          keepOpenRef.current = true;
+        }}
+      >
         <Toggle
           value={zichtbaar}
           onChange={(v) => zet({ tekst, zichtbaar: v })}
