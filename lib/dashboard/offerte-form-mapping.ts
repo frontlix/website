@@ -46,6 +46,7 @@ const PRIJS_OVERRIDE_KEYS = [
   'preventieve_onkruid_override',
   'onderhoud_per_m2_override',
   'reiskosten_per_km_override',
+  'extra_arbeid_per_min_override',
 ] as const
 
 /** Form-data → JSON voor leads.offerte_prijs_overrides (alleen gezette, eindige
@@ -79,6 +80,7 @@ function writePrijsOverrideColumns(data: ManualOfferteData): Record<string, numb
     beschermlaag_per_m2_override: val(data.beschermlaag_override),
     reiskosten_per_km_override: val(data.reiskosten_per_km_override),
     onkruid_per_m2_override: val(onkruid),
+    extra_arbeid_prijs_override: val(data.extra_arbeid_per_min_override),
   }
 }
 

@@ -204,7 +204,8 @@ export function computeRules(
     Number(data.extra_arbeid_minuten) > 0 &&
     Number(data.extra_arbeid_personen) > 0
   ) {
-    const arbPr = pricing.extra_arbeid_per_min
+    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    const arbPr = data.extra_arbeid_per_min_override ?? pricing.extra_arbeid_per_min
     const minuten = Number(data.extra_arbeid_minuten)
     const personen = Number(data.extra_arbeid_personen)
     const tot = minuten * personen * arbPr
@@ -218,6 +219,7 @@ export function computeRules(
       eenheid: 'minuten',
       prijs: arbPr,
       totaal: tot,
+      overrideKey: 'extra_arbeid_per_min_override',
     })
   }
 

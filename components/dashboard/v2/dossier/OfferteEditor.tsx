@@ -488,7 +488,7 @@ export function OfferteEditor({
   const arbeidTotaal =
     (Number(data.extra_arbeid_minuten) || 0) *
     (Number(data.extra_arbeid_personen) || 0) *
-    pricing.extra_arbeid_per_min;
+    (data.extra_arbeid_per_min_override ?? pricing.extra_arbeid_per_min);
 
   // Meld het live totaal terug zodat de concept-rij in de lijst hetzelfde
   // bedrag toont als de editor (i.p.v. het stale €0 van een vers concept).

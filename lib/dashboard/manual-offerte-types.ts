@@ -183,6 +183,10 @@ export type ManualOfferteData = {
   preventieve_onkruid_override?: number
   onderhoud_per_m2_override?: number
   reiskosten_per_km_override?: number
+  // Per-offerte tarief extra arbeid (€/minuut/persoon); undefined ⇒ prijslijst.
+  // Wordt bij versturen naar de lead-kolom extra_arbeid_prijs_override geschreven,
+  // die de bot (calculatePrice) leest.
+  extra_arbeid_per_min_override?: number
   // offerte
   extra_arbeid_minuten: number
   extra_arbeid_personen: number
@@ -222,6 +226,7 @@ export type OverrideKey =
   | 'preventieve_onkruid_override'
   | 'onderhoud_per_m2_override'
   | 'reiskosten_per_km_override'
+  | 'extra_arbeid_per_min_override'
   | 'voegzand_normaal_prijs'
   | 'voegzand_onkruidwerend_prijs'
   | 'planten_afschermen_prijs'

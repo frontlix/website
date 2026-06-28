@@ -401,7 +401,7 @@ export function MobileOfferteEditor({
   const arbeidTotaal =
     (Number(data.extra_arbeid_minuten) || 0) *
     (Number(data.extra_arbeid_personen) || 0) *
-    pricing.extra_arbeid_per_min
+    (data.extra_arbeid_per_min_override ?? pricing.extra_arbeid_per_min)
 
   // ─── Accordion open/dicht state (defaults per spec) ───
   const [openKlant, setOpenKlant] = useState(false)
