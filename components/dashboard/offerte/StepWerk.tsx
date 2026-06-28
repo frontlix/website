@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment } from 'react'
 import { AlertTriangle, Check } from 'lucide-react'
 import {
   type ManualOfferteData,
@@ -28,12 +27,15 @@ const WEEK_OPTIES: ReadonlyArray<{ w: 4 | 8 | 12 | 16; prijs: number }> = [
 ]
 
 // Sub-diensten die een eigen inline-opmerking onder hun kaart krijgen. Invegen
-// en Onderhoudsplan staan hier bewust NIET in: hun opmerking-onderdeel hoort bij
-// het voegzand-blok (voegzand_normaal) resp. de onderhoud-weken-selector, zodat
-// elke OpmerkingKey precies één keer in de UI verschijnt.
+// staat hier bewust NIET in: zijn opmerking-onderdeel (voegzand_normaal) hoort
+// bij het voegzand-blok, zodat elke OpmerkingKey precies één keer in de UI
+// verschijnt. Onderhoudsplan → onderhoud hangt nu onder de kaart zelf (niet meer
+// in de weken-selector) zodat elk sub-dienst-onderdeel z'n opmerking direct
+// onder de bijbehorende kaart heeft.
 const SUB_OPMERKING: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }>> = {
   preventieve_onkruid: { key: 'preventieve_onkruid', label: 'Preventieve onkruidbehandeling' },
   beschermlaag: { key: 'beschermlaag', label: 'Nieuwe beschermlaag' },
+  onderhoud: { key: 'onderhoud', label: 'Onderhoudsplan' },
 }
 
 export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn }) {
@@ -127,7 +129,11 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
             const active = data.sub.includes(d.k)
             const om = SUB_OPMERKING[d.k]
             return (
-              <Fragment key={d.k}>
+              // Kaart + opmerking samen in één grid-cel (1 kolom) zodat het
+              // 2-koloms tegel-paar intact blijft: een opmerking onder de ene
+              // kaart duwt de buurkaart niet meer naar een nieuwe rij. De
+              // opmerking verschijnt direct onder z'n eigen kaart.
+              <div key={d.k} className={styles.dienstCell}>
                 <button
                   type="button"
                   onClick={() => toggleSub(d.k)}
@@ -141,13 +147,8 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
                   </div>
                   <div className={styles.optSub}>{d.d}</div>
                 </button>
-                {/* Opmerking strak onder de juiste kaart: full-width grid-rij
-                    (grid-column 1/-1) zodat 'ie niet gestapeld na de 2-koloms
-                    grid belandt maar direct onder z'n eigen onderdeel. */}
-                {active && om ? (
-                  <div className={styles.dienstenGridFull}>{opm(om.key, om.label)}</div>
-                ) : null}
-              </Fragment>
+                {active && om ? opm(om.key, om.label) : null}
+              </div>
             )
           })}
         </div>
@@ -184,7 +185,6 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
               </strong>
             )}
           </div>
-          {opm('onderhoud', 'Onderhoudsplan')}
         </div>
       )}
 

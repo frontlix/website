@@ -1738,6 +1738,16 @@
   gap: 10px;
   box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.04);
 }
+
+/* Toetsenbord open (een tekstveld in de modal heeft focus) → verberg de mobiele
+   totaal/CTA-balk. Op iOS scrolt de fixed modal de balk anders boven het
+   toetsenbord ("totaalprijs popt omhoog") zodra je in een opmerking/veld tikt.
+   Verbergen tijdens typen voorkomt dat; bij blur komt 'ie terug.
+   :has(input/textarea:focus) i.p.v. :focus-within zodat een kaart-tap (button)
+   de balk niet laat flikkeren. */
+.shell:has(textarea:focus, input:focus) .footerMobile {
+  display: none;
+}
 .mobileTotaalRow {
   display: flex;
   align-items: center;
@@ -2012,11 +2022,23 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  /* Cellen bovenaan uitlijnen: een opmerking onder de ene kaart maakt die cel
+     hoger zonder de buurkaart mee te rekken; de kaarten blijven netjes naast
+     elkaar staan. */
+  align-items: start;
 }
 
-/* Opmerking-rij binnen de 2-koloms diensten-grid: spant beide kolommen zodat
-   het tekstveld + schakelaar direct onder de bijbehorende kaart op volle
-   breedte verschijnt (i.p.v. opgesloten in één kolom). */
+/* Eén grid-cel = kaart + (optioneel) z'n opmerking eronder, samen in 1 kolom.
+   Zo blijft het 2-koloms tegel-paar intact: een opmerking onder de ene kaart
+   duwt de buurkaart niet meer naar een nieuwe rij. */
+.dienstCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* (Legacy) opmerking-rij die beide kolommen spande — vervangen door .dienstCell,
+   bewaard voor evt. ander gebruik. */
 .dienstenGridFull {
   grid-column: 1 / -1;
 }
