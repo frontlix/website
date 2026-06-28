@@ -61,9 +61,11 @@ describe('getLeadsList, geen filters', () => {
     expect(builder.eq).toHaveBeenCalledWith('dashboard_archived', false)
     expect(builder.order).toHaveBeenCalledWith('aangemaakt', { ascending: false })
     expect(builder.limit).toHaveBeenCalledWith(100)
+    // getLeadsList verrijkt elke rij met de afgeleide pijplijn-vlag
+    // heeft_wachtende_offerte (offerte-review-fase); zonder offerte = false.
     expect(result).toEqual([
-      { lead_id: 'L1', naam: 'Jan' },
-      { lead_id: 'L2', naam: 'Piet' },
+      { lead_id: 'L1', naam: 'Jan', heeft_wachtende_offerte: false },
+      { lead_id: 'L2', naam: 'Piet', heeft_wachtende_offerte: false },
     ])
   })
 
