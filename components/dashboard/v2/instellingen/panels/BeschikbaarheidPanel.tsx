@@ -57,10 +57,6 @@ export function BeschikbaarheidPanel({
           )}
         </div>
       ))}
-      <div className={styles.note}>
-        Surface plant maximaal <strong className={styles.strong}>2 klussen en 1 plaatsbezoek per dag</strong> en
-        houdt rekening met rijtijden tussen adressen.
-      </div>
     </div>
   );
 }

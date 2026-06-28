@@ -80,11 +80,6 @@ export function InstBeschikbaarheid({ dagen: initieel }: { dagen: DagBeschikbaar
         </div>
       </InstGroupCard>
 
-      <p className={styles.uitleg}>
-        Surface plant maximaal <strong>2 klussen en 1 plaatsbezoek per dag</strong> en houdt
-        rekening met rijtijden tussen adressen.
-      </p>
-
       {status.kind === 'ok' && (
         <div className={`${styles.status} ${styles.ok}`}>
           <Check size={14} aria-hidden="true" /> <span>Beschikbaarheid opgeslagen.</span>
