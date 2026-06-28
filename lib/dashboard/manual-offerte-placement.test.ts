@@ -80,11 +80,11 @@ describe('Reiniging-regel staat los van invegen (gelijk aan de bot)', () => {
       m2: 150,
     })
     const rules = computeRules(data)
-    // Sinds de staffel: dagprijs (eerste 100 m²) + losse meerprijs-regel boven 100.
-    const dagprijs = rules.find((r) => r.desc === 'Reiniging oppervlak (dagprijs)')
-    expect(dagprijs).toBeTruthy()
-    const boven = rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')
-    expect(boven?.aantal).toBe(50) // 150 - 100 = de m² bóven de drempel
+    // Reiniging is één regel "Reiniging oppervlak" (aantal = m²); de staffel zit in
+    // het totaal (dagprijs + meerprijs boven 100), niet in losse regels.
+    const reiniging = rules.find((r) => r.desc === 'Reiniging oppervlak')
+    expect(reiniging).toBeTruthy()
+    expect(reiniging?.aantal).toBe(150)
   })
 
   it('voegzand-product zonder invegen-sub komt toch op de offerte', () => {
@@ -112,24 +112,24 @@ describe('Reiniging staffel: dagprijs (eerste 100 m²) + meerprijs boven 100', (
       .filter((r) => r.desc.startsWith('Reiniging'))
       .reduce((s, r) => s + r.totaal, 0)
 
-  it('≤ 100 m² = alleen de vaste dagprijs, geen meerprijs-regel', () => {
+  it('≤ 100 m² = totaal is de vaste dagprijs, als één regel "Reiniging oppervlak"', () => {
     const rules = oprit(100)
-    expect(rules.find((r) => r.desc === 'Reiniging oppervlak (dagprijs)')?.totaal).toBe(
-      FALLBACK_PRICING.reinigen_dagprijs_onder_100m2,
-    )
-    expect(rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')).toBeUndefined()
-    expect(reinigingTotaal(100)).toBe(FALLBACK_PRICING.reinigen_dagprijs_onder_100m2)
+    const reiniging = rules.find((r) => r.desc === 'Reiniging oppervlak')!
+    expect(reiniging.aantal).toBe(100)
+    expect(reiniging.totaal).toBe(FALLBACK_PRICING.reinigen_dagprijs_onder_100m2)
+    // Eén reiniging-regel, geen losse meerprijs-regel.
+    expect(rules.filter((r) => r.desc.startsWith('Reiniging')).length).toBe(1)
   })
 
-  it('105 m² = dagprijs + 5 m² × per-m², en de meerprijs telt alleen de m² boven 100', () => {
+  it('105 m² = dagprijs + 5 m² × per-m², als één regel met aantal = m²', () => {
     const rules = oprit(105)
-    const boven = rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')!
-    expect(boven.aantal).toBe(5)
-    expect(boven.totaal).toBeCloseTo(5 * FALLBACK_PRICING.reiniging_per_m2, 2)
-    expect(reinigingTotaal(105)).toBeCloseTo(
+    const reiniging = rules.find((r) => r.desc === 'Reiniging oppervlak')!
+    expect(reiniging.aantal).toBe(105)
+    expect(reiniging.totaal).toBeCloseTo(
       FALLBACK_PRICING.reinigen_dagprijs_onder_100m2 + 5 * FALLBACK_PRICING.reiniging_per_m2,
       2,
     )
+    expect(rules.filter((r) => r.desc.startsWith('Reiniging')).length).toBe(1)
   })
 
   it('geen sprong op de grens: 101 m² is duurder dan 100 m² (was eerder goedkoper)', () => {

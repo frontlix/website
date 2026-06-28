@@ -45,7 +45,7 @@ const descs = (state: WizardSubmitState) =>
 describe("reinigen/invegen ontkoppeld (mapper → computeRules)", () => {
   it("alleen Reinigen → enkel reiniging, geen invegen of voegzand", () => {
     const d = descs(baseState({ diensten: { Reinigen: true, Invegen: false, Beschermlaag: false, "Preventieve onkruid": false, Onderhoudsabonnement: false } }));
-    expect(d).toEqual(["Reiniging oppervlak (dagprijs)"]);
+    expect(d).toEqual(["Reiniging oppervlak"]);
     expect(d.some((x) => x.toLowerCase().includes("invegen"))).toBe(false);
     expect(d.some((x) => x.toLowerCase().includes("voegzand"))).toBe(false);
   });
@@ -59,7 +59,7 @@ describe("reinigen/invegen ontkoppeld (mapper → computeRules)", () => {
 
   it("Reinigen + Invegen → reiniging + invegen + voegzand", () => {
     const d = descs(baseState({ diensten: { Reinigen: true, Invegen: true, Beschermlaag: false, "Preventieve onkruid": false, Onderhoudsabonnement: false } }));
-    expect(d).toContain("Reiniging oppervlak (dagprijs)");
+    expect(d).toContain("Reiniging oppervlak");
     expect(d).toContain("Invegen normaal voegzand excl voegzand");
     expect(d.some((x) => x.startsWith("Voegzand normaal"))).toBe(true);
   });

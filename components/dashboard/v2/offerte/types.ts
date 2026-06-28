@@ -9,6 +9,9 @@ export interface Regel {
   qty: number;
   unit: "m²" | "zak" | "rol" | "dag" | "km";
   prijs: number;
+  /** Expliciet regeltotaal als dat NIET gelijk is aan qty × prijs (bv. reiniging:
+   *  vaste dagprijs + per-m²-meerprijs). Afwezig = qty × prijs. */
+  totaal?: number;
   /** Past de bron-state aan (stepper in stap 3 / rail). */
   set: (v: number) => void;
   /** De prijslijst-prijs zonder override. Maakt de "aangepast"-indicatie

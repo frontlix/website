@@ -19,7 +19,7 @@ import type {
   SubDienst,
   Hoofdcategorie,
 } from '@/lib/dashboard/manual-offerte-types'
-import { LOSSE_OPMERKINGEN, zichtbareOpmerking } from '@/lib/dashboard/manual-offerte-types'
+import { LOSSE_OPMERKINGEN, zichtbareOpmerking, verbergEenheidsprijs } from '@/lib/dashboard/manual-offerte-types'
 
 /**
  * PDF-template gemodelleerd naar het Schoon Straatje-design dat de bot
@@ -593,7 +593,9 @@ export function OffertePdfDocument({
                   <Text style={styles.cellAantal}>
                     {r.aantal} {r.eenheid}
                   </Text>
-                  <Text style={styles.cellPrijs}>{formatEuro(r.prijs)}</Text>
+                  <Text style={styles.cellPrijs}>
+                    {verbergEenheidsprijs(r.desc) ? '' : formatEuro(r.prijs)}
+                  </Text>
                   <Text style={styles.cellTotaal}>{formatEuro(r.totaal)}</Text>
                 </View>
                 {/* Klant-opmerking als subregel onder de regel (alleen als

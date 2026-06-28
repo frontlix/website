@@ -8,6 +8,7 @@ import { formatEuro } from '@/lib/dashboard/format'
 import { readRegelOpmerkingen } from '@/lib/dashboard/offerte-form-mapping'
 import {
   regelOpmerkingKey,
+  verbergEenheidsprijs,
   LOSSE_OPMERKINGEN,
   zichtbareOpmerking,
   type OpmerkingKey,
@@ -289,7 +290,9 @@ export default async function OffertePreviewPage({
                       ) : null}
                     </td>
                     <td className={styles.cellNum}>{aantalText}</td>
-                    <td className={styles.cellNum}>{formatEuro(Number(r.stukprijs))}</td>
+                    <td className={styles.cellNum}>
+                      {verbergEenheidsprijs(r.omschrijving) ? '' : formatEuro(Number(r.stukprijs))}
+                    </td>
                     <td className={`${styles.cellNum} ${styles.cellTotal}`}>
                       {formatEuro(Number(r.totaal))}
                     </td>

@@ -7,6 +7,7 @@ import type {
   RegelComputed,
   TotalsComputed,
 } from '@/lib/dashboard/manual-offerte-types'
+import { verbergEenheidsprijs } from '@/lib/dashboard/manual-offerte-types'
 import styles from './ManualOfferteModal.module.css'
 
 type SetFn = <K extends keyof ManualOfferteData>(k: K, v: ManualOfferteData[K]) => void
@@ -46,7 +47,8 @@ export function StepOfferte({
             <div className={styles.regelDesc}>
               <div className={styles.regelDescText}>{r.desc}</div>
               <div className={styles.regelDescMeta}>
-                {r.aantal} {r.eenheid} × {formatEuro(r.prijs)}
+                {r.aantal} {r.eenheid}
+                {verbergEenheidsprijs(r.desc) ? null : ` × ${formatEuro(r.prijs)}`}
               </div>
             </div>
             <div className={styles.regelTotaal}>{formatEuro(r.totaal)}</div>

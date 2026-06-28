@@ -3,6 +3,7 @@
 import { Check, ChevronLeft, FileDown, Send, TriangleAlert } from "lucide-react";
 import { offerteAdres } from "./offerte-data";
 import { fmtEuro, parsePrijs } from "./offerte-utils";
+import { verbergEenheidsprijs } from "@/lib/dashboard/manual-offerte-types";
 import type { BtwKeuze, GeordendItem, Kanaal, KortingType, OfferteKlant } from "./types";
 import styles from "./OfferteRail.module.css";
 
@@ -87,10 +88,15 @@ export function OfferteRail({
               <div className={styles.regelText}>
                 <div className={styles.regelNaam}>{item.regel.naam}</div>
                 <div className={styles.regelMeta}>
-                  {item.regel.qty} {item.regel.unit} × {fmtEuro(item.regel.prijs)}
+                  {item.regel.qty} {item.regel.unit}
+                  {verbergEenheidsprijs(item.regel.naam)
+                    ? ""
+                    : ` × ${fmtEuro(item.regel.prijs)}`}
                 </div>
               </div>
-              <span className={styles.regelBedrag}>{fmtEuro(item.regel.qty * item.regel.prijs)}</span>
+              <span className={styles.regelBedrag}>
+                {fmtEuro(item.regel.totaal ?? item.regel.qty * item.regel.prijs)}
+              </span>
             </div>
           ) : (
             <div key={item.key} className={styles.regel}>

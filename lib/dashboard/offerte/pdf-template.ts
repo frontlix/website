@@ -11,7 +11,7 @@
  */
 
 import type { ManualOfferteData, RegelComputed, TotalsComputed } from '../manual-offerte-types'
-import { LOSSE_OPMERKINGEN, zichtbareOpmerking } from '../manual-offerte-types'
+import { LOSSE_OPMERKINGEN, zichtbareOpmerking, verbergEenheidsprijs } from '../manual-offerte-types'
 
 export type TenantBedrijf = {
   bedrijfsnaam: string
@@ -140,7 +140,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
         <tr>
           <td class="cell-desc">${escapeHtml(r.omschrijving)}${opmerkingBlock}</td>
           <td class="cell-num">${aantalText}</td>
-          <td class="cell-num">${formatCurrency(r.stukprijs)}</td>
+          <td class="cell-num">${verbergEenheidsprijs(r.omschrijving) ? '' : formatCurrency(r.stukprijs)}</td>
           <td class="cell-num cell-total">${formatCurrency(r.totaal)}</td>
         </tr>
       `

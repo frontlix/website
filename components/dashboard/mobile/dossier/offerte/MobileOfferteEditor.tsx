@@ -41,6 +41,7 @@ import type {
   OpmerkingKey,
   RegelOpmerking,
 } from '@/lib/dashboard/manual-offerte-types'
+import { verbergEenheidsprijs } from '@/lib/dashboard/manual-offerte-types'
 import {
   computeRules,
   computeTotals,
@@ -1062,7 +1063,10 @@ export function MobileOfferteEditor({
                 <span className={styles.lineLabel}>{r.desc}</span>
                 <span className={styles.lineRight}>
                   <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} ×{' '}
+                    {r.aantal} {r.eenheid}
+                    {verbergEenheidsprijs(r.desc) ? null : (
+                      <>
+                    {' '}×{' '}
                     {r.overrideKey && live ? (
                       <span className={styles.linePrijs}>
                         <ONumField
@@ -1087,6 +1091,8 @@ export function MobileOfferteEditor({
                       </span>
                     ) : (
                       formatEuro(r.prijs)
+                    )}
+                      </>
                     )}
                   </span>
                   <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>

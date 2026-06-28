@@ -95,6 +95,18 @@ export const LOSSE_OPMERKINGEN: ReadonlyArray<{ key: OpmerkingKey; label: string
 ]
 
 /**
+ * Regels waarvan de EENHEIDSPRIJS niet getoond wordt (alleen "X m²" + totaal),
+ * omdat de prijs niet zuiver per eenheid is. Reiniging = vaste dagprijs (eerste
+ * 100 m²) + meerprijs daarboven, dus geen zinvolle €/m². Herkenning op de
+ * stabiele omschrijving; ALLE renderers (live totaal, wizard-rail, PDF's, owner-
+ * mails) delen deze regel zodat de preview gelijk blijft aan de verstuurde
+ * offerte. Werkt op zowel `desc` (dashboard) als `omschrijving` (bot/snapshot).
+ */
+export function verbergEenheidsprijs(omschrijving: string | null | undefined): boolean {
+  return omschrijving === 'Reiniging oppervlak'
+}
+
+/**
  * Map een berekende regel (op `desc`) naar zijn opmerking-onderdeel, of null
  * als de regel geen opmerking-onderdeel is. Pure functie zodat zowel de
  * regels-engine, de persistence-laag als de loaders 'm delen (één bron van

@@ -53,31 +53,21 @@ export function computeRules(
   //    invegen (bv. alleen preventieve onkruid + beschermlaag) de Reiniging-
   //    regel miste en de app-prijs afweek van de gemailde offerte.
   if (data.hoofdcategorie.includes('oprit_terras_terrein') && reinigenActief) {
-    // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
+    // Reiniging als ÉÉN regel "Reiniging oppervlak": de dagprijs dekt de eerste
+    // 100 m² (vast bedrag), elke m² daarboven kost de per-m²-prijs bovenop. De
+    // eenheidsprijs is dus niet zuiver per m², daarom toont de regel alleen
+    // "X m²" + het totaal (verbergEenheidsprijs). Vloeiend over de 100 m²-grens,
+    // identiek aan de bot. Per-offerte override (undefined = prijslijst); 0 blijft 0.
     const reinPr = data.reiniging_per_m2_override ?? pricing.reiniging_per_m2
-    // De dagprijs dekt de eerste 100 m² (vast bedrag); elke m² BOVEN de 100 kost
-    // er de per-m²-prijs bovenop. Zo loopt de prijs vloeiend door over de 100 m²-
-    // grens (geen sprong omlaag). Identiek aan de bot-berekening.
     const dagprijs = data.reinigen_dagprijs_override ?? pricing.reinigen_dagprijs_onder_100m2
+    const totaal = m2 > 100 ? dagprijs + (m2 - 100) * reinPr : dagprijs
     r.push({
-      desc: 'Reiniging oppervlak (dagprijs)',
-      aantal: 1,
-      eenheid: 'dag',
-      prijs: dagprijs,
-      totaal: dagprijs,
-      overrideKey: 'reinigen_dagprijs_override',
+      desc: 'Reiniging oppervlak',
+      aantal: m2,
+      eenheid: 'm²',
+      prijs: reinPr,
+      totaal,
     })
-    if (m2 > 100) {
-      const extraM2 = m2 - 100
-      r.push({
-        desc: 'Reiniging oppervlak (boven 100 m²)',
-        aantal: extraM2,
-        eenheid: 'm²',
-        prijs: reinPr,
-        totaal: extraM2 * reinPr,
-        overrideKey: 'reiniging_per_m2_override',
-      })
-    }
   }
 
   // ── Invegen-ARBEID hangt aan de invegen-sub-dienst (het voegzand-PRODUCT

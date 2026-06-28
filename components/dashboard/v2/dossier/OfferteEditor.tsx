@@ -67,6 +67,7 @@ import type {
   RegelOpmerking,
   SubDienst,
 } from "@/lib/dashboard/manual-offerte-types";
+import { verbergEenheidsprijs } from "@/lib/dashboard/manual-offerte-types";
 import {
   computeRules,
   computeTotals,
@@ -1191,7 +1192,10 @@ export function OfferteEditor({
                 <span className={styles.lineLabel}>{r.desc}</span>
                 <span className={styles.lineRight}>
                   <span className={styles.lineMeta}>
-                    {r.aantal} {r.eenheid} &#215;{" "}
+                    {r.aantal} {r.eenheid}
+                    {verbergEenheidsprijs(r.desc) ? null : (
+                      <>
+                    {" "}&#215;{" "}
                     {r.overrideKey && live ? (
                       <span className={styles.linePrijs}>
                         <span className={styles.linePrijsEuro}>&#8364;</span>
@@ -1217,6 +1221,8 @@ export function OfferteEditor({
                       </span>
                     ) : (
                       formatEuro(r.prijs)
+                    )}
+                      </>
                     )}
                   </span>
                   <span className={styles.lineTotal}>{formatEuro(r.totaal)}</span>

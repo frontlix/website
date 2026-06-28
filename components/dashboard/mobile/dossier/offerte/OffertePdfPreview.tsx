@@ -28,6 +28,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { OFullSheet } from './OfferteEditAtoms'
 import styles from './OffertePdfPreview.module.css'
+import { verbergEenheidsprijs } from '@/lib/dashboard/manual-offerte-types'
 
 // ── A4-afmeting + zoom-grenzen ───────────────────────────────────────────
 // A4_WIDTH (px @96dpi ≈ 210mm) MOET gelijk zijn aan .paper { width } in de
@@ -350,7 +351,7 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                         ) : null}
                       </td>
                       <td className={styles.cellNum}>{r.aantalLabel}</td>
-                      <td className={styles.cellNum}>{eurPdf(r.stukprijs)}</td>
+                      <td className={styles.cellNum}>{verbergEenheidsprijs(r.omschrijving) ? '' : eurPdf(r.stukprijs)}</td>
                       <td className={`${styles.cellNum} ${styles.cellTotal}`}>{eurPdf(r.totaal)}</td>
                     </tr>
                   ))

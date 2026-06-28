@@ -275,27 +275,24 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     // Reiniging (Schoon Straatje): vaste dagprijs onder 100 m², daarboven m² ×
     // tarief. De prijs komt uit de prijslijst, tenzij per-offerte overschreven.
     if (diensten["Reinigen"] && m2 > 0) {
-      // Dagprijs dekt de eerste 100 m²; elke m² daarboven komt als losse
-      // meerprijs-regel erbij. Identiek aan computeRules + de bot (geen
-      // prijssprong op de 100 m²-grens).
+      // Reiniging als ÉÉN regel "Reiniging oppervlak": dagprijs (eerste 100 m²) +
+      // per-m²-meerprijs daarboven, samengeteld tot één totaal. De prijs is niet
+      // zuiver per m², dus de rail toont alleen "X m²" + het totaal
+      // (verbergEenheidsprijs). Identiek aan computeRules + de bot.
+      const reinPr = prijsVeld("reiniging_per_m2", pricing.reiniging_per_m2).prijs;
+      const dagprijs = prijsVeld(
+        "reinigen_dagprijs",
+        pricing.reinigen_dagprijs_onder_100m2,
+      ).prijs;
       out.push({
         id: "oprit",
-        naam: "Reiniging oppervlak (dagprijs)",
-        qty: 1,
-        unit: "dag",
-        set: () => {},
-        ...prijsVeld("reinigen_dagprijs", pricing.reinigen_dagprijs_onder_100m2),
+        naam: "Reiniging oppervlak",
+        qty: m2,
+        unit: "m²",
+        set: (v) => setM2(v),
+        prijs: reinPr,
+        totaal: m2 > 100 ? dagprijs + (m2 - 100) * reinPr : dagprijs,
       });
-      if (m2 > 100) {
-        out.push({
-          id: "oprit_boven100",
-          naam: "Reiniging oppervlak (boven 100 m²)",
-          qty: m2 - 100,
-          unit: "m²",
-          set: (v) => setM2(v + 100),
-          ...prijsVeld("reiniging_per_m2", pricing.reiniging_per_m2),
-        });
-      }
     }
     // Voegzand per type (Schoon Straatje-logica): per actief type een
     // invegen-arbeidsregel (m² × arbeidstarief) plus een voegzand-productregel
@@ -427,9 +424,11 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   // - reiskosten, korting/toeslag alleen over diensten).
   const reiskostenBedrag = regels
     .filter((r) => r.id === "reiskosten")
-    .reduce((s, r) => s + r.qty * r.prijs, 0);
+    .reduce((s, r) => s + (r.totaal ?? r.qty * r.prijs), 0);
   const subDiensten =
-    regels.filter((r) => r.id !== "reiskosten").reduce((s, r) => s + r.qty * r.prijs, 0) +
+    regels
+      .filter((r) => r.id !== "reiskosten")
+      .reduce((s, r) => s + (r.totaal ?? r.qty * r.prijs), 0) +
     vrij.reduce((s, v) => s + parsePrijs(v.bedrag), 0);
   const toeslag = korstmosToeslag ? subDiensten * 0.1 : 0;
   // Korting: percentage van (diensten + toeslag), óf een vast euro-bedrag gecapt
