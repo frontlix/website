@@ -17,8 +17,10 @@ interface ChatPanelProps {
   /** Surface beantwoordt automatisch (aan) of jij antwoordt zelf (uit). */
   botAan: boolean;
   onToggleBot: (next: boolean) => void;
-  /** Zelf een bericht sturen, pauzeert Surface in de pagina-state. */
-  onSend: (tekst: string) => void;
+  /** Zelf een bericht naar de klant sturen. Kan alleen als Surface uit staat
+   *  (bot_gepauzeerd). Geeft { ok, error } terug zodat de composer een mislukte
+   *  verzending zichtbaar maakt i.p.v. stil te falen. */
+  onSend: (tekst: string) => Promise<{ ok: boolean; error?: string }>;
   /** Echte dossier-data; zonder = demo-fallback (DOSSIER). */
   data?: DossierData;
 }
@@ -36,6 +38,8 @@ export function ChatPanel({
   data = DOSSIER,
 }: ChatPanelProps) {
   const [tekst, setTekst] = useState("");
+  const [fout, setFout] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll naar het nieuwste bericht zodra de lijst groeit.
@@ -44,10 +48,24 @@ export function ChatPanel({
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
-  const stuur = () => {
-    if (!tekst.trim()) return;
-    onSend(tekst.trim());
-    setTekst("");
+  // Zelf reageren kan alleen wanneer Surface uit staat (de backend weigert
+  // anders met 409). We wachten het resultaat af en tonen een foutmelding
+  // zodat een mislukte verzending niet stil verdwijnt.
+  const stuur = async () => {
+    const t = tekst.trim();
+    if (!t || sending || botAan) return;
+    setSending(true);
+    setFout(null);
+    try {
+      const res = await onSend(t);
+      if (res?.ok) {
+        setTekst("");
+      } else {
+        setFout(res?.error ?? "Versturen mislukt. Probeer het opnieuw.");
+      }
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -109,28 +127,40 @@ export function ChatPanel({
       </div>
 
       <div className={styles.footer}>
+        {/* Reageren kan rechtstreeks vanuit het dossier zodra Surface uit
+            staat. Surface aan -> veld uit met instructie om over te nemen. */}
+        {fout ? (
+          <div role="alert" className={styles.fout}>
+            {fout}
+          </div>
+        ) : null}
         <div className={styles.inputRow}>
-          {/* Reageren vanuit het dossier is nog niet betrouwbaar gekoppeld
-              (kon stil mislukken). Uitgeschakeld met "binnenkort"; reageren
-              kan nu wel via de Inbox. */}
           <input
             value={tekst}
-            onChange={(e) => setTekst(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") stuur();
+            onChange={(e) => {
+              setTekst(e.target.value);
+              if (fout) setFout(null);
             }}
-            disabled
-            placeholder="Reageren kan via de Inbox, hier binnenkort"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                stuur();
+              }
+            }}
+            disabled={botAan || sending}
+            placeholder={
+              botAan
+                ? "Zet Surface uit om zelf te reageren"
+                : "Typ een bericht aan de klant"
+            }
             className={styles.input}
-            style={{ opacity: 0.6, cursor: "not-allowed" }}
           />
           <button
             type="button"
             className={styles.sendBtn}
             onClick={stuur}
-            disabled
-            title="Binnenkort, reageer via de Inbox"
-            style={{ opacity: 0.5, cursor: "not-allowed" }}
+            disabled={botAan || sending || !tekst.trim()}
+            title={botAan ? "Zet eerst Surface uit" : "Versturen"}
             aria-label="Versturen"
           >
             <Send size={15} strokeWidth={2.2} />

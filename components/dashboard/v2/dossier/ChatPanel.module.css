@@ -211,3 +211,27 @@
 .sendBtn:hover {
   filter: brightness(1.05);
 }
+
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sendBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sendBtn:disabled:hover {
+  filter: none;
+}
+
+/* Mislukte handmatige verzending (bijv. buiten 24u-venster of Meta-weigering). */
+.fout {
+  background: var(--rb-danger-soft);
+  color: var(--rb-danger);
+  border-radius: var(--rb-r-chip);
+  padding: 8px 13px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}

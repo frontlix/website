@@ -152,26 +152,42 @@ export function DossierView({
     setNotitiesDemo((prev) => prev.map((n) => (n.id === id ? { ...n, ...targets } : n)));
   };
 
-  // Zelf een bericht sturen pauzeert Surface (server-side, na 24u-window-check).
-  const stuurBericht = (tekst: string) => {
+  // Zelf een bericht sturen (alleen als Surface uit staat; de backend weigert
+  // anders met 409). Geeft het resultaat terug zodat de ChatPanel een mislukte
+  // verzending kan tonen i.p.v. stil te falen — de reden dat dit veld eerder
+  // was uitgezet.
+  const stuurBericht = async (
+    tekst: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
     if (live && leadId) {
-      startTransition(async () => {
-        try {
-          const res = await fetch(`/api/dashboard/lead/${leadId}/send-message`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ bericht: tekst }),
-          });
-          const body = await res.json().catch(() => ({}));
-          if (res.ok && body?.ok !== false) router.refresh();
-        } catch {
-          // Netwerkfout, demo-pad onaangeroerd; de owner ziet geen wijziging.
+      try {
+        const res = await fetch(`/api/dashboard/lead/${leadId}/send-message`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bericht: tekst }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (res.ok && body?.ok !== false) {
+          startTransition(() => router.refresh());
+          return { ok: true };
         }
-      });
-      return;
+        return {
+          ok: false,
+          error:
+            typeof body?.error === "string"
+              ? body.error
+              : `Versturen mislukt (HTTP ${res.status}).`,
+        };
+      } catch {
+        return {
+          ok: false,
+          error: "Geen verbinding met de server. Probeer het opnieuw.",
+        };
+      }
     }
     setChatDemo((prev) => [...prev, { van: "mij", tekst, tijd: "nu" }]);
     setBotAanDemo(false);
+    return { ok: true };
   };
 
   // Surface pauzeren/hervatten via de bestaande proxy-route.
