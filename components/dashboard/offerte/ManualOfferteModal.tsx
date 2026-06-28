@@ -11,6 +11,7 @@ import {
   FileText,
   Mail,
   Eye,
+  Download,
   StickyNote,
 } from 'lucide-react'
 import {
@@ -509,39 +510,50 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   // wordt aangemaakt. Voor "echt versturen" gebruikt de owner de
   // submit-knop.
   const [pdfBusy, setPdfBusy] = useState(false)
+  // Live PDF-voorbeeld in een eigen overlay (geen deel-/bewaar-vel): de owner
+  // ziet de offerte in z'n huidige staat zonder dat 'ie 'm hoeft te downloaden.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const previewUrlRef = useRef<string | null>(null)
+
+  // Genereert de offerte-PDF client-side via @react-pdf/renderer (geen
+  // server-roundtrip, geen lead). Gedeeld door download én preview.
+  const generatePdfBlob = async () => {
+    const { pdf } = await import('@react-pdf/renderer')
+    // Tijdelijk offerte-nummer, placeholder tot de DB er één aanmaakt.
+    // Format: OFF-YYYYMMDD-HHMM
+    const now = new Date()
+    const stamp =
+      now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') +
+      '-' +
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0')
+    const offerteNummer = `OFF-${stamp}`
+
+    const blob = await pdf(
+      <OffertePdfDocument
+        data={data}
+        rules={rules}
+        totals={totals}
+        offerteNummer={offerteNummer}
+        origin={typeof window !== 'undefined' ? window.location.origin : undefined}
+      />,
+    ).toBlob()
+
+    const naamSlug = (data.naam || 'klant')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+    const fileName = `offerte-${naamSlug}-${stamp}.pdf`
+    return { blob, fileName }
+  }
+
   const downloadPdf = async () => {
     if (pdfBusy) return
     setPdfBusy(true)
     try {
-      const { pdf } = await import('@react-pdf/renderer')
-      // Tijdelijk offerte-nummer, placeholder tot de DB er één aanmaakt.
-      // Format: OFF-YYYYMMDD-HHMM
-      const now = new Date()
-      const stamp =
-        now.getFullYear().toString() +
-        String(now.getMonth() + 1).padStart(2, '0') +
-        String(now.getDate()).padStart(2, '0') +
-        '-' +
-        String(now.getHours()).padStart(2, '0') +
-        String(now.getMinutes()).padStart(2, '0')
-      const offerteNummer = `OFF-${stamp}`
-
-      const blob = await pdf(
-        <OffertePdfDocument
-          data={data}
-          rules={rules}
-          totals={totals}
-          offerteNummer={offerteNummer}
-          origin={typeof window !== 'undefined' ? window.location.origin : undefined}
-        />,
-      ).toBlob()
-
-      const naamSlug = (data.naam || 'klant')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-      const fileName = `offerte-${naamSlug}-${stamp}.pdf`
-
+      const { blob, fileName } = await generatePdfBlob()
       // Aflevering via de gedeelde helper: op de telefoon het deel-/bewaar-vel
       // (iOS negeert <a download> voor blob-URLs), op desktop een klassieke
       // download.
@@ -554,7 +566,41 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     }
   }
 
+  // Toont de PDF inline in een overlay i.p.v. 'm te delen/downloaden.
+  const previewPdf = async () => {
+    if (pdfBusy) return
+    setPdfBusy(true)
+    try {
+      const { blob } = await generatePdfBlob()
+      const u = URL.createObjectURL(blob)
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+      previewUrlRef.current = u
+      setPreviewUrl(u)
+    } catch (e) {
+      console.error('[ManualOfferteModal] PDF preview failed:', e)
+      setError('PDF genereren mislukt, check console voor details.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  const closePreview = () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+      previewUrlRef.current = null
+    }
+    setPreviewUrl(null)
+  }
+
+  // Object-URL opruimen bij unmount.
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    }
+  }, [])
+
   return (
+    <>
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.shell} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -794,11 +840,11 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 className={styles.btnPreview}
-                onClick={downloadPdf}
+                onClick={previewPdf}
                 disabled={pdfBusy || rules.length === 0}
                 aria-label="Preview"
               >
-                <Eye size={14} /> Preview
+                <Eye size={14} /> {pdfBusy ? 'Laden…' : 'Preview'}
               </button>
             </div>
             {!isSendStep && (
@@ -828,5 +874,105 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
         )}
       </div>
     </div>
+
+    {/* PDF-voorbeeld: toont de offerte inline in een eigen overlay (boven de
+        wizard, z-index 9500) i.p.v. het iOS deel-/bewaar-vel. Klik op de
+        achtergrond of het kruisje sluit 'm; Download PDF blijft als optie. */}
+    {previewUrl && (
+      <div
+        onClick={closePreview}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9500,
+          background: 'rgba(15, 23, 42, 0.6)',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: isMobile ? 0 : 24,
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: '#fff',
+            borderRadius: isMobile ? 0 : 14,
+            width: '100%',
+            maxWidth: 900,
+            margin: '0 auto',
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              borderBottom: '1px solid #e5e7eb',
+              flexShrink: 0,
+            }}
+          >
+            <strong style={{ fontSize: 15, color: '#0f172a' }}>Voorbeeld offerte</strong>
+            <button
+              type="button"
+              onClick={closePreview}
+              aria-label="Sluiten"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#64748b',
+                display: 'flex',
+                padding: 4,
+              }}
+            >
+              <X size={22} />
+            </button>
+          </div>
+          <iframe
+            src={previewUrl}
+            title="Voorbeeld offerte"
+            style={{ flex: 1, width: '100%', border: 'none', minHeight: 0 }}
+          />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              padding: '10px 16px',
+              borderTop: '1px solid #e5e7eb',
+              flexShrink: 0,
+            }}
+          >
+            <button
+              type="button"
+              onClick={downloadPdf}
+              disabled={pdfBusy}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                background: '#2563eb',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '9px 16px',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: pdfBusy ? 'default' : 'pointer',
+                opacity: pdfBusy ? 0.6 : 1,
+              }}
+            >
+              <Download size={16} /> Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

@@ -257,6 +257,7 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
               </button>
             ))}
           </div>
+          {opm('korstmos', 'Korstmos')}
         </div>
       </div>
 
