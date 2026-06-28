@@ -237,15 +237,16 @@ export function computeRules(
     })
   }
 
-  // Per-onderdeel opmerkingen aan de LAATSTE regel van elk onderdeel hangen,
-  // zodat de opmerking in de offerte direct onder dat onderdeel verschijnt
-  // (bv. onder de voegzand-productregel, na de invegen-arbeidsregel). Alleen
-  // zichtbare, niet-lege opmerkingen worden meegegeven; anders blijft het veld
-  // afwezig en komt er geen lege witregel in de offerte.
+  // Per-onderdeel opmerkingen aan de EERSTE regel van elk onderdeel hangen,
+  // zodat de opmerking onder het juiste onderdeel verschijnt: een opmerking bij
+  // Invegen komt onder de "Invegen normaal voegzand"-regel, niet onder de losse
+  // voegzand-productregel die erna komt. Alleen zichtbare, niet-lege opmerkingen
+  // worden meegegeven; anders blijft het veld afwezig en komt er geen lege
+  // witregel in de offerte. (Moet gelijk lopen met de bot-PDF-template.)
   const opm = data.regel_opmerkingen
   if (opm) {
     const gehad = new Set<OpmerkingKey>()
-    for (let i = r.length - 1; i >= 0; i--) {
+    for (let i = 0; i < r.length; i++) {
       const key = regelOpmerkingKey(r[i].desc)
       if (!key || gehad.has(key)) continue
       gehad.add(key)

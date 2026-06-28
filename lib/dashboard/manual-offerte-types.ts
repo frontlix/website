@@ -28,8 +28,8 @@ export type SendKanaal = 'mail' | 'manual'
 
 /** Onderdeel-sleutels waaraan een klant-opmerking gekoppeld kan worden. Elke
  *  sleutel hoort bij één of meer berekende offerte-regels (zie
- *  regelOpmerkingKey); de opmerking verschijnt onder de LAATSTE regel van dat
- *  onderdeel. */
+ *  regelOpmerkingKey); de opmerking verschijnt onder de EERSTE regel van dat
+ *  onderdeel (bv. de Invegen-regel, niet de losse voegzand-productregel). */
 export type OpmerkingKey =
   | 'reiniging'
   | 'voegzand_normaal'
@@ -289,7 +289,10 @@ export const DEFAULTS: ManualOfferteData = {
   korstmos: 'nee',
   afstand_km: 25,
   planten_afschermen_actief: false,
-  planten_afschermen_rollen: 2,
+  // MOET gelijk blijven aan de bot: die zet altijd 1 rol afdekfolie
+  // (src/services/pricing.ts → "Afdekfolie planten", aantal: 1). Anders wijkt
+  // het live prijsoverzicht in het dashboard af van de echte (gemailde) offerte.
+  planten_afschermen_rollen: 1,
   planten_afschermen_prijs: 8.5,
   extra_arbeid_minuten: 0,
   extra_arbeid_personen: 0,
