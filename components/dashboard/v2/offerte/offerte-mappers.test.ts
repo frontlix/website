@@ -81,7 +81,7 @@ describe('buildManualOfferteFromWizard', () => {
     rolPrijs: '8,5',
     voegzandM2: { normaal: 0, onkruidwerend: 0 },
     voegzandZakken: { normaal: 0, onkruidwerend: 0 },
-    voegzandDekking: 5,
+    voegzandDekking: { normaal: 5, onkruidwerend: 5 },
     zandPrijzen: { normaal: '2,9', onkruidwerend: '20,9' },
     prijsOverrides: {},
     diensten: { Reinigen: true, Invegen: false },

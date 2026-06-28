@@ -61,7 +61,11 @@ export async function regenerateAutoRegels(leadId: string): Promise<Result> {
   const pricing = await getManualOffertePricing()
 
   // 3) Lead → ManualOfferteData
-  const data = leadToOfferteData(lead, pricing.voegzand_m2_per_zak)
+  const data = leadToOfferteData(
+    lead,
+    pricing.voegzand_m2_per_zak,
+    pricing.voegzand_onkruidwerend_m2_per_zak,
+  )
 
   // 4) Compute regels
   const rules = computeRules(data, pricing)

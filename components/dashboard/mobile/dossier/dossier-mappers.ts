@@ -331,7 +331,11 @@ export function mapLeadDetailToDossier(
   // lead-werkvelden. Spiegelt v2 exact (eerste niet-concept offerte MET een
   // bruikbare snapshot, leadId = l.id) zodat het bonnummer desktop/mobiel
   // identiek is.
-  const baseData = mapLeadToFormData(l, pricing.voegzand_m2_per_zak)
+  const baseData = mapLeadToFormData(
+    l,
+    pricing.voegzand_m2_per_zak,
+    pricing.voegzand_onkruidwerend_m2_per_zak,
+  )
   let sentModel = null
   for (const o of detail.offertes) {
     if (o.is_concept) continue

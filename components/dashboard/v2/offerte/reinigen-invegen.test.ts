@@ -20,7 +20,7 @@ function baseState(over: Partial<WizardSubmitState>): WizardSubmitState {
     // óók als Invegen niet is gekozen.
     voegzandM2: { normaal: 10, onkruidwerend: 0 },
     voegzandZakken: { normaal: 2, onkruidwerend: 0 },
-    voegzandDekking: 5,
+    voegzandDekking: { normaal: 5, onkruidwerend: 5 },
     zandPrijzen: { normaal: "2,90", onkruidwerend: "20,90" },
     diensten: { Reinigen: false, Invegen: false, Beschermlaag: false, "Preventieve onkruid": false, Onderhoudsabonnement: false },
     groeneAanslag: false,

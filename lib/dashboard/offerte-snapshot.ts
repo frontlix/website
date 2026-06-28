@@ -72,6 +72,9 @@ export function buildPricingFromRuleKeys(
       map.get('voegzand_onkruidwerend_per_zak') ?? FALLBACK_PRICING.voegzand_onkruidwerend_per_zak,
     voegzand_m2_per_zak:
       map.get('voegzand_m2_per_zak') ?? FALLBACK_PRICING.voegzand_m2_per_zak,
+    voegzand_onkruidwerend_m2_per_zak:
+      map.get('voegzand_onkruidwerend_m2_per_zak') ??
+      FALLBACK_PRICING.voegzand_onkruidwerend_m2_per_zak,
     preventieve_onkruid_per_m2:
       map.get('onkruid_per_m2_langer') ?? FALLBACK_PRICING.preventieve_onkruid_per_m2,
     beschermlaag_per_m2:

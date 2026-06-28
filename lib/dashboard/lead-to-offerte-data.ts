@@ -22,7 +22,8 @@ type LeadRow = Database['public']['Tables']['leads']['Row']
  */
 export function leadToOfferteData(
   lead: LeadRow,
-  voegzandM2PerZak: number = 5,
+  normaalM2PerZak: number = 15,
+  onkruidwerendM2PerZak: number = 30,
 ): ManualOfferteData {
   const { sub: subMapped, onderhoudWeken: onderhoudWekenDerived } = mapBotSubDiensten(
     lead.sub_diensten,
@@ -57,7 +58,7 @@ export function leadToOfferteData(
 
   // Voegzand-split (m² + zakken), gedeeld met mapLeadToFormData en 1-op-1 met de
   // bot, zodat de auto-prijsregels arbeid EN voegzand bevatten.
-  const vz = deriveVoegzandSplit(lead, voegzandM2PerZak)
+  const vz = deriveVoegzandSplit(lead, normaalM2PerZak, onkruidwerendM2PerZak)
 
   return {
     ...DEFAULTS,

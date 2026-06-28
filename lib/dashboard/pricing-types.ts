@@ -12,9 +12,11 @@ export type ManualOffertePricing = {
   arbeid_invegen_onkruidwerend_per_m2: number
   voegzand_normaal_per_zak: number
   voegzand_onkruidwerend_per_zak: number
-  /** Dekkingsfactor: hoeveel m² straatwerk je met 1 zak voegzand inveegt.
-   *  Wordt gebruikt om het aantal zakken te suggereren in de wizard. */
+  /** Dekkingsfactor NORMAAL voegzand: hoeveel m² straatwerk je met 1 zak inveegt.
+   *  Bepaalt het aantal zakken (ceil(m²/dekking)) in de wizard en de auto-offerte. */
   voegzand_m2_per_zak: number
+  /** Dekkingsfactor ONKRUIDWEREND voegzand (aparte waarde, hoger dan normaal). */
+  voegzand_onkruidwerend_m2_per_zak: number
   preventieve_onkruid_per_m2: number
   beschermlaag_per_m2: number
   plan_4w_per_m2: number
@@ -34,7 +36,8 @@ export const FALLBACK_PRICING: ManualOffertePricing = {
   arbeid_invegen_onkruidwerend_per_m2: 1.6,
   voegzand_normaal_per_zak: 2.9,
   voegzand_onkruidwerend_per_zak: 20.9,
-  voegzand_m2_per_zak: 5,
+  voegzand_m2_per_zak: 15,
+  voegzand_onkruidwerend_m2_per_zak: 30,
   // Preventieve onkruid deelt de ">12 weken / langer"-staffel (onkruid_per_m2_langer),
   // net als plan_16w. Bot-prijslijst = 4,50/m². (Was 1,10: dat tarief bestaat
   // niet in de Schoon Straatje-bot-config.)

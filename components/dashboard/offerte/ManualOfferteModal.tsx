@@ -292,19 +292,21 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       aiJustFilledZakken.current = false
       return
     }
-    const dekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5
+    const dekkingNormaal = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 15
+    const dekkingOnkruid =
+      pricing.voegzand_onkruidwerend_m2_per_zak > 0 ? pricing.voegzand_onkruidwerend_m2_per_zak : 30
     setData((prev) => {
       const next = { ...prev }
       if (prev.voegzand_normaal_actief) {
         next.voegzand_normaal_zakken = Math.ceil(
-          (Number(prev.voegzand_normaal_m2) || 0) / dekking,
+          (Number(prev.voegzand_normaal_m2) || 0) / dekkingNormaal,
         )
       } else {
         next.voegzand_normaal_zakken = 0
       }
       if (prev.voegzand_onkruidwerend_actief) {
         next.voegzand_onkruidwerend_zakken = Math.ceil(
-          (Number(prev.voegzand_onkruidwerend_m2) || 0) / dekking,
+          (Number(prev.voegzand_onkruidwerend_m2) || 0) / dekkingOnkruid,
         )
       } else {
         next.voegzand_onkruidwerend_zakken = 0
@@ -317,6 +319,7 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
     data.voegzand_normaal_actief,
     data.voegzand_onkruidwerend_actief,
     pricing.voegzand_m2_per_zak,
+    pricing.voegzand_onkruidwerend_m2_per_zak,
   ])
 
   // ── Multi-draft auto-save ──────────────────────────────────────────

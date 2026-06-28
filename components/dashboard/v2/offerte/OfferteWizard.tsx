@@ -206,7 +206,13 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   // invegen-m² en het voegzand worden uit de oppervlakte berekend, en
   // beschermlaag/onkruid volgen de oppervlakte zolang ze aan staan, zodat het
   // aanpassen van de m² ook hun m² bijwerkt.
-  const dekkingFactor = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5;
+  // Dekking per voegzand-type (m² per zak): normaal en onkruidwerend hebben een
+  // eigen instelbare waarde, zodat de zakken-suggestie per type klopt.
+  const dekkingNormaal = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 15;
+  const dekkingOnkruidwerend =
+    pricing.voegzand_onkruidwerend_m2_per_zak > 0 ? pricing.voegzand_onkruidwerend_m2_per_zak : 30;
+  const dekkingVoor = (type: "normaal" | "onkruidwerend") =>
+    type === "onkruidwerend" ? dekkingOnkruidwerend : dekkingNormaal;
 
   const setM2 = (v: number) => {
     const nm = Math.max(0, v);
@@ -225,8 +231,8 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           };
     setVoegzandM2(next);
     setVoegzandZakken({
-      normaal: Math.ceil(next.normaal / dekkingFactor),
-      onkruidwerend: Math.ceil(next.onkruidwerend / dekkingFactor),
+      normaal: Math.ceil(next.normaal / dekkingNormaal),
+      onkruidwerend: Math.ceil(next.onkruidwerend / dekkingOnkruidwerend),
     });
     if (diensten["Beschermlaag"]) setBm2(nm);
     if (diensten["Preventieve onkruid"]) setOm2(nm);
@@ -237,7 +243,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
   const zetVoegzandM2Type = (type: "normaal" | "onkruidwerend", v: number) => {
     const m = Math.max(0, v);
     setVoegzandM2((vz) => ({ ...vz, [type]: m }));
-    setVoegzandZakken((zk) => ({ ...zk, [type]: Math.ceil(m / dekkingFactor) }));
+    setVoegzandZakken((zk) => ({ ...zk, [type]: Math.ceil(m / dekkingVoor(type)) }));
   };
 
   // ── Live berekening ──
@@ -515,7 +521,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
         rolPrijs,
         voegzandM2,
         voegzandZakken,
-        voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
+        voegzandDekking: { normaal: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 15, onkruidwerend: pricing.voegzand_onkruidwerend_m2_per_zak > 0 ? pricing.voegzand_onkruidwerend_m2_per_zak : 30 },
         zandPrijzen,
         prijsOverrides,
         diensten,
@@ -688,7 +694,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
           rolPrijs: d.state.rolPrijs,
           voegzandM2: d.state.voegzandM2,
           voegzandZakken: d.state.voegzandZakken,
-          voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
+          voegzandDekking: { normaal: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 15, onkruidwerend: pricing.voegzand_onkruidwerend_m2_per_zak > 0 ? pricing.voegzand_onkruidwerend_m2_per_zak : 30 },
           zandPrijzen: d.state.zandPrijzen,
           prijsOverrides: d.state.prijsOverrides ?? {},
           diensten: d.state.diensten,
@@ -772,11 +778,10 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
     if (f.m2 != null) setM2(f.m2);
     // AI levert het aantal zakken; reken dat terug naar m² (× dekkingsfactor)
     // voor de m²-per-type-invoer.
-    const vzDekking = pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5;
     const zn = f.voegzand_normaal_zakken;
-    if (zn != null && zn > 0) setVoegzandM2((z) => ({ ...z, normaal: Math.round(zn * vzDekking) }));
+    if (zn != null && zn > 0) setVoegzandM2((z) => ({ ...z, normaal: Math.round(zn * dekkingNormaal) }));
     const zo = f.voegzand_onkruidwerend_zakken;
-    if (zo != null && zo > 0) setVoegzandM2((z) => ({ ...z, onkruidwerend: Math.round(zo * vzDekking) }));
+    if (zo != null && zo > 0) setVoegzandM2((z) => ({ ...z, onkruidwerend: Math.round(zo * dekkingOnkruidwerend) }));
     const rollen = f.planten_afschermen_rollen;
     if (rollen != null) setQty((q) => ({ ...q, rollen }));
     if (f.sub_diensten.includes("beschermlaag"))
@@ -842,7 +847,7 @@ export function OfferteWizard({ open, onClose, onNaarLeads }: OfferteWizardProps
       rolPrijs,
       voegzandM2,
       voegzandZakken,
-      voegzandDekking: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 5,
+      voegzandDekking: { normaal: pricing.voegzand_m2_per_zak > 0 ? pricing.voegzand_m2_per_zak : 15, onkruidwerend: pricing.voegzand_onkruidwerend_m2_per_zak > 0 ? pricing.voegzand_onkruidwerend_m2_per_zak : 30 },
       zandPrijzen,
       prijsOverrides,
       diensten,

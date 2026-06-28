@@ -100,8 +100,8 @@ export interface WizardSubmitState {
   voegzandM2: { normaal: number; onkruidwerend: number };
   /** Aantal zakken per type (afgeleid uit m², maar handmatig overschrijfbaar). */
   voegzandZakken: { normaal: number; onkruidwerend: number };
-  /** Dekkingsfactor (m² per zak), als vangnet als de zakken nog 0 zijn. */
-  voegzandDekking: number;
+  /** Dekkingsfactor (m² per zak) per type, als vangnet als de zakken nog 0 zijn. */
+  voegzandDekking: { normaal: number; onkruidwerend: number };
   zandPrijzen: { normaal: string; onkruidwerend: string };
   /** Per-offerte eenheidsprijs-overrides per regel-id (rauwe invoer; leeg/afwezig
    *  = prijslijst). Keys: reinigen_dagprijs, reiniging_per_m2, invegenN, invegenO,
@@ -189,7 +189,8 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
   // deze gate zou een "alleen reinigen"-offerte tóch invegen-arbeid + voegzand
   // krijgen (de wizard's oppervlakte-invoer vult voegzandM2 altijd), waardoor
   // de gedownloade offerte hoger uitviel dan de getoonde prijs.
-  const dekking = s.voegzandDekking > 0 ? s.voegzandDekking : 5;
+  const dekkingNormaal = s.voegzandDekking.normaal > 0 ? s.voegzandDekking.normaal : 15;
+  const dekkingOnkruid = s.voegzandDekking.onkruidwerend > 0 ? s.voegzandDekking.onkruidwerend : 30;
   const voegzandNormaalActief = invegenActief && Number(s.voegzandM2.normaal) > 0;
   const voegzandOnkruidwerendActief = invegenActief && Number(s.voegzandM2.onkruidwerend) > 0;
   const plantenActief = Number(s.qty.rollen) > 0;
@@ -236,13 +237,13 @@ export function mapWizardToManualOfferte(s: WizardSubmitState): ManualOfferteDat
     voegzand_normaal_actief: voegzandNormaalActief,
     voegzand_normaal_m2: Number(s.voegzandM2.normaal) || 0,
     voegzand_normaal_zakken: voegzandNormaalActief
-      ? Number(s.voegzandZakken.normaal) || Math.ceil(Number(s.voegzandM2.normaal) / dekking)
+      ? Number(s.voegzandZakken.normaal) || Math.ceil(Number(s.voegzandM2.normaal) / dekkingNormaal)
       : 0,
     voegzand_normaal_prijs: parsePrijs(s.zandPrijzen.normaal),
     voegzand_onkruidwerend_actief: voegzandOnkruidwerendActief,
     voegzand_onkruidwerend_m2: Number(s.voegzandM2.onkruidwerend) || 0,
     voegzand_onkruidwerend_zakken: voegzandOnkruidwerendActief
-      ? Number(s.voegzandZakken.onkruidwerend) || Math.ceil(Number(s.voegzandM2.onkruidwerend) / dekking)
+      ? Number(s.voegzandZakken.onkruidwerend) || Math.ceil(Number(s.voegzandM2.onkruidwerend) / dekkingOnkruid)
       : 0,
     voegzand_onkruidwerend_prijs: parsePrijs(s.zandPrijzen.onkruidwerend),
     // kleur

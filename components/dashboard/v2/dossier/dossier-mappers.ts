@@ -342,7 +342,11 @@ function buildOfferteForm(
   // concept exact de verzonden prijzen i.p.v. live te herberekenen.
   const seedPricing = resolveSeedPricing(detail.offertes, pricing);
   return {
-    data: mapLeadToFormData(detail.lead, seedPricing.voegzand_m2_per_zak),
+    data: mapLeadToFormData(
+      detail.lead,
+      seedPricing.voegzand_m2_per_zak,
+      seedPricing.voegzand_onkruidwerend_m2_per_zak,
+    ),
     pricing: seedPricing,
     geldigheidDagen: detail.lead.offerte_geldigheid_dagen ?? 14,
   };
@@ -421,7 +425,11 @@ export function mapLeadDetailToDossierData(
 
   // Basis-form-model uit de lead, eenmalig: dient zowel als bron voor de PDF-
   // modellen per verstuurde offerte als voor de inline editor (via buildOfferteForm).
-  const baseData = mapLeadToFormData(detail.lead, pricing.voegzand_m2_per_zak);
+  const baseData = mapLeadToFormData(
+    detail.lead,
+    pricing.voegzand_m2_per_zak,
+    pricing.voegzand_onkruidwerend_m2_per_zak,
+  );
 
   // Offertes eenmalig bouwen (gebruikt door de Offertes-tab en het
   // opdrachtbon-model hieronder).

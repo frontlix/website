@@ -147,8 +147,9 @@ export function readRegelOpmerkingen(
  *  - m²: NULL = afgeleid (één type → totale m², beide → helft); een numerieke
  *    waarde (incl 0) is expliciet en wint.
  *  - zakken: expliciet ingevuld (>0, owner-modify/wizard) wint; anders legacy
- *    `voegzand_zakken` (>0); anders afgeleid uit m² ÷ dekking
- *    (`voegzand_m2_per_zak`, default 5) via ceil.
+ *    `voegzand_zakken` (>0); anders afgeleid uit m² ÷ dekking via ceil. De
+ *    dekking is per type: normaal (`voegzand_m2_per_zak`, default 15) en
+ *    onkruidwerend (`voegzand_onkruidwerend_m2_per_zak`, default 30).
  */
 export function deriveVoegzandSplit(
   lead: {
@@ -160,7 +161,8 @@ export function deriveVoegzandSplit(
     voegzand_onkruidwerend_m2?: number | string | null
     voegzand_onkruidwerend_zakken?: number | string | null
   },
-  voegzandM2PerZak: number = 5,
+  normaalM2PerZak: number = 15,
+  onkruidwerendM2PerZak: number = 30,
 ): {
   normaalM2: number
   normaalZakken: number
@@ -171,7 +173,8 @@ export function deriveVoegzandSplit(
   const normaalActief = vt === 'normaal' || vt === 'beide'
   const onkruidwerendActief = vt === 'onkruidwerend' || vt === 'beide'
   const beide = normaalActief && onkruidwerendActief
-  const m2PerZak = voegzandM2PerZak > 0 ? voegzandM2PerZak : 5
+  const m2PerZakNormaal = normaalM2PerZak > 0 ? normaalM2PerZak : 15
+  const m2PerZakOnkruid = onkruidwerendM2PerZak > 0 ? onkruidwerendM2PerZak : 30
   const totaalM2 = Number(lead.m2) || 0
   const legacyZakken = Number(lead.voegzand_zakken) || 0
 
@@ -201,7 +204,7 @@ export function deriveVoegzandSplit(
           ? Math.ceil(legacyZakken / 2)
           : legacyZakken
         : normaalM2 > 0
-          ? Math.ceil(normaalM2 / m2PerZak)
+          ? Math.ceil(normaalM2 / m2PerZakNormaal)
           : 0
   const onkruidwerendZakken = !onkruidwerendActief
     ? 0
@@ -212,7 +215,7 @@ export function deriveVoegzandSplit(
           ? Math.floor(legacyZakken / 2)
           : legacyZakken
         : onkruidwerendM2 > 0
-          ? Math.ceil(onkruidwerendM2 / m2PerZak)
+          ? Math.ceil(onkruidwerendM2 / m2PerZakOnkruid)
           : 0
 
   return { normaalM2, normaalZakken, onkruidwerendM2, onkruidwerendZakken }
@@ -220,7 +223,8 @@ export function deriveVoegzandSplit(
 
 export function mapLeadToFormData(
   lead: Lead,
-  voegzandM2PerZak: number = 5,
+  normaalM2PerZak: number = 15,
+  onkruidwerendM2PerZak: number = 30,
 ): ManualOfferteData {
   // ── hoofdcategorie + sub_diensten: vertaal de bot-keys naar de dashboard-
   // vorm (plan_X_weken → 'onderhoud' + interval, onkruidbeheersing_zakelijk →
@@ -244,7 +248,7 @@ export function mapLeadToFormData(
 
   // Voegzand-split: leidt m² + zakken af zoals de bot, zodat de invegen-arbeid
   // EN de voegzand-zakken consistent met de mail verschijnen.
-  const vz = deriveVoegzandSplit(lead, voegzandM2PerZak)
+  const vz = deriveVoegzandSplit(lead, normaalM2PerZak, onkruidwerendM2PerZak)
 
   return {
     ...DEFAULTS,
