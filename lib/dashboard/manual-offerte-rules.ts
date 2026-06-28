@@ -55,24 +55,26 @@ export function computeRules(
   if (data.hoofdcategorie.includes('oprit_terras_terrein') && reinigenActief) {
     // Per-offerte override (undefined = prijslijst); 0 blijft 0, dus ?? niet ||.
     const reinPr = data.reiniging_per_m2_override ?? pricing.reiniging_per_m2
-    if (m2 < 100) {
-      // Vaste dagprijs voor kleine oppervlakken (< 100 m²), zoals de bot.
-      const dagprijs = data.reinigen_dagprijs_override ?? pricing.reinigen_dagprijs_onder_100m2
+    // De dagprijs dekt de eerste 100 m² (vast bedrag); elke m² BOVEN de 100 kost
+    // er de per-m²-prijs bovenop. Zo loopt de prijs vloeiend door over de 100 m²-
+    // grens (geen sprong omlaag). Identiek aan de bot-berekening.
+    const dagprijs = data.reinigen_dagprijs_override ?? pricing.reinigen_dagprijs_onder_100m2
+    r.push({
+      desc: 'Reiniging oppervlak (dagprijs)',
+      aantal: 1,
+      eenheid: 'dag',
+      prijs: dagprijs,
+      totaal: dagprijs,
+      overrideKey: 'reinigen_dagprijs_override',
+    })
+    if (m2 > 100) {
+      const extraM2 = m2 - 100
       r.push({
-        desc: 'Reiniging oppervlak (dagprijs)',
-        aantal: 1,
-        eenheid: 'dag',
-        prijs: dagprijs,
-        totaal: dagprijs,
-        overrideKey: 'reinigen_dagprijs_override',
-      })
-    } else {
-      r.push({
-        desc: 'Reiniging oppervlak',
-        aantal: m2,
+        desc: 'Reiniging oppervlak (boven 100 m²)',
+        aantal: extraM2,
         eenheid: 'm²',
         prijs: reinPr,
-        totaal: m2 * reinPr,
+        totaal: extraM2 * reinPr,
         overrideKey: 'reiniging_per_m2_override',
       })
     }

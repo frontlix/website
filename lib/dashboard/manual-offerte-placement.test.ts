@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { computeRules, computeTotals } from './manual-offerte-rules'
 import { DEFAULTS, type ManualOfferteData } from './manual-offerte-types'
+import { FALLBACK_PRICING } from './pricing-types'
 
 function makeData(over: Partial<ManualOfferteData>): ManualOfferteData {
   return { ...DEFAULTS, ...over }
@@ -60,9 +61,11 @@ describe('Reiniging-regel staat los van invegen (gelijk aan de bot)', () => {
       m2: 150,
     })
     const rules = computeRules(data)
-    const reiniging = rules.find((r) => r.desc === 'Reiniging oppervlak')
-    expect(reiniging).toBeTruthy()
-    expect(reiniging?.aantal).toBe(150) // m² >= 100 → per-m²-regel, niet dagprijs
+    // Sinds de staffel: dagprijs (eerste 100 m²) + losse meerprijs-regel boven 100.
+    const dagprijs = rules.find((r) => r.desc === 'Reiniging oppervlak (dagprijs)')
+    expect(dagprijs).toBeTruthy()
+    const boven = rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')
+    expect(boven?.aantal).toBe(50) // 150 - 100 = de m² bóven de drempel
   })
 
   it('voegzand-product zonder invegen-sub komt toch op de offerte', () => {
@@ -79,6 +82,42 @@ describe('Reiniging-regel staat los van invegen (gelijk aan de bot)', () => {
   })
 })
 
+describe('Reiniging staffel: dagprijs (eerste 100 m²) + meerprijs boven 100', () => {
+  const oprit = (m2: number) =>
+    computeRules(
+      makeData({ hoofdcategorie: ['oprit_terras_terrein'], sub: ['beschermlaag'], m2 }),
+      FALLBACK_PRICING,
+    )
+  const reinigingTotaal = (m2: number) =>
+    oprit(m2)
+      .filter((r) => r.desc.startsWith('Reiniging'))
+      .reduce((s, r) => s + r.totaal, 0)
+
+  it('≤ 100 m² = alleen de vaste dagprijs, geen meerprijs-regel', () => {
+    const rules = oprit(100)
+    expect(rules.find((r) => r.desc === 'Reiniging oppervlak (dagprijs)')?.totaal).toBe(
+      FALLBACK_PRICING.reinigen_dagprijs_onder_100m2,
+    )
+    expect(rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')).toBeUndefined()
+    expect(reinigingTotaal(100)).toBe(FALLBACK_PRICING.reinigen_dagprijs_onder_100m2)
+  })
+
+  it('105 m² = dagprijs + 5 m² × per-m², en de meerprijs telt alleen de m² boven 100', () => {
+    const rules = oprit(105)
+    const boven = rules.find((r) => r.desc === 'Reiniging oppervlak (boven 100 m²)')!
+    expect(boven.aantal).toBe(5)
+    expect(boven.totaal).toBeCloseTo(5 * FALLBACK_PRICING.reiniging_per_m2, 2)
+    expect(reinigingTotaal(105)).toBeCloseTo(
+      FALLBACK_PRICING.reinigen_dagprijs_onder_100m2 + 5 * FALLBACK_PRICING.reiniging_per_m2,
+      2,
+    )
+  })
+
+  it('geen sprong op de grens: 101 m² is duurder dan 100 m² (was eerder goedkoper)', () => {
+    expect(reinigingTotaal(101)).toBeGreaterThan(reinigingTotaal(100))
+  })
+})
+
 describe('korstmos-toeslag berekent zoals de bot', () => {
   it('toeslag = 10% van ALLEEN de Reiniging-regel, niet van alle diensten', () => {
     const data = makeData({
@@ -89,12 +128,14 @@ describe('korstmos-toeslag berekent zoals de bot', () => {
     })
     const rules = computeRules(data)
     const totals = computeTotals(rules, data)
-    const reiniging = rules.find((r) => r.desc.startsWith('Reiniging'))!
+    const reinigingTotaal = rules
+      .filter((r) => r.desc.startsWith('Reiniging'))
+      .reduce((s, r) => s + r.totaal, 0)
     const alleDiensten = rules
       .filter((r) => r.eenheid !== 'km')
       .reduce((s, r) => s + r.totaal, 0)
-    // Exact 10% van de Reiniging-regel (zoals de bot, die alleen die regel ×1.10 doet).
-    expect(totals.korstmosToeslag).toBeCloseTo(Math.round(reiniging.totaal * 0.1 * 100) / 100, 2)
+    // Exact 10% van de Reiniging-regels (zoals de bot, die alleen die regels ×1.10 doet).
+    expect(totals.korstmosToeslag).toBeCloseTo(Math.round(reinigingTotaal * 0.1 * 100) / 100, 2)
     // En NIET 10% over preventieve + beschermlaag erbij (dat zou hoger zijn).
     expect(totals.korstmosToeslag).toBeLessThan(Math.round(alleDiensten * 0.1 * 100) / 100)
   })
