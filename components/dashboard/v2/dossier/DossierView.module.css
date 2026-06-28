@@ -183,13 +183,15 @@
   /* Linkerkaart (Info/tabs) breder, WhatsApp-gesprek smaller. */
   grid-template-columns: 1.7fr 1fr;
   gap: 18px;
-  flex: 1;
-  /* Stabiele bodemhoogte: zonder goedkeur-blok vult flex:1 het frame (zelfde
-     formaat als voorheen, geen paginascroll). Mét een hoog blok erboven mag de
-     split niet verder inkrimpen dan dit, zodat de panelen hun grootte houden en
-     de pagina in plaats daarvan scrollt. De ~250px dekt de Shell-kop + de
-     dossier-kop + paddings, ruim genoeg zodat er zonder blok geen scroll ontstaat. */
-  min-height: calc(100vh - 250px);
+  /* VASTE hoogte, gelijk aan het normale beeld (viewport minus de Shell-kop,
+     de dossier-kop en paddings ~= 225px). Bewust GEEN flex:1 of min-height:
+     daarmee zou de split met de chat-inhoud meegroeien, de Info-kaart even hoog
+     uitrekken (leeg) en kon je eindeloos doorscrollen. Met een vaste hoogte
+     scrollen de kolommen weer INTERN (WhatsApp + tab-kaart) en houden de panelen
+     hun normale grootte; staat er een goedkeur-blok boven, dan groeit alleen de
+     pagina met dat blok mee, zodat je net genoeg naar beneden scrollt. */
+  height: calc(100vh - 225px);
+  flex-shrink: 0;
   transition: opacity 0.18s ease;
 }
 
