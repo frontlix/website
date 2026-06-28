@@ -244,6 +244,13 @@ export function computeRules(
     })
   }
 
+  // Rond elk regel-totaal op 2 decimalen af, exact zoals de bot
+  // (src/services/pricing.ts → round() per regel), zodat het live prijsoverzicht
+  // tot op de cent gelijk is aan de gemailde offerte.
+  for (const reg of r) {
+    reg.totaal = Math.round(reg.totaal * 100) / 100
+  }
+
   // Per-onderdeel opmerkingen aan de EERSTE regel van elk onderdeel hangen,
   // zodat de opmerking onder het juiste onderdeel verschijnt: een opmerking bij
   // Invegen komt onder de "Invegen normaal voegzand"-regel, niet onder de losse
@@ -293,22 +300,36 @@ export function computeTotals(
   /** BTW-percentage uit tenant_settings (default 21 = NL-standaardtarief). */
   btwTarief = 21
 ): TotalsComputed {
-  const subtotal = rules.reduce((s, r) => s + r.totaal, 0)
+  const round2 = (n: number) => Math.round(n * 100) / 100
+  const subtotal = round2(rules.reduce((s, r) => s + r.totaal, 0))
   // Reiskosten (eenheid 'km') tellen niet mee voor korstmos-toeslag noch korting.
-  const reiskosten = rules
-    .filter((r) => r.eenheid === 'km')
-    .reduce((s, r) => s + r.totaal, 0)
-  const diensten = subtotal - reiskosten
-  const korstmosToeslag = data.korstmos === 'ja' ? diensten * 0.1 : 0
-  const discount = Number(data.korting_percentage) || 0
+  const reiskosten = round2(
+    rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
+  )
+  const diensten = round2(subtotal - reiskosten)
+  // Korstmos-toeslag: 10% ALLEEN op de reiniging- en onkruid/onderhoud-regels,
+  // exact zoals de bot (src/services/pricing.ts zet de toeslag in-line op
+  // precies die regels, korstmos_toeslag_van_toepassing=true — NIET over alle
+  // diensten). Zakken zand, folie, beschermlaag, extra arbeid en reiskosten
+  // krijgen géén toeslag.
+  const korstmosBasis =
+    data.korstmos === 'ja'
+      ? rules
+          .filter((r) => /^(Reiniging|Onkruidbeheersing|Onderhoudsbeheersing)/.test(r.desc))
+          .reduce((s, r) => s + r.totaal, 0)
+      : 0
+  const korstmosToeslag = round2(korstmosBasis * 0.1)
+  const discount = Math.max(0, Math.min(100, Number(data.korting_percentage) || 0))
   // Korting geldt over diensten + korstmos-toeslag, NOOIT over reiskosten.
   // korting_bedrag > 0 ⇒ vast-bedrag-modus (gecapt op de grondslag),
   // anders percentage-modus.
-  const base = diensten + korstmosToeslag
-  const kortingBedrag = Number(data.korting_bedrag) > 0
-    ? Math.min(Number(data.korting_bedrag), base)
-    : base * (discount / 100)
-  const total = subtotal + korstmosToeslag - kortingBedrag
-  const btw = total * (btwTarief / 100)
+  const base = round2(diensten + korstmosToeslag)
+  const kortingBedrag = round2(
+    Number(data.korting_bedrag) > 0
+      ? Math.min(Number(data.korting_bedrag), base)
+      : base * (discount / 100),
+  )
+  const total = round2(subtotal + korstmosToeslag - kortingBedrag)
+  const btw = round2(total * (btwTarief / 100))
   return { subtotal, korstmosToeslag, kortingBedrag, discount, total, btw }
 }
