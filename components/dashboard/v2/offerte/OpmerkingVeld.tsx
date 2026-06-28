@@ -61,19 +61,22 @@ export function OpmerkingVeld({ waarde, zet, label, disabled }: OpmerkingVeldPro
         data-uit={!zichtbaar || undefined}
         onBlur={(e) => {
         // Schakelaar-klik mag nooit inklappen, ook niet als 'ie geen focus
-        // vasthoudt (iOS): keepOpenRef is dan al op pointerdown gezet.
+        // vasthoudt (iOS: een button krijgt daar geen focus, dus relatedTarget
+        // is null). keepOpenRef is dan al op pointerdown van de schakelaar
+        // gezet en vangt dat geval af.
         if (keepOpenRef.current) {
           keepOpenRef.current = false;
           return;
         }
-        // Geen relatedTarget = de focus ging nergens heen — op iOS gebeurt dat
-        // bij het tikken op de schakelaar (of een ander niet-focusbaar element).
-        // Dan NIET inklappen, anders verdwijnt de hele container vóór de
-        // gebruiker tekst kan invoeren. Alleen inklappen als de focus echt naar
-        // een element BUITEN de container gaat én het veld leeg is.
+        // Focus bleef binnen de container (bv. naar een ander veld erin) →
+        // open laten staan.
         const next = e.relatedTarget as Node | null;
-        if (!next) return;
-        if (tekst.trim() === "" && !e.currentTarget.contains(next)) {
+        if (next && e.currentTarget.contains(next)) return;
+        // Focus ging buiten de container (of nergens heen, op iOS bij tikken
+        // naast de container): klap in tot de "+ Opmerking"-knop zolang er
+        // geen tekst is. Met tekst blijft 'ie open zodat de opmerking
+        // zichtbaar blijft staan.
+        if (tekst.trim() === "") {
           setOpen(false);
         }
       }}
