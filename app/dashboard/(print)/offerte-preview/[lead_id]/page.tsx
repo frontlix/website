@@ -307,7 +307,7 @@ export default async function OffertePreviewPage({
                     className={styles.cellDesc}
                     style={{ fontSize: '0.85em', color: '#6b7280', lineHeight: 1.45 }}
                   >
-                    ↳ {label}: {t}
+                    → {label}: {t}
                   </td>
                 </tr>
               ) : null

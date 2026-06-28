@@ -153,7 +153,7 @@ export function renderOffertePDFHtml(d: OffertePDFData): string {
     .map(
       (o) => `
         <tr>
-          <td colspan="4" class="cell-opmerking-los">↳ ${escapeHtml(o.label)}: ${escapeHtml(o.tekst)}</td>
+          <td colspan="4" class="cell-opmerking-los">→ ${escapeHtml(o.label)}: ${escapeHtml(o.tekst)}</td>
         </tr>
       `,
     )

@@ -369,7 +369,7 @@ export function OffertePdfPreview({ open, onClose, data }: OffertePdfPreviewProp
                       className={styles.cellDesc}
                       style={{ fontSize: "0.85em", color: "#6b7280", lineHeight: 1.4 }}
                     >
-                      ↳ {o.label}: {o.tekst}
+                      → {o.label}: {o.tekst}
                     </td>
                   </tr>
                 ))}

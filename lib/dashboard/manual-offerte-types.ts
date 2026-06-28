@@ -32,6 +32,7 @@ export type SendKanaal = 'mail' | 'manual'
  *  onderdeel (bv. de Invegen-regel, niet de losse voegzand-productregel). */
 export type OpmerkingKey =
   | 'reiniging'
+  | 'invegen'
   | 'voegzand_normaal'
   | 'voegzand_onkruidwerend'
   | 'preventieve_onkruid'
@@ -56,6 +57,7 @@ export type RegelOpmerking = { tekst: string; zichtbaar: boolean }
 /** Alle opmerking-sleutels in stabiele volgorde (voor UI-iteratie + mapping). */
 export const OPMERKING_KEYS: readonly OpmerkingKey[] = [
   'reiniging',
+  'invegen',
   'voegzand_normaal',
   'voegzand_onkruidwerend',
   'preventieve_onkruid',
@@ -100,9 +102,12 @@ export const LOSSE_OPMERKINGEN: ReadonlyArray<{ key: OpmerkingKey; label: string
  */
 export function regelOpmerkingKey(desc: string): OpmerkingKey | null {
   if (desc.startsWith('Reiniging')) return 'reiniging'
-  if (desc.startsWith('Invegen normaal') || desc.startsWith('Voegzand normaal')) return 'voegzand_normaal'
-  if (desc.startsWith('Invegen onkruidwerend') || desc.startsWith('Voegzand onkruidwerend'))
-    return 'voegzand_onkruidwerend'
+  // De Invegen-arbeidregel krijgt een EIGEN sleutel (los van het voegzand-product),
+  // zodat een Invegen-opmerking onder de Invegen-regel komt en een Voegzand-opmerking
+  // onder de Voegzand-productregel. Type-onafhankelijk: zowel normaal als onkruidwerend.
+  if (desc.startsWith('Invegen')) return 'invegen'
+  if (desc.startsWith('Voegzand normaal')) return 'voegzand_normaal'
+  if (desc.startsWith('Voegzand onkruidwerend')) return 'voegzand_onkruidwerend'
   if (desc.startsWith('Preventieve onkruid')) return 'preventieve_onkruid'
   if (desc.startsWith('Nieuwe beschermlaag')) return 'beschermlaag'
   if (desc.startsWith('Onderhoudsbeheersing')) return 'onderhoud'

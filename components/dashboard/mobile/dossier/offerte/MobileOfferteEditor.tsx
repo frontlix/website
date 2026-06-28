@@ -141,7 +141,7 @@ function AccordionSection({
 /** Extra-dienst → opmerking-onderdeel (spiegelt de desktop OfferteEditor).
  *  Invegen levert het voegzand-werk op, dus daar hangt de voegzand-opmerking. */
 const DIENST_OPM: Partial<Record<string, { key: OpmerkingKey; label: string }>> = {
-  invegen: { key: 'voegzand_normaal', label: 'Voegzand' },
+  invegen: { key: 'invegen', label: 'Invegen' },
   preventieve_onkruid: { key: 'preventieve_onkruid', label: 'Preventieve onkruidbehandeling' },
   beschermlaag: { key: 'beschermlaag', label: 'Nieuwe beschermlaag' },
 }
@@ -797,6 +797,7 @@ export function MobileOfferteEditor({
                 </span>
               </div>
             </div>
+            {opm('voegzand_normaal', 'Voegzand normaal')}
 
             <div className={styles.zandCard}>
               <span className={styles.zandName}>Onkruidwerend</span>
@@ -827,6 +828,7 @@ export function MobileOfferteEditor({
                 </span>
               </div>
             </div>
+            {opm('voegzand_onkruidwerend', 'Voegzand onkruidwerend')}
           </div>
           {/* Kleur-pills, beide onafhankelijk selecteerbaar. */}
           <div className={`${styles.kleuren} ${styles.mt10}`}>

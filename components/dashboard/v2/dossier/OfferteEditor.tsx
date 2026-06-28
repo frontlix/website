@@ -159,10 +159,11 @@ const DIENST_OPTIES: { k: SubDienst; label: string }[] = [
   { k: "beschermlaag", label: "Nieuwe beschermlaag" },
 ];
 
-/** Eén opmerking-onderdeel direct onder welke Extra-dienst-checkbox. Invegen =
- *  voegzand, dus daar hangt de voegzand-opmerking onder. */
+/** Eén opmerking-onderdeel direct onder welke Extra-dienst-checkbox. De Invegen-
+ *  opmerking hoort bij de Invegen-arbeidregel; de voegzand-product-opmerking(en)
+ *  staan los in het Voegzand-subblok hieronder. */
 const DIENST_OPM: Partial<Record<SubDienst, { key: OpmerkingKey; label: string }>> = {
-  invegen: { key: "voegzand_normaal", label: "Voegzand" },
+  invegen: { key: "invegen", label: "Invegen" },
   preventieve_onkruid: { key: "preventieve_onkruid", label: "Preventieve onkruidbehandeling" },
   beschermlaag: { key: "beschermlaag", label: "Nieuwe beschermlaag" },
 };
@@ -980,6 +981,7 @@ export function OfferteEditor({
                 />
               </label>
             </div>
+            {opm("voegzand_normaal", "Voegzand normaal")}
 
             <div className={styles.zandRow}>
               <span className={styles.zandName}>Onkruidwerend</span>
@@ -1019,6 +1021,7 @@ export function OfferteEditor({
                 />
               </label>
             </div>
+            {opm("voegzand_onkruidwerend", "Voegzand onkruidwerend")}
 
             <div className={styles.kleuren}>
               <button

@@ -12,7 +12,7 @@ function makeData(over: Partial<ManualOfferteData>): ManualOfferteData {
 // (2) de afdekfolie-default week af van de bot (2 i.p.v. 1 rol).
 
 describe('opmerking-plaatsing', () => {
-  it('een Invegen-opmerking komt onder de Invegen-regel, NIET de losse Voegzand-regel', () => {
+  it('een Invegen-opmerking (sleutel invegen) komt onder de Invegen-arbeidregel', () => {
     const data = makeData({
       sub: ['invegen'],
       m2: 50,
@@ -20,8 +20,8 @@ describe('opmerking-plaatsing', () => {
       voegzand_normaal_m2: 50,
       voegzand_normaal_zakken: 4,
       regel_opmerkingen: {
-        // De editor slaat de Invegen-checkbox-opmerking op onder deze sleutel.
-        voegzand_normaal: { tekst: 'goed dat je dit doet', zichtbaar: true },
+        // De editor slaat de Invegen-checkbox-opmerking op onder de invegen-sleutel.
+        invegen: { tekst: 'voegen eerst goed uitkrabben', zichtbaar: true },
       },
     })
     const rules = computeRules(data)
@@ -30,10 +30,29 @@ describe('opmerking-plaatsing', () => {
 
     expect(invegen).toBeTruthy()
     expect(voegzand).toBeTruthy()
-    // Onder de Invegen-arbeidsregel (de EERSTE regel van het onderdeel).
-    expect(invegen?.opmerking).toBe('goed dat je dit doet')
-    // En NIET onder de losse voegzand-productregel die erna komt.
+    // Onder de Invegen-arbeidregel, niet de voegzand-productregel.
+    expect(invegen?.opmerking).toBe('voegen eerst goed uitkrabben')
     expect(voegzand?.opmerking).toBeUndefined()
+  })
+
+  it('een Voegzand-opmerking (sleutel voegzand_normaal) komt onder de Voegzand-productregel, NIET de Invegen-regel', () => {
+    const data = makeData({
+      sub: ['invegen'],
+      m2: 50,
+      voegzand_normaal_actief: true,
+      voegzand_normaal_m2: 50,
+      voegzand_normaal_zakken: 4,
+      regel_opmerkingen: {
+        voegzand_normaal: { tekst: 'kwartszand, kleur naturel', zichtbaar: true },
+      },
+    })
+    const rules = computeRules(data)
+    const invegen = rules.find((r) => r.desc === 'Invegen normaal voegzand excl voegzand')
+    const voegzand = rules.find((r) => r.desc.startsWith('Voegzand normaal'))
+
+    // Nu onder de Voegzand-productregel — losgekoppeld van de Invegen-arbeidregel.
+    expect(invegen?.opmerking).toBeUndefined()
+    expect(voegzand?.opmerking).toBe('kwartszand, kleur naturel')
   })
 })
 

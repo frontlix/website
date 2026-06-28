@@ -7,6 +7,9 @@ import {
   View,
   Image,
   StyleSheet,
+  Svg,
+  Path,
+  Polygon,
 } from '@react-pdf/renderer'
 import { formatEuro } from '@/lib/dashboard/format'
 import type {
@@ -213,6 +216,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingRight: 12,
   },
+  opmRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    marginTop: 4,
+    paddingRight: 12,
+  },
+  opmText: {
+    flex: 1,
+    fontSize: 9,
+    color: COLORS.textMuted,
+  },
   cellDesc: { flex: 5, fontSize: 10, color: COLORS.text },
   cellAantal: { flex: 1.5, fontSize: 10, color: COLORS.text, textAlign: 'right' },
   cellPrijs: { flex: 1.5, fontSize: 10, color: COLORS.text, textAlign: 'right' },
@@ -382,6 +397,28 @@ function formatPct(n: number): string {
   const rounded = Math.round(n * 10) / 10
   if (Number.isInteger(rounded)) return rounded.toString()
   return rounded.toString().replace('.', ',')
+}
+
+/**
+ * Opmerking-pijltje als SVG-vector. De ingebouwde Helvetica (AFM) van
+ * @react-pdf mist de Unicode-pijlglyphs (↳ U+21B3 / → U+2192) en rendert
+ * ze als '³'. Daarom tekenen we ze zelf zodat de preview-PDF dezelfde
+ * pijltjes toont als de gemailde PDF (die wel echte fonts heeft).
+ *   connected=true  → "↳" voor opmerkingen die onder een offerteregel horen.
+ *   connected=false → "→" voor losse opmerkingen (niet aan een regel verbonden).
+ */
+function OpmArrow({ connected }: { connected: boolean }) {
+  return connected ? (
+    <Svg width={8} height={9} viewBox="0 0 10 11" style={{ marginRight: 3, marginTop: 1 }}>
+      <Path d="M3 1 L3 7 L6 7" stroke={COLORS.textMuted} strokeWidth={1.1} fill="none" />
+      <Polygon points="5.5,5 8.5,7 5.5,9" fill={COLORS.textMuted} />
+    </Svg>
+  ) : (
+    <Svg width={9} height={9} viewBox="0 0 11 11" style={{ marginRight: 3, marginTop: 2 }}>
+      <Path d="M1 6 L7 6" stroke={COLORS.textMuted} strokeWidth={1.1} fill="none" />
+      <Polygon points="6.5,4 9.5,6 6.5,8" fill={COLORS.textMuted} />
+    </Svg>
+  )
 }
 
 export function OffertePdfDocument({
@@ -562,7 +599,10 @@ export function OffertePdfDocument({
                 {/* Klant-opmerking als subregel onder de regel (alleen als
                     aanwezig: computeRules levert 'm enkel bij zichtbaar + tekst). */}
                 {r.opmerking ? (
-                  <Text style={styles.cellOpmerking}>↳ {r.opmerking}</Text>
+                  <View style={styles.opmRow}>
+                    <OpmArrow connected />
+                    <Text style={styles.opmText}>{r.opmerking}</Text>
+                  </View>
                 ) : null}
               </View>
             ))
@@ -574,7 +614,10 @@ export function OffertePdfDocument({
             const t = zichtbareOpmerking(data.regel_opmerkingen, key)
             return t ? (
               <View key={key} style={styles.tableRow} wrap={false}>
-                <Text style={styles.cellOpmerking}>↳ {label}: {t}</Text>
+                <View style={styles.opmRow}>
+                  <OpmArrow connected={false} />
+                  <Text style={styles.opmText}>{label}: {t}</Text>
+                </View>
               </View>
             ) : null
           })}
