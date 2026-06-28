@@ -89,12 +89,14 @@ export function BekijkOffertePdf({
         {busy ? 'Bezig…' : label}
       </button>
       <Modal open={open} onClose={close} width={900} label="Volledige offerte">
-        <div className={styles.head}>Volledige offerte</div>
-        {url ? <iframe src={url} className={styles.frame} title="Offerte-PDF" /> : null}
-        <div className={styles.foot}>
-          <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
-            <Download size={16} strokeWidth={2} /> Download PDF
-          </button>
+        <div className={styles.body}>
+          <div className={styles.head}>Volledige offerte</div>
+          {url ? <iframe src={url} className={styles.frame} title="Offerte-PDF" /> : null}
+          <div className={styles.foot}>
+            <button type="button" className={styles.dlBtn} onClick={download} disabled={busy}>
+              <Download size={16} strokeWidth={2} /> Download PDF
+            </button>
+          </div>
         </div>
       </Modal>
     </>
