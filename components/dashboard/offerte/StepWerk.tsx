@@ -239,6 +239,9 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
               </button>
             ))}
           </div>
+          {/* Opmerking direct onder de m²-presets: hoort bij de reiniging van
+              dit oppervlak, dus staat 'ie hier i.p.v. los onder het specs-blok. */}
+          {opm('reiniging', 'Reiniging')}
         </div>
         <div className={styles.field}>
           <label className={styles.fieldLabel}>Korstmos aanwezig</label>
@@ -256,7 +259,6 @@ export function StepWerk({ data, set }: { data: ManualOfferteData; set: SetFn })
           </div>
         </div>
       </div>
-      {opm('reiniging', 'Reiniging')}
 
       {/* Voegzand */}
       {hasInvegen && (
