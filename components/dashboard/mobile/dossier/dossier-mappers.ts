@@ -28,6 +28,7 @@ import { formatEuro } from '@/lib/dashboard/format'
 import type { SentOffertePdfModel } from '@/lib/dashboard/offerte/sent-offerte-pdf-model'
 import { buildOfferteInhoud, type OfferteInhoudRegel } from '@/lib/dashboard/offerte/offerte-inhoud'
 import { FALLBACK_PRICING, type ManualOffertePricing } from '@/lib/dashboard/pricing-types'
+import { humanizeHoofdcategorie } from '@/lib/dashboard/dienst-naam'
 
 const TONE = {
   blue: '#1A56FF',
@@ -291,7 +292,7 @@ function buildOfferte(detail: LeadDetail): MobileDossierData['offerte'] {
     // Extra velden voor de PDF-preview (§4.7 props-contract).
     email: l.email ?? undefined,
     telefoon: l.telefoon ?? undefined,
-    dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
+    dienst: humanizeHoofdcategorie(l.hoofdcategorie) || 'Reiniging & onderhoud',
     // Wachtende offerte: de inhoud van het goedkeur-blok (regels, subtotalen,
     // totaal, PDF-model) wordt in mapLeadDetailToDossier verrijkt, waar baseData
     // en de prijslijst beschikbaar zijn. Hier dus null.
@@ -395,7 +396,7 @@ export function mapLeadDetailToDossier(
       new Date(now).getFullYear(),
     )
     offerte.terGoedkeuring = {
-      dienst: l.hoofdcategorie ?? 'Reiniging & onderhoud',
+      dienst: humanizeHoofdcategorie(l.hoofdcategorie) || 'Reiniging & onderhoud',
       m2: l.m2 != null ? `${l.m2} m²` : '',
       totaal: inhoud.totaalIncl,
       regels: inhoud.regels,
@@ -419,7 +420,7 @@ export function mapLeadDetailToDossier(
       lat: l.lat ?? null,
       lng: l.lng ?? null,
     },
-    dienst: { hoofd: l.hoofdcategorie ?? 'Dienst', sub: l.sub_diensten ?? [] },
+    dienst: { hoofd: humanizeHoofdcategorie(l.hoofdcategorie) || 'Dienst', sub: l.sub_diensten ?? [] },
     bijzonderheden: buildBijzonderheden(l),
     surface: { fase: STAGE_LABEL[stage], message: buildSurfaceMessage(l) },
     offerte,

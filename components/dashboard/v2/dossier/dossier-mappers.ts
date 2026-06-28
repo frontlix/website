@@ -26,6 +26,7 @@ import { FALLBACK_PRICING, type ManualOffertePricing } from "@/lib/dashboard/pri
 import { resolveSeedPricing } from "@/lib/dashboard/offerte-snapshot";
 import { buildSentOffertePdfModel } from "@/lib/dashboard/offerte/sent-offerte-pdf-model";
 import { buildOfferteInhoud } from "@/lib/dashboard/offerte/offerte-inhoud";
+import { humanizeHoofdcategorie } from "@/lib/dashboard/dienst-naam";
 import { buildOpdrachtbonModel } from "@/lib/dashboard/offerte/opdrachtbon-model";
 import { locatieLinks } from "@/lib/dashboard/maps-links";
 import type { Lead as V2Lead, StatusKind } from "@/components/dashboard/v2/demo-data";
@@ -109,10 +110,10 @@ function humanize(key: string | null | undefined): string {
   return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Hoofdcategorie -> leesbaar label (humanized; geen liggende streepjes). */
+/** Hoofdcategorie -> leesbaar label. Gedeeld met de mobiele mapper via de
+ *  helper, zodat de dienstnaam op computer en telefoon identiek is. */
 function humanizeHoofd(key: string | null | undefined): string {
-  if (!key) return "";
-  return humanize(key).replace(/\//g, " / ");
+  return humanizeHoofdcategorie(key);
 }
 
 /** Bron -> nette nl-NL-tekst (mirror van de oude LeadInfoTab.humanizeBron). */
