@@ -11,11 +11,12 @@ import {
   FileText,
   Mail,
   Eye,
-  Download,
   StickyNote,
 } from 'lucide-react'
 import {
   DEFAULTS,
+  LOSSE_OPMERKINGEN,
+  zichtbareOpmerking,
   type ManualOfferteData,
 } from '@/lib/dashboard/manual-offerte-types'
 import { computeRules, computeTotals } from '@/lib/dashboard/manual-offerte-rules'
@@ -37,7 +38,10 @@ import { StepWerk } from './StepWerk'
 import { StepOfferte } from './StepOfferte'
 import { StepVersturen } from './StepVersturen'
 import { OffertePdfDocument } from './OffertePdf'
-import { OffertePreviewHtml } from './OffertePreviewHtml'
+import {
+  OffertePdfPreview,
+  type OffertePdfData,
+} from '@/components/dashboard/mobile/dossier/offerte/OffertePdfPreview'
 import { deliverPdfBlob } from './pdf-download'
 import styles from './ManualOfferteModal.module.css'
 
@@ -570,6 +574,76 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
   const openPreview = () => setShowPreview(true)
   const closePreview = () => setShowPreview(false)
 
+  // Map de live wizard-state naar de OffertePdfData die de gedeelde
+  // OffertePdfPreview (A4-getrouw + fit-to-width met pinch-zoom) verwacht —
+  // exact dezelfde preview als in het dossier, zodat de owner ziet hoe de
+  // offerte er écht uitkomt i.p.v. een mobiel-uitgerekte layout.
+  const previewData: OffertePdfData = useMemo(() => {
+    const vandaag = new Date()
+    const geldig = new Date(vandaag)
+    geldig.setDate(geldig.getDate() + 21)
+    const fmtDate = (d: Date) =>
+      d.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const stamp =
+      `${vandaag.getFullYear()}${String(vandaag.getMonth() + 1).padStart(2, '0')}` +
+      `${String(vandaag.getDate()).padStart(2, '0')}-` +
+      `${String(vandaag.getHours()).padStart(2, '0')}${String(vandaag.getMinutes()).padStart(2, '0')}`
+
+    const CATEGORIE_LABEL: Record<string, string> = {
+      oprit_terras_terrein: 'Oprit / Terras / Terreinreiniging',
+      onkruidbeheersing: 'Onkruidbeheersing',
+    }
+    const dienst = data.hoofdcategorie.map((c) => CATEGORIE_LABEL[c] ?? c).join(' + ')
+
+    const klantNaam = data.bedrijf?.trim() ? data.bedrijf : data.naam
+    const straat =
+      data.straat && data.huisnummer ? `${data.straat} ${data.huisnummer}` : data.straat || ''
+    const pcplaats = [data.postcode, data.plaats].filter(Boolean).join(' ')
+
+    const losseOpmerkingen = LOSSE_OPMERKINGEN.map(({ key, label }) => {
+      const t = zichtbareOpmerking(data.regel_opmerkingen, key)
+      return t ? { label, tekst: t } : null
+    }).filter(Boolean) as { label: string; tekst: string }[]
+
+    const toeslagen =
+      totals.korstmosToeslag > 0
+        ? [{ label: 'Korstmos-toeslag (10%)', bedrag: totals.korstmosToeslag }]
+        : []
+
+    return {
+      nr: `OFF-${stamp}`,
+      datum: fmtDate(vandaag),
+      geldigTot: fmtDate(geldig),
+      dienst,
+      m2: data.m2 || undefined,
+      klant: {
+        naam: klantNaam || '—',
+        straat,
+        pcplaats,
+        email: data.email || undefined,
+        telefoon: data.telefoon || undefined,
+      },
+      regels: rules.map((r) => ({
+        omschrijving: r.desc,
+        aantalLabel: `${r.aantal} ${r.eenheid}`.trim(),
+        stukprijs: r.prijs,
+        totaal: r.totaal,
+        opmerking: r.opmerking || undefined,
+      })),
+      losseOpmerkingen,
+      subtotaal: totals.subtotal,
+      toeslagen,
+      kortingPct: Math.round(totals.discount),
+      kortingBedrag: totals.kortingBedrag,
+      kortingNote: data.korting_omschrijving?.trim() || undefined,
+      totaalExcl: totals.total,
+      btwPct: 21,
+      btwBedrag: totals.btw,
+      totaalIncl: totals.total + totals.btw,
+      toelichting: data.notitie?.trim() || undefined,
+    }
+  }, [data, rules, totals])
+
   return (
     <>
     <div className={styles.backdrop} onClick={onClose}>
@@ -846,107 +920,12 @@ export function ManualOfferteModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
 
-    {/* Voorbeeld: toont de offerte als responsive HTML in een eigen overlay
-        (boven de wizard, z-index 9500). Geen iOS deel-/bewaar-vel en geen
-        ingezoomde PDF-iframe: de hele offerte past op schermbreedte. Klik op de
-        achtergrond of het kruisje sluit 'm; Download PDF levert de exacte PDF. */}
-    {showPreview && (
-      <div
-        onClick={closePreview}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9500,
-          background: 'rgba(15, 23, 42, 0.6)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: isMobile ? 0 : 24,
-        }}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            background: '#fff',
-            borderRadius: isMobile ? 0 : 14,
-            width: '100%',
-            maxWidth: 820,
-            margin: '0 auto',
-            flex: 1,
-            minHeight: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid #e5e7eb',
-              flexShrink: 0,
-            }}
-          >
-            <strong style={{ fontSize: 15, color: '#0f172a' }}>Voorbeeld offerte</strong>
-            <button
-              type="button"
-              onClick={closePreview}
-              aria-label="Sluiten"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#64748b',
-                display: 'flex',
-                padding: 4,
-              }}
-            >
-              <X size={22} />
-            </button>
-          </div>
-          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            <OffertePreviewHtml
-              data={data}
-              rules={rules}
-              totals={totals}
-              origin={typeof window !== 'undefined' ? window.location.origin : undefined}
-            />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              padding: '10px 16px',
-              borderTop: '1px solid #e5e7eb',
-              flexShrink: 0,
-            }}
-          >
-            <button
-              type="button"
-              onClick={downloadPdf}
-              disabled={pdfBusy}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                background: '#2563eb',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '9px 16px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: pdfBusy ? 'default' : 'pointer',
-                opacity: pdfBusy ? 0.6 : 1,
-              }}
-            >
-              <Download size={16} /> Download PDF
-            </button>
-          </div>
-        </div>
-      </div>
+    {/* Voorbeeld: hergebruikt de gedeelde OffertePdfPreview (A4-getrouw,
+        fit-to-width met pinch-zoom) — exact dezelfde "Voorbeeld offerte"-sheet
+        als in het mobiele dossier, zodat de hele offerte overzichtelijk in
+        beeld komt zoals 'ie er echt uitkomt. */}
+    {isMobile && (
+      <OffertePdfPreview open={showPreview} onClose={closePreview} data={previewData} />
     )}
     </>
   )
