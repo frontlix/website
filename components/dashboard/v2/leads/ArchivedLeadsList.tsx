@@ -14,10 +14,11 @@
 import { useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Trash2 } from "lucide-react";
 import { Card, Avatar, StatusPill } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { unarchiveLead } from "@/lib/dashboard/lead-actions";
+import { ConfirmDeleteLeadDialog } from "@/components/dashboard/ConfirmDeleteLeadDialog";
 import type { Lead } from "@/components/dashboard/v2/demo-data";
 import styles from "./LeadsList.module.css";
 
@@ -33,6 +34,8 @@ export function ArchivedLeadsList({ leads }: { leads: Lead[] }) {
   // Lead-id dat nu hersteld wordt (voor de knop-spinner) + foutmelding.
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Lead die nu in het "definitief verwijderen"-dialoog staat (of null).
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; naam: string } | null>(null);
 
   function restore(leadId: string) {
     setError(null);
@@ -129,11 +132,32 @@ export function ArchivedLeadsList({ leads }: { leads: Lead[] }) {
                   <RotateCcw size={14} strokeWidth={2.3} />
                   {busy ? "Herstellen…" : "Herstel"}
                 </button>
+                <button
+                  type="button"
+                  className={styles.deleteBtn}
+                  onClick={() => setDeleteTarget({ id: lead.id, naam: lead.naam })}
+                  disabled={busy}
+                  title="Lead definitief verwijderen"
+                  aria-label={`Definitief verwijderen: ${lead.naam}`}
+                >
+                  <Trash2 size={15} strokeWidth={2.3} />
+                </button>
               </span>
             </div>
           );
         })}
       </div>
+
+      <ConfirmDeleteLeadDialog
+        open={deleteTarget !== null}
+        leadId={deleteTarget?.id ?? ""}
+        leadNaam={deleteTarget?.naam ?? ""}
+        onClose={() => setDeleteTarget(null)}
+        onDeleted={() => {
+          setDeleteTarget(null);
+          router.refresh();
+        }}
+      />
     </Card>
   );
 }

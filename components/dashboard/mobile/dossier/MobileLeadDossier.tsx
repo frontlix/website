@@ -10,6 +10,7 @@ import { DossFotos } from './DossFotos'
 import { DossActiviteit } from './DossActiviteit'
 import { DossNotities } from './DossNotities'
 import { DossBeheer } from './DossBeheer'
+import { ConfirmDeleteLeadDialog } from '@/components/dashboard/ConfirmDeleteLeadDialog'
 import { DossierActionBar } from './DossierActionBar'
 import { factStrip } from './dossier-helpers'
 import type { MobileDossierData } from './dossier-mappers'
@@ -64,6 +65,7 @@ export function MobileLeadDossier({
   const [archived, setArchived] = useState(archivedInitial)
   const [beheerPending, startBeheer] = useTransition()
   const [klusPending, startKlus] = useTransition()
+  const [deleteOpen, setDeleteOpen] = useState(false)
   // Brug naar de PDF-preview-overlay binnen de editor, zodat de sticky
   // actiebalk-knop "Bekijk PDF" dezelfde nette overlay opent (i.p.v. de
   // route-versie die mobiel slecht oogt).
@@ -211,6 +213,7 @@ export function MobileLeadDossier({
                 klusPending={klusPending}
                 onKlusAfgerond={klusAfgerond}
                 onKlusNietDoorgegaan={klusNietDoorgegaan}
+                onVerwijderDefinitief={() => setDeleteOpen(true)}
               />
             </>
           )}
@@ -255,6 +258,18 @@ export function MobileLeadDossier({
             ? () => pdfApiRef.current?.openPdf()
             : () => setTab('offerte')
         }
+      />
+
+      <ConfirmDeleteLeadDialog
+        open={deleteOpen}
+        leadId={data.leadId}
+        leadNaam={lead.naam}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => {
+          setDeleteOpen(false)
+          // De lead bestaat niet meer: terug naar het mobiele archief.
+          router.push('/leads?filter=archief')
+        }}
       />
     </div>
   )

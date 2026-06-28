@@ -181,6 +181,26 @@
   text-decoration: none;
 }
 
+/* Definitief verwijderen (archief): rustig rood-omrand, onder "Herstel". */
+.btnDanger {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #c0362c) 40%, transparent);
+  border-radius: 11px;
+  color: var(--color-danger, #c0362c);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
 /* ── Open volledig dossier ──────────────────────────────────────────────────── */
 .dossierWrap {
   padding: 0 14px 14px;

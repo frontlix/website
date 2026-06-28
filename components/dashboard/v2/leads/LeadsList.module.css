@@ -136,10 +136,38 @@
 
 /* Actie-kolom (vervangt de chevron in het archief): ruimte voor de knop. */
 .colActie {
-  width: 104px;
+  width: 152px;
   flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Rood, rond icoon-knopje voor "definitief verwijderen" in de archief-lijst.
+   Hogere z-index zodat het boven de rij-overlay-link uitsteekt (net als de
+   herstel-knop), dus klikken verwijdert i.p.v. het dossier te openen. */
+.deleteBtn {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--rb-line);
+  background: var(--rb-card);
+  border-radius: 50%;
+  color: var(--rb-danger);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.deleteBtn:hover {
+  background: var(--rb-danger);
+  border-color: var(--rb-danger);
+  color: #fff;
 }
 
 /* De archief-rij is geen <a> meer maar een container; de overlay-link eronder

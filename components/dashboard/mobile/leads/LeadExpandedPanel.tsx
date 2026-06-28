@@ -1,6 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Trash2 } from 'lucide-react'
+import { ConfirmDeleteLeadDialog } from '@/components/dashboard/ConfirmDeleteLeadDialog'
 import type { MobileLeadCard, MobileLeadStage } from './lead-mappers'
 import styles from './LeadExpandedPanel.module.css'
 
@@ -75,8 +79,10 @@ interface LeadExpandedPanelProps {
  * Reveal-animatie: opacity + translateY(-6px) → 0 in 0.25s var(--ease-ios).
  */
 export function LeadExpandedPanel({ lead, onClose, onOpenLead, archived = false, onUnarchive }: LeadExpandedPanelProps) {
+  const router = useRouter()
   const meta = STAGE_META[lead.stage]
   const primary = PRIMARY_ACTION[lead.stage]
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
     <div className={styles.panel} data-tone={meta.tone}>
@@ -145,16 +151,29 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead, archived = false,
             voor een gearchiveerde lead). */}
       <div className={styles.actionsGrid}>
         {archived ? (
-          <button
-            type="button"
-            className={styles.btnPrimary}
-            onClick={(e) => {
-              e.stopPropagation()
-              onUnarchive?.(lead.id)
-            }}
-          >
-            Herstel naar pipeline
-          </button>
+          <>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onClick={(e) => {
+                e.stopPropagation()
+                onUnarchive?.(lead.id)
+              }}
+            >
+              Herstel naar pipeline
+            </button>
+            <button
+              type="button"
+              className={styles.btnDanger}
+              onClick={(e) => {
+                e.stopPropagation()
+                setDeleteOpen(true)
+              }}
+            >
+              <Trash2 size={14} strokeWidth={2.3} aria-hidden="true" />
+              Definitief verwijderen
+            </button>
+          </>
         ) : (
           <Link
             href={primary.href(lead.id)}
@@ -180,6 +199,17 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead, archived = false,
           <ChevronRight />
         </button>
       </div>
+
+      <ConfirmDeleteLeadDialog
+        open={deleteOpen}
+        leadId={lead.id}
+        leadNaam={lead.naam}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => {
+          setDeleteOpen(false)
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

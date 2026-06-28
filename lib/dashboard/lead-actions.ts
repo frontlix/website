@@ -2,6 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { getDashboardSupabase } from './supabase-server'
+import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
+import { callBotLeadApi, botApiError } from './bot-api-client'
 import type { DashboardStatus, Database } from './database.types'
 import { regenerateAutoRegels } from './offerte-auto-regels'
 
@@ -315,6 +318,83 @@ export async function markInboxRead(leadId: string): Promise<ActionResult> {
     return { ok: false, error: error.message }
   }
 
+  revalidatePath('/inbox')
+  return { ok: true }
+}
+
+/**
+ * Verwijdert een lead DEFINITIEF (de tweede trap van de prullenbak). Kan
+ * uitsluitend vanuit het archief: de actie weigert een lead die niet
+ * `dashboard_archived = true` is.
+ *
+ * Alle gekoppelde data verdwijnt mee via de DB-cascade (berichten, offertes +
+ * snapshot, prijsregels, foto's, notities, tags, status-historie, meldingen,
+ * delivery-checks); `error_logs` wordt enkel ontkoppeld (lead_id → NULL).
+ * Eén `DELETE FROM leads` is daarmee atomair, dus geen halve verwijdering.
+ *
+ * Heeft de lead nog een afspraak, dan wordt het Google-event eerst via de
+ * bot-route `cancel-appointment` weggehaald (zonder de klant te appen/mailen);
+ * faalt dat, dan breekt de actie af zodat er geen spookafspraak achterblijft.
+ *
+ * Gebruikt de service-role admin-client: op `leads` staat RLS aan met alleen
+ * SELECT- en UPDATE-policies (geen DELETE-policy), dus de RLS-client zou stil 0
+ * rijen raken. `leads` heeft geen tenant_id (single-tenant); de
+ * requireApprovedUser-poort is de scoping.
+ */
+export async function deleteLeadPermanently(leadId: string): Promise<ActionResult> {
+  if (!leadId.trim()) return { ok: false, error: 'Lead-id ontbreekt.' }
+
+  // Alleen ingelogde, goedgekeurde gebruikers mogen definitief verwijderen.
+  await requireApprovedUser()
+
+  const admin = getDashboardAdmin()
+
+  // Archief-gate + afspraak-check in één lees-call.
+  const { data: lead, error: readError } = await admin
+    .from('leads')
+    .select('lead_id, dashboard_archived, afspraak_datum')
+    .eq('lead_id', leadId)
+    .maybeSingle()
+
+  if (readError) return { ok: false, error: readError.message }
+  if (!lead) return { ok: false, error: 'Lead niet gevonden.' }
+  if (!lead.dashboard_archived) {
+    return {
+      ok: false,
+      error: 'Een lead kan alleen vanuit het archief definitief worden verwijderd.',
+    }
+  }
+
+  // Eerst het Google-event weghalen (geen klant-bericht), anders blijft er een
+  // losse afspraak in de agenda staan nadat de lead weg is.
+  if (lead.afspraak_datum) {
+    const cal = await callBotLeadApi(leadId, 'cancel-appointment', {
+      notifyWhatsapp: false,
+      notifyEmail: false,
+    })
+    if (!cal.ok) {
+      return {
+        ok: false,
+        error: botApiError(
+          cal,
+          'De afspraak kon niet uit Google Agenda worden verwijderd. Probeer het later opnieuw.',
+        ),
+      }
+    }
+  }
+
+  // Definitief weg. De extra archief-clausule is een vangnet tegen een race
+  // (lead intussen hersteld); cascade ruimt de rest op.
+  const { error: deleteError } = await admin
+    .from('leads')
+    .delete()
+    .eq('lead_id', leadId)
+    .eq('dashboard_archived', true)
+
+  if (deleteError) return { ok: false, error: deleteError.message }
+
+  revalidatePath('/leads')
+  revalidatePath('/agenda')
   revalidatePath('/inbox')
   return { ok: true }
 }

@@ -8,6 +8,7 @@ import { ChevronLeft, StickyNote, Archive, RotateCcw, Trash2, CheckCircle2, XCir
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
 import { archiveLead, unarchiveLead, markeerGeenEchteLead } from "@/lib/dashboard/lead-actions";
+import { ConfirmDeleteLeadDialog } from "@/components/dashboard/ConfirmDeleteLeadDialog";
 import { completeAppointment } from "@/lib/dashboard/agenda-actions";
 import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from "@/lib/dashboard/klus-status-client";
 import { freezeVerstuurdeOfferteData } from "@/lib/dashboard/offerte-form-actions";
@@ -77,6 +78,7 @@ export function DossierView({
 
   const [tab, setTab] = useState<TabKey>("Info");
   const [archived, setArchived] = useState(archivedInitial ?? false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
   // In de live-modus is de server de bron van waarheid (router.refresh na een
   // mutatie); we tonen de server-data direct. In demo-modus houden we lokale
@@ -413,6 +415,18 @@ export function DossierView({
               Verwijderen
             </button>
           ) : null}
+          {archived && live ? (
+            <button
+              type="button"
+              className={styles.dangerBtn}
+              onClick={() => setDeleteOpen(true)}
+              disabled={pending}
+              title="Lead definitief verwijderen — kan niet ongedaan worden gemaakt"
+            >
+              <Trash2 size={15} strokeWidth={2.1} />
+              Definitief verwijderen
+            </button>
+          ) : null}
           {/* Klus afronden: de afspraak is voorbij en de lead staat nog open.
               "Klus afgerond" → afgehandeld; "Klus niet doorgegaan" → geblokkeerd. */}
           {toonKlus ? (
@@ -533,6 +547,18 @@ export function DossierView({
           data={data}
         />
       </div>
+
+      <ConfirmDeleteLeadDialog
+        open={deleteOpen}
+        leadId={leadId ?? ""}
+        leadNaam={lead.naam}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => {
+          setDeleteOpen(false);
+          // De lead bestaat niet meer: terug naar het archief i.p.v. dit dossier.
+          router.push(`${V2_BASE}/leads?archief=1`);
+        }}
+      />
     </div>
   );
 }

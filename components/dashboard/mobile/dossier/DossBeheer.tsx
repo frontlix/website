@@ -16,6 +16,8 @@ interface DossBeheerProps {
   onKlusAfgerond?: () => void
   /** "Klus niet doorgegaan": markeer de klus als geblokkeerd. */
   onKlusNietDoorgegaan?: () => void
+  /** Open het "definitief verwijderen"-dialoog (alleen in het archief). */
+  onVerwijderDefinitief?: () => void
 }
 
 /**
@@ -34,6 +36,7 @@ export function DossBeheer({
   klusPending = false,
   onKlusAfgerond,
   onKlusNietDoorgegaan,
+  onVerwijderDefinitief,
 }: DossBeheerProps) {
   return (
     <section className={styles.root}>
@@ -91,10 +94,21 @@ export function DossBeheer({
             Verwijderen
           </button>
         )}
+        {archived && onVerwijderDefinitief && (
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.danger}`}
+            onClick={onVerwijderDefinitief}
+            disabled={pending}
+          >
+            <Trash2 size={16} strokeWidth={2.2} aria-hidden="true" />
+            Definitief verwijderen
+          </button>
+        )}
       </div>
       <p className={styles.hint}>
         {archived
-          ? 'Deze lead staat in het archief. Herstellen zet de lead terug in de lijst en laat hem weer meetellen in de statistieken.'
+          ? 'Deze lead staat in het archief. Herstellen zet de lead terug in de lijst. Met "Definitief verwijderen" gaat de lead en alles wat erbij hoort voorgoed weg, dat kan niet ongedaan worden gemaakt.'
           : 'Met "Verwijderen" (spam of test) verdwijnt de lead uit alle statistieken en gaat hij naar het archief. Omkeerbaar via Herstel.'}
       </p>
     </section>
