@@ -157,7 +157,10 @@ const styles = StyleSheet.create({
   notitieBullet: { width: 12, color: COLORS.blueAccent },
   notitieTekst: { flex: 1 },
 
-  aftekenRow: { marginTop: 18, fontSize: 10, color: COLORS.textMuted },
+  aftekenBlok: { marginTop: 6 },
+  aftekenRegel: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12 },
+  aftekenLabel: { width: 95, fontSize: 10, fontWeight: 700, color: COLORS.text },
+  aftekenLijn: { flex: 1, fontSize: 10, color: COLORS.textMuted },
 
   footer: {
     marginTop: 24,
@@ -284,10 +287,22 @@ export function OpdrachtbonPdfDocument({
             ))}
           </View>
 
-          {/* Aftekenregel */}
-          <Text style={styles.aftekenRow}>
-            Uitgevoerd op ____________________   door ____________________   (handtekening)
-          </Text>
+          {/* Aftekenblok: de klant tekent voor akkoord op de uitvoering. */}
+          <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Is alles naar wens uitgevoerd?</Text>
+          <View style={styles.aftekenBlok}>
+            <View style={styles.aftekenRegel}>
+              <Text style={styles.aftekenLabel}>Datum</Text>
+              <Text style={styles.aftekenLijn}>____________________________</Text>
+            </View>
+            <View style={styles.aftekenRegel}>
+              <Text style={styles.aftekenLabel}>Naam</Text>
+              <Text style={styles.aftekenLijn}>____________________________</Text>
+            </View>
+            <View style={styles.aftekenRegel}>
+              <Text style={styles.aftekenLabel}>Handtekening</Text>
+              <Text style={styles.aftekenLijn}>____________________________</Text>
+            </View>
+          </View>
         </View>
 
         {/* Footer: bedrijfsidentiteit, geen keurmerk */}
