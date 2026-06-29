@@ -195,6 +195,19 @@ html.dark .rbRoot {
   --rb-field: #1b2230; /* veld-/tegel-achtergrond */
   --rb-field-2: #11161f; /* segmented-container achtergrond */
 
+  /* Marketing-tekst-tokens óók donker zetten binnen de v2-boom. De globale
+     reset (`h1..h6 { color: var(--color-text) }` in globals.css) lekt namelijk
+     in de v2-tree: kop-elementen zonder eigen kleur (begroeting, "Eerst dit
+     doen", paginatitels) erven die regel i.p.v. --rb-ink. --color-text flipt
+     normaal alleen onder `.dashboard-theme-root.dark` (mobiel/marketing), maar
+     v2-dark draait op `html.dark .rbRoot`, dus daar bleef de kop bijna-zwart
+     op donker. Hier de dark-waarden meegeven herstelt dat zonder bewuste
+     accent-koppen (bv. .kaartTitel = --rb-blue) te raken; die winnen op
+     specificiteit. Waarden gelijk aan .dashboard-theme-root.dark in tokens.css. */
+  --color-text: #eceff4;
+  --color-text-muted: #8b95a8;
+  --color-text-soft: #c5ccd8;
+
   /* Glas */
   --rb-glass: rgba(30, 38, 53, 0.7);
   --rb-glass-strong: rgba(40, 50, 68, 0.85);
