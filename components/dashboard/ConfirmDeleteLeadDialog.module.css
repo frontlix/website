@@ -1,3 +1,10 @@
+/* ⚠️ Fallback-hex op elke var(--rb-*): deze dialog wordt OOK gebruikt in de
+   mobiele leads-lijst + dossier, die BUITEN de `.rbRoot`-boom staan. Daar zijn
+   de --rb-tokens niet gedefinieerd, dus zonder fallback wordt de modal-card
+   achtergrond-/schaduwloos (de inhoud zweeft dan over de pagina, geen container).
+   De fallbacks spiegelen de light-waarden uit styles/rebrand-tokens.css; binnen
+   .rbRoot (desktop) worden ze nooit gebruikt en volgt alles gewoon het thema. */
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -18,10 +25,10 @@
   max-width: 420px;
   max-height: 92vh;
   overflow: auto;
-  background: var(--rb-card);
-  color: var(--rb-ink);
+  background: var(--rb-card, #ffffff);
+  color: var(--rb-ink, #212a45);
   border-radius: var(--rb-r-card, 24px);
-  box-shadow: var(--rb-shadow-modal);
+  box-shadow: var(--rb-shadow-modal, 0 40px 100px rgba(14, 21, 38, 0.4));
   padding: 28px 24px 22px;
   text-align: center;
   animation: cdPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -34,8 +41,8 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--rb-field-2);
-  color: var(--rb-muted);
+  background: var(--rb-field-2, #f1f3f9);
+  color: var(--rb-muted, #7a83a6);
   border: none;
   cursor: pointer;
   display: inline-flex;
@@ -53,8 +60,8 @@
   height: 52px;
   margin: 4px auto 14px;
   border-radius: 50%;
-  background: var(--rb-danger-soft);
-  color: var(--rb-danger);
+  background: var(--rb-danger-soft, #fef3f2);
+  color: var(--rb-danger, #dc2626);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -64,18 +71,18 @@
   margin: 0 0 8px;
   font-size: 19px;
   font-weight: 700;
-  color: var(--rb-ink);
+  color: var(--rb-ink, #212a45);
 }
 
 .tekst {
   margin: 0 0 18px;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--rb-muted);
+  color: var(--rb-muted, #7a83a6);
 }
 
 .tekst strong {
-  color: var(--rb-ink);
+  color: var(--rb-ink, #212a45);
   font-weight: 700;
 }
 
@@ -83,12 +90,12 @@
   display: block;
   text-align: left;
   font-size: 13px;
-  color: var(--rb-muted);
+  color: var(--rb-muted, #7a83a6);
   margin: 0 0 6px;
 }
 
 .label strong {
-  color: var(--rb-ink);
+  color: var(--rb-ink, #212a45);
 }
 
 .input {
@@ -97,15 +104,15 @@
   padding: 11px 13px;
   font-size: 15px;
   border-radius: 12px;
-  border: 1.5px solid var(--rb-border);
-  background: var(--rb-field);
-  color: var(--rb-ink);
+  border: 1.5px solid var(--rb-border, rgba(33, 42, 69, 0.07));
+  background: var(--rb-field, #f8f9fd);
+  color: var(--rb-ink, #212a45);
   outline: none;
   transition: border-color 0.12s ease;
 }
 
 .input:focus {
-  border-color: var(--rb-danger);
+  border-color: var(--rb-danger, #dc2626);
 }
 
 .input:disabled {
@@ -116,7 +123,7 @@
   margin: 10px 0 0;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--rb-danger);
+  color: var(--rb-danger, #dc2626);
   text-align: left;
 }
 
@@ -159,8 +166,8 @@
 }
 
 .annuleer {
-  background: var(--rb-field-2);
-  color: var(--rb-ink);
+  background: var(--rb-field-2, #f1f3f9);
+  color: var(--rb-ink, #212a45);
 }
 
 .annuleer:disabled {
@@ -169,7 +176,7 @@
 }
 
 .verwijderBtn {
-  background: var(--rb-danger);
+  background: var(--rb-danger, #dc2626);
   color: #fff;
 }
 
