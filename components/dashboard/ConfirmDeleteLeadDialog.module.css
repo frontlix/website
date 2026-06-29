@@ -126,6 +126,23 @@
   margin-top: 20px;
 }
 
+/* Mobiel (geen tekstveld): knoppen gestapeld + full-width voor schone,
+   duimvriendelijke bevestiging. column-reverse → rode "Verwijderen" boven,
+   "Annuleren" eronder (iOS-conventie: destructieve actie boven, annuleren onder). */
+.actiesStacked {
+  flex-direction: column-reverse;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.actiesStacked .annuleer,
+.actiesStacked .verwijderBtn {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+}
+
 .annuleer,
 .verwijderBtn {
   flex: 1;

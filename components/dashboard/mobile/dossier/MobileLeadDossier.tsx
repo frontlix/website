@@ -254,6 +254,7 @@ export function MobileLeadDossier({
         open={deleteOpen}
         leadId={data.leadId}
         leadNaam={lead.naam}
+        requireTyping={false}
         onClose={() => setDeleteOpen(false)}
         onDeleted={() => {
           setDeleteOpen(false)

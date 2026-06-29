@@ -5,8 +5,11 @@
 // en mobiel (uitklap-paneel + dossier-beheer). Zelfstandig: roept zelf de
 // server-action deleteLeadPermanently aan en meldt succes via onDeleted.
 //
-// Tegen per ongeluk: de rode knop wordt pas actief als je het woord "verwijder"
-// typt (case-insensitive). Styling via de --rb-*-tokens, dus licht + donker.
+// Tegen per ongeluk: op desktop wordt de rode knop pas actief als je het woord
+// "verwijder" typt (case-insensitive). Op mobiel (requireTyping=false) laten we
+// dat tekstveld weg — een input opent daar meteen het toetsenbord dat de modal
+// overdekt; in plaats daarvan een schone, gestapelde knop-bevestiging. Styling
+// via de --rb-*-tokens, dus licht + donker.
 
 import { useState } from "react";
 import { Trash2, TriangleAlert, X } from "lucide-react";
@@ -22,6 +25,10 @@ interface ConfirmDeleteLeadDialogProps {
   onClose: () => void;
   /** Aangeroepen na een geslaagde verwijdering (meestal router.refresh). */
   onDeleted: () => void;
+  /** Of de "typ verwijder"-bevestiging vereist is. Default true (desktop).
+   *  Zet op false voor mobiel: dan geen tekstveld (en dus geen toetsenbord dat
+   *  de modal overdekt), maar een directe knop-bevestiging. */
+  requireTyping?: boolean;
 }
 
 export function ConfirmDeleteLeadDialog({
@@ -30,6 +37,7 @@ export function ConfirmDeleteLeadDialog({
   leadNaam,
   onClose,
   onDeleted,
+  requireTyping = true,
 }: ConfirmDeleteLeadDialogProps) {
   const [woord, setWoord] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,7 +45,7 @@ export function ConfirmDeleteLeadDialog({
 
   if (!open) return null;
 
-  const bevestigd = woord.trim().toLowerCase() === BEVESTIG_WOORD;
+  const bevestigd = !requireTyping || woord.trim().toLowerCase() === BEVESTIG_WOORD;
 
   function sluit() {
     if (busy) return;
@@ -91,30 +99,36 @@ export function ConfirmDeleteLeadDialog({
           <strong>voorgoed</strong>. Dit kan niet ongedaan worden gemaakt.
         </p>
 
-        <label className={styles.label} htmlFor="bevestig-verwijder">
-          Typ <strong>verwijder</strong> om te bevestigen
-        </label>
-        <input
-          id="bevestig-verwijder"
-          type="text"
-          className={styles.input}
-          value={woord}
-          onChange={(e) => setWoord(e.target.value)}
-          placeholder="verwijder"
-          autoComplete="off"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          autoFocus
-          disabled={busy}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") verwijder();
-          }}
-        />
+        {requireTyping ? (
+          <>
+            <label className={styles.label} htmlFor="bevestig-verwijder">
+              Typ <strong>verwijder</strong> om te bevestigen
+            </label>
+            <input
+              id="bevestig-verwijder"
+              type="text"
+              className={styles.input}
+              value={woord}
+              onChange={(e) => setWoord(e.target.value)}
+              placeholder="verwijder"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoFocus
+              disabled={busy}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") verwijder();
+              }}
+            />
+          </>
+        ) : null}
 
         {error ? <p className={styles.error}>{error}</p> : null}
 
-        <div className={styles.acties}>
+        <div
+          className={`${styles.acties} ${requireTyping ? "" : styles.actiesStacked}`}
+        >
           <button
             type="button"
             className={styles.annuleer}

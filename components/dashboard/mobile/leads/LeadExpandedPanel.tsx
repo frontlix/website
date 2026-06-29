@@ -204,6 +204,7 @@ export function LeadExpandedPanel({ lead, onClose, onOpenLead, archived = false,
         open={deleteOpen}
         leadId={lead.id}
         leadNaam={lead.naam}
+        requireTyping={false}
         onClose={() => setDeleteOpen(false)}
         onDeleted={() => {
           setDeleteOpen(false)
