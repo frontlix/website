@@ -7,6 +7,7 @@
 // van een eventuele crash zichtbaar wordt i.p.v. verborgen.
 
 import { useEffect } from 'react'
+import { reportClientError } from '@/lib/dashboard/report-client-error'
 
 export default function DashboardError({
   error,
@@ -18,6 +19,8 @@ export default function DashboardError({
   useEffect(() => {
     // Echte fout naar de console, zodat hij in de browser + logs terug te vinden is.
     console.error('[dashboard] render-fout opgevangen:', error)
+    // Rookmelder: meld de crash naar Slack (best-effort, blokkeert de UI niet).
+    reportClientError('v2-dashboard', error)
   }, [error])
 
   return (

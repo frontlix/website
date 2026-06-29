@@ -286,6 +286,26 @@ export function laatsteOnderdeelRegelIndices(
   return out
 }
 
+/**
+ * Korstmos-toeslag: 10% ALLEEN over de reiniging/onkruid/onderhoud-regels,
+ * exact zoals de bot (src/services/pricing.ts zet de toeslag in-line op precies
+ * die regels, korstmos_toeslag_van_toepassing=true — NIET over alle diensten).
+ * Zakken zand, folie, beschermlaag, extra arbeid en reiskosten krijgen géén
+ * toeslag. GEDEELD door computeTotals én saveOfferteForm zodat het
+ * dashboard-totaal, de PDF en de bot exact dezelfde grondslag gebruiken en niet
+ * uit elkaar lopen.
+ */
+export function berekenKorstmosToeslag(
+  rules: RegelComputed[],
+  data: ManualOfferteData,
+): number {
+  if (data.korstmos !== 'ja') return 0
+  const basis = rules
+    .filter((r) => /^(Reiniging|Onkruidbeheersing|Onderhoudsbeheersing)/.test(r.desc))
+    .reduce((s, r) => s + r.totaal, 0)
+  return Math.round(basis * 0.1 * 100) / 100
+}
+
 export function computeTotals(
   rules: RegelComputed[],
   data: ManualOfferteData,
@@ -299,18 +319,7 @@ export function computeTotals(
     rules.filter((r) => r.eenheid === 'km').reduce((s, r) => s + r.totaal, 0),
   )
   const diensten = round2(subtotal - reiskosten)
-  // Korstmos-toeslag: 10% ALLEEN op de reiniging- en onkruid/onderhoud-regels,
-  // exact zoals de bot (src/services/pricing.ts zet de toeslag in-line op
-  // precies die regels, korstmos_toeslag_van_toepassing=true — NIET over alle
-  // diensten). Zakken zand, folie, beschermlaag, extra arbeid en reiskosten
-  // krijgen géén toeslag.
-  const korstmosBasis =
-    data.korstmos === 'ja'
-      ? rules
-          .filter((r) => /^(Reiniging|Onkruidbeheersing|Onderhoudsbeheersing)/.test(r.desc))
-          .reduce((s, r) => s + r.totaal, 0)
-      : 0
-  const korstmosToeslag = round2(korstmosBasis * 0.1)
+  const korstmosToeslag = berekenKorstmosToeslag(rules, data)
   const discount = Math.max(0, Math.min(100, Number(data.korting_percentage) || 0))
   // Korting geldt over diensten + korstmos-toeslag, NOOIT over reiskosten.
   // korting_bedrag > 0 ⇒ vast-bedrag-modus (gecapt op de grondslag),

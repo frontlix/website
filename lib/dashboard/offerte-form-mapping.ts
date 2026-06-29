@@ -60,6 +60,22 @@ function writePrijsOverrides(data: ManualOfferteData): Record<string, number> | 
   return Object.keys(out).length > 0 ? out : null
 }
 
+/** De bot leest leads.extra_arbeid_prijs_override als een PLAT TOTAALBEDRAG
+ *  (één regel, aantal 1), terwijl de dashboard-editor de prijs PER MINUUT
+ *  bewerkt. Reken de per-minuut-override daarom om naar het regeltotaal
+ *  (minuten × personen × per_min) zodat de bot exact het bedrag stuurt dat de
+ *  owner in het dashboard ziet. null als er geen geldige per-minuut-override of
+ *  geen geldige minuten/personen zijn — dan rekent de bot zelf
+ *  minuten × personen × standaardtarief (en blijven dashboard en bot gelijk). */
+export function extraArbeidPrijsKolom(data: ManualOfferteData): number | null {
+  const perMin = data.extra_arbeid_per_min_override
+  if (typeof perMin !== 'number' || !Number.isFinite(perMin)) return null
+  const minuten = Number(data.extra_arbeid_minuten) || 0
+  const personen = Number(data.extra_arbeid_personen) || 0
+  if (minuten <= 0 || personen <= 0) return null
+  return Math.round(minuten * personen * perMin * 100) / 100
+}
+
 /** Schrijf de per-regel overrides OOK naar de losse lead-kolommen die de bot
  *  (calculatePrice) leest. De bot leest deze kolommen, NIET de
  *  offerte_prijs_overrides-JSON. Zonder deze write gaat een aangepaste
@@ -80,7 +96,9 @@ function writePrijsOverrideColumns(data: ManualOfferteData): Record<string, numb
     beschermlaag_per_m2_override: val(data.beschermlaag_override),
     reiskosten_per_km_override: val(data.reiskosten_per_km_override),
     onkruid_per_m2_override: val(onkruid),
-    extra_arbeid_prijs_override: val(data.extra_arbeid_per_min_override),
+    // Per-minuut-override → plat totaal (zie extraArbeidPrijsKolom): de bot leest
+    // deze kolom als eurototaal, niet als prijs-per-minuut.
+    extra_arbeid_prijs_override: extraArbeidPrijsKolom(data),
   }
 }
 

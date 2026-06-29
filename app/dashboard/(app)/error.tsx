@@ -6,6 +6,7 @@
 // nette fallback met herstelknop EN logt de echte fout (message + digest).
 
 import { useEffect } from 'react'
+import { reportClientError } from '@/lib/dashboard/report-client-error'
 
 export default function MobileDashboardError({
   error,
@@ -16,6 +17,8 @@ export default function MobileDashboardError({
 }) {
   useEffect(() => {
     console.error('[dashboard mobiel] render-fout opgevangen:', error)
+    // Rookmelder: meld de crash naar Slack (best-effort, blokkeert de UI niet).
+    reportClientError('mobiel-dashboard', error)
   }, [error])
 
   return (
