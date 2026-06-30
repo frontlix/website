@@ -8,6 +8,8 @@ export interface DashboardUserProfile {
   bedrijfsnaam: string | null
   is_owner: boolean
   onboarding_voltooid_op: string | null
+  tenant_id: string | null
+  platform_role: 'tenant' | 'superadmin'
 }
 
 /**
@@ -41,7 +43,7 @@ export const getCurrentUserProfile = cache(
     const supabase = await getDashboardSupabase()
     const { data } = await supabase
       .from('dashboard_user_profiles')
-      .select('user_id, tenant_status, bedrijfsnaam, is_owner, onboarding_voltooid_op')
+      .select('user_id, tenant_status, bedrijfsnaam, is_owner, onboarding_voltooid_op, tenant_id, platform_role')
       .eq('user_id', user.id)
       .maybeSingle()
 
