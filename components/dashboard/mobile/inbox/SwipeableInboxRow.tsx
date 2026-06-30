@@ -1,9 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
 import { type ConversationPreview } from '@/lib/dashboard/inbox-queries'
-import { archiveLead } from '@/lib/dashboard/lead-actions'
+import { useArchiveLead } from '@/components/dashboard/use-archive-lead'
 import { useSwipeReveal } from '@/components/dashboard/mobile/useSwipeReveal'
 import { InboxRow } from './InboxRow'
 import styles from './SwipeableInboxRow.module.css'
@@ -20,7 +19,9 @@ interface SwipeableInboxRowProps {
  */
 export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowProps) {
   const router = useRouter()
-  const [archivePending, startArchive] = useTransition()
+  const { requestArchive, archiveDialog, archiving } = useArchiveLead({
+    onArchived: () => router.refresh(),
+  })
   const { ref, open, reset, movedRef } = useSwipeReveal()
 
   const tel = convo.telefoon
@@ -41,10 +42,9 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
 
   function handleArchive() {
     // Archiveren haalt de lead uit de pipeline (terug te halen via "Herstel").
-    startArchive(async () => {
-      await archiveLead(convo.leadId)
-      router.refresh()
-    })
+    // De hook vraagt eerst om een keuze als de lead nog een afspraak heeft.
+    reset()
+    requestArchive(convo.leadId)
   }
 
   return (
@@ -96,7 +96,7 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
           type="button"
           className={`${styles.actionBtn} ${styles.actionArchief}`}
           onClick={handleArchive}
-          disabled={archivePending}
+          disabled={archiving}
           tabIndex={open === -1 ? 0 : -1}
           aria-label={`Archiveer gesprek met ${convo.naam}`}
         >
@@ -123,6 +123,8 @@ export function SwipeableInboxRow({ convo, divider = false }: SwipeableInboxRowP
       >
         <InboxRow convo={convo} />
       </div>
+
+      {archiveDialog}
     </div>
   )
 }

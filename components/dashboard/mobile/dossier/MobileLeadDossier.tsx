@@ -19,7 +19,8 @@ import { MobileOfferteGoedkeuring } from './offerte/MobileOfferteGoedkeuring'
 import { MobileOpdrachtbonActions } from './offerte/MobileOpdrachtbonActions'
 import { LeadTagsRow } from '@/components/dashboard/v2/dossier/LeadTagsRow'
 import { addNote, deleteNote, updateNote, setNoteTargets } from '@/lib/dashboard/note-actions'
-import { archiveLead, unarchiveLead } from '@/lib/dashboard/lead-actions'
+import { unarchiveLead } from '@/lib/dashboard/lead-actions'
+import { useArchiveLead } from '@/components/dashboard/use-archive-lead'
 import { completeAppointment } from '@/lib/dashboard/agenda-actions'
 import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from '@/lib/dashboard/klus-status-client'
 import type { Tag } from '@/lib/dashboard/database.types'
@@ -128,14 +129,26 @@ export function MobileLeadDossier({
   }
 
   // Lead-beheer: zelfde server-actions als desktop, optimistisch met rollback.
+  // Archiveren via de gedeelde hook (vraagt bij een toekomstige afspraak eerst).
+  const { requestArchive, archiveDialog } = useArchiveLead({
+    onArchived: () => {
+      setArchived(true)
+      router.refresh()
+    },
+  })
+
   const toggleArchief = () => {
-    const next = !archived
-    setArchived(next)
-    startBeheer(async () => {
-      const res = next ? await archiveLead(data.leadId) : await unarchiveLead(data.leadId)
-      if (res.ok) router.refresh()
-      else setArchived(!next)
-    })
+    if (archived) {
+      // De-archiveren: optimistisch terug naar de actieve lijst.
+      setArchived(false)
+      startBeheer(async () => {
+        const res = await unarchiveLead(data.leadId)
+        if (res.ok) router.refresh()
+        else setArchived(true)
+      })
+    } else {
+      requestArchive(data.leadId)
+    }
   }
   // "Klus afronden": de afspraak is voorbij en de lead staat nog open. Velden
   // komen uit de volledige DB-lead (offerteForm.lead). Niet bij een gearchiveerde
@@ -262,6 +275,8 @@ export function MobileLeadDossier({
           router.push('/leads?filter=archief')
         }}
       />
+
+      {archiveDialog}
     </div>
   )
 }

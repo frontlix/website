@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, StickyNote, Archive, RotateCcw, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Avatar, StatusPill, SegmentedControl } from "@/components/dashboard/v2/ui";
 import { V2_BASE } from "@/components/dashboard/v2/ui/Shell";
-import { archiveLead, unarchiveLead } from "@/lib/dashboard/lead-actions";
+import { unarchiveLead } from "@/lib/dashboard/lead-actions";
 import { ConfirmDeleteLeadDialog } from "@/components/dashboard/ConfirmDeleteLeadDialog";
+import { useArchiveLead } from "@/components/dashboard/use-archive-lead";
 import { completeAppointment } from "@/lib/dashboard/agenda-actions";
 import { setKlusGeblokkeerd, toonKlusAfrondenKnoppen } from "@/lib/dashboard/klus-status-client";
 import { freezeVerstuurdeOfferteData } from "@/lib/dashboard/offerte-form-actions";
@@ -227,18 +228,29 @@ export function DossierView({
     ]);
   };
 
+  // Archiveren loopt via de gedeelde hook: heeft de lead nog een toekomstige
+  // afspraak, dan vraagt die eerst (afspraak annuleren of laten staan).
+  const { requestArchive, archiveDialog } = useArchiveLead({
+    onArchived: () => {
+      setArchived(true);
+      router.refresh();
+    },
+  });
+
   const toggleArchief = () => {
     if (live && leadId) {
-      const next = !archived;
-      // Geen bevestiging: archiveren haalt de lead uit de pipeline, maar de
-      // knop flipt meteen naar "Herstel" (hier én in de archief-lijst), dus
-      // per ongeluk archiveren is altijd één klik terug te draaien.
-      setArchived(next); // optimistisch; revalidate bevestigt
-      startTransition(async () => {
-        const res = next ? await archiveLead(leadId) : await unarchiveLead(leadId);
-        if (res.ok) router.refresh();
-        else setArchived(!next); // rollback bij fout
-      });
+      if (archived) {
+        // De-archiveren: optimistisch terug naar de actieve lijst.
+        setArchived(false);
+        startTransition(async () => {
+          const res = await unarchiveLead(leadId);
+          if (res.ok) router.refresh();
+          else setArchived(true); // rollback bij fout
+        });
+      } else {
+        // Archiveren: hook regelt zo nodig eerst de afspraak-bevestiging.
+        requestArchive(leadId);
+      }
       return;
     }
     setArchived((a) => !a);
@@ -550,6 +562,8 @@ export function DossierView({
           router.push(`${V2_BASE}/leads?archief=1`);
         }}
       />
+
+      {archiveDialog}
     </div>
   );
 }

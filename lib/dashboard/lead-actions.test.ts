@@ -1,17 +1,50 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockEq, mockUpdate, mockFrom, mockRevalidatePath } = vi.hoisted(() => {
+const {
+  mockEq,
+  mockUpdate,
+  mockSelect,
+  mockSelectEq,
+  mockMaybeSingle,
+  mockFrom,
+  mockRevalidatePath,
+  mockCallBot,
+} = vi.hoisted(() => {
   const mockEq = vi.fn(() => Promise.resolve({ error: null }))
   const mockUpdate = vi.fn(() => ({ eq: mockEq }))
-  const mockFrom = vi.fn(() => ({ update: mockUpdate }))
+  const mockMaybeSingle = vi.fn(() =>
+    Promise.resolve({ data: { afspraak_datum: null as string | null }, error: null }),
+  )
+  const mockSelectEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }))
+  const mockSelect = vi.fn(() => ({ eq: mockSelectEq }))
+  const mockFrom = vi.fn(() => ({ update: mockUpdate, select: mockSelect }))
   const mockRevalidatePath = vi.fn()
-  return { mockEq, mockUpdate, mockFrom, mockRevalidatePath }
+  const mockCallBot = vi.fn(() =>
+    Promise.resolve({ ok: true, status: 200, data: {} }),
+  )
+  return {
+    mockEq,
+    mockUpdate,
+    mockSelect,
+    mockSelectEq,
+    mockMaybeSingle,
+    mockFrom,
+    mockRevalidatePath,
+    mockCallBot,
+  }
 })
 
 vi.mock('./supabase-server', () => ({
   getDashboardSupabase: async () => ({ from: mockFrom }),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mockRevalidatePath }))
+vi.mock('./require-approved-user', () => ({
+  requireApprovedUser: vi.fn(async () => ({ user: { id: 'u1' } })),
+}))
+vi.mock('./bot-api-client', () => ({
+  callBotLeadApi: mockCallBot,
+  botApiError: (_res: unknown, fallback: string) => fallback,
+}))
 
 import {
   setDashboardStatus,
@@ -73,16 +106,77 @@ describe('archiveLead', () => {
     mockEq.mockReset()
     mockEq.mockResolvedValue({ error: null })
     mockUpdate.mockClear()
+    mockSelect.mockClear()
+    mockSelectEq.mockClear()
+    mockMaybeSingle.mockReset()
+    mockMaybeSingle.mockResolvedValue({ data: { afspraak_datum: null }, error: null })
+    mockCallBot.mockClear()
+    mockCallBot.mockResolvedValue({ ok: true, status: 200, data: {} })
     mockRevalidatePath.mockReset()
   })
 
-  it('zet dashboard_archived=true', async () => {
+  it('archiveert direct als er geen (toekomstige) afspraak is', async () => {
     const result = await archiveLead('LEAD-1')
 
     expect(mockUpdate).toHaveBeenCalledWith({ dashboard_archived: true })
     expect(mockEq).toHaveBeenCalledWith('lead_id', 'LEAD-1')
     expect(mockRevalidatePath).toHaveBeenCalledWith('/leads')
     expect(result.ok).toBe(true)
+  })
+
+  it('vraagt om een keuze (en archiveert NIET) bij een toekomstige afspraak', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: { afspraak_datum: '2999-01-01T10:00:00Z' },
+      error: null,
+    })
+
+    const result = await archiveLead('LEAD-1')
+
+    expect(result).toMatchObject({ ok: false, needsAppointmentDecision: true })
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(mockCallBot).not.toHaveBeenCalled()
+  })
+
+  it('annuleert de afspraak via de bot en archiveert bij keuze "cancel"', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: { afspraak_datum: '2999-01-01T10:00:00Z' },
+      error: null,
+    })
+
+    const result = await archiveLead('LEAD-1', { appointmentDecision: 'cancel' })
+
+    expect(mockCallBot).toHaveBeenCalledWith('LEAD-1', 'cancel-appointment', {
+      notifyWhatsapp: false,
+      notifyEmail: false,
+    })
+    expect(mockUpdate).toHaveBeenCalledWith({ dashboard_archived: true })
+    expect(result.ok).toBe(true)
+  })
+
+  it('archiveert zonder annuleren bij keuze "keep"', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: { afspraak_datum: '2999-01-01T10:00:00Z' },
+      error: null,
+    })
+
+    const result = await archiveLead('LEAD-1', { appointmentDecision: 'keep' })
+
+    expect(mockCallBot).not.toHaveBeenCalled()
+    expect(mockUpdate).toHaveBeenCalledWith({ dashboard_archived: true })
+    expect(result.ok).toBe(true)
+  })
+
+  it('archiveert NIET als het annuleren van de afspraak mislukt', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: { afspraak_datum: '2999-01-01T10:00:00Z' },
+      error: null,
+    })
+    mockCallBot.mockResolvedValueOnce({ ok: false, status: 502, data: {} })
+
+    const result = await archiveLead('LEAD-1', { appointmentDecision: 'cancel' })
+
+    expect(result.ok).toBe(false)
+    expect(mockUpdate).not.toHaveBeenCalled()
   })
 })
 

@@ -36,12 +36,25 @@ function makeFormData(values: Record<string, string>): FormData {
 
 describe('signupAction', () => {
   beforeEach(() => {
+    // Signup is standaard dicht (SIGNUP_ENABLED). Deze tests dekken de flow die
+    // alléén draait als registratie openstaat, dus zetten we 'm hier aan.
+    process.env.SIGNUP_ENABLED = 'true'
     mockCreateUser.mockReset()
     mockSignIn.mockReset()
     mockSignIn.mockResolvedValue({ error: null })
     mockUpsert.mockClear()
     mockUpsert.mockResolvedValue({ error: null })
     mockSlack.mockReset()
+  })
+
+  it('weigert registratie als SIGNUP_ENABLED niet aan staat', async () => {
+    delete process.env.SIGNUP_ENABLED
+    const result = await signupAction({}, makeFormData({
+      email: 'a@b.c', wachtwoord: 'wachtwoord123', bedrijfsnaam: 'X',
+    }))
+    expect(result.error).toMatch(/uitnodiging/i)
+    expect(result.redirectTo).toBeUndefined()
+    expect(mockCreateUser).not.toHaveBeenCalled()
   })
 
   it('vereist email, wachtwoord, bedrijfsnaam', async () => {

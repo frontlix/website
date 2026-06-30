@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { archiveLead, unarchiveLead } from '@/lib/dashboard/lead-actions'
+import { unarchiveLead } from '@/lib/dashboard/lead-actions'
+import { useArchiveLead } from '@/components/dashboard/use-archive-lead'
 import { LiveDot } from '@/components/dashboard/ui/LiveDot'
 import { type MobileLeadCard, type MobileLeadStage } from './lead-mappers'
 import { LeadsSegmentedChips, type SegmentedChip } from './LeadsSegmentedChips'
@@ -87,6 +88,9 @@ const DEFAULT_ADV_FILTER: AdvFilter = {
 export function MobileLeads({ data }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const { requestArchive, archiveDialog } = useArchiveLead({
+    onArchived: () => router.refresh(),
+  })
   const openOffertesFilter = data.openOffertesFilter ?? false
 
   const [filter,     setFilter]     = useState<string>(data.initialArchived ? 'archief' : 'all')
@@ -193,13 +197,9 @@ export function MobileLeads({ data }: Props) {
   }
 
   function handleArchive(id: string) {
-    // Geen bevestiging: de lead verschijnt direct onder de Archief-chip en is
-    // daar met één veeg/knop ("Herstel") terug te halen.
-    startTransition(async () => {
-      await archiveLead(id)
-      // Server-data herladen zodat de gearchiveerde lead uit de lijst valt
-      router.refresh()
-    })
+    // De hook vraagt eerst om een keuze als de lead nog een afspraak heeft;
+    // anders archiveert 'ie meteen. Terug te halen via "Herstel" onder Archief.
+    requestArchive(id)
   }
 
   function handleUnarchive(id: string) {
@@ -406,6 +406,8 @@ export function MobileLeads({ data }: Props) {
         onApply={setAdvFilter}
         onClose={() => setSheetOpen(false)}
       />
+
+      {archiveDialog}
     </div>
   )
 }

@@ -234,12 +234,87 @@ export async function setDashboardStatus(
   return { ok: true }
 }
 
+export type ArchiveResult =
+  | { ok: true }
+  | { ok: false; error: string }
+  // Lead heeft nog een toekomstige afspraak; UI moet eerst kiezen
+  // (afspraak annuleren of laten staan) en archiveLead opnieuw aanroepen.
+  | { ok: false; needsAppointmentDecision: true; afspraakDatum: string }
+
+/** Amsterdam-dagsleutel (YYYY-MM-DD) voor tijdzone-correcte dag-vergelijking. */
+function dayKeyAmsterdam(d: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Amsterdam',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d)
+}
+
+/** Heeft de lead een afspraak die ná vandaag valt (Amsterdam-tijd)? */
+function isFutureAppointment(afspraakDatum: string | null): boolean {
+  if (!afspraakDatum) return false
+  const d = new Date(afspraakDatum)
+  if (Number.isNaN(d.getTime())) return false
+  return dayKeyAmsterdam(d) > dayKeyAmsterdam(new Date())
+}
+
 /**
  * Markeert een lead als gearchiveerd. getLeadsList filtert deze automatisch
- * weg, dus de lead verdwijnt uit de hoofdlijst.
+ * weg, dus de lead verdwijnt uit de hoofdlijst, en de bot stuurt geen reminders
+ * meer (de reminder-cron sluit dashboard_archived uit).
+ *
+ * Heeft de lead nog een TOEKOMSTIGE afspraak en is er nog geen keuze gemaakt,
+ * dan archiveren we NIET, maar geven we { needsAppointmentDecision } terug zodat
+ * de UI eerst kan vragen: afspraak annuleren of laten staan. Zo verbergen we
+ * nooit stilletjes een echte afspraak en annuleren we er ook nooit per ongeluk
+ * een. Bij keuze 'cancel' halen we het Google-event eerst weg via de bot-route
+ * cancel-appointment (zonder de klant te appen/mailen); faalt dat, dan
+ * archiveren we niet, zodat er geen spookafspraak achterblijft.
  */
-export async function archiveLead(leadId: string): Promise<ActionResult> {
+export async function archiveLead(
+  leadId: string,
+  opts: { appointmentDecision?: 'cancel' | 'keep' } = {},
+): Promise<ArchiveResult> {
+  await requireApprovedUser()
   const supabase = await getDashboardSupabase()
+
+  const { data: lead, error: readError } = await supabase
+    .from('leads')
+    .select('afspraak_datum')
+    .eq('lead_id', leadId)
+    .maybeSingle()
+
+  if (readError) return { ok: false, error: readError.message }
+
+  const toekomstigeAfspraak = isFutureAppointment(lead?.afspraak_datum ?? null)
+
+  // Toekomstige afspraak + nog geen keuze → laat de UI eerst beslissen.
+  if (toekomstigeAfspraak && !opts.appointmentDecision) {
+    return {
+      ok: false,
+      needsAppointmentDecision: true,
+      afspraakDatum: lead!.afspraak_datum as string,
+    }
+  }
+
+  // Keuze 'cancel': eerst het Google-event weghalen (zonder klant te appen/mailen).
+  if (toekomstigeAfspraak && opts.appointmentDecision === 'cancel') {
+    const cal = await callBotLeadApi(leadId, 'cancel-appointment', {
+      notifyWhatsapp: false,
+      notifyEmail: false,
+    })
+    if (!cal.ok) {
+      return {
+        ok: false,
+        error: botApiError(
+          cal,
+          'De afspraak kon niet uit Google Agenda worden verwijderd. Probeer het later opnieuw.',
+        ),
+      }
+    }
+  }
+
   const { error } = await supabase
     .from('leads')
     .update({ dashboard_archived: true })
@@ -251,6 +326,7 @@ export async function archiveLead(leadId: string): Promise<ActionResult> {
 
   revalidatePath(`/leads/${leadId}`)
   revalidatePath('/leads')
+  revalidatePath('/agenda')
   return { ok: true }
 }
 
