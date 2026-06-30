@@ -1,6 +1,12 @@
 // lib/dashboard/calendar-connection-queries.ts
 import { getDashboardAdmin } from './supabase-admin'
 
+// getTenantId is verhuisd naar tenant-context (per-user lookup i.p.v. .limit(1)).
+// Her-geexporteerd onder de oude naam zodat bestaande imports (OAuth-routes,
+// e-mail/gmail/whatsapp-queries) blijven werken; de waarde komt nu uit het
+// profiel van de INGELOGDE user (gooit voor de superadmin zonder eigen tenant).
+export { getCurrentTenantId as getTenantId } from './tenant-context'
+
 export interface ConnectionStatus {
   connected: boolean
   googleEmail: string | null
@@ -8,13 +14,13 @@ export interface ConnectionStatus {
   connectedAt: string | null
 }
 
-/** Leest de connectie-status (zonder het token) van de enige tenant. */
-export async function getConnectionStatus(): Promise<ConnectionStatus> {
+/** Leest de connectie-status (zonder token) voor EEN tenant. */
+export async function getConnectionStatus(tenantId: string): Promise<ConnectionStatus> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('calendar_connections')
     .select('google_email, calendar_id, connected_at')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) return { connected: false, googleEmail: null, calendarId: null, connectedAt: null }
@@ -24,14 +30,6 @@ export async function getConnectionStatus(): Promise<ConnectionStatus> {
     calendarId: data.calendar_id ?? null,
     connectedAt: data.connected_at ?? null,
   }
-}
-
-/** Haalt de id van de enige tenant_settings-rij (single-tenant). */
-export async function getTenantId(): Promise<string> {
-  const admin = getDashboardAdmin()
-  const { data, error } = await admin.from('tenant_settings').select('id').limit(1).maybeSingle()
-  if (error || !data) throw new Error('Geen tenant_settings-rij gevonden')
-  return data.id as string
 }
 
 export interface SaveConnectionInput {
@@ -62,13 +60,13 @@ export async function deleteConnection(tenantId: string): Promise<void> {
   if (error) throw new Error(`Ontkoppelen faalde: ${error.message}`)
 }
 
-/** Leest het versleutelde refresh-token van de (enige) connectie-rij. */
-export async function getEncryptedRefreshToken(): Promise<string | null> {
+/** Leest het versleutelde refresh-token van de connectie-rij van EEN tenant. */
+export async function getEncryptedRefreshToken(tenantId: string): Promise<string | null> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('calendar_connections')
     .select('refresh_token_encrypted')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
   return data?.refresh_token_encrypted ?? null
 }

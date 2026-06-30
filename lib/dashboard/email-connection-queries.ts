@@ -35,13 +35,13 @@ export interface EmailConnectionStatus {
   needsReconnect?: boolean
 }
 
-/** Leest de connectie-status (zonder geheimen) van de enige tenant. */
-export async function getEmailConnectionStatus(): Promise<EmailConnectionStatus> {
+/** Leest de connectie-status (zonder geheimen) van EEN tenant. */
+export async function getEmailConnectionStatus(tenantId: string): Promise<EmailConnectionStatus> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('email_connections')
     .select('email_adres, sender_name, reply_to, provider, test_passed_at, needs_reconnect')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) return { connected: false }
@@ -60,12 +60,12 @@ export async function getEmailConnectionStatus(): Promise<EmailConnectionStatus>
  * Leest de volledige rij incl. smtp_password_encrypted. Server-only.
  * Voor de 'bewerken zonder wachtwoord'-flow (sectie 6.5).
  */
-export async function getRawEmailConnection(): Promise<EmailConnectionRow | null> {
+export async function getRawEmailConnection(tenantId: string): Promise<EmailConnectionRow | null> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('email_connections')
     .select('*')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
   return (data as EmailConnectionRow | null) ?? null
 }
@@ -131,12 +131,12 @@ export interface ActiveEmailConnection {
  * Leest de rij en ontsleutelt smtp_password_encrypted voor het verzendpad.
  * null als er geen rij is.
  */
-export async function getActiveEmailConnectionForSend(): Promise<ActiveEmailConnection | null> {
+export async function getActiveEmailConnectionForSend(tenantId: string): Promise<ActiveEmailConnection | null> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('email_connections')
     .select('smtp_host, smtp_port, security, email_adres, smtp_password_encrypted, sender_name, reply_to')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) return null

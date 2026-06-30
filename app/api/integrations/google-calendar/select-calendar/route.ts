@@ -1,13 +1,17 @@
 // app/api/integrations/google-calendar/select-calendar/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
-import { getTenantId, updateCalendarId } from '@/lib/dashboard/calendar-connection-queries'
+import { updateCalendarId } from '@/lib/dashboard/calendar-connection-queries'
 
 export async function POST(request: NextRequest) {
   const profile = await getCurrentUserProfile()
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
     return NextResponse.json({ error: 'Geen toegang' }, { status: 403 })
   }
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  const tenantId = profile.tenant_id
 
   let calendarId: unknown
   try {
@@ -22,7 +26,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const tenantId = await getTenantId()
     await updateCalendarId(tenantId, calendarId)
     return NextResponse.json({ ok: true })
   } catch (e) {

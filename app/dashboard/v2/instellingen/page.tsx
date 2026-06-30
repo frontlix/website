@@ -94,7 +94,7 @@ export default async function InstellingenPage() {
     );
   }
 
-  const { supabase } = s;
+  const { supabase, tenantId } = s;
 
   // Maand-range voor de omzet-stand; vooraf berekend zodat countConverted +
   // avgOfferteWaarde mee kunnen draaien in de Promise.all hieronder.
@@ -149,18 +149,22 @@ export default async function InstellingenPage() {
     getPricingImpactBaseline(30),
     getTagsWithCounts(),
     getAllPrefs(),
-    getConnectionStatus(),
+    tenantId
+      ? getConnectionStatus(tenantId)
+      : Promise.resolve({ connected: false, googleEmail: null, calendarId: null, connectedAt: null }),
     // E-mailkoppel-status (email_connections, service-role). Niet-geheim; bevat
     // nooit het wachtwoord. Het EmailPanel toont hiermee de juiste status.
-    getEmailConnectionStatus(),
+    tenantId ? getEmailConnectionStatus(tenantId) : Promise.resolve({ connected: false }),
     // WhatsApp-koppel-status (whatsapp_connections, service-role). Niet-geheim;
     // bevat nooit het access-token. Het WhatsAppPanel toont hiermee de juiste
     // status (niet gekoppeld / gekoppeld / opnieuw koppelen).
-    getWhatsAppConnectionStatus(),
+    tenantId ? getWhatsAppConnectionStatus(tenantId) : Promise.resolve({ connected: false }),
     // Gmail-label-koppelstatus (gmail_connections, service-role). Niet-geheim;
     // bevat nooit het OAuth-token. Het BedrijfsprofielPanel toont hiermee de
     // juiste Gmail-koppelstatus.
-    getGmailConnectionStatus(),
+    tenantId
+      ? getGmailConnectionStatus(tenantId)
+      : Promise.resolve({ connected: false, googleEmail: null, labelName: null }),
     // Template-aanvragen (openingsbericht + reminders); de panels filteren zelf
     // op de voor hen relevante templates.
     getRecentTemplateAanvragen(),

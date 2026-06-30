@@ -15,6 +15,10 @@ import { requireApprovedUser } from './require-approved-user'
  * opbouwen van een offerte. Auth + write-patroon: gelijk aan updateBedrijfsprofiel
  * (requireApprovedUser + service-role admin-write, omdat tenant_settings geen
  * UPDATE-policy heeft voor dashboard-users).
+ *
+ * Multitenant: de update wordt gescoped op de EIGEN tenant van de ingelogde
+ * user (profile.tenant_id) i.p.v. de "enige" rij (.limit(1)). Voor SS (één
+ * tenant) is het gedrag identiek.
  */
 export type SaveOffertesResult = { ok: true } | { ok: false; error: string }
 
@@ -39,7 +43,11 @@ function parseNum(raw: string): number | null {
 export async function saveOffertesInstellingen(
   input: OffertesInstellingenInput,
 ): Promise<SaveOffertesResult> {
-  await requireApprovedUser()
+  const { profile } = await requireApprovedUser()
+  if (!profile.tenant_id) {
+    return { ok: false, error: 'Geen tenant gekoppeld aan deze gebruiker.' }
+  }
+  const tenantId = profile.tenant_id
 
   // ── Validatie ──────────────────────────────────────────────────────
   const geldigheid = Math.round(Number(input.geldigheid))
@@ -67,17 +75,8 @@ export async function saveOffertesInstellingen(
     return { ok: false, error: 'Voorvoegsel: max 10 tekens, alleen letters, cijfers en streepje.' }
   }
 
-  // ── Wegschrijven (single-tenant: pak de enige rij) ─────────────────
+  // ── Wegschrijven (gescoped op de eigen tenant) ─────────────────────
   const admin = getDashboardAdmin()
-  const { data: existing, error: fetchErr } = await admin
-    .from('tenant_settings')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
-  if (fetchErr || !existing) {
-    return { ok: false, error: 'Geen tenant_settings rij gevonden om te updaten.' }
-  }
-
   const { error: updErr } = await admin
     .from('tenant_settings')
     .update({
@@ -86,7 +85,7 @@ export async function saveOffertesInstellingen(
       offerte_betaaltermijn_dagen: betaaltermijn,
       offerte_nummer_prefix: prefix,
     })
-    .eq('id', existing.id)
+    .eq('id', tenantId)
 
   if (updErr) {
     console.error('[saveOffertesInstellingen] failed:', updErr)

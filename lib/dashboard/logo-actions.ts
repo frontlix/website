@@ -14,6 +14,11 @@ import { requireApprovedUser } from './require-approved-user'
  * Auth + write-patroon identiek aan updateBedrijfsprofiel: requireApprovedUser
  * blokkeert niet-approved users; schrijven via service-role omdat
  * tenant_settings + Storage geen UPDATE-policy voor dashboard-users hebben.
+ *
+ * Multitenant: het storage-pad en de tenant_settings-update worden gescoped op
+ * de EIGEN tenant van de ingelogde user (profile.tenant_id) i.p.v. de "enige"
+ * rij (.limit(1)). Voor SS (één tenant) is het gedrag identiek. De publieke URL
+ * (getPublicUrl) blijft ongewijzigd: logo's zijn publiek leesbaar.
  */
 export type UploadLogoResult =
   | { ok: true; url: string }
@@ -29,7 +34,11 @@ const ALLOWED_EXT: Record<string, string> = {
 export async function uploadTenantLogo(
   formData: FormData,
 ): Promise<UploadLogoResult> {
-  await requireApprovedUser()
+  const { profile } = await requireApprovedUser()
+  if (!profile.tenant_id) {
+    return { ok: false, error: 'Geen tenant gekoppeld aan deze gebruiker.' }
+  }
+  const tenantId = profile.tenant_id
 
   const file = formData.get('logo')
   if (!(file instanceof File) || file.size === 0) {
@@ -45,18 +54,7 @@ export async function uploadTenantLogo(
 
   const admin = getDashboardAdmin()
 
-  // tenant_settings rij (single-tenant setup), zelfde patroon als de andere
-  // bedrijfsprofiel-actions.
-  const { data: existing, error: fetchErr } = await admin
-    .from('tenant_settings')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
-  if (fetchErr || !existing) {
-    return { ok: false, error: 'Geen tenant_settings rij gevonden om te updaten.' }
-  }
-
-  const path = `${existing.id}/logo.${ext}`
+  const path = `${tenantId}/logo.${ext}`
   const bytes = new Uint8Array(await file.arrayBuffer())
 
   const { error: upErr } = await admin.storage
@@ -75,7 +73,7 @@ export async function uploadTenantLogo(
   const { error: updErr } = await admin
     .from('tenant_settings')
     .update({ logo_url: url, bijgewerkt_op: new Date().toISOString() })
-    .eq('id', existing.id)
+    .eq('id', tenantId)
   if (updErr) {
     console.error('[uploadTenantLogo] db update failed:', updErr)
     return { ok: false, error: `Opslaan mislukt: ${updErr.message}` }

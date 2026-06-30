@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getDashboardSupabase } from './supabase-server'
 import { getDashboardAdmin } from './supabase-admin'
+import { requireApprovedUser } from './require-approved-user'
 
 /**
  * Server action voor het instellen / wissen van het maand-omzetdoel
@@ -13,6 +13,10 @@ import { getDashboardAdmin } from './supabase-admin'
  * Auth: alleen approved dashboard-users. Schrijven gebeurt via service-role
  * omdat `tenant_settings` geen UPDATE-policy heeft voor dashboard-users
  * (zelfde patroon als saveTenantBase / setDailyDigestTijdAction).
+ *
+ * Multitenant: de update wordt gescoped op de EIGEN tenant van de ingelogde
+ * user (profile.tenant_id) i.p.v. de "enige" rij (.limit(1)). Voor SS (één
+ * tenant) is het gedrag identiek.
  */
 export type SaveOmzetDoelResult =
   | { ok: true; value: number | null }
@@ -31,27 +35,13 @@ export async function saveOmzetDoelMaand(
     }
   }
 
-  const userSupabase = await getDashboardSupabase()
-  const {
-    data: { user },
-  } = await userSupabase.auth.getUser()
-  if (!user) return { ok: false, error: 'Niet ingelogd.' }
+  const { profile } = await requireApprovedUser()
+  if (!profile.tenant_id) {
+    return { ok: false, error: 'Geen tenant gekoppeld aan deze gebruiker.' }
+  }
+  const tenantId = profile.tenant_id
 
   const admin = getDashboardAdmin()
-
-  // Pak de eerste (en enige) tenant_settings rij, single-tenant setup.
-  const { data: existing, error: fetchErr } = await admin
-    .from('tenant_settings')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
-
-  if (fetchErr || !existing) {
-    return {
-      ok: false,
-      error: 'Geen tenant_settings rij gevonden om te updaten.',
-    }
-  }
 
   const { error: updErr } = await admin
     .from('tenant_settings')
@@ -59,7 +49,7 @@ export async function saveOmzetDoelMaand(
       omzet_doel_maand: value,
       bijgewerkt_op: new Date().toISOString(),
     })
-    .eq('id', existing.id)
+    .eq('id', tenantId)
 
   if (updErr) {
     console.error('[saveOmzetDoelMaand] failed:', updErr)

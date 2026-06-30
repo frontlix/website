@@ -27,13 +27,13 @@ export interface WhatsAppConnectionStatus {
   needsReconnect?: boolean
 }
 
-/** Leest de connectie-status (zonder geheimen) van de enige tenant. */
-export async function getWhatsAppConnectionStatus(): Promise<WhatsAppConnectionStatus> {
+/** Leest de connectie-status (zonder geheimen) van EEN tenant. */
+export async function getWhatsAppConnectionStatus(tenantId: string): Promise<WhatsAppConnectionStatus> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('whatsapp_connections')
     .select('display_phone_number, needs_reconnect')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) return { connected: false }
@@ -48,12 +48,12 @@ export async function getWhatsAppConnectionStatus(): Promise<WhatsAppConnectionS
  * Leest de volledige rij incl. access_token_encrypted. Server-only.
  * NOOIT het token naar de client lekken.
  */
-export async function getRawWhatsAppConnection(): Promise<WhatsAppConnectionRow | null> {
+export async function getRawWhatsAppConnection(tenantId: string): Promise<WhatsAppConnectionRow | null> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('whatsapp_connections')
     .select('*')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
   return (data as WhatsAppConnectionRow | null) ?? null
 }
@@ -63,8 +63,8 @@ export async function getRawWhatsAppConnection(): Promise<WhatsAppConnectionRow 
  * als een nummer opnieuw geregistreerd moet worden. Geeft null terug als er geen
  * PIN is opgeslagen. NOOIT de PIN naar de client lekken of loggen.
  */
-export async function getDecryptedRegistrationPin(): Promise<string | null> {
-  const row = await getRawWhatsAppConnection()
+export async function getDecryptedRegistrationPin(tenantId: string): Promise<string | null> {
+  const row = await getRawWhatsAppConnection(tenantId)
   if (!row || !row.registration_pin_encrypted) return null
   return decryptToken(row.registration_pin_encrypted)
 }

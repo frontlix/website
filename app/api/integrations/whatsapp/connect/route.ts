@@ -14,7 +14,6 @@ import crypto from 'crypto'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import { encryptToken } from '@/lib/crypto/calendar-token'
 import {
-  getTenantId,
   saveWhatsAppConnection,
 } from '@/lib/dashboard/whatsapp-connection-queries'
 
@@ -70,6 +69,10 @@ export async function POST(req: Request) {
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
     return NextResponse.json({ error: 'Geen toegang' }, { status: 403 })
   }
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  const tenantId = profile.tenant_id
 
   let body: Record<string, unknown>
   try {
@@ -199,13 +202,6 @@ export async function POST(req: Request) {
 
   // Stap 5: versleutel het token en sla pas nu de koppeling op. Bij een fout
   // hierboven is er niets opgeslagen.
-  let tenantId: string
-  try {
-    tenantId = await getTenantId()
-  } catch {
-    return NextResponse.json({ error: 'Geen bedrijf gevonden.' }, { status: 500 })
-  }
-
   try {
     const accessTokenEncrypted = encryptToken(accessToken)
     const registrationPinEncrypted = encryptToken(registrationPin)

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import { exchangeCode, fetchGoogleEmail } from '@/lib/google-oauth'
 import { encryptToken } from '@/lib/crypto/calendar-token'
-import { getTenantId, saveConnection } from '@/lib/dashboard/calendar-connection-queries'
+import { saveConnection } from '@/lib/dashboard/calendar-connection-queries'
 
 const SETTINGS_URL = '/instellingen?section=integraties'
 // Terugkeer op basis van de dashboard-host, niet request.url: achter de nginx-
@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
   try {
     const { refreshToken, accessToken } = await exchangeCode(code)
     const email = await fetchGoogleEmail(accessToken)
-    const tenantId = await getTenantId()
+    // Tenant uit de OAuth state (gezet in /authorize, gevalideerd via de
+    // httpOnly state-cookie hierboven).
+    const tenantId = state.split('.')[1] ?? ''
+    if (!tenantId) {
+      return NextResponse.redirect(new URL(`${SETTINGS_URL}&gcal=state_error`, SITE_BASE))
+    }
     await saveConnection({
       tenantId,
       googleEmail: email,

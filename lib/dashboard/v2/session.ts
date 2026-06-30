@@ -7,6 +7,13 @@ export interface V2Session {
   supabase: Awaited<ReturnType<typeof getDashboardSupabase>>;
   user: User;
   profile: DashboardUserProfile;
+  /**
+   * Effectieve tenant van de sessie: de eigen tenant van een gewone user, of
+   * null voor de superadmin (die geen eigen tenant heeft; gebruik voor view-as
+   * binnen v2 forEffectiveTenant()). Voor gewone tenant-users volstaat dit veld.
+   */
+  tenantId: string | null;
+  isSuperadmin: boolean;
 }
 
 /**
@@ -28,7 +35,9 @@ export async function v2Session(): Promise<V2Session | null> {
   if (!profile || profile.tenant_status !== "approved") return null;
 
   const supabase = await getDashboardSupabase();
-  return { supabase, user, profile };
+  const isSuperadmin = profile.platform_role === "superadmin";
+  const tenantId = isSuperadmin ? null : (profile.tenant_id ?? null);
+  return { supabase, user, profile, tenantId, isSuperadmin };
 }
 
 /** Initialen uit de email-prefix (zelfde afleiding als de bestaande shell). */

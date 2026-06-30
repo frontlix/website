@@ -52,6 +52,12 @@ export async function signupAction(
   // Maak de dashboard_user_profiles-rij aan met tenant_status='pending'.
   // (We doen dit hier omdat Supabase geen DDL toestaat op auth.users, zie
   // docs/superpowers/postponed.md.) UPSERT zodat retry's geen conflict geven.
+  //
+  // Multitenant: we koppelen hier BEWUST geen tenant_id (blijft NULL) en zetten
+  // geen platform_role (default 'tenant' in de DB). De pending owner krijgt pas
+  // een eigen tenant wanneer de superadmin hem goedkeurt via approveTenantOwner()
+  // (lib/dashboard/provision-tenant-actions.ts), die provision_tenant draait en
+  // tenant_status + tenant_id in één stap zet. Signup zelf provisiont dus niet.
   const { error: profileErr } = await admin
     .from('dashboard_user_profiles')
     .upsert(

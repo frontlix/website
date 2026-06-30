@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer'
+import { getDashboardAdmin } from './dashboard/supabase-admin'
+import { decryptToken } from './crypto/calendar-token'
 
 // Lazy initialisatie zodat build niet faalt zonder env vars
 let _transporter: nodemailer.Transporter | null = null
@@ -19,6 +21,47 @@ function getTransporter(): nodemailer.Transporter {
     })
   }
   return _transporter
+}
+
+/**
+ * Bouwt een nodemailer-transporter uit de per-tenant e-mailkoppeling
+ * (email_connections). null als de tenant geen koppeling heeft -> caller valt
+ * terug op de Frontlix-env-transporter (getTransporter) of slaat over.
+ * Niet cachen: SMTP-creds verschillen per tenant.
+ *
+ * NB: sendNotification/sendConfirmation/sendLeadCheckAnalysis hieronder zijn
+ * Frontlix' EIGEN marketing-intake en blijven bewust op de globale env. Het
+ * dashboard-offertepad (manual-offerte-actions.ts) gebruikt al
+ * getActiveEmailConnectionForSend + sendOfferteMail; createTenantTransporter is
+ * voor toekomstige per-tenant systeemmails.
+ */
+export async function createTenantTransporter(
+  tenantId: string
+): Promise<nodemailer.Transporter | null> {
+  try {
+    const { data } = await getDashboardAdmin()
+      .from('email_connections')
+      .select('smtp_host, smtp_port, security, email_adres, smtp_password_encrypted')
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+    if (!data) return null
+    return nodemailer.createTransport({
+      host: data.smtp_host as string,
+      port: data.smtp_port as number,
+      secure: data.security === 'ssl',
+      requireTLS: data.security === 'starttls',
+      auth: {
+        user: data.email_adres as string,
+        pass: decryptToken(data.smtp_password_encrypted as string),
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    })
+  } catch (e) {
+    console.error('[mail] tenant-transporter faalde:', e)
+    return null
+  }
 }
 
 export async function sendNotification(subject: string, html: string) {

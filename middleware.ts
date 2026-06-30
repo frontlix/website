@@ -102,6 +102,21 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // ─────────────────────────────────────────────────────────────────────
+  // ANTI-SPOOF: strip eventueel van buitenaf ingestuurde x-frontlix-* headers.
+  // Deze headers (o.a. x-frontlix-acting-tenant voor de view-as DB-hook) mogen
+  // UITSLUITEND server-side gezet worden door de vertrouwde Supabase-client
+  // (o.b.v. de httpOnly view-as-cookie), nooit door de client zelf. We doen
+  // hier BEWUST geen extra DB-lookup: autoritatief blijft de server-side
+  // tenant-resolver (getCurrentTenantId()/getEffectiveTenantId()). De gestripte
+  // headers reizen via de rewrite hieronder mee naar de downstream-request.
+  const requestHeaders = new Headers(request.headers)
+  for (const name of [...requestHeaders.keys()]) {
+    if (name.toLowerCase().startsWith('x-frontlix-')) {
+      requestHeaders.delete(name)
+    }
+  }
+
   // Apparaat: v2 is desktop-only, de telefoon blijft op het oude (responsive)
   // dashboard. Phone = device.type 'mobile'; desktop én tablet vallen onder
   // !isPhone (krijgen v2). Zie de apparaat-routing verderop.
@@ -178,7 +193,7 @@ export async function middleware(request: NextRequest) {
     ? `/dashboard/v2${pathname === '/' ? '' : pathname}`
     : `/dashboard${pathname === '/' ? '' : pathname}`
 
-  const rewritten = NextResponse.rewrite(rewriteUrl, { request })
+  const rewritten = NextResponse.rewrite(rewriteUrl, { request: { headers: requestHeaders } })
   // Kopieer de Supabase auth-cookies door:
   response.cookies.getAll().forEach((c) => {
     rewritten.cookies.set(c.name, c.value, c)

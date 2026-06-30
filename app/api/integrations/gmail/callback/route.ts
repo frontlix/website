@@ -4,7 +4,7 @@ import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import { exchangeGmailCode, ensureLabel, ensureApprovalFilter } from '@/lib/gmail-oauth'
 import { fetchGoogleEmail } from '@/lib/google-oauth'
 import { encryptToken } from '@/lib/crypto/calendar-token'
-import { getTenantId, saveGmailConnection } from '@/lib/dashboard/gmail-connection-queries'
+import { saveGmailConnection } from '@/lib/dashboard/gmail-connection-queries'
 
 const SETTINGS_URL = '/dashboard/v2/instellingen'
 // Terugkeer-URL op basis van de dashboard-host, niet request.url: achter de
@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
     const email = await fetchGoogleEmail(accessToken)
     const labelId = await ensureLabel(accessToken, labelName)
     const filterId = await ensureApprovalFilter(accessToken, labelId)
-    const tenantId = await getTenantId()
+    // Tenant uit de OAuth state (gezet in /authorize, gevalideerd via de
+    // httpOnly state-cookie hierboven).
+    const tenantId = state.split('.')[1] ?? ''
+    if (!tenantId) {
+      return NextResponse.redirect(new URL(`${SETTINGS_URL}?gmail=state_error`, SITE_BASE))
+    }
     await saveGmailConnection({
       tenantId,
       googleEmail: email,

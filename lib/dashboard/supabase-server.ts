@@ -19,10 +19,21 @@ import type { Database } from './database.types'
 export const getDashboardSupabase = cache(async () => {
   const cookieStore = await cookies()
 
+  // View-as: stuur de door de superadmin gekozen acting-tenant als request-
+  // header mee. De DB-hook frontlix_pre_request() (migr 080) kopieert deze naar
+  // request.frontlix_acting_tenant (transaction-local, geen pool-leak) zodat
+  // effective_tenant_id() op het anon/RLS-pad klopt. Veilig: effective_tenant_id()
+  // gate't zelf op is_superadmin(), dus een header van een niet-superadmin heeft
+  // geen effect. De cookie is httpOnly en wordt uitsluitend server-side gezet
+  // (view-as-actions); de middleware stript bovendien eventueel van buitenaf
+  // ingestuurde x-frontlix-* headers (anti-spoof).
+  const acting = cookieStore.get('frontlix_acting_tenant')?.value?.trim()
+
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL_DASHBOARD!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_DASHBOARD!,
     {
+      global: acting ? { headers: { 'x-frontlix-acting-tenant': acting } } : undefined,
       cookies: {
         getAll() {
           return cookieStore.getAll()

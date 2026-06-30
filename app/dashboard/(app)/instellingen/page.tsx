@@ -4,6 +4,7 @@ import type { TenantSettings, PricingRule, ServiceOffering, TeamMember } from '@
 import { getConnectionStatus } from '@/lib/dashboard/calendar-connection-queries'
 import { getEmailConnectionStatus } from '@/lib/dashboard/email-connection-queries'
 import { getGmailConnectionStatus } from '@/lib/dashboard/gmail-connection-queries'
+import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import type { DagBeschikbaarheid } from '@/lib/dashboard/beschikbaarheid-actions'
 import { getPricingImpactBaseline } from '@/lib/dashboard/pricing-impact-queries'
 import { getTagsWithCounts, type TagWithCount } from '@/lib/dashboard/tags-queries'
@@ -110,13 +111,24 @@ export default async function InstellingenPage({
   // Agenda-koppeling: zowel de desktop-sectie 'integraties' als het mobiele
   // Agenda-detailscherm (client-side geopend, zonder ?section=) gebruiken deze
   // status, dus altijd ophalen (lichte service-role read, zonder het token).
-  const gcalStatus = await getConnectionStatus()
+  // Tenant van de ingelogde user; de koppel-statussen zijn per tenant. Bij de
+  // superadmin (geen eigen tenant) tonen we 'niet gekoppeld'.
+  const koppelProfile = await getCurrentUserProfile()
+  const koppelTenantId = koppelProfile?.tenant_id ?? null
+
+  const gcalStatus = koppelTenantId
+    ? await getConnectionStatus(koppelTenantId)
+    : { connected: false, googleEmail: null, calendarId: null, connectedAt: null }
 
   // E-mailkoppel-status (zonder wachtwoord) voor het mobiele E-mailkoppeling-scherm.
-  const emailStatus = await getEmailConnectionStatus()
+  const emailStatus = koppelTenantId
+    ? await getEmailConnectionStatus(koppelTenantId)
+    : { connected: false }
 
   // Gmail-label-koppelstatus voor het Gmail-koppelblok in het Bedrijfsprofiel.
-  const gmailStatus = await getGmailConnectionStatus()
+  const gmailStatus = koppelTenantId
+    ? await getGmailConnectionStatus(koppelTenantId)
+    : { connected: false, googleEmail: null, labelName: null }
 
   // "Klus afronden"-toggle (063): defensieve helper (ontbrekende migratie-kolom
   // → default true) voor het mobiele Meldingen-scherm.

@@ -13,8 +13,12 @@ export async function GET() {
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
     return NextResponse.json({ error: 'Geen toegang' }, { status: 403 })
   }
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  const tenantId = profile.tenant_id
 
-  const status = await getWhatsAppConnectionStatus()
+  const status = await getWhatsAppConnectionStatus(tenantId)
   if (!status.connected) {
     return NextResponse.json({ connected: false })
   }

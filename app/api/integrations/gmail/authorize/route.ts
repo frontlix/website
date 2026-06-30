@@ -16,7 +16,11 @@ export async function GET(request: NextRequest) {
   const raw = new URL(request.url).searchParams.get('label')?.trim()
   const labelName = (raw && raw.length > 0 ? raw : DEFAULT_LABEL).slice(0, MAX_LABEL_LEN)
 
-  const state = crypto.randomBytes(16).toString('hex')
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  // Tenant in de OAuth state meesturen (na de CSRF-nonce); de callback leest 'm hieruit.
+  const state = `${crypto.randomBytes(16).toString('hex')}.${profile.tenant_id}`
   const res = NextResponse.redirect(buildGmailConsentUrl(state))
   const cookieOpts = {
     httpOnly: true,

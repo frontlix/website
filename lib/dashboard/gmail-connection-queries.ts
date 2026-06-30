@@ -10,13 +10,13 @@ export interface GmailConnectionStatus {
   labelName: string | null
 }
 
-/** Leest de connectie-status (zonder token) van de enige tenant. */
-export async function getGmailConnectionStatus(): Promise<GmailConnectionStatus> {
+/** Leest de connectie-status (zonder token) van EEN tenant. */
+export async function getGmailConnectionStatus(tenantId: string): Promise<GmailConnectionStatus> {
   const admin = getDashboardAdmin()
   const { data } = await admin
     .from('gmail_connections')
     .select('google_email, label_name')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
   if (!data) return { connected: false, googleEmail: null, labelName: null }
   return {
@@ -59,7 +59,7 @@ export async function deleteGmailConnection(tenantId: string): Promise<void> {
 }
 
 /** Leest het versleutelde token + filter-id (voor opruimen bij ontkoppelen). */
-export async function getGmailConnectionSecrets(): Promise<{
+export async function getGmailConnectionSecrets(tenantId: string): Promise<{
   refreshTokenEncrypted: string
   filterId: string | null
 } | null> {
@@ -67,7 +67,7 @@ export async function getGmailConnectionSecrets(): Promise<{
   const { data } = await admin
     .from('gmail_connections')
     .select('refresh_token_encrypted, filter_id')
-    .limit(1)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
   if (!data) return null
   return { refreshTokenEncrypted: data.refresh_token_encrypted, filterId: data.filter_id ?? null }

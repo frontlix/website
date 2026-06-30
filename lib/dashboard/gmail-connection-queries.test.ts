@@ -13,7 +13,7 @@ vi.mock('./supabase-admin', () => ({
     from: () => ({
       upsert,
       delete: del,
-      select: () => ({ limit: () => ({ maybeSingle }) }),
+      select: () => ({ eq: () => ({ maybeSingle }) }),
     }),
   }),
 }))
@@ -24,7 +24,7 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('gmail-connection-queries', () => {
   it('getGmailConnectionStatus geeft alleen niet-gevoelige velden terug', async () => {
-    const status = await getGmailConnectionStatus()
+    const status = await getGmailConnectionStatus('t1')
     expect(status).toEqual({
       connected: true,
       googleEmail: 'thierry@example.com',

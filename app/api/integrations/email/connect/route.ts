@@ -13,7 +13,6 @@ import nodemailer from 'nodemailer'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import { encryptToken, decryptToken } from '@/lib/crypto/calendar-token'
 import {
-  getTenantId,
   getRawEmailConnection,
   saveEmailConnection,
 } from '@/lib/dashboard/email-connection-queries'
@@ -114,6 +113,10 @@ export async function POST(req: Request) {
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
     return NextResponse.json({ error: 'Geen toegang' }, { status: 403 })
   }
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  const tenantId = profile.tenant_id
 
   let body: Record<string, unknown>
   try {
@@ -192,7 +195,7 @@ export async function POST(req: Request) {
   let plainPassword = passwordRaw
   let reuseEncrypted: string | null = null
   if (!plainPassword) {
-    const existing = await getRawEmailConnection()
+    const existing = await getRawEmailConnection(tenantId)
     if (!existing) {
       return NextResponse.json(
         { error: 'Vul een wachtwoord in om de koppeling te maken.' },
@@ -214,12 +217,6 @@ export async function POST(req: Request) {
   }
 
   // Rate-limit per tenant (na validatie zodat een foute body geen quota slurpt).
-  let tenantId: string
-  try {
-    tenantId = await getTenantId()
-  } catch {
-    return NextResponse.json({ error: 'Geen bedrijf gevonden.' }, { status: 500 })
-  }
   if (isRateLimited(tenantId)) {
     return NextResponse.json(
       { error: 'Te veel pogingen. Wacht even en probeer het later opnieuw.' },

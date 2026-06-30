@@ -28,6 +28,10 @@ import { triggerBotConfigReload } from './bot-reload-actions'
  * daadwerkelijke schrijven gaat via de service-role admin-client, omdat
  * `tenant_settings` geen UPDATE-policy heeft voor dashboard-users (een gewone
  * RLS-client zou stil 0 rijen raken en niets opslaan).
+ *
+ * Multitenant: de update wordt gescoped op de EIGEN tenant van de ingelogde
+ * user (profile.tenant_id) i.p.v. de "enige" rij (.limit(1)). Voor SS (één
+ * tenant) is het gedrag identiek.
  */
 export type SaveBedrijfsprofielResult =
   | { ok: true }
@@ -58,7 +62,11 @@ export async function updateBedrijfsprofiel(
 ): Promise<SaveBedrijfsprofielResult> {
   // Ingelogd EN approved, anders kan een pending/rejected user via de
   // service-role-write hieronder de ontbrekende UPDATE-policy omzeilen.
-  await requireApprovedUser()
+  const { profile } = await requireApprovedUser()
+  if (!profile.tenant_id) {
+    return { ok: false, error: 'Geen tenant gekoppeld aan deze gebruiker.' }
+  }
+  const tenantId = profile.tenant_id
 
   // Lichte validatie: e-mail moet leeg zijn of een plausibel adres bevatten.
   const email = input.eigenaar_email.trim()
@@ -67,20 +75,6 @@ export async function updateBedrijfsprofiel(
   }
 
   const admin = getDashboardAdmin()
-
-  // Pak de eerste (en enige) tenant_settings rij, single-tenant setup.
-  const { data: existing, error: fetchErr } = await admin
-    .from('tenant_settings')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
-
-  if (fetchErr || !existing) {
-    return {
-      ok: false,
-      error: 'Geen tenant_settings rij gevonden om te updaten.',
-    }
-  }
 
   // Werkstraal alleen wegschrijven bij een plausibel getal (1–1000 km); een
   // lege/0/ongeldige invoer laat de bestaande radius_max_km ongemoeid.
@@ -114,7 +108,7 @@ export async function updateBedrijfsprofiel(
   const { error: updErr } = await admin
     .from('tenant_settings')
     .update(updatePayload)
-    .eq('id', existing.id)
+    .eq('id', tenantId)
 
   if (updErr) {
     console.error('[updateBedrijfsprofiel] failed:', updErr)
@@ -144,19 +138,13 @@ export interface WerkgebiedInput {
 export async function saveWerkgebiedGrenzen(
   input: WerkgebiedInput,
 ): Promise<SaveBedrijfsprofielResult> {
-  await requireApprovedUser()
+  const { profile } = await requireApprovedUser()
+  if (!profile.tenant_id) {
+    return { ok: false, error: 'Geen tenant gekoppeld aan deze gebruiker.' }
+  }
+  const tenantId = profile.tenant_id
 
   const admin = getDashboardAdmin()
-
-  const { data: existing, error: fetchErr } = await admin
-    .from('tenant_settings')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
-
-  if (fetchErr || !existing) {
-    return { ok: false, error: 'Geen tenant_settings rij gevonden om te updaten.' }
-  }
 
   // Werkstraal: plausibel getal (1–1000 km), anders ongemoeid laten.
   const radius =
@@ -179,7 +167,7 @@ export async function saveWerkgebiedGrenzen(
   const { error: updErr } = await admin
     .from('tenant_settings')
     .update(updatePayload)
-    .eq('id', existing.id)
+    .eq('id', tenantId)
 
   if (updErr) {
     console.error('[saveWerkgebiedGrenzen] failed:', updErr)

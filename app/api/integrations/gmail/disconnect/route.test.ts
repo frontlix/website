@@ -23,7 +23,7 @@ vi.mock('@/lib/gmail-oauth', () => ({ deleteFilter: mocks.deleteFilter }))
 
 import { POST } from './route'
 
-const owner = { tenant_status: 'approved', is_owner: true }
+const owner = { tenant_status: 'approved', is_owner: true, tenant_id: 't1' }
 
 beforeEach(() => {
   vi.clearAllMocks()

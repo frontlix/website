@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUserProfile } from '@/lib/dashboard/auth'
 import {
-  getTenantId,
   getGmailConnectionSecrets,
   deleteGmailConnection,
 } from '@/lib/dashboard/gmail-connection-queries'
@@ -15,11 +14,15 @@ export async function POST() {
   if (!profile || profile.tenant_status !== 'approved' || !profile.is_owner) {
     return NextResponse.json({ error: 'Geen toegang' }, { status: 403 })
   }
+  if (!profile.tenant_id) {
+    return NextResponse.json({ error: 'Geen bedrijf gekoppeld' }, { status: 403 })
+  }
+  const tenantId = profile.tenant_id
 
   // Probeer het Gmail-filter op te ruimen; het label en bestaande gelabelde
   // mail laten we staan (geen data van de gebruiker weggooien).
   try {
-    const secrets = await getGmailConnectionSecrets()
+    const secrets = await getGmailConnectionSecrets(tenantId)
     if (secrets?.filterId) {
       const accessToken = await refreshAccessToken(decryptToken(secrets.refreshTokenEncrypted))
       await deleteFilter(accessToken, secrets.filterId)
@@ -28,7 +31,6 @@ export async function POST() {
     console.error('[gmail-disconnect] filter opruimen faalde, ga door met ontkoppelen', e)
   }
 
-  const tenantId = await getTenantId()
   await deleteGmailConnection(tenantId)
   return NextResponse.json({ ok: true })
 }

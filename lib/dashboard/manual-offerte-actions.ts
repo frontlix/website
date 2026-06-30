@@ -21,7 +21,6 @@ import { sendOfferteMail } from './offerte/mail-sender'
 import {
   getActiveEmailConnectionForSend,
   setNeedsReconnect,
-  getTenantId,
 } from './email-connection-queries'
 
 export type ManualOfferteResult =
@@ -82,7 +81,9 @@ export async function createManualLeadEnOfferte(
   // ── Auth-check (mag deze user überhaupt offertes maken?) ──────────
   // requireApprovedUser() redirect bij niet-ingelogd/niet-approved; de
   // client-transition vangt die NEXT_REDIRECT correct af.
-  const { user } = await requireApprovedUser()
+  const { user, profile } = await requireApprovedUser()
+  // Tenant van de ingelogde owner; bepaalt of er een eigen e-mailkoppeling is.
+  const tenantId = profile.tenant_id
 
   // ── Validatie van verplichte velden ───────────────────────────────
   if (!data.naam.trim()) return { ok: false, error: 'Naam is verplicht.' }
@@ -330,7 +331,7 @@ export async function createManualLeadEnOfferte(
       // gekoppelde adres via die SMTP; reply-to volgt sectie 6.6 (de koppeling-
       // reply_to, anders het gekoppelde adres zelf), NIET eigenaar_email.
       // Geen rij → niets extra meegeven, gedrag identiek aan voorheen.
-      const conn = await getActiveEmailConnectionForSend()
+      const conn = tenantId ? await getActiveEmailConnectionForSend(tenantId) : null
 
       const mailRes = conn
         ? await sendOfferteMail({
@@ -372,8 +373,7 @@ export async function createManualLeadEnOfferte(
         const isStale = conn !== null && isAuthOrConnError(mailRes.error)
         if (isStale) {
           try {
-            const tenantId = await getTenantId()
-            await setNeedsReconnect(tenantId, true)
+            if (tenantId) await setNeedsReconnect(tenantId, true)
           } catch (flagErr) {
             const fe = flagErr as { code?: string; responseCode?: number }
             console.error('[createManualLeadEnOfferte] setNeedsReconnect failed:', {
