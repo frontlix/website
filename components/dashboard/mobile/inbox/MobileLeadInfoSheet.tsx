@@ -1,10 +1,9 @@
 'use client'
 
-import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { type InboxLeadContext } from '@/lib/dashboard/inbox-queries'
-import { archiveLead } from '@/lib/dashboard/lead-actions'
+import { useArchiveLead } from '@/components/dashboard/use-archive-lead'
 import { useBotAction } from '@/components/dashboard/bot-actions/use-bot-action'
 import styles from './MobileLeadInfoSheet.module.css'
 
@@ -53,7 +52,12 @@ function fmtDate(iso: string | null | undefined): string {
  */
 export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheetProps) {
   const router = useRouter()
-  const [archivePending, startArchive] = useTransition()
+  const { requestArchive, archiveDialog, archiving } = useArchiveLead({
+    onArchived: () => {
+      onClose()
+      router.push('/inbox')
+    },
+  })
   const { run: toggleBot, pending: botPending } = useBotAction(
     `/api/dashboard/lead/${lead.lead_id}/bot-pauzeren`,
   )
@@ -62,11 +66,8 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
 
   function handleArchive() {
     // Archiveren: de lead verdwijnt uit de pipeline (terug te halen via "Herstel").
-    startArchive(async () => {
-      await archiveLead(lead.lead_id)
-      onClose()
-      router.push('/inbox')
-    })
+    // De hook vraagt eerst om een keuze als de lead nog een afspraak heeft.
+    requestArchive(lead.lead_id)
   }
 
   function handleBotToggle() {
@@ -196,7 +197,7 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
               type="button"
               className={styles.actionBtn}
               onClick={handleArchive}
-              disabled={archivePending}
+              disabled={archiving}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -218,6 +219,8 @@ export function MobileLeadInfoSheet({ lead, open, onClose }: MobileLeadInfoSheet
           </button>
         </div>
       </div>
+
+      {archiveDialog}
     </>
   )
 }
