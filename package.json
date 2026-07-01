@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.4.0",
+    "@sentry/nextjs": "^10.63.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.100.0",
     "@vis.gl/react-google-maps": "^1.8.3",
