@@ -1,4 +1,5 @@
 // lib/dashboard/for-tenant.ts
+/* eslint-disable @typescript-eslint/no-explicit-any -- Supabase query-builder return types zijn niet praktisch precies te typen; de wrapper stampt/filtert veilig op tenant. */
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getDashboardAdmin } from './supabase-admin'
 import {
