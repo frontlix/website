@@ -8,6 +8,7 @@
 // renderen omdat het de root-layout vervangt.
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { reportClientError } from '@/lib/dashboard/report-client-error'
 
 export default function GlobalError({
@@ -19,6 +20,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error('[global] render-fout opgevangen:', error)
+    Sentry.captureException(error)
     reportClientError('global', error)
   }, [error])
 

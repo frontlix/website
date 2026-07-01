@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
   // Puppeteer mag NIET door webpack worden gebundeld — chromium binary
@@ -70,4 +71,14 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  // Org/project alleen nodig voor sourcemap-upload (build-time). Leeg laten =
+  // geen upload, wel gewoon een werkende build (geminificeerde stacktraces).
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Zonder auth-token wordt er niets geupload; alles bouwt en draait gewoon.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  // BEWUST GEEN tunnelRoute: de bestaande middleware.ts rewrite't bijna alle
+  // paden en zou een tunnel-route breken.
+})
